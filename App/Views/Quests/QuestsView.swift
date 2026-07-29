@@ -12,11 +12,11 @@ struct QuestsView: View {
     @Environment(GameService.self) private var game
     @Query private var states: [GamificationState]
 
-    /// Catalogue complet des badges (bundle) — vide seulement si le bundle est
-    /// corrompu (même politique "jamais de crash" que GameService).
-    private let badges = (try? Catalogs.badges()) ?? []
-
     @State private var selectedBadge: Badge?
+
+    /// Catalogue complet des badges — celui déjà chargé par GameService à l'init
+    /// (pas de relecture du bundle à chaque re-rendu de la vue).
+    private var badges: [Badge] { game.badges }
 
     private var badgeUnlocks: [String: Date] { states.first?.badgeUnlocks ?? [:] }
 
@@ -92,14 +92,9 @@ struct QuestsView: View {
 
             LazyVGrid(columns: gridColumns, spacing: 16) {
                 ForEach(badges) { badge in
-                    BadgeTile(badge: badge, unlockDate: badgeUnlocks[badge.id])
-                        .onTapGesture {
-                            // Fiche réservée aux badges débloqués : le verrouillé
-                            // garde son mystère (seul l'indice est visible).
-                            if badgeUnlocks[badge.id] != nil {
-                                selectedBadge = badge
-                            }
-                        }
+                    BadgeTile(badge: badge, unlockDate: badgeUnlocks[badge.id]) {
+                        selectedBadge = badge
+                    }
                 }
             }
         }
@@ -173,10 +168,23 @@ private struct WeeklyQuestCard: View {
 private struct BadgeTile: View {
     let badge: Badge
     let unlockDate: Date?
+    /// Ouvre la fiche — bouton réservé aux badges débloqués : le verrouillé garde
+    /// son mystère (seul l'indice est visible), la tuile est alors désactivée.
+    let onTap: () -> Void
 
     private var isUnlocked: Bool { unlockDate != nil }
 
     var body: some View {
+        Button(action: onTap) { content }
+            .buttonStyle(.plain)
+            .disabled(!isUnlocked)
+            .accessibilityLabel(
+                unlockDate.map { "\(badge.title), débloqué le \($0.frShortDate)" }
+                    ?? "Badge verrouillé : \(badge.hint)"
+            )
+    }
+
+    private var content: some View {
         VStack(spacing: 6) {
             ZStack {
                 Circle()
@@ -205,12 +213,6 @@ private struct BadgeTile: View {
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity, alignment: .top)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            unlockDate.map { "\(badge.title), débloqué le \($0.frShortDate)" }
-                ?? "Badge verrouillé : \(badge.hint)"
-        )
-        .accessibilityAddTraits(isUnlocked ? .isButton : [])
     }
 }
 

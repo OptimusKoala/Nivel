@@ -387,6 +387,10 @@ final class GameService {
 
     // MARK: - Exposition pour les vues (accueil, écran Quêtes)
 
+    /// Catalogue complet des badges (chargé une fois à l'init) — l'écran Quêtes
+    /// l'affiche en entier ; vide seulement si le bundle est corrompu.
+    var badges: [Badge] { badgeCatalog }
+
     /// Quêtes actives avec leur progression courante et l'état "complétée cette semaine".
     /// L'ordre du tirage hebdo est conservé.
     func activeQuestStatuses() -> [ActiveQuestStatus] {
