@@ -14,16 +14,6 @@ struct RootView: View {
     }
 }
 
-private struct OnboardingFlow: View {
-    var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-            Text("Onboarding")
-                .foregroundStyle(Theme.text)
-        }
-    }
-}
-
 private struct MainTabView: View {
     var body: some View {
         TabView {
