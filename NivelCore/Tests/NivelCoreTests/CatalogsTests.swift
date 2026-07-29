@@ -22,4 +22,10 @@ final class CatalogsTests: XCTestCase {
         // 3 quests to draw from, so a future catalog edit can't silently break weeklyDraw.
         XCTAssertGreaterThanOrEqual(quests.filter { !$0.requiresSteps }.count, 3)
     }
+
+    func testBadgesLoadAndIdsAreUnique() throws {
+        let badges = try Catalogs.badges()
+        XCTAssertEqual(badges.count, 20)
+        XCTAssertEqual(Set(badges.map(\.id)).count, 20)
+    }
 }
