@@ -17,7 +17,7 @@ struct RootView: View {
 private struct MainTabView: View {
     var body: some View {
         TabView {
-            PlaceholderScreen(title: "Accueil")
+            HomeView()
                 .tabItem { Label("Accueil", systemImage: "house.fill") }
 
             PlaceholderScreen(title: "Repas")
@@ -49,7 +49,15 @@ private struct PlaceholderScreen: View {
 }
 
 #Preview {
-    RootView()
-        .modelContainer(for: [UserProfile.self, MealEntry.self, WeightEntry.self,
-                               DayLog.self, GamificationState.self], inMemory: true)
+    let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
+                         DayLog.self, GamificationState.self])
+    let container = try! ModelContainer(
+        for: schema,
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+    )
+    return RootView()
+        .fontDesign(.rounded)
+        .modelContainer(container)
+        .environment(GameService(modelContext: container.mainContext,
+                                 stepsService: FakeStepsService()))
 }

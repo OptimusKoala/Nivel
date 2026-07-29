@@ -18,6 +18,19 @@ enum Celebration: Equatable, Identifiable {
     }
 }
 
+/// Quête active + progression courante, telle que consommée par l'accueil (Task 13)
+/// et l'écran Quêtes (Task 16).
+struct ActiveQuestStatus: Identifiable {
+    let quest: Quest
+    let progress: Int
+    /// Complétée CETTE semaine (garde `completedThisWeekQuestIDs`).
+    let isCompleted: Bool
+
+    var id: String { quest.id }
+    /// Avancement 0…1 (les targets du catalogue sont ≥ 1 ; garde anti-division par zéro).
+    var fraction: Double { min(1, Double(progress) / Double(max(1, quest.target))) }
+}
+
 /// Façade unique consommée par les vues : log de repas/pesée, XP, quêtes, badges,
 /// messages de Nivelito. Toute la logique pure vit dans NivelCore ; ici on orchestre
 /// SwiftData + StepsProviding.
@@ -310,6 +323,50 @@ final class GameService {
             trendValues.append(trend)
         }
         return trendValues[entries.count - 1] < trendValues[referenceIndex]
+    }
+
+    // MARK: - Exposition pour les vues (accueil, écran Quêtes)
+
+    /// Quêtes actives avec leur progression courante et l'état "complétée cette semaine".
+    /// L'ordre du tirage hebdo est conservé.
+    func activeQuestStatuses() -> [ActiveQuestStatus] {
+        let state = fetchOrCreateState()
+        let questsByID = Dictionary(uniqueKeysWithValues: questCatalog.map { ($0.id, $0) })
+        return state.activeQuestIDs.compactMap { id in
+            guard let quest = questsByID[id] else { return nil }
+            return ActiveQuestStatus(
+                quest: quest,
+                progress: state.questProgress[id] ?? 0,
+                isCompleted: state.completedThisWeekQuestIDs.contains(id)
+            )
+        }
+    }
+
+    /// Pas du jour — nil si HealthKit est refusé/indisponible (la carte de pas
+    /// de l'accueil est alors masquée, spec §10).
+    func todaySteps() async -> Int? {
+        await stepsService.steps(on: .now)
+    }
+
+    /// Contexte du message d'accueil de Nivelito (spec §4.1) : priorité aux événements
+    /// du jour — level-up en attente, badge en attente ou débloqué aujourd'hui — sinon
+    /// salutation horaire (matin < 12 h, midi 12-18 h, soir ≥ 18 h).
+    func homeMessageContext(now: Date = .now) -> (context: MessageContext, value: Int?) {
+        for celebration in pendingCelebrations {
+            if case .levelUp(let level) = celebration { return (.levelUp, level) }
+        }
+        if pendingCelebrations.contains(where: { if case .badge = $0 { true } else { false } }) {
+            return (.badge, nil)
+        }
+        let state = fetchOrCreateState()
+        if state.badgeUnlocks.values.contains(where: { Self.calendar.isDate($0, inSameDayAs: now) }) {
+            return (.badge, nil)
+        }
+        switch Self.calendar.component(.hour, from: now) {
+        case ..<12: return (.morning, nil)
+        case ..<18: return (.midday, nil)
+        default: return (.evening, nil)
+        }
     }
 
     // MARK: - Nivelito
