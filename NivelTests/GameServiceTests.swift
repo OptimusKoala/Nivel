@@ -120,6 +120,52 @@ final class GameServiceTests: XCTestCase {
         XCTAssertEqual(service.badgeStats().questsCompleted, 2)
     }
 
+    func testUpdateMealRecomputesKcalWithoutAwardingXP() async throws {
+        // Log initial : pâtes normal = 650 kcal, +20 XP (+50 badge "Premier repas").
+        let entry = await service.logMeal(slot: .dinner, dish: pasta, portion: .normal)
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        let xpAfterLog = state.totalXP
+
+        // Édition : copieux + 2 bières + dessert gourmand = 845 + 300 + 300 = 1445.
+        await service.updateMeal(
+            entry: entry, slot: .dinner, dish: pasta, portion: .hearty,
+            extras: [(beer, 2), (richDessert, 1)]
+        )
+
+        XCTAssertEqual(entry.estimatedKcal, 1445)
+        XCTAssertEqual(entry.extras, ["beer": 2, "dessert_rich": 1])
+        // PAS de nouvel XP : ni sur l'entrée, ni au total.
+        XCTAssertEqual(entry.xpAwarded, 20)
+        XCTAssertEqual(state.totalXP, xpAfterLog)
+
+        // Le DayLog reflète le delta (650 → 1445), pas un cumul.
+        let dayLog = try XCTUnwrap(try context.fetch(FetchDescriptor<DayLog>()).first)
+        XCTAssertEqual(dayLog.kcalEaten, 1445)
+
+        // Une seule entrée : l'édition ne duplique pas.
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<MealEntry>()), 1)
+    }
+
+    func testDeleteMealSubtractsKcalAndKeepsXP() async throws {
+        // Deux repas : 650 (déjeuner) + 455 (dîner léger : 650 × 0,7 = 455).
+        let lunch = await service.logMeal(slot: .lunch, dish: pasta, portion: .normal)
+        await service.logMeal(slot: .dinner, dish: pasta, portion: .light)
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        let xpBefore = state.totalXP
+
+        await service.deleteMeal(entry: lunch)
+
+        // Le DayLog perd les kcal du repas supprimé…
+        let dayLog = try XCTUnwrap(try context.fetch(FetchDescriptor<DayLog>()).first)
+        XCTAssertEqual(dayLog.kcalEaten, 455)
+        // …mais l'XP est conservé (jamais de retrait, spec §7.1).
+        XCTAssertEqual(state.totalXP, xpBefore)
+
+        let remaining = try context.fetch(FetchDescriptor<MealEntry>())
+        XCTAssertEqual(remaining.count, 1)
+        XCTAssertEqual(remaining.first?.slot, .dinner)
+    }
+
     func testWeighInXPIsCappedOncePerDay() async throws {
         let firstXP = await service.logWeight(kg: 90.5)
         XCTAssertEqual(firstXP, 30)

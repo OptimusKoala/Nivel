@@ -157,6 +157,40 @@ final class GameService {
         return xp
     }
 
+    /// Met à jour un repas existant (édition "le jour même", spec §4.2) : recalcule les
+    /// kcal et ajuste le DayLog du jour — SANS ré-attribuer d'XP (`xpAwarded` inchangé,
+    /// le plafond 4 repas/jour reste dérivé des entrées persistées).
+    func updateMeal(
+        entry: MealEntry,
+        slot: MealSlot,
+        dish: Dish,
+        portion: Portion,
+        extras: [(Extra, Int)] = []
+    ) async {
+        let previousKcal = entry.estimatedKcal
+        let kcal = MealEstimator.estimate(dish: dish, portion: portion, extras: extras)
+        entry.slot = slot
+        entry.dishID = dish.id
+        entry.portion = portion
+        // Réassignation complète (règle SwiftData : pas de mutation en place des collections).
+        entry.extras = Dictionary(extras.map { ($0.0.id, $0.1) }, uniquingKeysWith: +)
+        entry.estimatedKcal = kcal
+        updateDayLog(for: entry.date, addingKcal: kcal - previousKcal, xp: 0)
+
+        await refreshQuestProgress()
+        saveOrAssert()
+    }
+
+    /// Supprime un repas (jour même) : soustrait ses kcal du DayLog du jour.
+    /// L'XP déjà attribué est CONSERVÉ — jamais de retrait d'XP (spec §7.1, bienveillance).
+    func deleteMeal(entry: MealEntry) async {
+        updateDayLog(for: entry.date, addingKcal: -entry.estimatedKcal, xp: 0)
+        modelContext.delete(entry)
+
+        await refreshQuestProgress()
+        saveOrAssert()
+    }
+
     // MARK: - Quêtes
 
     /// Recalcule la progression de chaque quête active depuis SwiftData (+ pas de la semaine
@@ -432,12 +466,14 @@ final class GameService {
         let dayStart = Self.calendar.startOfDay(for: date)
         let predicate = #Predicate<DayLog> { $0.day == dayStart }
         if let log = (try? modelContext.fetch(FetchDescriptor(predicate: predicate)))?.first {
-            log.kcalEaten += kcal
+            // max(0, …) : les deltas négatifs (édition/suppression) ne créent jamais
+            // de total négatif, même sur un store incohérent.
+            log.kcalEaten = max(0, log.kcalEaten + kcal)
             log.xpEarned += xp
         } else {
             let log = DayLog(
                 day: dayStart,
-                kcalEaten: kcal,
+                kcalEaten: max(0, kcal),
                 kcalTarget: fetchProfile()?.dailyCalorieTarget ?? 0,
                 xpEarned: xp
             )

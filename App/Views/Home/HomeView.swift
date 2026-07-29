@@ -75,13 +75,12 @@ struct HomeView: View {
         .onAppear(perform: updateBubble)
         .task { await refresh() }
         .sheet(isPresented: $showMealLog) {
-            // Task 14 : remplacé par MealLogSheet.
-            ZStack {
-                Theme.background.ignoresSafeArea()
-                Text("Log de repas — Task 14")
-                    .foregroundStyle(Theme.text)
-            }
-            .presentationDetents([.medium])
+            MealLogSheet(onLogged: {
+                // Bulle "après log" (spec §4.2) : forcée même si la tranche horaire
+                // n'a pas changé — c'est un événement, pas une salutation.
+                lastBubbleContext = .afterMealLog
+                bubbleText = game.nivelitoSays(context: .afterMealLog)
+            })
         }
     }
 

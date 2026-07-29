@@ -27,7 +27,10 @@ private struct MainTabView: View {
                 .id(dayKey)
                 .tabItem { Label("Accueil", systemImage: "house.fill") }
 
-            PlaceholderScreen(title: "Repas")
+            // .id(dayKey) : comme l'accueil, le journal repart sur "aujourd'hui"
+            // quand le jour change (retour au premier plan après minuit).
+            MealsJournalView()
+                .id(dayKey)
                 .tabItem { Label("Repas", systemImage: "fork.knife") }
 
             PlaceholderScreen(title: "Progrès")
