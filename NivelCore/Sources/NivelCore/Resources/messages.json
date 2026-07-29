@@ -52,7 +52,7 @@
     {"id": "aml6", "text": "Repas consigné ! +{value} XP pour toi."},
     {"id": "aml7", "text": "Ça, c'est fait ! Continue comme ça."},
     {"id": "aml8", "text": "Bien joué {name}, le journal est à jour."},
-    {"id": "aml9", "text": "Un petit geste, +{value} XP… la belle affaire !"},
+    {"id": "aml9", "text": "Un petit geste, +{value} XP… tout bénef !"},
     {"id": "aml10", "text": "Enregistré ! J'adore quand tout est bien rangé."},
     {"id": "aml11", "text": "Hop, dans la besace ! +{value} XP au passage."},
     {"id": "aml12", "text": "Merci pour l'info, je note tout précieusement."},
