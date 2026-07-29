@@ -16,6 +16,7 @@ struct RootView: View {
 
 private struct MainTabView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Query private var profiles: [UserProfile]
 
     /// Jour courant (minuit local). HomeView fige ses bornes "aujourd'hui" à sa création :
     /// `.id(dayKey)` la recrée quand le jour change — rafraîchi au retour au premier plan.
@@ -44,30 +45,25 @@ private struct MainTabView: View {
                 .id(dayKey)
                 .tabItem { Label("Quêtes", systemImage: "trophy.fill") }
 
-            PlaceholderScreen(title: "Réglages")
+            SettingsView()
                 .tabItem { Label("Réglages", systemImage: "gearshape.fill") }
         }
         .tint(Theme.orange)
         .onAppear { dayKey = Self.currentDayKey() }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { dayKey = Self.currentDayKey() }
+            if phase == .active {
+                dayKey = Self.currentDayKey()
+                // Re-planifie les rappels à chaque retour au premier plan :
+                // les textes tirés de la banque se renouvellent (spec §10).
+                if let profile = profiles.first {
+                    NotificationService.reschedule(for: profile)
+                }
+            }
         }
     }
 
     private static func currentDayKey() -> Date {
         GameService.calendar.startOfDay(for: .now)
-    }
-}
-
-private struct PlaceholderScreen: View {
-    let title: String
-
-    var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-            Text(title)
-                .foregroundStyle(Theme.text)
-        }
     }
 }
 

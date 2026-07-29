@@ -12,6 +12,7 @@
 		1B36CC033AB07BEB581D664D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9782153DD5F0B9BABA5132F1 /* Theme.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
 		43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */; };
+		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
 		54786F0394B67DE901FD1C19 /* MealLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3D92F71CC93D99201C361E /* MealLogSheet.swift */; };
 		5A40096E1BB5A7713251D5C1 /* NivelitoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C923A46DDC21834AB6E06D1B /* NivelitoView.swift */; };
@@ -64,6 +65,7 @@
 		67EB506351740B5EC992E309 /* AppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTests.swift; sourceTree = "<group>"; };
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
 		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NivelCore; path = NivelCore; sourceTree = SOURCE_ROOT; };
+		848BA4571516E35FCEA2402D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		9782153DD5F0B9BABA5132F1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A694B98073276CD2FA798820 /* MealsJournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealsJournalView.swift; sourceTree = "<group>"; };
 		A6D09557663FBEA7185F1839 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -114,6 +116,7 @@
 				C11BEB0DAAA03380C6ACF16B /* Onboarding */,
 				0B4F6F76ABBD14348F01E9E5 /* Progress */,
 				6D8B05E92C0C472AB7A4E3AA /* Quests */,
+				3CCABC2F326C552D11C59080 /* Settings */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -124,6 +127,14 @@
 				83A4DCCA0A5474334D59C73C /* NivelCore */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		3CCABC2F326C552D11C59080 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				848BA4571516E35FCEA2402D /* SettingsView.swift */,
+			);
+			path = Settings;
 			sourceTree = "<group>";
 		};
 		55F522696164C90847F50AEC /* Services */ = {
@@ -343,6 +354,7 @@
 				D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */,
 				7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */,
 				CA44B39964325597C05E92A6 /* RootView.swift in Sources */,
+				4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */,
 				8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */,
 				CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */,
 				0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */,

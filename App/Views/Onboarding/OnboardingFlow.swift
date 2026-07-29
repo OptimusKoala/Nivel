@@ -1,7 +1,7 @@
 // App/Views/Onboarding/OnboardingFlow.swift
 // Premier lancement (spec §5) : 5 pages, transitions spring, Nivelito partout.
 // À la fin : UserProfile + WeightEntry initiale + GamificationState (quêtes tirées),
-// stub de notifications (Task 17), sauvegarde explicite → RootView bascule sur les tabs.
+// planification des rappels (NotificationService), sauvegarde explicite → tabs.
 
 import SwiftUI
 import SwiftData
