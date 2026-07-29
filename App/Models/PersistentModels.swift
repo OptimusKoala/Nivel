@@ -141,7 +141,9 @@ final class GamificationState {
     var questWeekID: String
     var questProgress: [String: Int]
     var completedQuestIDs: [String]      // historique all-time, doublons permis (pour badges)
-    var completedThisWeekQuestIDs: [String] // garde anti re-récompense de la semaine courante
+    // Défaut au niveau de la déclaration : requis pour la migration légère SwiftData
+    // des stores existants (le défaut de l'init ne suffit pas).
+    var completedThisWeekQuestIDs: [String] = [] // garde anti re-récompense de la semaine courante
     var lastClosedDay: Date?
 
     init(

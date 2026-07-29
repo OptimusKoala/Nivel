@@ -9,7 +9,7 @@ protocol StepsProviding {
     func requestAuthorization() async -> Bool
     /// Pas du jour donné — nil si refusé/indisponible.
     func steps(on day: Date) async -> Int?
-    /// Pas par jour (clé = minuit local) sur l'intervalle [from, to].
+    /// Pas par jour (clé = minuit local) sur l'intervalle [from, to[ — borne haute exclusive.
     func dailySteps(from: Date, to: Date) async -> [Date: Int]
 }
 

@@ -49,9 +49,29 @@ final class GameService {
     init(modelContext: ModelContext, stepsService: StepsProviding) {
         self.modelContext = modelContext
         self.stepsService = stepsService
-        self.questCatalog = (try? Catalogs.quests()) ?? []
-        self.badgeCatalog = (try? Catalogs.badges()) ?? []
-        self.messageBank = try? MessageBank.load()
+        self.questCatalog = Self.loadOrAssert({ try Catalogs.quests() }, fallback: [])
+        self.badgeCatalog = Self.loadOrAssert({ try Catalogs.badges() }, fallback: [])
+        self.messageBank = Self.loadOrAssert({ try MessageBank.load() }, fallback: nil)
+    }
+
+    /// Fallback silencieux en release (jamais de crash), mais signal en debug :
+    /// un catalogue du bundle qui ne charge pas est un bug de packaging.
+    private static func loadOrAssert<T>(_ load: () throws -> T, fallback: T) -> T {
+        do {
+            return try load()
+        } catch {
+            assertionFailure("Catalogs failed to load: \(error)")
+            return fallback
+        }
+    }
+
+    /// Sauvegarde SwiftData : silencieuse en release, assert en debug (échec = bug).
+    private func saveOrAssert() {
+        do {
+            try modelContext.save()
+        } catch {
+            assertionFailure("SwiftData save failed: \(error)")
+        }
     }
 
     // MARK: - Actions
@@ -90,7 +110,7 @@ final class GameService {
         await refreshQuestProgress()
         evaluateBadges(state: state)
         detectLevelUp(state: state, levelBefore: levelBefore)
-        try? modelContext.save()
+        saveOrAssert()
         return entry
     }
 
@@ -109,7 +129,7 @@ final class GameService {
         await refreshQuestProgress()
         evaluateBadges(state: state)
         detectLevelUp(state: state, levelBefore: levelBefore)
-        try? modelContext.save()
+        saveOrAssert()
         return xp
     }
 
@@ -124,6 +144,9 @@ final class GameService {
     /// ⚠️ Task 18 : au renouvellement, remettre `completedThisWeekQuestIDs = []`
     /// (et NE PAS ré-alimenter `completedQuestIDs` — l'historique est déjà
     /// alimenté ici au moment de la complétion).
+    // ⚠️ Task 18 (DayCloser) : la complétion d'une quête de pas ici peut faire monter
+    // de niveau — détecter level-up + badges après refreshQuestProgress()
+    // (aujourd'hui seuls logMeal/logWeight le font).
     func refreshQuestProgress() async {
         let now = Date.now
         let state = fetchOrCreateState()
@@ -165,7 +188,7 @@ final class GameService {
         state.questProgress = progress
         state.completedQuestIDs = completedHistory
         state.completedThisWeekQuestIDs = completedThisWeek
-        try? modelContext.save()
+        saveOrAssert()
     }
 
     private func questValue(
@@ -219,7 +242,7 @@ final class GameService {
         let closed = closedDayLogs()
         stats.stepsInOneDay = closed.map(\.steps).max() ?? 0
         stats.totalSteps = closed.reduce(0) { $0 + $1.steps }
-        stats.totalKm = Int(Double(stats.totalSteps) * 0.00075)
+        stats.totalKm = Int(Double(stats.totalSteps) * 0.00075) // ≈ 0,75 m par pas → km = pas × 0.00075
 
         stats.level = LevelSystem.level(forXP: state.totalXP)
         stats.questsCompleted = state.completedQuestIDs.count
@@ -307,7 +330,7 @@ final class GameService {
             var lastIDs = profile.lastMessageIDs
             lastIDs[context.rawValue] = message.id
             profile.lastMessageIDs = lastIDs
-            try? modelContext.save()
+            saveOrAssert()
         }
         return message.text
     }
