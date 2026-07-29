@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Nivelito — mascotte officielle de Nivel (version validée : flat mascotte "mix C") -->
+  <!-- Palette : contour #3a1220, orange #f57c1f, crème #f2ede0, brun oreilles #7d3f1e, joues brunes #8a4b2a, blush #ffb09b -->
+  <g stroke="#3a1220" stroke-width="9" stroke-linejoin="round">
+    <path d="M36 76 C26 48 34 26 56 24 C70 30 82 42 87 56 C68 58 50 66 36 76 Z" fill="#f2ede0"/>
+    <path d="M164 76 C174 48 166 26 144 24 C130 30 118 42 113 56 C132 58 150 66 164 76 Z" fill="#f2ede0"/>
+    <path d="M100 44 C146 44 173 64 176 104 C179 142 148 168 100 168 C52 168 21 142 24 104 C27 64 54 44 100 44 Z" fill="#f57c1f"/>
+  </g>
+  <path d="M46 66 C41 49 46 37 58 35 C65 39 71 46 74 53 C64 56 54 60 46 66 Z" fill="#7d3f1e"/>
+  <path d="M154 66 C159 49 154 37 142 35 C135 39 129 46 126 53 C136 56 146 60 154 66 Z" fill="#7d3f1e"/>
+  <ellipse cx="45" cy="134" rx="19" ry="16" fill="#8a4b2a"/>
+  <ellipse cx="155" cy="134" rx="19" ry="16" fill="#8a4b2a"/>
+  <path d="M100 94 C128 94 148 108 148 130 C148 152 127 166 100 166 C73 166 52 152 52 130 C52 108 72 94 100 94 Z" fill="#f2ede0"/>
+  <path d="M60 84 C68 76 82 75 90 80 C80 72 64 74 60 84 Z" fill="#f2ede0" stroke="#f2ede0" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M140 84 C132 76 118 75 110 80 C120 72 136 74 140 84 Z" fill="#f2ede0" stroke="#f2ede0" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="70" cy="104" r="12" fill="#3a1220"/>
+  <circle cx="130" cy="104" r="12" fill="#3a1220"/>
+  <circle cx="74" cy="99" r="4.2" fill="#fff"/>
+  <circle cx="134" cy="99" r="4.2" fill="#fff"/>
+  <ellipse cx="62" cy="122" rx="8" ry="5" fill="#ffb09b" opacity=".85"/>
+  <ellipse cx="138" cy="122" rx="8" ry="5" fill="#ffb09b" opacity=".85"/>
+  <path d="M90 122 Q100 116 110 122 Q108 134 100 136 Q92 134 90 122 Z" fill="#3a1220"/>
+  <path d="M100 136 L100 143 M100 143 Q92 151 83 145 M100 143 Q108 151 117 145" stroke="#3a1220" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+</svg>
