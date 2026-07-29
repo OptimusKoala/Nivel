@@ -6,6 +6,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 import NivelCore
 
 // MARK: - Libellés français
@@ -411,6 +412,7 @@ struct MealLogSheet: View {
     private func validate() {
         guard let dish = selectedDish, !isSaving else { return }
         isSaving = true
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         Task {
             if let entry = editedEntry {
                 // Édition : recalcul kcal + ajustement DayLog, PAS de nouvel XP.

@@ -5,6 +5,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 import NivelCore
 
 struct WeighInSheet: View {
@@ -109,6 +110,7 @@ struct WeighInSheet: View {
     private func validate() {
         guard let kg = parsedKg, !isSaving else { return }
         isSaving = true
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         fieldFocused = false
         Task {
             await game.logWeight(kg: kg)

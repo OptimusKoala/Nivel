@@ -36,7 +36,8 @@ struct CalorieRingCard: View {
                         style: StrokeStyle(lineWidth: 12, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 2) {
-                Text("\(eaten.frFormatted)")
+                // "~" : le total mangé est une somme d'estimations (spec §13).
+                Text("~\(eaten.frFormatted)")
                     .font(.system(size: 26, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.text)
                     .minimumScaleFactor(0.7)
@@ -51,15 +52,15 @@ struct CalorieRingCard: View {
         .frame(maxWidth: 130, maxHeight: 130)
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Calories : \(eaten) sur \(target)")
+        .accessibilityLabel("Calories : environ \(eaten) sur \(target)")
     }
 
     @ViewBuilder private var subtitle: some View {
         if isOver {
-            Text("Objectif dépassé de \((eaten - target).frFormatted) — ça arrive 😌")
+            Text("Objectif dépassé de ~\((eaten - target).frFormatted) — ça arrive 😌")
                 .foregroundStyle(Theme.subtext)
         } else {
-            Text("Reste \(max(0, target - eaten).frFormatted) kcal 🍽️")
+            Text("Reste ~\(max(0, target - eaten).frFormatted) kcal 🍽️")
                 .foregroundStyle(Theme.green)
         }
     }
