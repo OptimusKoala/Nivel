@@ -36,16 +36,22 @@ struct ActiveQuestStatus: Identifiable {
 /// SwiftData + StepsProviding.
 @Observable @MainActor
 final class GameService {
-    private let modelContext: ModelContext
-    private let stepsService: StepsProviding
+    // `internal` (et non `private`) : partagés avec la clôture des journées,
+    // rangée dans sa propre extension (DayCloser.swift) — même type, autre fichier.
+    let modelContext: ModelContext
+    let stepsService: StepsProviding
 
     /// Catalogues embarqués (chargés une fois ; vides si le bundle est corrompu — jamais de crash).
-    private let questCatalog: [Quest]
+    let questCatalog: [Quest]
     private let badgeCatalog: [Badge]
     private let messageBank: MessageBank?
 
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
+
+    /// Garde anti-réentrance de `closeOpenDays()` (DayCloser.swift) : `onAppear` et
+    /// `scenePhase == .active` peuvent se déclencher en rafale au lancement.
+    var isClosingDays = false
 
     /// Signal "un repas vient d'être loggé" (peu importe l'onglet d'origine) —
     /// consommé par l'accueil pour afficher la bulle `afterMealLog` (spec §4.2).
@@ -71,6 +77,13 @@ final class GameService {
         return c
     }()
 
+    /// Normalisateur CANONIQUE des jours persistés : toute valeur écrite dans
+    /// `DayLog.day` (et toute clé de comparaison de jour) DOIT passer par ici —
+    /// un seul point de vérité pour "minuit local" (Task 9/18).
+    nonisolated static func dayKey(for date: Date) -> Date {
+        calendar.startOfDay(for: date)
+    }
+
     /// Extras alcoolisés du catalogue (spec §7.3 : "jours sans alcool" = pas de bière/vin).
     private static let alcoholExtraIDs: Set<String> = ["beer", "wine"]
 
@@ -94,7 +107,8 @@ final class GameService {
     }
 
     /// Sauvegarde SwiftData : silencieuse en release, assert en debug (échec = bug).
-    private func saveOrAssert() {
+    /// internal : aussi utilisée par DayCloser.swift.
+    func saveOrAssert() {
         do {
             try modelContext.save()
         } catch {
@@ -217,16 +231,16 @@ final class GameService {
     /// via StepsProviding) et marque les quêtes complétées (+150 XP, une seule fois).
     ///
     /// Rollover : si `questWeekID` ≠ semaine courante, on ne touche à rien — le
-    /// renouvellement du lundi (archivage + nouveau tirage) est le travail du
-    /// DayCloser (Task 18), qui s'exécute au passage au premier plan.
-    /// ⚠️ Task 18 : au renouvellement, remettre `completedThisWeekQuestIDs = []`
-    /// (et NE PAS ré-alimenter `completedQuestIDs` — l'historique est déjà
-    /// alimenté ici au moment de la complétion).
-    // ⚠️ Task 18 (DayCloser) : la complétion d'une quête de pas ici peut faire monter
-    // de niveau — détecter level-up + badges après refreshQuestProgress()
-    // (aujourd'hui seuls logMeal/logWeight le font).
-    func refreshQuestProgress() async {
-        let now = Date.now
+    /// renouvellement du lundi (archivage + nouveau tirage) est le travail de
+    /// `closeOpenDays()` (DayCloser.swift), qui s'exécute au passage au premier plan.
+    /// ⚠️ Contrat du renouvellement (respecté par DayCloser.swift) : remettre
+    /// `completedThisWeekQuestIDs = []` et NE PAS ré-alimenter `completedQuestIDs` —
+    /// l'historique est déjà alimenté ici au moment de la complétion.
+    // ⚠️ La complétion d'une quête ici peut faire monter de niveau — tout appelant
+    // doit détecter level-up + badges APRÈS refreshQuestProgress()
+    // (logMeal/logWeight/updateMeal/deleteMeal et closeOpenDays le font).
+    /// `now` est injectable pour les tests (DayCloser) — défaut : l'instant courant.
+    func refreshQuestProgress(now: Date = .now) async {
         let state = fetchOrCreateState()
         guard state.questWeekID == QuestEngine.weekID(for: now, calendar: Self.calendar),
               !state.activeQuestIDs.isEmpty,
@@ -329,7 +343,8 @@ final class GameService {
         return stats
     }
 
-    private func evaluateBadges(state: GamificationState) {
+    // internal : aussi appelé après la clôture des journées (DayCloser.swift).
+    func evaluateBadges(state: GamificationState) {
         let newly = BadgeEngine.newlyUnlocked(
             badges: badgeCatalog,
             stats: badgeStats(),
@@ -465,7 +480,8 @@ final class GameService {
 
     // MARK: - Level-up
 
-    private func detectLevelUp(state: GamificationState, levelBefore: Int) {
+    // internal : aussi appelé après la clôture des journées (DayCloser.swift).
+    func detectLevelUp(state: GamificationState, levelBefore: Int) {
         let levelAfter = LevelSystem.level(forXP: state.totalXP)
         if levelAfter > levelBefore {
             raise(.levelUp(levelAfter))
@@ -475,7 +491,8 @@ final class GameService {
     // MARK: - Accès SwiftData
 
     /// Singleton : fetch + .first ; création uniquement si absent (garde anti-doublon).
-    private func fetchOrCreateState() -> GamificationState {
+    /// internal : aussi utilisé par DayCloser.swift.
+    func fetchOrCreateState() -> GamificationState {
         if let existing = (try? modelContext.fetch(FetchDescriptor<GamificationState>()))?.first {
             return existing
         }
@@ -484,12 +501,13 @@ final class GameService {
         return state
     }
 
-    private func fetchProfile() -> UserProfile? {
+    func fetchProfile() -> UserProfile? {
         (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first
     }
 
     private func updateDayLog(for date: Date, addingKcal kcal: Int, xp: Int) {
-        let dayStart = Self.calendar.startOfDay(for: date)
+        // Normalisation canonique : DayLog.day n'est JAMAIS écrit autrement.
+        let dayStart = Self.dayKey(for: date)
         let predicate = #Predicate<DayLog> { $0.day == dayStart }
         if let log = (try? modelContext.fetch(FetchDescriptor(predicate: predicate)))?.first {
             // max(0, …) : les deltas négatifs (édition/suppression) ne créent jamais
@@ -507,7 +525,7 @@ final class GameService {
         }
     }
 
-    private func fetchMeals(from start: Date, to end: Date) -> [MealEntry] {
+    func fetchMeals(from start: Date, to end: Date) -> [MealEntry] {
         let predicate = #Predicate<MealEntry> { $0.date >= start && $0.date < end }
         return (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
     }

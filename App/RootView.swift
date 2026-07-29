@@ -16,6 +16,7 @@ struct RootView: View {
 
 private struct MainTabView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(GameService.self) private var gameService
     @Query private var profiles: [UserProfile]
 
     /// Jour courant (minuit local). HomeView fige ses bornes "aujourd'hui" à sa création :
@@ -50,18 +51,25 @@ private struct MainTabView: View {
         }
         .tint(Theme.orange)
         .onAppear {
-            dayKey = Self.currentDayKey()
             // Lancement à froid directement en .active : onChange ne se déclenche
-            // pas — on re-planifie aussi ici.
-            rescheduleReminders()
+            // pas — on exécute aussi le rattrapage ici.
+            onForeground()
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
-                dayKey = Self.currentDayKey()
-                // Re-planifie les rappels à chaque retour au premier plan :
-                // les textes tirés de la banque se renouvellent (spec §10).
-                rescheduleReminders()
+                onForeground()
             }
+        }
+    }
+
+    /// Rattrapage au premier plan (spec §9) — ORDRE contractuel :
+    /// 1. clôture des journées passées (XP, DayLogs, renouvellement des quêtes),
+    /// 2. re-planification des rappels (les textes de la banque se renouvellent, spec §10).
+    private func onForeground() {
+        dayKey = Self.currentDayKey()
+        Task {
+            await gameService.closeOpenDays()
+            rescheduleReminders()
         }
     }
 
@@ -72,7 +80,7 @@ private struct MainTabView: View {
     }
 
     private static func currentDayKey() -> Date {
-        GameService.calendar.startOfDay(for: .now)
+        GameService.dayKey(for: .now)
     }
 }
 
