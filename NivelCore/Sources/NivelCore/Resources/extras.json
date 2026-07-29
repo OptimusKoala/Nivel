@@ -1,0 +1,8 @@
+[
+  {"id": "dessert_light",   "name": "Dessert léger",    "emoji": "🍎", "kcal": 150, "category": "dessert"},
+  {"id": "dessert_rich",    "name": "Dessert gourmand", "emoji": "🍰", "kcal": 300, "category": "dessert"},
+  {"id": "water",           "name": "Eau",              "emoji": "💧", "kcal": 0,   "category": "drink"},
+  {"id": "beer",            "name": "Bière",            "emoji": "🍺", "kcal": 150, "category": "drink"},
+  {"id": "wine",            "name": "Vin (verre)",      "emoji": "🍷", "kcal": 120, "category": "drink"},
+  {"id": "soda",            "name": "Soda",             "emoji": "🥤", "kcal": 140, "category": "drink"}
+]

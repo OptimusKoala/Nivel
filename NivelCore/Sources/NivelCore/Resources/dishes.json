@@ -1,0 +1,18 @@
+[
+  {"id": "pasta",        "name": "Pâtes",                    "emoji": "🍝", "kcal": 650, "slots": ["lunch", "dinner"]},
+  {"id": "rice",         "name": "Riz / féculents",          "emoji": "🍚", "kcal": 550, "slots": ["lunch", "dinner"]},
+  {"id": "salad",        "name": "Salade composée",          "emoji": "🥗", "kcal": 350, "slots": ["lunch", "dinner"]},
+  {"id": "veggies",      "name": "Légumes + protéine",       "emoji": "🥦", "kcal": 450, "slots": ["lunch", "dinner"]},
+  {"id": "red_meat",     "name": "Viande rouge + accomp.",   "emoji": "🥩", "kcal": 700, "slots": ["lunch", "dinner"]},
+  {"id": "fish",         "name": "Poisson + accomp.",        "emoji": "🐟", "kcal": 500, "slots": ["lunch", "dinner"]},
+  {"id": "pizza",        "name": "Pizza",                    "emoji": "🍕", "kcal": 900, "slots": ["lunch", "dinner"]},
+  {"id": "soup",         "name": "Soupe",                    "emoji": "🍲", "kcal": 300, "slots": ["lunch", "dinner"]},
+  {"id": "sandwich",     "name": "Sandwich",                 "emoji": "🥪", "kcal": 550, "slots": ["lunch", "snack"]},
+  {"id": "stew",         "name": "Plat mijoté",              "emoji": "🍛", "kcal": 600, "slots": ["lunch", "dinner"]},
+  {"id": "fast_food",    "name": "Fast-food",                "emoji": "🍔", "kcal": 950, "slots": ["lunch", "dinner"]},
+  {"id": "toast",        "name": "Tartines",                 "emoji": "🍞", "kcal": 350, "slots": ["breakfast"]},
+  {"id": "cereal",       "name": "Céréales",                 "emoji": "🥣", "kcal": 400, "slots": ["breakfast"]},
+  {"id": "pastry",       "name": "Viennoiserie",             "emoji": "🥐", "kcal": 300, "slots": ["breakfast", "snack"]},
+  {"id": "yogurt_fruit", "name": "Yaourt & fruits",          "emoji": "🍓", "kcal": 200, "slots": ["breakfast", "snack"]},
+  {"id": "other",        "name": "Autre",                    "emoji": "🍽️", "kcal": 600, "slots": ["breakfast", "lunch", "dinner", "snack"]}
+]
