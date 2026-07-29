@@ -38,7 +38,10 @@ private struct MainTabView: View {
                 .id(dayKey)
                 .tabItem { Label("Progrès", systemImage: "chart.line.uptrend.xyaxis") }
 
-            PlaceholderScreen(title: "Quêtes")
+            // .id(dayKey) : le refresh des quêtes (.task) repart au changement de jour
+            // (retour au premier plan après minuit — dont le lundi de renouvellement).
+            QuestsView()
+                .id(dayKey)
                 .tabItem { Label("Quêtes", systemImage: "trophy.fill") }
 
             PlaceholderScreen(title: "Réglages")

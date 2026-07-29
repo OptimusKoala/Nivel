@@ -18,6 +18,7 @@
 		5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67EB506351740B5EC992E309 /* AppSmokeTests.swift */; };
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
 		75ADB553C3E21774DAF18E6A /* XPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D37C5B43BABA7C97A669DA /* XPBar.swift */; };
+		7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */; };
 		83A569C9282E797637B0C790 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D09557663FBEA7185F1839 /* HomeView.swift */; };
 		8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */; };
 		8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96415D84EF698197C100E80 /* WeightChart.swift */; };
@@ -76,6 +77,7 @@
 		C9AB33328B42B0A39E65B608 /* NivelTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9245CF3C47048DB9D88C2E5 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
 		DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesChart.swift; sourceTree = "<group>"; };
+		DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestsView.swift; sourceTree = "<group>"; };
 		E59866C500AE8AE430E9AE18 /* StepsChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsChart.swift; sourceTree = "<group>"; };
 		EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -111,6 +113,7 @@
 				F0105491AB027C5B9444D071 /* Meals */,
 				C11BEB0DAAA03380C6ACF16B /* Onboarding */,
 				0B4F6F76ABBD14348F01E9E5 /* Progress */,
+				6D8B05E92C0C472AB7A4E3AA /* Quests */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -156,6 +159,14 @@
 				1650BF6569EF9968A290ED20 /* Views */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		6D8B05E92C0C472AB7A4E3AA /* Quests */ = {
+			isa = PBXGroup;
+			children = (
+				DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */,
+			);
+			path = Quests;
 			sourceTree = "<group>";
 		};
 		BFF6958B815AC1E48D671C2E = {
@@ -330,6 +341,7 @@
 				DAAD239CC8C1DACA809A05DF /* OnboardingFlow.swift in Sources */,
 				98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */,
 				D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */,
+				7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */,
 				CA44B39964325597C05E92A6 /* RootView.swift in Sources */,
 				8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */,
 				CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */,
