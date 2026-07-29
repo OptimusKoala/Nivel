@@ -6,6 +6,20 @@
 import SwiftUI
 
 struct CelebrationsHost: ViewModifier {
+    /// Toutes les durées de l'orchestration au même endroit.
+    private enum Timing {
+        /// Auto-dismiss d'une bannière badge/quête (spec Task 19 : ~3 s).
+        static let bannerDuration: Duration = .seconds(3)
+        /// Transition d'entrée d'une célébration (spring doux, léger settle).
+        static let presentAnimation: Animation = .spring(response: 0.35, dampingFraction: 0.8)
+        /// Transition de sortie d'une célébration.
+        static let dismissTransition: Double = 0.25
+        /// Pause après un dismiss avant de dépiler la suivante :
+        /// sortie (0,25 s) + un temps de respiration — les célébrations
+        /// s'enchaînent séquentiellement, pas en fondu croisé.
+        static let postDismissDelay: Duration = .milliseconds(400)
+    }
+
     @Environment(GameService.self) private var game
 
     /// Célébration actuellement affichée (nil = rien) — la file reste dans GameService.
@@ -13,6 +27,8 @@ struct CelebrationsHost: ViewModifier {
     /// Message de Nivelito du level-up courant, calculé UNE fois au dépilage
     /// (`nivelitoSays` persiste le dernier message utilisé — pas d'appel dans body).
     @State private var levelUpMessage = ""
+    /// Dépilage différé post-dismiss — suivi pour être annulé si l'hôte disparaît.
+    @State private var advanceTask: Task<Void, Never>?
 
     func body(content: Content) -> some View {
         content
@@ -20,10 +36,12 @@ struct CelebrationsHost: ViewModifier {
                 if let banner = bannerContent {
                     CelebrationBanner(emoji: banner.emoji, text: banner.text)
                         .transition(.move(edge: .top).combined(with: .opacity))
-                        // id : chaque bannière a SON minuteur de 3 s (une seconde
-                        // bannière enchaînée repart de zéro).
+                        // Un tap ferme tout de suite (3 badges enchaînés ≠ 9 s subies).
+                        .onTapGesture { dismiss() }
+                        // id : chaque bannière a SON minuteur (une seconde bannière
+                        // enchaînée repart de zéro).
                         .task(id: current?.id) {
-                            try? await Task.sleep(for: .seconds(3))
+                            try? await Task.sleep(for: Timing.bannerDuration)
                             guard !Task.isCancelled else { return }
                             dismiss()
                         }
@@ -37,8 +55,11 @@ struct CelebrationsHost: ViewModifier {
             }
             .onAppear { presentNextIfIdle() }
             // Dès qu'une célébration est levée (repas, pesée, clôture de journée…)
-            // et que rien n'est affiché, on dépile.
+            // et que rien n'est affiché, on dépile. NB : un dismiss ne modifie pas
+            // `count` (le dépilage a eu lieu à la présentation) → ce onChange ne
+            // couvre que les RAISE ; l'après-dismiss passe par le Task de dismiss().
             .onChange(of: game.pendingCelebrations.count) { _, _ in presentNextIfIdle() }
+            .onDisappear { advanceTask?.cancel() }
     }
 
     private var bannerContent: (emoji: String, text: String)? {
@@ -54,19 +75,21 @@ struct CelebrationsHost: ViewModifier {
         if case .levelUp(let level) = next {
             levelUpMessage = game.nivelitoSays(context: .levelUp, value: level)
         }
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+        withAnimation(Timing.presentAnimation) {
             current = next
         }
     }
 
     private func dismiss() {
-        withAnimation(.easeOut(duration: 0.25)) {
+        withAnimation(.easeOut(duration: Timing.dismissTransition)) {
             current = nil
         }
-        // Laisse la transition de sortie se jouer, puis regarde s'il reste
-        // quelque chose dans la file (présentation séquentielle).
-        Task {
-            try? await Task.sleep(for: .milliseconds(400))
+        // SEUL chemin de dépilage post-dismiss (voir le NB sur onChange) : laisse
+        // la transition de sortie se jouer, puis regarde s'il reste quelque chose.
+        advanceTask?.cancel()
+        advanceTask = Task {
+            try? await Task.sleep(for: Timing.postDismissDelay)
+            guard !Task.isCancelled else { return }
             presentNextIfIdle()
         }
     }

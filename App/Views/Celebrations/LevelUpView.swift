@@ -107,6 +107,9 @@ struct LevelUpView: View {
     /// (le rebond de la mascotte de l'accueil est déjà géré là-bas, pas de doublon).
     @State private var bounceTrigger = 0
 
+    /// Cadence des petits sauts de joie répétés (le rebond lui-même dure ~1 s).
+    private static let bounceInterval: Duration = .seconds(1.6)
+
     var body: some View {
         ZStack {
             Theme.background.opacity(0.95)
@@ -153,7 +156,7 @@ struct LevelUpView: View {
             // Petits rebonds répétés tant que l'écran est visible (saut de joie, spec §7.1).
             guard !reduceMotion else { return }
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(1.6))
+                try? await Task.sleep(for: Self.bounceInterval)
                 guard !Task.isCancelled else { return }
                 bounceTrigger += 1
             }
