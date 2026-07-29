@@ -7,6 +7,7 @@ import Foundation
 import UserNotifications
 import NivelCore
 
+@MainActor
 enum NotificationService {
     /// Un rappel planifiable : identifiant stable (clé de `profile.remindersEnabled`),
     /// horaire, et contexte de la banque de messages.
@@ -27,49 +28,64 @@ enum NotificationService {
         Reminder(id: "steps", hour: 18, minute: 0, weekday: nil, context: .stepsEncouragement),
     ]
 
+    /// Sérialisation des re-planifications : chaque appel incrémente la génération ;
+    /// une invocation devenue obsolète après son await (retour au premier plan +
+    /// toggle quasi simultanés) est abandonnée — seul le dernier instantané gagne.
+    private static var generation = 0
+
     /// Supprime toutes les demandes en attente puis re-planifie chaque rappel ACTIF
     /// avec un texte frais de la banque (tirage aléatoire — varie à chaque appel).
     /// Si les notifications sont refusées : ne fait rien (jamais de crash).
     ///
-    /// ⚠️ Le closure de `getNotificationSettings` s'exécute hors du main actor :
-    /// on capture ici les valeurs simples du profil (@Model non-Sendable) AVANT.
+    /// L'instantané des champs du profil (@Model non-Sendable) est capturé ICI,
+    /// avant tout passage asynchrone.
     static func reschedule(for profile: UserProfile) {
         let name = profile.name
         let enabled = profile.remindersEnabled
+        generation += 1
+        let gen = generation
+        Task { await perform(name: name, enabled: enabled, generation: gen) }
+    }
+
+    private static func perform(name: String, enabled: [String: Bool], generation gen: Int) async {
         let center = UNUserNotificationCenter.current()
+        let settings = await center.notificationSettings()
 
-        center.getNotificationSettings { settings in
-            guard settings.authorizationStatus == .authorized
-                    || settings.authorizationStatus == .provisional else { return }
+        // Un appel plus récent est passé pendant l'await → cet instantané est périmé.
+        guard gen == generation else { return }
+        guard settings.authorizationStatus == .authorized
+                || settings.authorizationStatus == .provisional else { return }
 
-            center.removeAllPendingNotificationRequests()
+        // Banque chargée une fois par re-planification (un tirage par rappel).
+        let bank = try? MessageBank.load()
 
-            // Banque chargée une fois par re-planification (un tirage par rappel).
-            let bank = try? MessageBank.load()
+        // removeAll + adds SYNCHRONES (aucun await entre les deux) : le bloc est
+        // atomique du point de vue du main actor — aucun entrelacement possible.
+        center.removeAllPendingNotificationRequests()
+        for reminder in reminders where enabled[reminder.id] == true {
+            let content = UNMutableNotificationContent()
+            content.title = "Nivelito 🧡"
+            content.body = bank?.pick(
+                context: reminder.context,
+                excluding: nil,
+                name: name,
+                value: nil
+            ).text ?? "Petit coucou de Nivelito 🧡"
+            content.sound = .default
 
-            for reminder in reminders where enabled[reminder.id] == true {
-                let content = UNMutableNotificationContent()
-                content.title = "Nivelito 🧡"
-                content.body = bank?.pick(
-                    context: reminder.context,
-                    excluding: nil,
-                    name: name,
-                    value: nil
-                ).text ?? "Petit coucou de Nivelito 🧡"
-                content.sound = .default
+            var components = DateComponents()
+            components.hour = reminder.hour
+            components.minute = reminder.minute
+            components.weekday = reminder.weekday
 
-                var components = DateComponents()
-                components.hour = reminder.hour
-                components.minute = reminder.minute
-                components.weekday = reminder.weekday
-
-                let request = UNNotificationRequest(
-                    identifier: reminder.id,
-                    content: content,
-                    trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-                )
-                center.add(request)
-            }
+            let request = UNNotificationRequest(
+                identifier: reminder.id,
+                content: content,
+                trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+            )
+            // Variante à completion (et non l'overload async) : l'ajout reste
+            // synchrone → pas de point de suspension dans le bloc removeAll + adds.
+            center.add(request, withCompletionHandler: nil)
         }
     }
 }

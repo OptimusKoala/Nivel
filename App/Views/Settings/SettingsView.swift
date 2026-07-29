@@ -251,25 +251,31 @@ private struct SettingsContent: View {
 
     // MARK: - Santé
 
+    // iOS ne révèle jamais si une autorisation de LECTURE Santé a été accordée ou
+    // refusée (confidentialité) — on ne prétend donc jamais "Activé" : copie neutre.
     private var healthSection: some View {
         section("Santé") {
-            row("Accès aux pas") {
-                Text(health.isAvailable ? "Activé" : "Non activé")
-                    .font(.headline)
-                    .foregroundStyle(health.isAvailable ? Theme.green : Theme.subtext)
-            }
-            if !health.isAvailable {
+            if health.isAvailable {
+                Text("Lecture des pas configurée — si tes pas n'apparaissent pas, vérifie dans Réglages > Santé.")
+                    .font(.caption)
+                    .foregroundStyle(Theme.subtext)
+            } else {
+                row("Accès aux pas") {
+                    Text("Non activé")
+                        .font(.headline)
+                        .foregroundStyle(Theme.subtext)
+                }
                 Text("Autorise la lecture des pas dans Réglages → Confidentialité → Santé.")
                     .font(.caption)
                     .foregroundStyle(Theme.subtext)
-                Button("Ouvrir les Réglages") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        openURL(url)
-                    }
-                }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Theme.orange)
             }
+            Button("Ouvrir les Réglages") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    openURL(url)
+                }
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Theme.orange)
         }
     }
 
@@ -330,8 +336,11 @@ private struct SettingsContent: View {
     }
 
     private func applyRecalc(_ target: Int) {
-        profile.dailyCalorieTarget = target
-        kcalText = String(target)
+        // Même garde-fou que la saisie manuelle (CalorieCalculator a déjà ses
+        // planchers, mais l'objectif persisté reste borné quoi qu'il arrive).
+        let clamped = min(max(target, Self.kcalRange.lowerBound), Self.kcalRange.upperBound)
+        profile.dailyCalorieTarget = clamped
+        kcalText = String(clamped)
         save()
     }
 

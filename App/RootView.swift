@@ -49,16 +49,25 @@ private struct MainTabView: View {
                 .tabItem { Label("Réglages", systemImage: "gearshape.fill") }
         }
         .tint(Theme.orange)
-        .onAppear { dayKey = Self.currentDayKey() }
+        .onAppear {
+            dayKey = Self.currentDayKey()
+            // Lancement à froid directement en .active : onChange ne se déclenche
+            // pas — on re-planifie aussi ici.
+            rescheduleReminders()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 dayKey = Self.currentDayKey()
                 // Re-planifie les rappels à chaque retour au premier plan :
                 // les textes tirés de la banque se renouvellent (spec §10).
-                if let profile = profiles.first {
-                    NotificationService.reschedule(for: profile)
-                }
+                rescheduleReminders()
             }
+        }
+    }
+
+    private func rescheduleReminders() {
+        if let profile = profiles.first {
+            NotificationService.reschedule(for: profile)
         }
     }
 
