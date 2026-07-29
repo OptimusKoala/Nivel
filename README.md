@@ -8,6 +8,14 @@
 
 Le tout est accompagné de **Nivelito**, un petit panda roux qui commente la journée avec bienveillance (et qui sert d'icône à l'app).
 
+## Captures
+
+| <img src="docs/captures/appicon-256.png" alt="Icône de l'app Nivel" width="200"/> | <img src="docs/captures/splash.png" alt="Écran de démarrage de Nivel" width="220"/> |
+|:---:|:---:|
+| L'icône de l'app : Nivelito sur fond crème. | L'écran de démarrage, avec Nivelito qui t'accueille. |
+
+*(davantage de captures après installation sur iPhone)*
+
 ## Architecture
 
 - **`NivelCore/`** — package Swift **pur** (aucune dépendance UI ni SwiftData) : calculs de calories, XP, niveaux, quêtes, badges, tendance de poids, banque de messages. Entièrement testé avec `swift test`.

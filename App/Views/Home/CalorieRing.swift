@@ -42,7 +42,7 @@ struct CalorieRingCard: View {
                     .foregroundStyle(Theme.text)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
-                Text("/ \(target.frFormatted) kcal")
+                Text("/ ~\(target.frFormatted) kcal")
                     .font(.caption2)
                     .foregroundStyle(Theme.subtext)
             }
