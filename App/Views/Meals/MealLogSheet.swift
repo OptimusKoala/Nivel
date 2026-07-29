@@ -48,8 +48,6 @@ struct MealLogSheet: View {
 
     /// Entrée existante en mode édition — nil pour un nouveau log.
     private let editedEntry: MealEntry?
-    /// Appelé après un NOUVEAU log validé (l'accueil affiche la bulle `afterMealLog`).
-    private let onLogged: (() -> Void)?
 
     private let dishes: [Dish]
     private let desserts: [Extra]
@@ -64,9 +62,8 @@ struct MealLogSheet: View {
     @State private var showAllDishes = false
     @State private var isSaving = false
 
-    init(entry: MealEntry? = nil, onLogged: (() -> Void)? = nil) {
+    init(entry: MealEntry? = nil) {
         self.editedEntry = entry
-        self.onLogged = onLogged
         // Catalogues du bundle — vides si corrompus (jamais de crash), comme GameService.
         let dishes = (try? Catalogs.dishes()) ?? []
         let extras = (try? Catalogs.extras()) ?? []
@@ -381,8 +378,8 @@ struct MealLogSheet: View {
                 Text("Estimation")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(Theme.subtext)
-                // "≈" et "~" : estimation honnête, jamais présentée comme exacte (spec §13).
-                Text(estimatedKcal.map { "≈ \($0.frFormatted) kcal" } ?? "≈ — kcal")
+                // "~" : estimation honnête, jamais présentée comme exacte (spec §13).
+                Text(estimatedKcal.map { "~ \($0.frFormatted) kcal" } ?? "~ — kcal")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.text)
                     .contentTransition(.numericText())
@@ -420,8 +417,9 @@ struct MealLogSheet: View {
                 await game.updateMeal(entry: entry, slot: slot, dish: dish,
                                       portion: portion, extras: selectedExtras)
             } else {
+                // logMeal lève le signal `mealJustLogged` — l'accueil affichera
+                // la bulle afterMealLog, que le log vienne d'ici ou du journal.
                 await game.logMeal(slot: slot, dish: dish, portion: portion, extras: selectedExtras)
-                onLogged?()
             }
             dismiss()
         }

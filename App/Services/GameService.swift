@@ -47,6 +47,10 @@ final class GameService {
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
 
+    /// Signal "un repas vient d'être loggé" (peu importe l'onglet d'origine) —
+    /// consommé par l'accueil pour afficher la bulle `afterMealLog` (spec §4.2).
+    var mealJustLogged = false
+
     /// Compteur MONOTONE de célébrations levées (jamais décrémenté) — à utiliser comme
     /// `celebrationTrigger` de NivelitoView : le dépilage de la file (Task 19) ne doit
     /// pas re-déclencher de rebond.
@@ -130,6 +134,7 @@ final class GameService {
         modelContext.insert(entry)
         state.totalXP += xp
         updateDayLog(for: date, addingKcal: kcal, xp: xp)
+        mealJustLogged = true
 
         await refreshQuestProgress()
         evaluateBadges(state: state)
@@ -160,6 +165,7 @@ final class GameService {
     /// Met à jour un repas existant (édition "le jour même", spec §4.2) : recalcule les
     /// kcal et ajuste le DayLog du jour — SANS ré-attribuer d'XP (`xpAwarded` inchangé,
     /// le plafond 4 repas/jour reste dérivé des entrées persistées).
+    /// L'édition peut compléter une quête (+150 XP) → badges et level-up sont réévalués.
     func updateMeal(
         entry: MealEntry,
         slot: MealSlot,
@@ -167,6 +173,10 @@ final class GameService {
         portion: Portion,
         extras: [(Extra, Int)] = []
     ) async {
+        assert(Self.calendar.isDateInToday(entry.date), "update/delete réservés au jour même")
+        let state = fetchOrCreateState()
+        let levelBefore = LevelSystem.level(forXP: state.totalXP)
+
         let previousKcal = entry.estimatedKcal
         let kcal = MealEstimator.estimate(dish: dish, portion: portion, extras: extras)
         entry.slot = slot
@@ -178,16 +188,26 @@ final class GameService {
         updateDayLog(for: entry.date, addingKcal: kcal - previousKcal, xp: 0)
 
         await refreshQuestProgress()
+        evaluateBadges(state: state)
+        detectLevelUp(state: state, levelBefore: levelBefore)
         saveOrAssert()
     }
 
     /// Supprime un repas (jour même) : soustrait ses kcal du DayLog du jour.
     /// L'XP déjà attribué est CONSERVÉ — jamais de retrait d'XP (spec §7.1, bienveillance).
     func deleteMeal(entry: MealEntry) async {
+        assert(Self.calendar.isDateInToday(entry.date), "update/delete réservés au jour même")
+        let state = fetchOrCreateState()
+        let levelBefore = LevelSystem.level(forXP: state.totalXP)
+
         updateDayLog(for: entry.date, addingKcal: -entry.estimatedKcal, xp: 0)
         modelContext.delete(entry)
 
+        // Le refresh peut encore COMPLÉTER une quête (les jours "sans alcool"/"dessert
+        // léger" peuvent devenir qualifiants après suppression) → badges + level-up.
         await refreshQuestProgress()
+        evaluateBadges(state: state)
+        detectLevelUp(state: state, levelBefore: levelBefore)
         saveOrAssert()
     }
 

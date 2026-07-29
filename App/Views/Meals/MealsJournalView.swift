@@ -9,10 +9,13 @@ import NivelCore
 
 struct MealsJournalView: View {
     @Environment(GameService.self) private var game
-    @Query(sort: \MealEntry.date) private var allMeals: [MealEntry]
+    @Environment(\.modelContext) private var modelContext
     @Query private var profiles: [UserProfile]
 
     @State private var selectedDay = GameService.calendar.startOfDay(for: .now)
+    /// Repas du jour sélectionné — fetch BORNÉ au jour (pas de @Query sur tout
+    /// l'historique), rechargé au changement de jour et après chaque mutation.
+    @State private var dayMeals: [MealEntry] = []
     @State private var editingEntry: MealEntry?
     @State private var showNewMeal = false
 
@@ -33,10 +36,6 @@ struct MealsJournalView: View {
     private var calendar: Calendar { GameService.calendar }
     private var today: Date { calendar.startOfDay(for: .now) }
     private var isToday: Bool { selectedDay == today }
-
-    private var dayMeals: [MealEntry] {
-        allMeals.filter { calendar.isDate($0.date, inSameDayAs: selectedDay) }
-    }
 
     private var mealsBySlot: [MealSlot: [MealEntry]] {
         Dictionary(grouping: dayMeals, by: \.slot)
@@ -72,12 +71,26 @@ struct MealsJournalView: View {
             }
             .padding(.top, 8)
         }
-        .sheet(item: $editingEntry) { entry in
+        // Recharge au premier affichage ET à chaque changement de jour.
+        .task(id: selectedDay) { reloadDayMeals() }
+        // Les sheets mutent le store (log/édition) → recharge à la fermeture.
+        .sheet(item: $editingEntry, onDismiss: reloadDayMeals) { entry in
             MealLogSheet(entry: entry)
         }
-        .sheet(isPresented: $showNewMeal) {
+        .sheet(isPresented: $showNewMeal, onDismiss: reloadDayMeals) {
             MealLogSheet()
         }
+    }
+
+    /// Fetch borné au jour sélectionné, trié par heure.
+    private func reloadDayMeals() {
+        let start = selectedDay
+        guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return }
+        let descriptor = FetchDescriptor<MealEntry>(
+            predicate: #Predicate { $0.date >= start && $0.date < end },
+            sortBy: [SortDescriptor(\.date)]
+        )
+        dayMeals = (try? modelContext.fetch(descriptor)) ?? []
     }
 
     // MARK: Navigation par jour
@@ -123,7 +136,7 @@ struct MealsJournalView: View {
                 .foregroundStyle(Theme.subtext)
             Spacer()
             // Dépassement en ACCENT, jamais en rouge (spec §7.4).
-            Text("≈ \(totalKcal.frFormatted) / \(targetKcal.frFormatted) kcal")
+            Text("~ \(totalKcal.frFormatted) / \(targetKcal.frFormatted) kcal")
                 .font(.system(size: 17, weight: .bold, design: .rounded))
                 .foregroundStyle(targetKcal > 0 && totalKcal > targetKcal ? Theme.accent : Theme.text)
         }
@@ -183,7 +196,10 @@ struct MealsJournalView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             if isToday {
                 Button {
-                    Task { await game.deleteMeal(entry: entry) }
+                    Task {
+                        await game.deleteMeal(entry: entry)
+                        reloadDayMeals()
+                    }
                 } label: {
                     Label("Supprimer", systemImage: "trash")
                 }

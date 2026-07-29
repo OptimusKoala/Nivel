@@ -74,13 +74,8 @@ struct HomeView: View {
         }
         .onAppear(perform: updateBubble)
         .task { await refresh() }
-        .sheet(isPresented: $showMealLog) {
-            MealLogSheet(onLogged: {
-                // Bulle "après log" (spec §4.2) : forcée même si la tranche horaire
-                // n'a pas changé — c'est un événement, pas une salutation.
-                lastBubbleContext = .afterMealLog
-                bubbleText = game.nivelitoSays(context: .afterMealLog)
-            })
+        .sheet(isPresented: $showMealLog, onDismiss: updateBubble) {
+            MealLogSheet()
         }
     }
 
@@ -95,6 +90,15 @@ struct HomeView: View {
     /// nouvelle tranche horaire…) : les retours sur l'onglet ne font pas churner le
     /// message, mais un événement survenu entre-temps est bien reflété.
     private func updateBubble() {
+        // Bulle "après log" prioritaire (spec §4.2) : signal consommé une seule fois,
+        // quel que soit l'onglet d'origine du log (sheet de l'accueil OU journal Repas —
+        // le retour sur l'accueil repasse par onAppear).
+        if game.mealJustLogged {
+            game.mealJustLogged = false
+            lastBubbleContext = .afterMealLog
+            bubbleText = game.nivelitoSays(context: .afterMealLog)
+            return
+        }
         let (context, value) = game.homeMessageContext()
         guard context != lastBubbleContext else { return }
         lastBubbleContext = context
