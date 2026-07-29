@@ -419,8 +419,8 @@ struct MealLogSheet: View {
                 await game.updateMeal(entry: entry, slot: slot, dish: dish,
                                       portion: portion, extras: selectedExtras)
             } else {
-                // logMeal lève le signal `mealJustLogged` — l'accueil affichera
-                // la bulle afterMealLog, que le log vienne d'ici ou du journal.
+                // logMeal publie `lastMealXPAwarded` — l'accueil affichera la bulle
+                // afterMealLog (+XP), que le log vienne d'ici ou du journal.
                 await game.logMeal(slot: slot, dish: dish, portion: portion, extras: selectedExtras)
             }
             dismiss()

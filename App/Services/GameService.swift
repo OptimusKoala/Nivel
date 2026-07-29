@@ -53,9 +53,11 @@ final class GameService {
     /// `scenePhase == .active` peuvent se déclencher en rafale au lancement.
     var isClosingDays = false
 
-    /// Signal "un repas vient d'être loggé" (peu importe l'onglet d'origine) —
-    /// consommé par l'accueil pour afficher la bulle `afterMealLog` (spec §4.2).
-    var mealJustLogged = false
+    /// XP attribué au repas qui VIENT d'être loggé (peu importe l'onglet d'origine),
+    /// nil sinon — consommé par l'accueil pour la bulle `afterMealLog`, dont certains
+    /// messages contiennent "+{value} XP" (spec §4.2). 0 = repas loggé mais XP plafonné
+    /// (5ᵉ repas du jour) : l'accueil n'affiche alors PAS de bulle de récompense.
+    var lastMealXPAwarded: Int?
 
     /// Compteur MONOTONE de célébrations levées (jamais décrémenté) — à utiliser comme
     /// `celebrationTrigger` de NivelitoView : le dépilage de la file (Task 19) ne doit
@@ -161,7 +163,7 @@ final class GameService {
         modelContext.insert(entry)
         state.totalXP += xp
         updateDayLog(for: date, addingKcal: kcal, xp: xp)
-        mealJustLogged = true
+        lastMealXPAwarded = xp
 
         await refreshQuestProgress()
         evaluateBadges(state: state)
@@ -452,9 +454,11 @@ final class GameService {
         return await stepsService.dailySteps(from: start, to: end) ?? [:]
     }
 
-    /// Contexte du message d'accueil de Nivelito (spec §4.1) : priorité aux événements
-    /// du jour — level-up en attente, badge en attente ou débloqué aujourd'hui — sinon
-    /// salutation horaire (matin < 12 h, midi 12-18 h, soir ≥ 18 h).
+    /// Contexte du message d'accueil de Nivelito (spec §4.1, §8), par priorité :
+    /// 1. événements du jour — level-up en attente, badge en attente ou débloqué aujourd'hui ;
+    /// 2. retour après absence (dernier repas loggé il y a ≥ 3 jours) ;
+    /// 3. soirée au-dessus de l'objectif (déculpabilisant, jamais de reproche) ;
+    /// 4. salutation horaire (matin < 12 h, midi 12-18 h, soir ≥ 18 h).
     func homeMessageContext(now: Date = .now) -> (context: MessageContext, value: Int?) {
         for celebration in pendingCelebrations {
             if case .levelUp(let level) = celebration { return (.levelUp, level) }
@@ -466,11 +470,45 @@ final class GameService {
         if state.badgeUnlocks.values.contains(where: { Self.calendar.isDate($0, inSameDayAs: now) }) {
             return (.badge, nil)
         }
-        switch Self.calendar.component(.hour, from: now) {
+
+        // Comeback : au moins un repas loggé un jour, et le dernier date d'il y a ≥ 3 jours.
+        if let lastMeal = latestMealDate(),
+           let days = Self.calendar.dateComponents(
+               [.day],
+               from: Self.calendar.startOfDay(for: lastMeal),
+               to: Self.calendar.startOfDay(for: now)
+           ).day,
+           days >= 3 {
+            return (.comeback, nil)
+        }
+
+        let hour = Self.calendar.component(.hour, from: now)
+
+        // Objectif dépassé en soirée → message qui dédramatise (spec §8 : zéro culpabilité).
+        if hour >= 18,
+           let target = fetchProfile()?.dailyCalorieTarget, target > 0,
+           kcalEaten(on: now) > target {
+            return (.overTarget, nil)
+        }
+
+        switch hour {
         case ..<12: return (.morning, nil)
         case ..<18: return (.midday, nil)
         default: return (.evening, nil)
         }
+    }
+
+    /// Date du repas le plus récent, tous jours confondus — nil si aucun repas loggé.
+    private func latestMealDate() -> Date? {
+        var descriptor = FetchDescriptor<MealEntry>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return (try? modelContext.fetch(descriptor))?.first?.date
+    }
+
+    /// Total mangé (somme des MealEntry) du jour contenant `date`.
+    private func kcalEaten(on date: Date) -> Int {
+        guard let (start, end) = dayBounds(for: date) else { return 0 }
+        return fetchMeals(from: start, to: end).reduce(0) { $0 + $1.estimatedKcal }
     }
 
     // MARK: - Nivelito

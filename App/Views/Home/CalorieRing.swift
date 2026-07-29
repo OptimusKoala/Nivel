@@ -42,7 +42,9 @@ struct CalorieRingCard: View {
                     .foregroundStyle(Theme.text)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
-                Text("/ ~\(target.frFormatted) kcal")
+                // Pas de "~" sur l'objectif : c'est un budget fixé, pas une estimation
+                // (cohérent avec le journal Repas et le graphe calories).
+                Text("/ \(target.frFormatted) kcal")
                     .font(.caption2)
                     .foregroundStyle(Theme.subtext)
             }

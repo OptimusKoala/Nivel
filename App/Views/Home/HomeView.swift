@@ -92,12 +92,16 @@ struct HomeView: View {
     private func updateBubble() {
         // Bulle "après log" prioritaire (spec §4.2) : signal consommé une seule fois,
         // quel que soit l'onglet d'origine du log (sheet de l'accueil OU journal Repas —
-        // le retour sur l'accueil repasse par onAppear).
-        if game.mealJustLogged {
-            game.mealJustLogged = false
-            lastBubbleContext = .afterMealLog
-            bubbleText = game.nivelitoSays(context: .afterMealLog)
-            return
+        // le retour sur l'accueil repasse par onAppear). L'XP attribué alimente les
+        // messages "+{value} XP" ; à 0 (plafond du jour atteint), pas de bulle de
+        // récompense — on retombe sur le contexte normal ci-dessous.
+        if let mealXP = game.lastMealXPAwarded {
+            game.lastMealXPAwarded = nil
+            if mealXP > 0 {
+                lastBubbleContext = .afterMealLog
+                bubbleText = game.nivelitoSays(context: .afterMealLog, value: mealXP)
+                return
+            }
         }
         let (context, value) = game.homeMessageContext()
         guard context != lastBubbleContext else { return }

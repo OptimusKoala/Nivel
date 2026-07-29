@@ -28,6 +28,9 @@ struct RootView: View {
                     }
             }
         }
+        // Thème clair unique (spec §12) : le chrome système (tab bar, alertes,
+        // clavier) ne doit pas passer en sombre la nuit sur notre fond crème.
+        .preferredColorScheme(.light)
     }
 
     private func dismissSplash() {
