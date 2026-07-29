@@ -125,18 +125,19 @@ struct OnboardingFlow: View {
 
     private func requestHealth() {
         guard !healthAsked else { return }
+        // Drapeau posé AVANT l'await : un double-tap rapide ne relance pas la demande.
+        healthAsked = true
         Task {
             healthGranted = await HealthKitService().requestAuthorization()
-            healthAsked = true
         }
     }
 
     private func requestNotifications() {
         guard !notificationsAsked else { return }
+        notificationsAsked = true
         Task {
             _ = try? await UNUserNotificationCenter.current()
                 .requestAuthorization(options: [.alert, .sound, .badge])
-            notificationsAsked = true
         }
     }
 
@@ -173,10 +174,10 @@ struct OnboardingFlow: View {
 
         do {
             try modelContext.save()
+            NotificationService.reschedule(for: profile)
         } catch {
             assertionFailure("SwiftData save failed at onboarding: \(error)")
         }
-        NotificationService.reschedule(for: profile)
     }
 }
 
@@ -267,6 +268,9 @@ private struct InfosPage: View {
 
     @FocusState private var weightFocused: Bool
 
+    /// Borne haute de la date de naissance : au moins 13 ans.
+    private static let maxBirthDate = Calendar.current.date(byAdding: .year, value: -13, to: .now) ?? .now
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .top, spacing: 10) {
@@ -286,7 +290,7 @@ private struct InfosPage: View {
                         }
                     }
                     infoCard("Date de naissance") {
-                        DatePicker("", selection: $birthDate, in: ...Date.now, displayedComponents: .date)
+                        DatePicker("", selection: $birthDate, in: ...Self.maxBirthDate, displayedComponents: .date)
                             .datePickerStyle(.compact)
                             .labelsHidden()
                             .environment(\.locale, Locale(identifier: "fr_FR"))
