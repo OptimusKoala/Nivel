@@ -45,7 +45,8 @@ Maquette validée (`.superpowers/brainstorm/…/design-home.html`) :
 ### 4.2 Repas (journal)
 - Journal du jour par créneau : petit-déjeuner, déjeuner, dîner, encas.
 - **Flux de log en 3 étapes** (une seule feuille modale) :
-  1. Type de plat (catalogue : pâtes, riz, salade, légumes + protéine, viande rouge + accompagnement, poisson, pizza, soupe, sandwich, plat mijoté, fast-food, autre…),
+  0. Le créneau est pré-rempli d'après l'heure (avant 11 h = petit-déj, 11-15 h = déjeuner, après 18 h = dîner, sinon encas), modifiable d'un tap en tête de feuille.
+  1. Type de plat (catalogue : pâtes, riz, salade, légumes + protéine, viande rouge + accompagnement, poisson, pizza, soupe, sandwich, plat mijoté, fast-food, autre… — plus des items petit-déjeuner : tartines, céréales, viennoiserie, yaourt/fruits),
   2. Portion : léger / normal / copieux (multiplicateurs 0,7 / 1 / 1,3),
   3. Extras : dessert (léger/gourmand), boissons (eau, bière, vin, soda) avec quantité.
 - Estimation kcal affichée en direct pendant la sélection, validation en un tap.
@@ -122,6 +123,7 @@ Exemples : Première pesée · Premier repas loggé · 7 jours de journal · 30 
 - `MealEntry` : date, créneau (petit-déj/déjeuner/dîner/encas), typePlat (id catalogue), portion, extras (ids + quantités), kcalEstimées, xpAttribué.
 - `WeightEntry` : date, poidsKg.
 - `DayLog` : date, pas (snapshot du soir), kcalMangées, objectifKcalDuJour, xpGagné, objectifKcalRespecté (bool, calculé le lendemain).
+- **Traitements différés** : pas de background tasks garanties sans backend — la clôture des journées passées (snapshot de pas via l'historique HealthKit, attribution du +50 XP, calcul d'objectifKcalRespecté) et le renouvellement des quêtes du lundi s'exécutent en rattrapage au prochain passage de l'app au premier plan.
 - `GamificationState` : xpTotal, niveau, badgesDébloqués [(id, date)], quêtesActives [(id, progression, semaine)], historique quêtes complétées.
 - **Catalogues statiques** (JSON dans le bundle, pas en base) : plats + kcal, extras + kcal, badges, pool de quêtes, banque de messages Nivelito.
 
