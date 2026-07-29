@@ -140,7 +140,8 @@ final class GamificationState {
     var activeQuestIDs: [String]
     var questWeekID: String
     var questProgress: [String: Int]
-    var completedQuestIDs: [String]      // historique (pour badges)
+    var completedQuestIDs: [String]      // historique all-time, doublons permis (pour badges)
+    var completedThisWeekQuestIDs: [String] // garde anti re-récompense de la semaine courante
     var lastClosedDay: Date?
 
     init(
@@ -150,6 +151,7 @@ final class GamificationState {
         questWeekID: String = "",
         questProgress: [String: Int] = [:],
         completedQuestIDs: [String] = [],
+        completedThisWeekQuestIDs: [String] = [],
         lastClosedDay: Date? = nil
     ) {
         self.totalXP = totalXP
@@ -158,6 +160,7 @@ final class GamificationState {
         self.questWeekID = questWeekID
         self.questProgress = questProgress
         self.completedQuestIDs = completedQuestIDs
+        self.completedThisWeekQuestIDs = completedThisWeekQuestIDs
         self.lastClosedDay = lastClosedDay
     }
 }

@@ -121,6 +121,9 @@ final class GameService {
     /// Rollover : si `questWeekID` ≠ semaine courante, on ne touche à rien — le
     /// renouvellement du lundi (archivage + nouveau tirage) est le travail du
     /// DayCloser (Task 18), qui s'exécute au passage au premier plan.
+    /// ⚠️ Task 18 : au renouvellement, remettre `completedThisWeekQuestIDs = []`
+    /// (et NE PAS ré-alimenter `completedQuestIDs` — l'historique est déjà
+    /// alimenté ici au moment de la complétion).
     func refreshQuestProgress() async {
         let now = Date.now
         let state = fetchOrCreateState()
@@ -145,18 +148,23 @@ final class GameService {
         // Règle SwiftData : jamais de mutation en place des collections d'un @Model —
         // copie locale, modification, puis réassignation complète.
         var progress = state.questProgress
-        var completed = state.completedQuestIDs
+        var completedHistory = state.completedQuestIDs
+        var completedThisWeek = state.completedThisWeekQuestIDs
         for quest in activeQuests {
             let value = questValue(for: quest, week: week, mealsByDay: mealsByDay, stepsByDay: stepsByDay)
             progress[quest.id] = value
-            if value >= quest.target && !completed.contains(quest.id) {
-                completed.append(quest.id)
+            // Garde à la SEMAINE : une quête retirée une semaine ultérieure doit pouvoir
+            // re-récompenser. L'historique all-time accepte les doublons (badges).
+            if value >= quest.target && !completedThisWeek.contains(quest.id) {
+                completedThisWeek.append(quest.id)
+                completedHistory.append(quest.id)
                 state.totalXP += XPEngine.award(.questCompleted, todayCount: 0)
                 pendingCelebrations.append(.quest(quest))
             }
         }
         state.questProgress = progress
-        state.completedQuestIDs = completed
+        state.completedQuestIDs = completedHistory
+        state.completedThisWeekQuestIDs = completedThisWeek
         try? modelContext.save()
     }
 

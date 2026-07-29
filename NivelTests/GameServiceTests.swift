@@ -86,6 +86,40 @@ final class GameServiceTests: XCTestCase {
         XCTAssertEqual(sixth.xpAwarded, 0)
     }
 
+    func testRedrawnQuestReawardsXPInALaterWeek() async throws {
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
+        state.activeQuestIDs = ["weigh_in_1"] // "Pèse-toi une fois" (target 1)
+        try context.save()
+
+        // Semaine 1 : la pesée complète la quête → +150 XP, une seule fois.
+        await service.logWeight(kg: 90.0)
+        XCTAssertEqual(state.completedQuestIDs, ["weigh_in_1"])
+        XCTAssertEqual(state.completedThisWeekQuestIDs, ["weigh_in_1"])
+        let xpAfterFirstCompletion = state.totalXP
+        XCTAssertEqual(service.pendingCelebrations.count(where: { $0.id == "quest-weigh_in_1" }), 1)
+
+        // Re-refresh dans la même semaine : pas de re-récompense.
+        await service.refreshQuestProgress()
+        XCTAssertEqual(state.totalXP, xpAfterFirstCompletion)
+
+        // Simule le renouvellement du lundi (Task 18) qui retire la MÊME quête :
+        // reset du garde hebdo + progression ; l'historique all-time est conservé.
+        state.completedThisWeekQuestIDs = []
+        state.questProgress = [:]
+        try context.save()
+
+        // "Semaine 2" : la quête déjà dans l'historique doit re-récompenser.
+        await service.refreshQuestProgress()
+        XCTAssertEqual(state.totalXP, xpAfterFirstCompletion + 150)
+        XCTAssertEqual(state.completedQuestIDs, ["weigh_in_1", "weigh_in_1"])
+        XCTAssertEqual(state.completedThisWeekQuestIDs, ["weigh_in_1"])
+        XCTAssertEqual(service.pendingCelebrations.count(where: { $0.id == "quest-weigh_in_1" }), 2)
+
+        // L'historique (doublons compris) alimente le compteur de badges.
+        XCTAssertEqual(service.badgeStats().questsCompleted, 2)
+    }
+
     func testWeighInXPIsCappedOncePerDay() async throws {
         let firstXP = await service.logWeight(kg: 90.5)
         XCTAssertEqual(firstXP, 30)
