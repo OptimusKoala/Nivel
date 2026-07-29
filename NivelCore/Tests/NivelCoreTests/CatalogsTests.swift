@@ -13,4 +13,10 @@ final class CatalogsTests: XCTestCase {
         let extras = try Catalogs.extras()
         XCTAssertTrue(extras.contains { $0.id == "water" && $0.kcal == 0 })
     }
+
+    func testQuestsLoadAndIdsAreUnique() throws {
+        let quests = try Catalogs.quests()
+        XCTAssertEqual(quests.count, 15)
+        XCTAssertEqual(Set(quests.map(\.id)).count, 15)
+    }
 }
