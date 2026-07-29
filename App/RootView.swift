@@ -15,9 +15,16 @@ struct RootView: View {
 }
 
 private struct MainTabView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// Jour courant (minuit local). HomeView fige ses bornes "aujourd'hui" à sa création :
+    /// `.id(dayKey)` la recrée quand le jour change — rafraîchi au retour au premier plan.
+    @State private var dayKey = Self.currentDayKey()
+
     var body: some View {
         TabView {
             HomeView()
+                .id(dayKey)
                 .tabItem { Label("Accueil", systemImage: "house.fill") }
 
             PlaceholderScreen(title: "Repas")
@@ -33,6 +40,14 @@ private struct MainTabView: View {
                 .tabItem { Label("Réglages", systemImage: "gearshape.fill") }
         }
         .tint(Theme.orange)
+        .onAppear { dayKey = Self.currentDayKey() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { dayKey = Self.currentDayKey() }
+        }
+    }
+
+    private static func currentDayKey() -> Date {
+        GameService.calendar.startOfDay(for: .now)
     }
 }
 

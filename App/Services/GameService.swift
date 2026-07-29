@@ -47,6 +47,17 @@ final class GameService {
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
 
+    /// Compteur MONOTONE de célébrations levées (jamais décrémenté) — à utiliser comme
+    /// `celebrationTrigger` de NivelitoView : le dépilage de la file (Task 19) ne doit
+    /// pas re-déclencher de rebond.
+    private(set) var celebrationsRaised = 0
+
+    /// Point d'entrée unique pour lever une célébration (file + compteur monotone).
+    private func raise(_ celebration: Celebration) {
+        pendingCelebrations.append(celebration)
+        celebrationsRaised += 1
+    }
+
     /// Calendrier ISO 8601 (semaine commençant le lundi) — le renouvellement des quêtes
     /// "du lundi" ne doit pas dépendre du premier jour de semaine du device.
     nonisolated static let calendar: Calendar = {
@@ -195,7 +206,7 @@ final class GameService {
                 completedThisWeek.append(quest.id)
                 completedHistory.append(quest.id)
                 state.totalXP += XPEngine.award(.questCompleted, todayCount: 0)
-                pendingCelebrations.append(.quest(quest))
+                raise(.quest(quest))
             }
         }
         state.questProgress = progress
@@ -275,7 +286,7 @@ final class GameService {
         for badge in newly {
             unlocks[badge.id] = .now
             state.totalXP += XPEngine.award(.badgeUnlocked, todayCount: 0)
-            pendingCelebrations.append(.badge(badge))
+            raise(.badge(badge))
         }
         state.badgeUnlocks = unlocks
     }
@@ -397,7 +408,7 @@ final class GameService {
     private func detectLevelUp(state: GamificationState, levelBefore: Int) {
         let levelAfter = LevelSystem.level(forXP: state.totalXP)
         if levelAfter > levelBefore {
-            pendingCelebrations.append(.levelUp(levelAfter))
+            raise(.levelUp(levelAfter))
         }
     }
 

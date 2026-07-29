@@ -17,11 +17,13 @@ struct HomeView: View {
     /// (dans les deux cas la carte est masquée et l'XP prend la colonne, spec §10).
     @State private var steps: Int?
     @State private var bubbleText = ""
+    @State private var lastBubbleContext: MessageContext?
     @State private var showMealLog = false
 
     init() {
-        // Bornes du jour figées à la création de la vue : après minuit, le pull-to-refresh
-        // ou une réouverture de l'app recrée la vue — acceptable pour la v1.
+        // Bornes du jour figées à la création de la vue. Le passage de minuit est géré
+        // par le PARENT (MainTabView) qui applique `.id(dayKey)` et recrée HomeView
+        // quand le jour change (au retour au premier plan) — pas par cette vue.
         let calendar = GameService.calendar
         let start = calendar.startOfDay(for: .now)
         let end = calendar.date(byAdding: .day, value: 1, to: start) ?? start.addingTimeInterval(86_400)
@@ -70,15 +72,8 @@ struct HomeView: View {
             }
             .refreshable { await refresh() }
         }
-        .task {
-            // Message calculé une fois par apparition de l'écran (nivelitoSays persiste
-            // l'anti-répétition) ; pas recalculé à chaque changement d'onglet.
-            if bubbleText.isEmpty {
-                let (context, value) = game.homeMessageContext()
-                bubbleText = game.nivelitoSays(context: context, value: value)
-            }
-            await refresh()
-        }
+        .onAppear(perform: updateBubble)
+        .task { await refresh() }
         .sheet(isPresented: $showMealLog) {
             // Task 14 : remplacé par MealLogSheet.
             ZStack {
@@ -93,6 +88,18 @@ struct HomeView: View {
     private func refresh() async {
         await game.refreshQuestProgress()
         steps = await game.todaySteps()
+        // Le refresh peut lever une célébration → le contexte du message peut changer.
+        updateBubble()
+    }
+
+    /// Recalcule la bulle uniquement quand le CONTEXTE change (nouvelle célébration,
+    /// nouvelle tranche horaire…) : les retours sur l'onglet ne font pas churner le
+    /// message, mais un événement survenu entre-temps est bien reflété.
+    private func updateBubble() {
+        let (context, value) = game.homeMessageContext()
+        guard context != lastBubbleContext else { return }
+        lastBubbleContext = context
+        bubbleText = game.nivelitoSays(context: context, value: value)
     }
 
     // MARK: - En-tête
@@ -135,9 +142,10 @@ struct HomeView: View {
             NivelitoView(
                 expression: .happy,
                 size: 86,
-                // Une célébration mise en file pendant que l'accueil est visible fait
-                // rebondir Nivelito (l'overlay plein écran arrive en Task 19).
-                celebrationTrigger: game.pendingCelebrations.count
+                // Compteur MONOTONE : une célébration levée pendant que l'accueil est
+                // visible fait rebondir Nivelito, mais le dépilage de la file (Task 19)
+                // ne re-déclenchera rien.
+                celebrationTrigger: game.celebrationsRaised
             )
             if !bubbleText.isEmpty {
                 SpeechBubble(text: bubbleText)
@@ -160,7 +168,8 @@ struct HomeView: View {
             }
             .frame(width: 136)
         }
-        .frame(height: 210)
+        // minHeight (pas height) : les cartes peuvent grandir avec le Dynamic Type.
+        .frame(minHeight: 210)
     }
 
     // MARK: - CTA
