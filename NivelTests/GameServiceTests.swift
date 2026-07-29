@@ -169,6 +169,26 @@ final class GameServiceTests: XCTestCase {
         XCTAssertEqual(remaining.first?.slot, .dinner)
     }
 
+    func testConsumeNextCelebrationDequeuesInOrderThenEmpties() async throws {
+        let badge = try XCTUnwrap(try Catalogs.badges().first)
+        let quest = try XCTUnwrap(service.questCatalog.first)
+
+        // File vide → nil (et pas de crash).
+        XCTAssertNil(service.consumeNextCelebration())
+
+        service.pendingCelebrations = [.levelUp(2), .badge(badge), .quest(quest)]
+
+        // Dépilage FIFO : l'ordre de levée est l'ordre d'affichage.
+        XCTAssertEqual(service.consumeNextCelebration(), .levelUp(2))
+        XCTAssertEqual(service.consumeNextCelebration(), .badge(badge))
+        XCTAssertEqual(service.pendingCelebrations, [.quest(quest)])
+        XCTAssertEqual(service.consumeNextCelebration(), .quest(quest))
+
+        // File vidée → nil à nouveau.
+        XCTAssertTrue(service.pendingCelebrations.isEmpty)
+        XCTAssertNil(service.consumeNextCelebration())
+    }
+
     func testWeighInXPIsCappedOncePerDay() async throws {
         let firstXP = await service.logWeight(kg: 90.5)
         XCTAssertEqual(firstXP, 30)

@@ -16,8 +16,10 @@
 		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
 		54786F0394B67DE901FD1C19 /* MealLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3D92F71CC93D99201C361E /* MealLogSheet.swift */; };
+		57A40EADB63F64054A4795D7 /* CelebrationsHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2333A9029C3BCBFBBF4FB976 /* CelebrationsHost.swift */; };
 		5A40096E1BB5A7713251D5C1 /* NivelitoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C923A46DDC21834AB6E06D1B /* NivelitoView.swift */; };
 		5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67EB506351740B5EC992E309 /* AppSmokeTests.swift */; };
+		61E2605647D0942C07D4ED9D /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7900354E6B00D231F84DEFD2 /* SplashView.swift */; };
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
 		7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75615282503FC8044658A28 /* DayCloserTests.swift */; };
 		75ADB553C3E21774DAF18E6A /* XPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D37C5B43BABA7C97A669DA /* XPBar.swift */; };
@@ -27,6 +29,7 @@
 		8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96415D84EF698197C100E80 /* WeightChart.swift */; };
 		98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABBAD095DB88DF009C167B /* PersistentModels.swift */; };
 		9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */; };
+		AC058589EEDA0F462DF1730B /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */; };
 		CA44B39964325597C05E92A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671D6B6E3581A479FFED40C2 /* RootView.swift */; };
 		CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9245CF3C47048DB9D88C2E5 /* StatCard.swift */; };
 		D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC47BA19967A4B2085299D7 /* ProgressScreen.swift */; };
@@ -57,6 +60,7 @@
 		16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		1B870793FACF92E8A3EC300C /* Nivel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nivel.entitlements; sourceTree = "<group>"; };
 		1EACEDF64B0B6576809396B1 /* NivelitoShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoShapes.swift; sourceTree = "<group>"; };
+		2333A9029C3BCBFBBF4FB976 /* CelebrationsHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationsHost.swift; sourceTree = "<group>"; };
 		252E585F67D7801561AA6A8A /* NivelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelApp.swift; sourceTree = "<group>"; };
 		2749E47DBFD2A5D89042A89E /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
@@ -66,6 +70,7 @@
 		671D6B6E3581A479FFED40C2 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		67EB506351740B5EC992E309 /* AppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTests.swift; sourceTree = "<group>"; };
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
+		7900354E6B00D231F84DEFD2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		7FD0D49D1E0B2314767BA85A /* DayCloser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloser.swift; sourceTree = "<group>"; };
 		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NivelCore; path = NivelCore; sourceTree = SOURCE_ROOT; };
 		848BA4571516E35FCEA2402D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -78,6 +83,7 @@
 		B96415D84EF698197C100E80 /* WeightChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightChart.swift; sourceTree = "<group>"; };
 		BCBB38120226BC151CACEE2B /* CalorieRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieRing.swift; sourceTree = "<group>"; };
 		C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDashboardTests.swift; sourceTree = "<group>"; };
+		C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
 		C75615282503FC8044658A28 /* DayCloserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloserTests.swift; sourceTree = "<group>"; };
 		C923A46DDC21834AB6E06D1B /* NivelitoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoView.swift; sourceTree = "<group>"; };
 		C9AB33328B42B0A39E65B608 /* NivelTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,12 +121,14 @@
 		1650BF6569EF9968A290ED20 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				8EC26C277A243F8A9AFC391B /* Celebrations */,
 				D6279C142D197187DA27FC89 /* Home */,
 				F0105491AB027C5B9444D071 /* Meals */,
 				C11BEB0DAAA03380C6ACF16B /* Onboarding */,
 				0B4F6F76ABBD14348F01E9E5 /* Progress */,
 				6D8B05E92C0C472AB7A4E3AA /* Quests */,
 				3CCABC2F326C552D11C59080 /* Settings */,
+				C3990C32BFA134E789BE524D /* Splash */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -185,6 +193,15 @@
 			path = Quests;
 			sourceTree = "<group>";
 		};
+		8EC26C277A243F8A9AFC391B /* Celebrations */ = {
+			isa = PBXGroup;
+			children = (
+				2333A9029C3BCBFBBF4FB976 /* CelebrationsHost.swift */,
+				C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */,
+			);
+			path = Celebrations;
+			sourceTree = "<group>";
+		};
 		BFF6958B815AC1E48D671C2E = {
 			isa = PBXGroup;
 			children = (
@@ -201,6 +218,14 @@
 				16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		C3990C32BFA134E789BE524D /* Splash */ = {
+			isa = PBXGroup;
+			children = (
+				7900354E6B00D231F84DEFD2 /* SplashView.swift */,
+			);
+			path = Splash;
 			sourceTree = "<group>";
 		};
 		D148F81EC70A7990945C04A7 /* NivelTests */ = {
@@ -346,10 +371,12 @@
 			files = (
 				DBA75C60C34D6D51CBD43CF2 /* CalorieRing.swift in Sources */,
 				E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */,
+				57A40EADB63F64054A4795D7 /* CelebrationsHost.swift in Sources */,
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				FDCB8202104609DE46003A7A /* GameService.swift in Sources */,
 				FF12E9FD2218E9B1A09DFA9A /* HealthKitService.swift in Sources */,
 				83A569C9282E797637B0C790 /* HomeView.swift in Sources */,
+				AC058589EEDA0F462DF1730B /* LevelUpView.swift in Sources */,
 				54786F0394B67DE901FD1C19 /* MealLogSheet.swift in Sources */,
 				ECBE1CB18EBCE075EFFAE24B /* MealsJournalView.swift in Sources */,
 				6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */,
@@ -363,6 +390,7 @@
 				CA44B39964325597C05E92A6 /* RootView.swift in Sources */,
 				4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */,
 				8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */,
+				61E2605647D0942C07D4ED9D /* SplashView.swift in Sources */,
 				CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */,
 				0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */,
 				1B36CC033AB07BEB581D664D /* Theme.swift in Sources */,

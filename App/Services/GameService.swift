@@ -62,6 +62,14 @@ final class GameService {
     /// pas re-déclencher de rebond.
     private(set) var celebrationsRaised = 0
 
+    /// Dépile la prochaine célébration à afficher (FIFO) — nil si la file est vide.
+    /// Consommée par `CelebrationsHost` (Task 19) : une seule célébration visible à
+    /// la fois ; l'hôte redemande à chaque dismiss.
+    func consumeNextCelebration() -> Celebration? {
+        guard !pendingCelebrations.isEmpty else { return nil }
+        return pendingCelebrations.removeFirst()
+    }
+
     /// Point d'entrée unique pour lever une célébration (file + compteur monotone).
     /// Anti-doublon : deux détections rapprochées avec un `levelBefore` devenu
     /// obsolète (ex. logMeal pendant que closeOpenDays s'achève) ne doivent pas

@@ -5,11 +5,34 @@ import SwiftData
 struct RootView: View {
     @Query private var profiles: [UserProfile]
 
+    /// Splash à chaque lancement à froid (spec §5) — AVANT l'onboarding aussi :
+    /// c'est l'ouverture de l'app. ~1,5 s, skippable d'un tap.
+    @State private var showSplash = true
+
     var body: some View {
-        if profiles.isEmpty {
-            OnboardingFlow()
-        } else {
-            MainTabView()
+        ZStack {
+            if profiles.isEmpty {
+                OnboardingFlow()
+            } else {
+                MainTabView()
+            }
+
+            if showSplash {
+                SplashView()
+                    .zIndex(1)
+                    .transition(.opacity)
+                    .onTapGesture { dismissSplash() }
+                    .task {
+                        try? await Task.sleep(for: .seconds(1.5))
+                        dismissSplash()
+                    }
+            }
+        }
+    }
+
+    private func dismissSplash() {
+        withAnimation(.easeOut(duration: 0.4)) {
+            showSplash = false
         }
     }
 }
@@ -50,6 +73,9 @@ private struct MainTabView: View {
                 .tabItem { Label("Réglages", systemImage: "gearshape.fill") }
         }
         .tint(Theme.orange)
+        // Présentation des célébrations (level-up plein écran, bannières badge/quête)
+        // au niveau du TabView : visibles depuis n'importe quel onglet.
+        .celebrationsHost()
         .onAppear {
             // Lancement à froid directement en .active : onChange ne se déclenche
             // pas — on exécute aussi le rattrapage ici.
