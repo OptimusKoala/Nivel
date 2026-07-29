@@ -15,9 +15,15 @@ enum NivelitoExpression {
 struct NivelitoView: View {
     var expression: NivelitoExpression = .happy
     var size: CGFloat = 100
+    /// Les appelants incrémentent cet Int pour déclencher un rebond de célébration
+    /// (rotation ±4° + offset y −8 en spring, ~1 s) — utilisé par les Tasks 11/13/19.
+    var celebrationTrigger: Int = 0
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var breathe = false
     @State private var isBlinking = false
+    @State private var bounceOffsetY: CGFloat = 0
+    @State private var wobbleDegrees: Double = 0
 
     // Palette du SVG (le contour/yeux/truffe/bouche viennent de Theme.outline).
     private let cream = Color(hex: 0xF2EDE0)
@@ -80,27 +86,24 @@ struct NivelitoView: View {
             mouth
                 .transition(.opacity.combined(with: .scale(scale: 0.85)))
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.65), value: expressionKey)
+        .animation(reduceMotion ? .default : .spring(response: 0.3, dampingFraction: 0.65),
+                   value: expression)
         .frame(width: size, height: size)
-        .scaleEffect(y: breathe ? 1.02 : 0.98, anchor: .bottom)
+        .scaleEffect(y: reduceMotion ? 1 : (breathe ? 1.02 : 0.98), anchor: .bottom)
+        .rotationEffect(.degrees(wobbleDegrees))
+        .offset(y: bounceOffsetY)
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
                 breathe = true
             }
         }
-        .task(id: expressionKey) { await blinkLoop() }
-        .accessibilityLabel("Nivelito")
-    }
-
-    /// Clé stable pour animer les changements d'expression.
-    private var expressionKey: Int {
-        switch expression {
-        case .happy: 0
-        case .joy: 1
-        case .wink: 2
-        case .sleepy: 3
-        case .encouraging: 4
+        .onChange(of: celebrationTrigger) { _, _ in
+            guard !reduceMotion else { return }
+            Task { await celebrate() }
         }
+        .task(id: hasOpenEyes) { await blinkLoop() }
+        .accessibilityLabel("Nivelito")
     }
 
     // MARK: - Yeux
@@ -161,9 +164,23 @@ struct NivelitoView: View {
         }
     }
 
+    // MARK: - Célébration
+
+    /// Rebond de célébration : offset y −8 + oscillation ±4° en spring (~1 s au total).
+    private func celebrate() async {
+        let spring = Animation.spring(response: 0.25, dampingFraction: 0.5)
+        withAnimation(spring) { bounceOffsetY = -8; wobbleDegrees = 4 }
+        try? await Task.sleep(nanoseconds: 250_000_000)
+        withAnimation(spring) { wobbleDegrees = -4 }
+        try? await Task.sleep(nanoseconds: 250_000_000)
+        withAnimation(spring) { wobbleDegrees = 4 }
+        try? await Task.sleep(nanoseconds: 250_000_000)
+        withAnimation(spring) { wobbleDegrees = 0; bounceOffsetY = 0 }
+    }
+
     /// Cligne des yeux toutes les 3–6 s (uniquement quand des yeux ronds sont visibles).
     private func blinkLoop() async {
-        guard hasOpenEyes else { return }
+        guard hasOpenEyes, !reduceMotion else { return }
         while !Task.isCancelled {
             try? await Task.sleep(nanoseconds: UInt64.random(in: 3_000_000_000...6_000_000_000))
             guard !Task.isCancelled else { return }
