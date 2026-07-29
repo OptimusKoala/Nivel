@@ -1,6 +1,5 @@
 // App/Services/DayCloser.swift
 import Foundation
-import SwiftData
 import NivelCore
 
 /// Clôture des journées passées (spec §9 "Traitements différés", Task 18).
@@ -55,7 +54,13 @@ extension GameService {
             // (pas de données ≠ échec, spec §10/§13).
             var stepsByDay: [Date: Int]?
             if stepsService.isAvailable {
-                stepsByDay = await stepsService.dailySteps(from: firstDay, to: todayKey)
+                guard let fetched = await stepsService.dailySteps(from: firstDay, to: todayKey) else {
+                    // ERREUR de requête (≠ refus : isAvailable est vrai) : ne SURTOUT
+                    // pas figer des journées à 0 pas — on abandonne toute la passe,
+                    // le prochain passage au premier plan réessaiera.
+                    return
+                }
+                stepsByDay = fetched
             }
 
             var day = firstDay
@@ -104,15 +109,8 @@ extension GameService {
     ) {
         guard let dayEnd = Self.calendar.date(byAdding: .day, value: 1, to: day) else { return }
 
-        let log: DayLog
-        let predicate = #Predicate<DayLog> { $0.day == day }
-        if let existing = (try? modelContext.fetch(FetchDescriptor(predicate: predicate)))?.first {
-            guard !existing.closed else { return } // défense en profondeur : jamais de double clôture
-            log = existing
-        } else {
-            log = DayLog(day: day, kcalTarget: profile.dailyCalorieTarget)
-            modelContext.insert(log)
-        }
+        let log = fetchOrCreateDayLog(day: day)
+        guard !log.closed else { return } // défense en profondeur : jamais de double clôture
 
         let meals = fetchMeals(from: day, to: dayEnd)
         log.kcalEaten = meals.reduce(0) { $0 + $1.estimatedKcal }

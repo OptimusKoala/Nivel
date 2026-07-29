@@ -169,6 +169,33 @@ final class DayCloserTests: XCTestCase {
         XCTAssertEqual(state.totalXP, 0)
     }
 
+    // MARK: - Erreur HealthKit
+
+    func testStepsQueryErrorSkipsWholeClosingRun() async throws {
+        // Journée qui AURAIT été récompensée si la requête de pas avait réussi.
+        insertMeal(on: day1, kcal: 650, slot: .lunch)
+        insertMeal(on: day1, kcal: 650, slot: .dinner)
+        try context.save()
+
+        // HealthKit "disponible" mais la requête échoue (nil ≠ [:]) : rien ne doit
+        // être figé à 0 pas — toute la passe est abandonnée et sera retentée.
+        let service = makeService(steps: FakeStepsService(
+            stepsByDay: [day1: 9000],
+            failing: true
+        ))
+        await service.closeOpenDays(today: today)
+
+        XCTAssertNil(state.lastClosedDay)
+        XCTAssertTrue(try fetchDayLogs().isEmpty)
+        XCTAssertEqual(state.totalXP, 0)
+
+        // La requête redevient saine → le rattrapage complet passe.
+        (service.stepsService as? FakeStepsService)?.failing = false
+        await service.closeOpenDays(today: today)
+        XCTAssertEqual(state.lastClosedDay, yesterday)
+        XCTAssertEqual(try fetchDayLogs().first?.xpEarned, 90)
+    }
+
     // MARK: - Idempotence
 
     func testRunningTwiceDoesNotDoubleAward() async throws {

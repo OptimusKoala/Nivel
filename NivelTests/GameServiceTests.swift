@@ -108,13 +108,16 @@ final class GameServiceTests: XCTestCase {
         state.completedThisWeekQuestIDs = []
         state.questProgress = [:]
         try context.save()
+        // L'utilisateur a vu la célébration de la semaine 1 (la file anti-doublon
+        // de raise() ignorerait sinon une célébration identique encore en attente).
+        service.pendingCelebrations = []
 
         // "Semaine 2" : la quête déjà dans l'historique doit re-récompenser.
         await service.refreshQuestProgress()
         XCTAssertEqual(state.totalXP, xpAfterFirstCompletion + 150)
         XCTAssertEqual(state.completedQuestIDs, ["weigh_in_1", "weigh_in_1"])
         XCTAssertEqual(state.completedThisWeekQuestIDs, ["weigh_in_1"])
-        XCTAssertEqual(service.pendingCelebrations.count(where: { $0.id == "quest-weigh_in_1" }), 2)
+        XCTAssertEqual(service.pendingCelebrations.count(where: { $0.id == "quest-weigh_in_1" }), 1)
 
         // L'historique (doublons compris) alimente le compteur de badges.
         XCTAssertEqual(service.badgeStats().questsCompleted, 2)

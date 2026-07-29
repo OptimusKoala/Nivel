@@ -36,9 +36,9 @@ struct ActiveQuestStatus: Identifiable {
 /// SwiftData + StepsProviding.
 @Observable @MainActor
 final class GameService {
-    // `internal` (et non `private`) : partagés avec la clôture des journées,
+    private let modelContext: ModelContext
+    // `internal` (et non `private`) : partagé avec la clôture des journées,
     // rangée dans sa propre extension (DayCloser.swift) — même type, autre fichier.
-    let modelContext: ModelContext
     let stepsService: StepsProviding
 
     /// Catalogues embarqués (chargés une fois ; vides si le bundle est corrompu — jamais de crash).
@@ -63,7 +63,11 @@ final class GameService {
     private(set) var celebrationsRaised = 0
 
     /// Point d'entrée unique pour lever une célébration (file + compteur monotone).
+    /// Anti-doublon : deux détections rapprochées avec un `levelBefore` devenu
+    /// obsolète (ex. logMeal pendant que closeOpenDays s'achève) ne doivent pas
+    /// empiler deux fois la MÊME célébration tant qu'elle n'a pas été affichée.
     private func raise(_ celebration: Celebration) {
+        guard !pendingCelebrations.contains(celebration) else { return }
         pendingCelebrations.append(celebration)
         celebrationsRaised += 1
     }
@@ -77,9 +81,10 @@ final class GameService {
         return c
     }()
 
-    /// Normalisateur CANONIQUE des jours persistés : toute valeur écrite dans
-    /// `DayLog.day` (et toute clé de comparaison de jour) DOIT passer par ici —
-    /// un seul point de vérité pour "minuit local" (Task 9/18).
+    /// Normalisateur CANONIQUE des jours persistés : toute valeur ÉCRITE dans
+    /// `DayLog.day` doit passer par ici — un seul point de vérité pour
+    /// "minuit local" (Task 9/18). Les lectures/regroupements peuvent appeler
+    /// `startOfDay` directement, c'est équivalent.
     nonisolated static func dayKey(for date: Date) -> Date {
         calendar.startOfDay(for: date)
     }
@@ -257,7 +262,9 @@ final class GameService {
         var stepsByDay: [Date: Int] = [:]
         if stepsService.isAvailable,
            activeQuests.contains(where: { $0.metric == .weeklySteps || $0.metric == .stepGoalDays }) {
-            stepsByDay = await stepsService.dailySteps(from: week.start, to: now)
+            // Erreur de requête → [:] : la progression des quêtes de pas retombe
+            // transitoirement à 0, mais rien n'est figé — recalculée au prochain refresh.
+            stepsByDay = await stepsService.dailySteps(from: week.start, to: now) ?? [:]
         }
 
         // Règle SwiftData : jamais de mutation en place des collections d'un @Model —
@@ -430,8 +437,11 @@ final class GameService {
     /// Pas quotidiens sur [from, to[ (clé = minuit local) — vide si HealthKit est
     /// refusé/indisponible : la section Pas de l'écran Progrès est alors masquée (spec §10).
     func dailySteps(from start: Date, to end: Date) async -> [Date: Int] {
+        // Indisponible OU erreur de requête → [:] : côté vues, les deux cas
+        // s'affichent pareil (section masquée) ; la distinction nil/[:] ne
+        // compte que pour la clôture des journées.
         guard stepsService.isAvailable else { return [:] }
-        return await stepsService.dailySteps(from: start, to: end)
+        return await stepsService.dailySteps(from: start, to: end) ?? [:]
     }
 
     /// Contexte du message d'accueil de Nivelito (spec §4.1) : priorité aux événements
@@ -505,24 +515,25 @@ final class GameService {
         (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first
     }
 
-    private func updateDayLog(for date: Date, addingKcal kcal: Int, xp: Int) {
-        // Normalisation canonique : DayLog.day n'est JAMAIS écrit autrement.
-        let dayStart = Self.dayKey(for: date)
-        let predicate = #Predicate<DayLog> { $0.day == dayStart }
-        if let log = (try? modelContext.fetch(FetchDescriptor(predicate: predicate)))?.first {
-            // max(0, …) : les deltas négatifs (édition/suppression) ne créent jamais
-            // de total négatif, même sur un store incohérent.
-            log.kcalEaten = max(0, log.kcalEaten + kcal)
-            log.xpEarned += xp
-        } else {
-            let log = DayLog(
-                day: dayStart,
-                kcalEaten: max(0, kcal),
-                kcalTarget: fetchProfile()?.dailyCalorieTarget ?? 0,
-                xpEarned: xp
-            )
-            modelContext.insert(log)
+    /// DayLog du jour donné, créé (cible kcal actuelle du profil) s'il n'existe pas.
+    /// ⚠️ `day` doit être une clé canonique (`Self.dayKey`) — DayLog.day n'est
+    /// JAMAIS écrit autrement. internal : aussi utilisé par DayCloser.swift.
+    func fetchOrCreateDayLog(day: Date) -> DayLog {
+        let predicate = #Predicate<DayLog> { $0.day == day }
+        if let existing = (try? modelContext.fetch(FetchDescriptor(predicate: predicate)))?.first {
+            return existing
         }
+        let log = DayLog(day: day, kcalTarget: fetchProfile()?.dailyCalorieTarget ?? 0)
+        modelContext.insert(log)
+        return log
+    }
+
+    private func updateDayLog(for date: Date, addingKcal kcal: Int, xp: Int) {
+        let log = fetchOrCreateDayLog(day: Self.dayKey(for: date))
+        // max(0, …) : les deltas négatifs (édition/suppression) ne créent jamais
+        // de total négatif, même sur un store incohérent.
+        log.kcalEaten = max(0, log.kcalEaten + kcal)
+        log.xpEarned += xp
     }
 
     func fetchMeals(from start: Date, to end: Date) -> [MealEntry] {
