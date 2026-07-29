@@ -1,0 +1,39 @@
+name: Nivel
+options:
+  bundleIdPrefix: fr.mbernard
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  NivelCore:
+    path: NivelCore
+targets:
+  Nivel:
+    type: application
+    platform: iOS
+    sources: [App]
+    dependencies:
+      - package: NivelCore
+    entitlements:
+      path: App/Nivel.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Nivel
+        CFBundleDevelopmentRegion: fr
+        NSHealthShareUsageDescription: "Nivel lit tes pas pour suivre ton activité quotidienne."
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+  NivelTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [NivelTests]
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: Nivel
+schemes:
+  Nivel:
+    build: { targets: { Nivel: all, NivelTests: [test] } }
+    test: { targets: [NivelTests] }
