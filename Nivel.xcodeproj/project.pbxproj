@@ -7,11 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		13007E67FB6C5D21D8A723AE /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EACEDF64B0B6576809396B1 /* NivelitoShapes.swift */; };
 		1B36CC033AB07BEB581D664D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9782153DD5F0B9BABA5132F1 /* Theme.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
+		5A40096E1BB5A7713251D5C1 /* NivelitoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C923A46DDC21834AB6E06D1B /* NivelitoView.swift */; };
 		5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67EB506351740B5EC992E309 /* AppSmokeTests.swift */; };
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
+		8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */; };
 		98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABBAD095DB88DF009C167B /* PersistentModels.swift */; };
 		CA44B39964325597C05E92A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671D6B6E3581A479FFED40C2 /* RootView.swift */; };
 /* End PBXBuildFile section */
@@ -28,6 +31,7 @@
 
 /* Begin PBXFileReference section */
 		1B870793FACF92E8A3EC300C /* Nivel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nivel.entitlements; sourceTree = "<group>"; };
+		1EACEDF64B0B6576809396B1 /* NivelitoShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoShapes.swift; sourceTree = "<group>"; };
 		252E585F67D7801561AA6A8A /* NivelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelApp.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		34F99A2EA3F3B3FD6B5FB4AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -37,6 +41,8 @@
 		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NivelCore; path = NivelCore; sourceTree = SOURCE_ROOT; };
 		9782153DD5F0B9BABA5132F1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechBubble.swift; sourceTree = "<group>"; };
+		C923A46DDC21834AB6E06D1B /* NivelitoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoView.swift; sourceTree = "<group>"; };
 		C9AB33328B42B0A39E65B608 /* NivelTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -78,6 +84,7 @@
 				671D6B6E3581A479FFED40C2 /* RootView.swift */,
 				9782153DD5F0B9BABA5132F1 /* Theme.swift */,
 				63F7EE8FCCFE2E88E9C06023 /* Models */,
+				F69825F0205D2F6823977A1F /* Nivelito */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -107,6 +114,16 @@
 				C9AB33328B42B0A39E65B608 /* NivelTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F69825F0205D2F6823977A1F /* Nivelito */ = {
+			isa = PBXGroup;
+			children = (
+				1EACEDF64B0B6576809396B1 /* NivelitoShapes.swift */,
+				C923A46DDC21834AB6E06D1B /* NivelitoView.swift */,
+				ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */,
+			);
+			path = Nivelito;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -201,8 +218,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */,
+				13007E67FB6C5D21D8A723AE /* NivelitoShapes.swift in Sources */,
+				5A40096E1BB5A7713251D5C1 /* NivelitoView.swift in Sources */,
 				98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */,
 				CA44B39964325597C05E92A6 /* RootView.swift in Sources */,
+				8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */,
 				1B36CC033AB07BEB581D664D /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
