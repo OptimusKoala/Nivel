@@ -26,6 +26,15 @@ final class QuestEngineTests: XCTestCase {
         }
     }
 
+    func testWeeklyDrawIsPinnedForKnownWeek() throws {
+        // Pins the exact ids produced by `Array.shuffled(using:)` for this seed today.
+        // `shuffled(using:)`'s algorithm is a stdlib implementation detail, not a stable contract —
+        // if it ever changes, this regression test will catch the silent change in weekly draws.
+        let pool = try Catalogs.quests()
+        let drawn = QuestEngine.weeklyDraw(pool: pool, weekID: "2026-W31", stepsAvailable: true)
+        XCTAssertEqual(drawn.map(\.id), ["log_dinners_5", "light_dessert_5", "log_meals_14"])
+    }
+
     func testWeekID() {
         // Mercredi 29 juillet 2026 → semaine ISO 31
         var cal = Calendar(identifier: .iso8601)

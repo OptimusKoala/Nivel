@@ -23,6 +23,9 @@ public enum QuestEngine {
     }
 
     /// Tirage déterministe (seedé par weekID) de 3 quêtes du pool, sans HealthKit → sans quêtes de pas.
+    /// ⚠️ Repose sur le comportement de `Array.shuffled(using:)`, un détail d'implémentation de la
+    /// stdlib non contractuel : s'il change entre versions de Swift, les tirages pour un même weekID
+    /// changeraient silencieusement. Voir le test de régression `testWeeklyDrawIsPinnedForKnownWeek`.
     public static func weeklyDraw(pool: [Quest], weekID: String, stepsAvailable: Bool) -> [Quest] {
         let eligible = pool.filter { stepsAvailable || !$0.requiresSteps }
         var generator = SeededGenerator(seed: fnv1a(weekID))

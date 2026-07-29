@@ -18,5 +18,8 @@ final class CatalogsTests: XCTestCase {
         let quests = try Catalogs.quests()
         XCTAssertEqual(quests.count, 15)
         XCTAssertEqual(Set(quests.map(\.id)).count, 15)
+        // Guards the eligible-pool invariant: steps-denied users must still have at least
+        // 3 quests to draw from, so a future catalog edit can't silently break weeklyDraw.
+        XCTAssertGreaterThanOrEqual(quests.filter { !$0.requiresSteps }.count, 3)
     }
 }
