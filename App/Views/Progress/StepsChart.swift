@@ -16,13 +16,15 @@ struct StepsChart: View {
     let days: [Day]
 
     /// Jour du record personnel sur la période (premier en cas d'égalité) — annoté 🏆.
-    private var recordDay: Date? {
+    private static func recordDay(in days: [Day]) -> Date? {
         guard let best = days.max(by: { $0.steps < $1.steps }), best.steps > 0 else { return nil }
         return days.first { $0.steps == best.steps }?.day
     }
 
     var body: some View {
-        Chart {
+        // Record calculé UNE fois par rendu (pas par barre).
+        let recordDay = Self.recordDay(in: days)
+        return Chart {
             ForEach(days) { day in
                 BarMark(
                     x: .value("Jour", day.day, unit: .day),

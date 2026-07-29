@@ -95,6 +95,9 @@ struct ProgressScreen: View {
                     weightSection
                     weighInButton
                     caloriesSection
+                    // Section Pas masquée si AUCUNE donnée (spec §10) : un refus HealthKit
+                    // en lecture est indistinguable d'une absence de données (limitation
+                    // plateforme) — le dictionnaire vide couvre les deux cas.
                     if let stepsByDay, !stepsByDay.isEmpty {
                         stepsSection
                     }
@@ -115,13 +118,18 @@ struct ProgressScreen: View {
     private func loadSteps() async {
         let calendar = GameService.calendar
         let now = Date.now
+        // Période capturée AU DÉPART : une requête HealthKit lente dépassée par un
+        // changement de période ne doit pas écraser les données de la nouvelle.
+        let requested = period
         // "Tout" : depuis la création du profil (jamais distantPast — requête HealthKit bornée).
         let fallbackStart = calendar.date(byAdding: .day, value: -89, to: calendar.startOfDay(for: now))
         let start = periodStart
             ?? profile.map { calendar.startOfDay(for: $0.createdAt) }
             ?? fallbackStart
             ?? now
-        stepsByDay = await game.dailySteps(from: start, to: now)
+        let result = await game.dailySteps(from: start, to: now)
+        guard requested == period, !Task.isCancelled else { return }
+        stepsByDay = result
     }
 
     // MARK: Sections
