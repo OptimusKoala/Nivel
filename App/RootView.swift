@@ -33,7 +33,9 @@ private struct MainTabView: View {
                 .id(dayKey)
                 .tabItem { Label("Repas", systemImage: "fork.knife") }
 
-            PlaceholderScreen(title: "Progrès")
+            // .id(dayKey) : les bornes "aujourd'hui" (pas, pesée) suivent le changement de jour.
+            ProgressScreen()
+                .id(dayKey)
                 .tabItem { Label("Progrès", systemImage: "chart.line.uptrend.xyaxis") }
 
             PlaceholderScreen(title: "Quêtes")

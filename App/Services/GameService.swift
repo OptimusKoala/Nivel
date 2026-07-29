@@ -369,9 +369,9 @@ final class GameService {
         return false
     }
 
-    /// Tendance de poids en baisse sur 2 semaines — version v1 simple : lissage exponentiel
-    /// inline (α = 0,25, même formule que WeightTrend de Task 15 qui la remplacera) ; vrai si
-    /// ≥ 2 pesées couvrant ≥ 14 jours et tendance finale < tendance d'il y a 14 jours.
+    /// Tendance de poids en baisse sur 2 semaines — lissage exponentiel `WeightTrend.smooth`
+    /// (α = 0,25) ; vrai si ≥ 2 pesées couvrant ≥ 14 jours et tendance finale < tendance
+    /// d'il y a 14 jours.
     private func isTrendDownOverFortnight() -> Bool {
         var descriptor = FetchDescriptor<WeightEntry>(sortBy: [SortDescriptor(\.date)])
         descriptor.propertiesToFetch = [\.date, \.weightKg]
@@ -381,12 +381,7 @@ final class GameService {
         let cutoff = last.date.addingTimeInterval(-14 * 86_400)
         guard let referenceIndex = entries.lastIndex(where: { $0.date <= cutoff }) else { return false }
 
-        var trend = entries[0].weightKg
-        var trendValues = [trend]
-        for entry in entries.dropFirst() {
-            trend += 0.25 * (entry.weightKg - trend)
-            trendValues.append(trend)
-        }
+        let trendValues = WeightTrend.smooth(entries.map(\.weightKg))
         return trendValues[entries.count - 1] < trendValues[referenceIndex]
     }
 
@@ -411,6 +406,13 @@ final class GameService {
     /// de l'accueil est alors masquée, spec §10).
     func todaySteps() async -> Int? {
         await stepsService.steps(on: .now)
+    }
+
+    /// Pas quotidiens sur [from, to[ (clé = minuit local) — vide si HealthKit est
+    /// refusé/indisponible : la section Pas de l'écran Progrès est alors masquée (spec §10).
+    func dailySteps(from start: Date, to end: Date) async -> [Date: Int] {
+        guard stepsService.isAvailable else { return [:] }
+        return await stepsService.dailySteps(from: start, to: end)
     }
 
     /// Contexte du message d'accueil de Nivelito (spec §4.1) : priorité aux événements
