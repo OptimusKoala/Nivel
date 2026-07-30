@@ -245,7 +245,7 @@ struct MealsJournalView: View {
                 }
                 .buttonStyle(.plain)
             } else {
-                Text("Rien de loggé ce jour-là — et c'est OK 😌")
+                Text("Rien de loggé ce jour-là, et c'est OK 😌")
                     .font(.subheadline)
                     .foregroundStyle(Theme.subtext)
                     .multilineTextAlignment(.center)

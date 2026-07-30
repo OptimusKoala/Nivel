@@ -278,7 +278,7 @@ private struct SettingsContent: View {
     private var healthSection: some View {
         section("Santé") {
             if health.isAvailable {
-                Text("Lecture des pas configurée — si tes pas n'apparaissent pas, vérifie dans Réglages > Santé.")
+                Text("Lecture des pas configurée : si tes pas n'apparaissent pas, vérifie dans Réglages > Santé.")
                     .font(.caption)
                     .foregroundStyle(Theme.subtext)
             } else {

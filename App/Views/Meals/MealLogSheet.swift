@@ -380,7 +380,7 @@ struct MealLogSheet: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(Theme.subtext)
                 // "~" : estimation honnête, jamais présentée comme exacte (spec §13).
-                Text(estimatedKcal.map { "~ \($0.frFormatted) kcal" } ?? "~ — kcal")
+                Text(estimatedKcal.map { "~ \($0.frFormatted) kcal" } ?? "~ … kcal")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.text)
                     .contentTransition(.numericText())

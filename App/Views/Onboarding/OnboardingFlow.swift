@@ -389,7 +389,7 @@ private struct GoalPage: View {
                 Text("~\(target) kcal")
                     .font(.system(size: 44, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.orange)
-                Text("Je te propose ~\(target) kcal par jour — une perte douce, sans pression. Tu pourras l'ajuster quand tu veux.")
+                Text("Je te propose ~\(target) kcal par jour : une perte douce, sans pression. Tu pourras l'ajuster quand tu veux.")
                     .font(.body)
                     .foregroundStyle(Theme.subtext)
                     .multilineTextAlignment(.center)
@@ -419,7 +419,7 @@ private struct PermissionsPage: View {
         VStack(spacing: 20) {
             HStack(alignment: .top, spacing: 10) {
                 NivelitoView(expression: .encouraging, size: 72)
-                SpeechBubble(text: "Deux petites autorisations — et si tu préfères sans, ça marche aussi !")
+                SpeechBubble(text: "Deux petites autorisations, et si tu préfères sans, ça marche aussi !")
                     .padding(.top, 6)
                 Spacer(minLength: 0)
             }

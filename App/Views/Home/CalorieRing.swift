@@ -59,7 +59,7 @@ struct CalorieRingCard: View {
 
     @ViewBuilder private var subtitle: some View {
         if isOver {
-            Text("Objectif dépassé de ~\((eaten - target).frFormatted) — ça arrive 😌")
+            Text("Objectif dépassé de ~\((eaten - target).frFormatted), ça arrive 😌")
                 .foregroundStyle(Theme.subtext)
         } else {
             Text("Reste ~\(max(0, target - eaten).frFormatted) kcal 🍽️")
