@@ -18,5 +18,9 @@
   {"id": "meals_50",        "title": "50 repas loggés",           "emoji": "📖", "hint": "Logge 50 repas",                        "metric": "mealsLogged",       "threshold": 50},
   {"id": "meals_200",       "title": "200 repas loggés",          "emoji": "📚", "hint": "Logge 200 repas",                       "metric": "mealsLogged",       "threshold": 200},
   {"id": "steps_total_1m",  "title": "Un million de pas",         "emoji": "🏆", "hint": "Cumule 1 000 000 de pas",               "metric": "totalSteps",        "threshold": 1000000},
-  {"id": "journal_100",     "title": "100 jours de journal",      "emoji": "🎖️", "hint": "100 jours avec au moins un repas loggé","metric": "journalDays",       "threshold": 100}
+  {"id": "journal_100",     "title": "100 jours de journal",      "emoji": "🎖️", "hint": "100 jours avec au moins un repas loggé","metric": "journalDays",       "threshold": 100},
+  {"id": "sport_first",      "title": "Premier pas",           "emoji": "🥇", "hint": "Valide ta première activité",          "metric": "activitiesDone",    "threshold": 1},
+  {"id": "sport_10",         "title": "En mouvement",          "emoji": "🏃", "hint": "Valide 10 activités",                  "metric": "activitiesDone",    "threshold": 10},
+  {"id": "sport_50",         "title": "Machine",               "emoji": "🔥", "hint": "Valide 50 activités",                  "metric": "activitiesDone",    "threshold": 50},
+  {"id": "sport_sessions_5", "title": "Rituel du jour",        "emoji": "📅", "hint": "Fais 5 séances du jour",               "metric": "dailySessionsDone", "threshold": 5}
 ]

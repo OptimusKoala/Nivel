@@ -3,7 +3,8 @@ import Foundation
 public struct Badge: Codable, Identifiable, Hashable, Sendable {
     public enum Metric: String, Codable, Sendable {
         case weighIns, mealsLogged, journalDays, stepsInOneDay, totalSteps,
-             totalKm, level, questsCompleted, weekWithinTarget, trendDownFortnight
+             totalKm, level, questsCompleted, weekWithinTarget, trendDownFortnight,
+             activitiesDone, dailySessionsDone
     }
     public let id: String
     public let title: String
@@ -17,7 +18,8 @@ public struct Badge: Codable, Identifiable, Hashable, Sendable {
 public struct BadgeStats: Sendable {
     public var weighIns = 0, mealsLogged = 0, journalDays = 0, stepsInOneDay = 0,
                totalSteps = 0, totalKm = 0, level = 1, questsCompleted = 0,
-               weekWithinTarget = 0, trendDownFortnight = 0
+               weekWithinTarget = 0, trendDownFortnight = 0,
+               activitiesDone = 0, dailySessionsDone = 0
     public init() {}
 
     func value(for metric: Badge.Metric) -> Int {
@@ -32,6 +34,8 @@ public struct BadgeStats: Sendable {
         case .questsCompleted: questsCompleted
         case .weekWithinTarget: weekWithinTarget
         case .trendDownFortnight: trendDownFortnight
+        case .activitiesDone: activitiesDone
+        case .dailySessionsDone: dailySessionsDone
         }
     }
 }

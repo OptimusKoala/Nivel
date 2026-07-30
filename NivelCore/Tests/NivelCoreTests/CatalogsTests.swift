@@ -27,7 +27,7 @@ final class CatalogsTests: XCTestCase {
 
     func testBadgesLoadAndIdsAreUnique() throws {
         let badges = try Catalogs.badges()
-        XCTAssertEqual(badges.count, 20)
-        XCTAssertEqual(Set(badges.map(\.id)).count, 20)
+        XCTAssertEqual(badges.count, 24)
+        XCTAssertEqual(Set(badges.map(\.id)).count, 24)
     }
 }
