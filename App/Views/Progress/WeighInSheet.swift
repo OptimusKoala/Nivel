@@ -64,6 +64,9 @@ struct WeighInSheet: View {
             }
             .padding(20)
         }
+        .presentationDetents([.medium])
+        .presentationCornerRadius(28)
+        .presentationDragIndicator(.visible)
         .onAppear { fieldFocused = true }
     }
 
@@ -90,21 +93,9 @@ struct WeighInSheet: View {
     }
 
     private var validateButton: some View {
-        Button(action: validate) {
-            Text("Valider (+30 XP)")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    LinearGradient(colors: [Theme.accent, Theme.orange],
-                                   startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                )
-                .opacity(parsedKg == nil ? 0.4 : 1)
-        }
-        .buttonStyle(.plain)
-        .disabled(parsedKg == nil || isSaving)
+        Button("Valider (+30 XP)", action: validate)
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(parsedKg == nil || isSaving)
     }
 
     private func validate() {
@@ -135,7 +126,6 @@ struct WeighInSheet: View {
         .ignoresSafeArea()
         .sheet(isPresented: $shown) {
             WeighInSheet()
-                .presentationDetents([.medium])
         }
         .fontDesign(.rounded)
         .modelContainer(container)

@@ -111,7 +111,6 @@ struct ProgressScreen: View {
         .task(id: period) { await loadSteps() }
         .sheet(isPresented: $showWeighIn) {
             WeighInSheet()
-                .presentationDetents([.medium])
         }
     }
 
@@ -146,7 +145,7 @@ struct ProgressScreen: View {
     private var weightSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
-                sectionTitle("Poids")
+                SectionTitle("Poids")
                 Spacer()
                 if let last = allWeights.last {
                     Text("\(last.weightKg.frWeight) kg")
@@ -161,26 +160,15 @@ struct ProgressScreen: View {
     }
 
     private var weighInButton: some View {
-        Button {
+        Button("+ Pesée") {
             showWeighIn = true
-        } label: {
-            Text("+ Pesée")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    LinearGradient(colors: [Theme.accent, Theme.orange],
-                                   startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PrimaryButtonStyle())
     }
 
     private var caloriesSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("Calories")
+            SectionTitle("Calories")
             CaloriesChart(days: calorieDays, target: profile?.dailyCalorieTarget ?? 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -189,17 +177,11 @@ struct ProgressScreen: View {
 
     private var stepsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("Pas")
+            SectionTitle("Pas")
             StepsChart(days: stepDays)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card()
-    }
-
-    private func sectionTitle(_ title: String) -> some View {
-        Text(title)
-            .font(.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(Theme.text)
     }
 }
 

@@ -329,7 +329,6 @@ private struct InfosPage: View {
             Button("Continuer", action: onContinue)
                 .buttonStyle(PrimaryButtonStyle())
                 .disabled(!canContinue)
-                .opacity(canContinue ? 1 : 0.45)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
         }
@@ -337,10 +336,7 @@ private struct InfosPage: View {
 
     private func infoCard(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(Theme.subtext)
-                .textCase(.uppercase)
+            Overline(title)
             content()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -477,25 +473,6 @@ private struct PermissionsPage: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .card()
         .padding(.horizontal, 24)
-    }
-}
-
-// MARK: - Style de bouton principal
-
-private struct PrimaryButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline)
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                LinearGradient(colors: [Theme.accent, Theme.orange],
-                               startPoint: .leading, endPoint: .trailing),
-                in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-            )
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.spring(duration: 0.2), value: configuration.isPressed)
     }
 }
 

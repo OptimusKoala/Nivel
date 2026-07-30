@@ -23,9 +23,7 @@ struct SessionDetailSheet: View {
                     HStack(spacing: 10) {
                         Text(session.emoji).font(.system(size: 40))
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Séance du jour")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(Theme.subtext)
+                            Overline("Séance du jour")
                             Text(session.title)
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
                                 .foregroundStyle(Theme.text)
@@ -43,6 +41,8 @@ struct SessionDetailSheet: View {
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
         .presentationDetents([.medium, .large])
+        .presentationCornerRadius(28)
+        .presentationDragIndicator(.visible)
     }
 
     private func stepRow(_ step: SessionStep) -> some View {
@@ -82,25 +82,16 @@ struct SessionDetailSheet: View {
             } else {
                 Button(action: validate) {
                     Text("C'est fait ! (+40 XP)")
-                        .font(.headline)
-                        .foregroundStyle(.white)
                         .lineLimit(1)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 14)
-                        .background(
-                            LinearGradient(colors: [Theme.accent, Theme.orange],
-                                           startPoint: .leading, endPoint: .trailing),
-                            in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PrimaryButtonStyle(size: .compact))
                 .disabled(isSaving)
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
         .background(Theme.card.ignoresSafeArea(edges: .bottom))
-        .shadow(color: .black.opacity(0.08), radius: 10, y: -4)
+        .shadow(color: Theme.floatingShadow, radius: 10, y: -4)
     }
 
     private func validate() {

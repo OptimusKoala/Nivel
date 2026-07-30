@@ -28,9 +28,7 @@ struct ActivityLogSheet: View {
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundStyle(Theme.text)
                     }
-                    Text("Durée")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.text)
+                    SectionTitle("Durée")
                     HStack(spacing: 8) {
                         ForEach(activity.durations, id: \.self) { minutes in
                             durationButton(minutes)
@@ -42,6 +40,8 @@ struct ActivityLogSheet: View {
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
         .presentationDetents([.medium, .large])
+        .presentationCornerRadius(28)
+        .presentationDragIndicator(.visible)
         .onAppear { xpReward = game.nextActivityXP() }
     }
 
@@ -71,25 +71,14 @@ struct ActivityLogSheet: View {
     }
 
     private var bottomBar: some View {
-        Button(action: validate) {
-            Text(xpReward > 0 ? "C'est fait ! (+\(xpReward) XP)" : "C'est fait !")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(
-                    LinearGradient(colors: [Theme.accent, Theme.orange],
-                                   startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                )
-                .opacity(selectedMinutes == nil ? 0.4 : 1)
-        }
-        .buttonStyle(.plain)
-        .disabled(selectedMinutes == nil || isSaving)
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .background(Theme.card.ignoresSafeArea(edges: .bottom))
-        .shadow(color: .black.opacity(0.08), radius: 10, y: -4)
+        Button(xpReward > 0 ? "C'est fait ! (+\(xpReward) XP)" : "C'est fait !",
+               action: validate)
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(selectedMinutes == nil || isSaving)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(Theme.card.ignoresSafeArea(edges: .bottom))
+            .shadow(color: Theme.floatingShadow, radius: 10, y: -4)
     }
 
     private func validate() {

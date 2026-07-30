@@ -133,12 +133,10 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showSettings, onDismiss: updateBubble) {
             SettingsView()
-                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSessionDetail, onDismiss: refreshSessionStatus) {
             if let status = sessionStatus {
                 SessionDetailSheet(session: status.session, done: status.done)
-                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -212,23 +210,17 @@ struct HomeView: View {
                 showSettings = true
             } label: {
                 Image(systemName: "gearshape.fill")
-                    .font(.headline)
-                    .foregroundStyle(Theme.orange)
-                    .frame(width: 40, height: 40)
-                    .background(Theme.card, in: Circle())
-                    .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(CircleIconButtonStyle())
             .accessibilityLabel("Réglages")
         }
     }
 
     private var levelPill: some View {
         VStack(spacing: 0) {
+            // Même micro sur-titre que « SÉANCE DU JOUR » (DailySessionCard).
             Text("NIVEAU")
-                .font(.system(size: 9, weight: .bold))
+                .font(.system(size: 10, weight: .bold))
                 .kerning(0.5)
                 .foregroundStyle(Theme.subtext)
             Text("\(LevelSystem.level(forXP: totalXP))")
@@ -238,7 +230,7 @@ struct HomeView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 7)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+        .shadow(color: Theme.shadow, radius: 8, y: 4)
     }
 
     // MARK: - Nivelito
@@ -290,21 +282,10 @@ struct HomeView: View {
     // MARK: - CTA
 
     private var logMealButton: some View {
-        Button {
+        Button("+ Logger un repas") {
             showMealLog = true
-        } label: {
-            Text("+ Logger un repas")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    LinearGradient(colors: [Theme.accent, Theme.orange],
-                                   startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PrimaryButtonStyle())
     }
 }
 

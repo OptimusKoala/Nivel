@@ -47,9 +47,7 @@ struct SportView: View {
                             doneRow(entry)
                         }
                     } header: {
-                        Text("Fait aujourd'hui")
-                            .font(.footnote.weight(.bold))
-                            .foregroundStyle(Theme.subtext)
+                        Overline("Fait aujourd'hui")
                     }
                 }
             }
@@ -109,9 +107,7 @@ struct SportView: View {
                 .listRowBackground(Theme.card)
             }
         } header: {
-            Text(title)
-                .font(.footnote.weight(.bold))
-                .foregroundStyle(Theme.subtext)
+            Overline(title)
         }
     }
 

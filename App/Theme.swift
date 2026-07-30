@@ -153,6 +153,18 @@ enum Theme {
 
     static let cardRadius: CGFloat = 24
     static let buttonRadius: CGFloat = 22
+
+    /// Ombre douce commune (cartes, pastilles) — thème-aware : noir très léger sur
+    /// les palettes claires ; un peu plus présent sur Nuit douce, où 6 % de noir
+    /// disparaîtrait complètement et les cartes perdraient leur relief.
+    static var shadow: Color {
+        .black.opacity(ThemeStore.shared.palette.isDark ? 0.25 : 0.06)
+    }
+    /// Ombre des éléments flottants (bannière de célébration, barres collantes
+    /// des sheets) — légèrement plus marquée que celle des cartes.
+    static var floatingShadow: Color {
+        .black.opacity(ThemeStore.shared.palette.isDark ? 0.35 : 0.10)
+    }
 }
 
 extension Color {
@@ -168,7 +180,99 @@ struct CardStyle: ViewModifier {
         content
             .padding(14)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cardRadius))
-            .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+            .shadow(color: Theme.shadow, radius: 8, y: 4)
     }
 }
 extension View { func card() -> some View { modifier(CardStyle()) } }
+
+// MARK: - Styles de boutons partagés (v1.2)
+
+/// Bouton principal de l'app : dégradé accent→primaire, texte blanc, radius 22,
+/// léger enfoncement au tap (scale 0.97 + opacité), estompé à 40 % si désactivé.
+/// `.regular` prend toute la largeur (CTA d'écran) ; `.compact` épouse son
+/// contenu (bandeaux collants des sheets).
+struct PrimaryButtonStyle: ButtonStyle {
+    enum Size { case regular, compact }
+    var size: Size = .regular
+
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(.white)
+            .frame(maxWidth: size == .regular ? .infinity : nil)
+            .padding(.horizontal, size == .compact ? 20 : 0)
+            .padding(.vertical, size == .compact ? 14 : 16)
+            .background(
+                LinearGradient(colors: [Theme.accent, Theme.orange],
+                               startPoint: .leading, endPoint: .trailing),
+                in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
+            )
+            .opacity(isEnabled ? (configuration.isPressed ? 0.9 : 1) : 0.4)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
+/// Bouton secondaire discret : texte primaire semibold, sans fond
+/// (« Tout afficher », « Ouvrir les Réglages »…).
+struct SecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Theme.orange)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.5 : 1) : 0.4)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+/// Bouton icône rond (engrenage de l'accueil, chevrons du journal) : pastille
+/// card 40 pt, icône primaire, ombre douce, zone de tap 44 pt.
+struct CircleIconButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(isEnabled ? Theme.orange : Theme.subtext.opacity(0.4))
+            .frame(width: 40, height: 40)
+            .background(Theme.card, in: Circle())
+            .shadow(color: Theme.shadow, radius: 8, y: 4)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .animation(.spring(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Typographie partagée (v1.2)
+
+/// Titre de section des cartes et des sheets : « Poids », « Plat », « Durée »…
+struct SectionTitle: View {
+    private let title: String
+    init(_ title: String) { self.title = title }
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: 17, weight: .bold, design: .rounded))
+            .foregroundStyle(Theme.text)
+    }
+}
+
+/// Sur-titre en petites capitales : en-têtes de section des listes (journal,
+/// sport), des Réglages et de l'onboarding.
+struct Overline: View {
+    private let text: String
+    init(_ text: String) { self.text = text }
+
+    var body: some View {
+        Text(text)
+            .font(.footnote.weight(.bold))
+            .kerning(0.5)
+            .textCase(.uppercase)
+            .foregroundStyle(Theme.subtext)
+    }
+}

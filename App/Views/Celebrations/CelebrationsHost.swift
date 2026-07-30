@@ -123,7 +123,7 @@ private struct CelebrationBanner: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.cardRadius))
-        .shadow(color: .black.opacity(0.12), radius: 10, y: 5)
+        .shadow(color: Theme.floatingShadow, radius: 10, y: 5)
         .padding(.horizontal, 20)
         .padding(.top, 8)
     }

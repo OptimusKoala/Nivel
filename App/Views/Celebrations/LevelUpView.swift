@@ -131,20 +131,9 @@ struct LevelUpView: View {
                     .foregroundStyle(Theme.text)
                     .multilineTextAlignment(.center)
 
-                Button(action: onContinue) {
-                    Text("Continuer")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(colors: [Theme.accent, Theme.orange],
-                                           startPoint: .leading, endPoint: .trailing),
-                            in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 12)
+                Button("Continuer", action: onContinue)
+                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.top, 12)
             }
             .padding(32)
         }

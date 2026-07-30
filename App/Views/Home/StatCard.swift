@@ -23,11 +23,15 @@ struct StepsCard: View {
                 .foregroundStyle(Theme.text)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+                .contentTransition(.numericText())
             ThemedProgressBar(fraction: fraction, fill: Theme.blue)
             Text("obj. \(goal.frFormatted)")
                 .font(.caption2)
                 .foregroundStyle(Theme.subtext)
         }
+        // Le rafraîchissement des pas (refresh HealthKit) anime compteur et jauge
+        // (contentTransition numérique) au lieu de sauter d'une valeur à l'autre.
+        .animation(.snappy, value: steps)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .card()
         .accessibilityElement(children: .ignore)

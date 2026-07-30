@@ -42,6 +42,7 @@ struct CalorieRingCard: View {
                     .foregroundStyle(Theme.text)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
+                    .contentTransition(.numericText())
                 // Pas de "~" sur l'objectif : c'est un budget fixé, pas une estimation
                 // (cohérent avec le journal Repas et le graphe calories).
                 Text("/ \(target.frFormatted) kcal")
@@ -50,6 +51,9 @@ struct CalorieRingCard: View {
             }
             .padding(.horizontal, 14)
         }
+        // Un log/édition de repas anime l'anneau et fait défiler le compteur
+        // (contentTransition numérique) au lieu de sauter d'une valeur à l'autre.
+        .animation(.snappy, value: eaten)
         .padding(6) // le trait (12 pt) déborde du cercle géométrique
         .frame(maxWidth: 130, maxHeight: 130)
         .aspectRatio(1, contentMode: .fit)

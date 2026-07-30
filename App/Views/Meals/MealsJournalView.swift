@@ -113,12 +113,8 @@ struct MealsJournalView: View {
                                action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.headline)
-                .foregroundStyle(disabled ? Theme.subtext.opacity(0.4) : Theme.orange)
-                .frame(width: 40, height: 40)
-                .background(Theme.card, in: Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(CircleIconButtonStyle())
         .disabled(disabled)
     }
 
@@ -155,9 +151,7 @@ struct MealsJournalView: View {
                             mealRow(entry)
                         }
                     } header: {
-                        Text(slot.frLong)
-                            .font(.footnote.weight(.bold))
-                            .foregroundStyle(Theme.subtext)
+                        Overline(slot.frLong)
                     }
                 }
             }
@@ -229,21 +223,10 @@ struct MealsJournalView: View {
                 Text("Rien de loggé aujourd'hui pour l'instant.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.subtext)
-                Button {
+                Button("+ Logger un repas") {
                     showNewMeal = true
-                } label: {
-                    Text("+ Logger un repas")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 14)
-                        .background(
-                            LinearGradient(colors: [Theme.accent, Theme.orange],
-                                           startPoint: .leading, endPoint: .trailing),
-                            in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PrimaryButtonStyle(size: .compact))
             } else {
                 Text("Rien de loggé ce jour-là, et c'est OK 😌")
                     .font(.subheadline)

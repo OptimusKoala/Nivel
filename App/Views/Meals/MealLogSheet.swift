@@ -147,6 +147,8 @@ struct MealLogSheet: View {
             }
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
+        .presentationCornerRadius(28)
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: Créneau
@@ -174,7 +176,7 @@ struct MealLogSheet: View {
 
     private var dishSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("Plat")
+            SectionTitle("Plat")
             dishGrid(matchingDishes)
             if showsOtherDishes {
                 dishGrid(otherDishes)
@@ -183,12 +185,10 @@ struct MealLogSheet: View {
                     withAnimation(.snappy) { showAllDishes = true }
                 } label: {
                     Text("Tout afficher")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.orange)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(SecondaryButtonStyle())
             }
         }
     }
@@ -235,7 +235,7 @@ struct MealLogSheet: View {
 
     private var portionSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("Portion")
+            SectionTitle("Portion")
             HStack(spacing: 8) {
                 ForEach(Portion.allCases, id: \.self) { candidate in
                     Button {
@@ -259,7 +259,7 @@ struct MealLogSheet: View {
 
     private var extrasSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("Extras")
+            SectionTitle("Extras")
             HStack(spacing: 8) {
                 ForEach(desserts) { dessert in
                     dessertChip(dessert)
@@ -387,26 +387,14 @@ struct MealLogSheet: View {
                     .animation(.snappy, value: estimatedKcal)
             }
             Spacer()
-            Button(action: validate) {
-                Text(isEditing ? "Enregistrer" : "Valider (+20 XP)")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 14)
-                    .background(
-                        LinearGradient(colors: [Theme.accent, Theme.orange],
-                                       startPoint: .leading, endPoint: .trailing),
-                        in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                    )
-                    .opacity(selectedDish == nil ? 0.4 : 1)
-            }
-            .buttonStyle(.plain)
-            .disabled(selectedDish == nil || isSaving)
+            Button(isEditing ? "Enregistrer" : "Valider (+20 XP)", action: validate)
+                .buttonStyle(PrimaryButtonStyle(size: .compact))
+                .disabled(selectedDish == nil || isSaving)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
         .background(Theme.card.ignoresSafeArea(edges: .bottom))
-        .shadow(color: .black.opacity(0.08), radius: 10, y: -4)
+        .shadow(color: Theme.floatingShadow, radius: 10, y: -4)
     }
 
     private func validate() {
@@ -425,14 +413,6 @@ struct MealLogSheet: View {
             }
             dismiss()
         }
-    }
-
-    // MARK: Aide
-
-    private func sectionTitle(_ title: String) -> some View {
-        Text(title)
-            .font(.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(Theme.text)
     }
 }
 

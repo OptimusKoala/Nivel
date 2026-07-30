@@ -23,7 +23,7 @@ struct SpeechBubble: View {
                     style: .continuous
                 )
                 .fill(Theme.card)
-                .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+                .shadow(color: Theme.shadow, radius: 8, y: 4)
             )
     }
 }

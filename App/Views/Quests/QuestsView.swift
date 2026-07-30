@@ -46,7 +46,6 @@ struct QuestsView: View {
         .task { await game.refreshQuestProgress() }
         .sheet(item: $selectedBadge) { badge in
             BadgeDetailSheet(badge: badge, unlockDate: badgeUnlocks[badge.id])
-                .presentationDetents([.medium])
         }
     }
 
@@ -54,17 +53,22 @@ struct QuestsView: View {
 
     private var weeklyQuestsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("Quêtes de la semaine")
+            SectionTitle("Quêtes de la semaine")
 
             let statuses = game.activeQuestStatuses()
             if statuses.isEmpty {
                 // Aucun tirage pour la semaine courante (rollover en attente du
-                // DayCloser) : pas de reproche, juste l'info du rendez-vous du lundi.
-                Text("Tes prochaines quêtes arrivent bientôt !")
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.subtext)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .card()
+                // DayCloser) : pas de reproche, juste l'info du rendez-vous du lundi
+                // — même motif d'état vide que le journal (Nivelito + phrase douce).
+                HStack(spacing: 12) {
+                    NivelitoView(expression: .happy, size: 56)
+                    Text("Tes prochaines quêtes arrivent bientôt !")
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.subtext)
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .card()
             } else {
                 ForEach(statuses) { status in
                     WeeklyQuestCard(status: status)
@@ -83,7 +87,7 @@ struct QuestsView: View {
     private var trophiesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
-                sectionTitle("Trophées")
+                SectionTitle("Trophées")
                 Spacer()
                 Text("\(badgeUnlocks.count) / \(badges.count)")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -100,12 +104,6 @@ struct QuestsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card()
-    }
-
-    private func sectionTitle(_ title: String) -> some View {
-        Text(title)
-            .font(.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(Theme.text)
     }
 }
 
@@ -258,6 +256,9 @@ private struct BadgeDetailSheet: View {
             .padding(24)
             .multilineTextAlignment(.center)
         }
+        .presentationDetents([.medium])
+        .presentationCornerRadius(28)
+        .presentationDragIndicator(.visible)
         // onAppear (pas body) : nivelitoSays persiste le dernier message utilisé.
         .onAppear { nivelitoPhrase = game.nivelitoSays(context: .badge) }
     }

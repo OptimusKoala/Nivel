@@ -66,6 +66,7 @@ private struct MainTabView: View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .id(dayKey)
+                .themedTabBar()
                 .tabItem { Label("Accueil", systemImage: "house.fill") }
                 .tag(Tab.home)
 
@@ -73,6 +74,7 @@ private struct MainTabView: View {
             // quand le jour change (retour au premier plan après minuit).
             MealsJournalView()
                 .id(dayKey)
+                .themedTabBar()
                 .tabItem { Label("Repas", systemImage: "fork.knife") }
                 .tag(Tab.meals)
 
@@ -80,12 +82,14 @@ private struct MainTabView: View {
             // sur le bon jour au retour au premier plan après minuit.
             SportView()
                 .id(dayKey)
+                .themedTabBar()
                 .tabItem { Label("Sport", systemImage: "figure.walk") }
                 .tag(Tab.sport)
 
             // .id(dayKey) : les bornes "aujourd'hui" (pas, pesée) suivent le changement de jour.
             ProgressScreen()
                 .id(dayKey)
+                .themedTabBar()
                 .tabItem { Label("Progrès", systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(Tab.progress)
 
@@ -93,6 +97,7 @@ private struct MainTabView: View {
             // (retour au premier plan après minuit — dont le lundi de renouvellement).
             QuestsView()
                 .id(dayKey)
+                .themedTabBar()
                 .tabItem { Label("Quêtes", systemImage: "trophy.fill") }
                 .tag(Tab.quests)
         }
@@ -131,6 +136,17 @@ private struct MainTabView: View {
 
     private static func currentDayKey() -> Date {
         GameService.dayKey(for: .now)
+    }
+}
+
+private extension View {
+    /// Tab bar alignée sur le thème (v1.2) : fond `Theme.card` opaque — le même
+    /// que les cartes — au lieu du matériau système, qui ignorerait la palette.
+    /// À appliquer sur CHAQUE onglet (le réglage est porté par le contenu).
+    func themedTabBar() -> some View {
+        self
+            .toolbarBackground(Theme.card, for: .tabBar)
+            .toolbarBackground(.visible, for: .tabBar)
     }
 }
 

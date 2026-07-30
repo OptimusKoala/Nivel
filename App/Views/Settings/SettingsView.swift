@@ -13,11 +13,15 @@ struct SettingsView: View {
     @Query private var profiles: [UserProfile]
 
     var body: some View {
-        if let profile = profiles.first {
-            SettingsContent(profile: profile)
-        } else {
-            ZStack { Theme.background.ignoresSafeArea() }
+        Group {
+            if let profile = profiles.first {
+                SettingsContent(profile: profile)
+            } else {
+                ZStack { Theme.background.ignoresSafeArea() }
+            }
         }
+        .presentationCornerRadius(28)
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -161,21 +165,10 @@ private struct SettingsContent: View {
                 .pickerStyle(.menu)
             }
 
-            Button {
+            Button("Recalculer mon objectif") {
                 recalcProposal = computedTarget
-            } label: {
-                Text("Recalculer mon objectif")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(
-                        LinearGradient(colors: [Theme.accent, Theme.orange],
-                                       startPoint: .leading, endPoint: .trailing),
-                        in: RoundedRectangle(cornerRadius: Theme.buttonRadius)
-                    )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PrimaryButtonStyle())
             .padding(.top, 4)
         }
     }
@@ -296,8 +289,7 @@ private struct SettingsContent: View {
                     openURL(url)
                 }
             }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(Theme.orange)
+            .buttonStyle(SecondaryButtonStyle())
         }
     }
 
@@ -323,10 +315,7 @@ private struct SettingsContent: View {
 
     private func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(Theme.subtext)
-                .textCase(.uppercase)
+            Overline(title)
             content()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
