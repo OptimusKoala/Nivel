@@ -3,6 +3,7 @@ import Foundation
 
 public enum XPAction: String, Codable, Sendable {
     case mealLogged, weighIn, dayWithinTarget, stepGoalReached, questCompleted, badgeUnlocked
+    case activityDone, dailySessionDone
 }
 
 public enum XPEngine {
@@ -15,6 +16,8 @@ public enum XPEngine {
         case .stepGoalReached: 40
         case .questCompleted:  150
         case .badgeUnlocked:   50
+        case .activityDone:    todayCount < 2 ? 30 : 0
+        case .dailySessionDone: todayCount < 1 ? 40 : 0
         }
     }
 }

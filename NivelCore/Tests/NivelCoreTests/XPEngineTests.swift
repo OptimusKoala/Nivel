@@ -19,4 +19,15 @@ final class XPEngineTests: XCTestCase {
         XCTAssertEqual(XPEngine.award(.questCompleted, todayCount: 2), 150)
         XCTAssertEqual(XPEngine.award(.badgeUnlocked, todayCount: 5), 50)
     }
+
+    func testActivityXPCappedAtTwoPerDay() {
+        XCTAssertEqual(XPEngine.award(.activityDone, todayCount: 0), 30)
+        XCTAssertEqual(XPEngine.award(.activityDone, todayCount: 1), 30)
+        XCTAssertEqual(XPEngine.award(.activityDone, todayCount: 2), 0)
+    }
+
+    func testDailySessionXPCappedAtOnePerDay() {
+        XCTAssertEqual(XPEngine.award(.dailySessionDone, todayCount: 0), 40)
+        XCTAssertEqual(XPEngine.award(.dailySessionDone, todayCount: 1), 0)
+    }
 }
