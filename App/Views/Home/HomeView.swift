@@ -1,7 +1,7 @@
 // App/Views/Home/HomeView.swift
 // Accueil (spec §4.1, maquette design-home.html) : en-tête (date, salut, niveau),
 // Nivelito + bulle contextuelle, anneau calories + colonne pas/XP, quête la plus
-// avancée, bouton "+ Logger un repas".
+// avancée, bouton "+ Logger un repas", carte « Séance du jour » (spec sport §8.2).
 
 import SwiftUI
 import SwiftData
@@ -18,6 +18,9 @@ struct HomeView: View {
     @State private var steps: Int?
     @State private var bubbleText = ""
     @State private var lastBubbleContext: MessageContext?
+    /// Vrai tant qu'une bulle de récompense (repas/activité) est affichée : protège
+    /// contre le `refresh()` asynchrone de la MÊME apparition qui l'écraserait sinon.
+    @State private var rewardBubbleActive = false
     @State private var showMealLog = false
     @State private var showSettings = false
     @State private var sessionStatus: (session: ActivitySession, done: Bool)?
@@ -51,6 +54,23 @@ struct HomeView: View {
     /// Quête active la plus avancée non complétée — nil si aucune (carte masquée).
     static func featuredQuest(from statuses: [ActiveQuestStatus]) -> ActiveQuestStatus? {
         statuses.filter { !$0.isCompleted }.max { $0.fraction < $1.fraction }
+    }
+
+    /// Décision de bulle — logique PURE, testable (HomeDashboardTests) :
+    /// récompense repas prioritaire, sinon activité, sinon contexte normal
+    /// (gardé anti-churn par l'appelant).
+    enum BubbleDecision: Equatable {
+        case reward(MessageContext, Int)
+        case context(MessageContext, Int?)
+    }
+
+    static func bubbleDecision(
+        mealXP: Int?, activityXP: Int?,
+        fallback: MessageContext, fallbackValue: Int?
+    ) -> BubbleDecision {
+        if let mealXP, mealXP > 0 { return .reward(.afterMealLog, mealXP) }
+        if let activityXP, activityXP > 0 { return .reward(.afterActivity, activityXP) }
+        return .context(fallback, fallbackValue)
     }
 
     // MARK: - Corps
@@ -87,6 +107,9 @@ struct HomeView: View {
             .refreshable { await refresh() }
         }
         .onAppear {
+            // Nouvelle apparition = nouvelle chance d'écraser une bulle de récompense
+            // (celle de l'apparition précédente n'a plus lieu d'être protégée).
+            rewardBubbleActive = false
             sessionStatus = game.dailySessionStatus()
             updateBubble()
         }
@@ -121,9 +144,10 @@ struct HomeView: View {
         updateBubble()
     }
 
-    /// Recalcule la bulle uniquement quand le CONTEXTE change (nouvelle célébration,
-    /// nouvelle tranche horaire…) : les retours sur l'onglet ne font pas churner le
-    /// message, mais un événement survenu entre-temps est bien reflété.
+    /// Bulle de récompense (repas/activité) prioritaire, sinon contexte normal —
+    /// recalculé uniquement quand celui-ci change (nouvelle célébration, nouvelle
+    /// tranche horaire…) pour ne pas churner le message à chaque retour sur l'onglet.
+    /// Décision déléguée à `Self.bubbleDecision` (pure, testée dans HomeDashboardTests).
     private func updateBubble() {
         // Consomme les DEUX signaux à chaque passage : si le repas gagne la priorité,
         // le signal d'activité ne doit pas survivre et ressortir en bulle périmée.
@@ -132,23 +156,28 @@ struct HomeView: View {
         game.lastMealXPAwarded = nil
         game.lastActivityXPAwarded = nil
 
-        // Bulle "après log" prioritaire (spec §4.2) : repas d'abord (cas rarissime où
-        // les deux sont en attente), sinon activité. À 0 XP (plafond atteint), pas de
-        // bulle de récompense — on retombe sur le contexte normal ci-dessous.
-        if let mealXP, mealXP > 0 {
-            lastBubbleContext = .afterMealLog
-            bubbleText = game.nivelitoSays(context: .afterMealLog, value: mealXP)
-            return
-        }
-        if let activityXP, activityXP > 0 {
-            lastBubbleContext = .afterActivity
-            bubbleText = game.nivelitoSays(context: .afterActivity, value: activityXP)
-            return
-        }
         let (context, value) = game.homeMessageContext()
-        guard context != lastBubbleContext else { return }
-        lastBubbleContext = context
-        bubbleText = game.nivelitoSays(context: context, value: value)
+
+        switch Self.bubbleDecision(mealXP: mealXP, activityXP: activityXP,
+                                   fallback: context, fallbackValue: value) {
+        case .reward(let rewardContext, let rewardValue):
+            // Bulle "après log" prioritaire (spec §4.2) : repas d'abord (cas rarissime
+            // où les deux sont en attente), sinon activité.
+            lastBubbleContext = rewardContext
+            bubbleText = game.nivelitoSays(context: rewardContext, value: rewardValue)
+            rewardBubbleActive = true
+        case .context(let context, let value):
+            // Une bulle de récompense ne cède la place qu'à une célébration : sinon le
+            // refresh() asynchrone de la MÊME apparition l'écraserait aussitôt.
+            if rewardBubbleActive, context != .levelUp, context != .badge { return }
+            rewardBubbleActive = false
+            // Recalcule uniquement quand le CONTEXTE change (nouvelle célébration,
+            // nouvelle tranche horaire…) : les retours sur l'onglet ne font pas churner
+            // le message, mais un événement survenu entre-temps est bien reflété.
+            guard context != lastBubbleContext else { return }
+            lastBubbleContext = context
+            bubbleText = game.nivelitoSays(context: context, value: value)
+        }
     }
 
     // MARK: - En-tête
@@ -320,12 +349,15 @@ private func homePreviewFixture(
     context.insert(MealEntry(slot: .lunch, dishID: "pasta", portion: .normal,
                              estimatedKcal: kcalEaten))
 
+    // Même session que la rotation du jour, spec sport §3.3 (mirroir de SportView).
     if sessionDone {
         let sessions = (try? Catalogs.sessions()) ?? []
-        let refID = DailySessionPicker.session(for: .now, sessions: sessions,
-                                               calendar: GameService.calendar)?.id ?? "wake_up"
-        context.insert(ActivityEntry(date: .now, kind: .dailySession, refID: refID,
-                                     durationMinutes: 10, estimatedKcal: 60, xpAwarded: 40))
+        if let todaySession = DailySessionPicker.session(for: .now, sessions: sessions,
+                                                         calendar: GameService.calendar) {
+            context.insert(ActivityEntry(kind: .dailySession, refID: todaySession.id,
+                                         durationMinutes: todaySession.totalMinutes,
+                                         estimatedKcal: 120, xpAwarded: 40))
+        }
     }
 
     let quests = (try? Catalogs.quests()) ?? []

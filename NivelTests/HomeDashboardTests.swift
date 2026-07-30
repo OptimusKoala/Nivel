@@ -122,6 +122,22 @@ final class HomeDashboardTests: XCTestCase {
         XCTAssertEqual(service.lastMealXPAwarded, 0)
     }
 
+    // MARK: - Décision de bulle (repas vs activité vs contexte normal)
+
+    func testBubbleDecisionPriorities() {
+        // Repas > activité quand les deux signaux sont en attente.
+        XCTAssertEqual(HomeView.bubbleDecision(mealXP: 20, activityXP: 30, fallback: .morning, fallbackValue: nil),
+                       .reward(.afterMealLog, 20))
+        // Repas plafonné (0) → l'activité prend la main.
+        XCTAssertEqual(HomeView.bubbleDecision(mealXP: 0, activityXP: 30, fallback: .morning, fallbackValue: nil),
+                       .reward(.afterActivity, 30))
+        // Aucun signal (nil ou 0) → contexte normal.
+        XCTAssertEqual(HomeView.bubbleDecision(mealXP: nil, activityXP: 0, fallback: .evening, fallbackValue: nil),
+                       .context(.evening, nil))
+        XCTAssertEqual(HomeView.bubbleDecision(mealXP: nil, activityXP: nil, fallback: .levelUp, fallbackValue: 5),
+                       .context(.levelUp, 5))
+    }
+
     // MARK: - Quêtes
 
     func testActiveQuestStatusesReflectStateAndCompletion() throws {
