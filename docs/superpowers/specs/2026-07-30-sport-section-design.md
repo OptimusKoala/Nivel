@@ -102,7 +102,7 @@ Extension de la façade existante, mêmes patterns que `logMeal` :
 
 ### 7.1 Quêtes (ajout à `quests.json` + 2 métriques dans `QuestEngine`)
 
-Nouvelles métriques : `activitiesDone` (toute `ActivityEntry` de la semaine, libres **et** séances) et `dailySessionsDone` (kind `dailySession` uniquement). `requiresSteps: false` — toujours éligibles au tirage.
+Nouvelles métriques : `activitiesDone` (toute `ActivityEntry` de la semaine, libres **et** séances) et `dailySessionsDone` (**jours distincts** avec au moins une séance du jour — une double validation le même jour ne compte qu'une fois, la séance étant par nature quotidienne). `requiresSteps: false` — toujours éligibles au tirage.
 
 | id | Quête | Métrique | Cible |
 |---|---|---|---|
@@ -114,7 +114,7 @@ Elles entrent dans le tirage du lundi automatiquement (les installs en cours de 
 
 ### 7.2 Badges (ajout à `badges.json` + `BadgeStats`)
 
-Nouveaux compteurs : `stats.activitiesDone` (all-time, tous kinds), `stats.dailySessionsDone` (all-time).
+Nouveaux compteurs : `stats.activitiesDone` (all-time, tous kinds), `stats.dailySessionsDone` (all-time, **jours distincts** — cohérent avec la métrique de quête).
 
 | id | Badge | Critère |
 |---|---|---|
