@@ -23,14 +23,14 @@
 2. `xcodegen generate` requis après création/suppression de fichiers Swift (Tasks 3, 4, 5) — PAS nécessaire pour les assets (`Assets.xcassets` est référencé en dossier).
 3. Les imagesets doivent porter EXACTEMENT les ids des catalogues (un test le garantit, Task 1).
 4. `SessionDetailSheet` est supprimé en Task 5 : ses deux call sites (`HomeView`, `SportView`) basculent dans le même commit, sinon le build casse.
-5. Les sources PNG 1254px (38 Mo) restent dans `design/sport/` et sont committées (convention `design/`) mais ne doivent JAMAIS être ajoutées au bundle app.
+5. Les sources PNG 1254px (~26 Mo) sont déjà committées dans `design/sport/` (convention `design/`) mais ne doivent JAMAIS être ajoutées au bundle app.
 
 ---
 
 ## Task 1 : Assets — pipeline d'import + catalogue `Sport/` + test de présence
 
 **Files:**
-- Commit: `design/sport/*.png` (20 sources, actuellement untracked)
+- Vérifier: `design/sport/*.png` (20 sources, DÉJÀ committées sur main)
 - Create: `scripts/import-sport-images.sh`
 - Create: `App/Assets.xcassets/Sport/` (généré par le script — 20 imagesets JPEG 750px)
 - Test: `NivelTests/SportAssetsTests.swift`
@@ -108,7 +108,7 @@ Expected: `OK : 20 imagesets générés`. Vérifier le poids : `du -sh App/Asset
 - [ ] **Step 4 : Vérifier le vert**
 
 Run: `xcodebuild -project Nivel.xcodeproj -scheme Nivel -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test 2>&1 | tail -5`
-Expected: TEST SUCCEEDED (34 tests : 33 + le nouveau).
+Expected: TEST SUCCEEDED (35 tests : 34 + le nouveau).
 Note : pas de `xcodegen generate` nécessaire pour les assets, mais il a déjà été lancé au Step 2 pour le fichier de test.
 
 - [ ] **Step 5 : Commit**
@@ -258,7 +258,7 @@ Dans `ActivityCatalog.swift` :
 - [ ] **Step 6 : Vérifier le vert complet**
 
 Run: `cd NivelCore && swift test`
-Expected: PASS, 50 tests (47 + 3 nouveaux). Puis suite app : TEST SUCCEEDED, 34 tests (rien ne consomme encore les nouveaux champs, mais le décodage est exercé partout).
+Expected: PASS, 50 tests (47 + 3 nouveaux). Puis suite app : TEST SUCCEEDED, 35 tests (rien ne consomme encore les nouveaux champs, mais le décodage est exercé partout).
 
 - [ ] **Step 7 : Commit**
 
@@ -344,7 +344,7 @@ struct SportHeroIllustration: View {
 - [ ] **Step 3 : Build + previews**
 
 Run: `xcodegen generate && xcodebuild -project Nivel.xcodeproj -scheme Nivel -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test 2>&1 | tail -5`
-Expected: TEST SUCCEEDED, 34 tests. Vérifier les previews SportView/HomeView dans Xcode (vignettes visibles, fallback testable en passant un name bidon dans un preview temporaire, ne pas le committer).
+Expected: TEST SUCCEEDED, 35 tests. Vérifier les previews SportView/HomeView dans Xcode (vignettes visibles, fallback testable en passant un name bidon dans un preview temporaire, ne pas le committer).
 
 - [ ] **Step 4 : Commit**
 
@@ -373,9 +373,7 @@ Dans le `VStack` du `ScrollView`, remplacer l'en-tête actuel (emoji 40pt + nom)
 puis AVANT la section « Durée », insérer :
 
 ```swift
-                    Text("Comment faire")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.text)
+                    SectionTitle("Comment faire")   // composant partagé v1.2 (comme SectionTitle("Durée") juste dessous)
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(activity.instructions, id: \.self) { line in
                             HStack(alignment: .top, spacing: 8) {
@@ -391,7 +389,7 @@ puis AVANT la section « Durée », insérer :
 
 - [ ] **Step 2 : Build + tests + vérif preview**
 
-Run: `xcodebuild ... test 2>&1 | tail -5` → TEST SUCCEEDED, 34 tests. Preview : l'illustration s'affiche, les puces sont lisibles, le choix de durée et le CTA n'ont pas bougé.
+Run: `xcodebuild ... test 2>&1 | tail -5` → TEST SUCCEEDED, 35 tests. Preview : l'illustration s'affiche, les puces sont lisibles, le choix de durée et le CTA n'ont pas bougé.
 
 - [ ] **Step 3 : Commit**
 
@@ -643,7 +641,11 @@ struct SessionPlayerSheet: View {
 }
 ```
 
-⚠️ La branche v1.2 a introduit des styles partagés dans `Theme.swift` (`PrimaryButtonStyle`, `SecondaryButtonStyle`, sheets uniformisées radius 28 + poignée). **Le `ctaButton` ci-dessus doit utiliser `PrimaryButtonStyle`** (regarder comment `MealLogSheet`/`ActivityLogSheet` l'appliquent sur la branche et reproduire ce pattern exact) au lieu du gradient inline montré ici, et la présentation de la sheet doit suivre la convention v1.2. Idem pour les sections titres si `SectionTitle` existe.
+⚠️ CONVENTIONS v1.2 (obligatoires, le code ci-dessus est un GABARIT à adapter) :
+- `ctaButton` → utiliser **`PrimaryButtonStyle`** comme `MealLogSheet`/`ActivityLogSheet` (reproduire leur pattern exact), pas le gradient inline montré ici ;
+- ombre de `bottomBar` → **`Theme.floatingShadow`**, pas `.black.opacity(0.08)` ;
+- sheet → ajouter **`.presentationCornerRadius(28)`** (convention sheets v1.2) ;
+- « Séance du jour » de la page aperçu → composant **`Overline`** (comme l'ancien `SessionDetailSheet`).
 
 - [ ] **Step 4 : Basculer les call sites et supprimer l'ancienne sheet**
 
@@ -655,7 +657,7 @@ struct SessionPlayerSheet: View {
 - [ ] **Step 5 : Vérifier le vert**
 
 Run: `xcodebuild ... test 2>&1 | tail -5`
-Expected: TEST SUCCEEDED, 35 tests (34 + SessionPlayerTests). Vérifier au passage : `grep -rn "SessionDetailSheet" App NivelTests` → vide.
+Expected: TEST SUCCEEDED, 36 tests (35 + SessionPlayerTests). Vérifier au passage : `grep -rn "SessionDetailSheet" App NivelTests` → vide.
 
 - [ ] **Step 6 : Commit**
 
@@ -673,7 +675,7 @@ git add -A && git commit -m "feat(app): player pas-à-pas de la séance du jour 
 - [ ] **Step 1 : Suites complètes**
 
 Run: `cd NivelCore && swift test && cd .. && xcodebuild -project Nivel.xcodeproj -scheme Nivel -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test 2>&1 | tail -5`
-Expected: 50 tests NivelCore + 35 tests app, tout vert.
+Expected: 50 tests NivelCore + 36 tests app, tout vert.
 
 - [ ] **Step 2 : README**
 
