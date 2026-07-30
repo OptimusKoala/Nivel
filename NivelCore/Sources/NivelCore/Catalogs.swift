@@ -34,4 +34,6 @@ public enum Catalogs {
     public static func extras() throws -> [Extra] { try load("extras") }
     public static func quests() throws -> [Quest] { try load("quests") }
     public static func badges() throws -> [Badge] { try load("badges") }
+    public static func activities() throws -> [Activity] { try load("activities") }
+    public static func sessions() throws -> [ActivitySession] { try load("sessions") }
 }

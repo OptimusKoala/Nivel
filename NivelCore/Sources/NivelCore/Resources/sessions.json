@@ -1,0 +1,10 @@
+[
+  {"id": "wake_up",           "title": "Réveil musculaire",   "emoji": "🌅", "steps": [{"activityID": "stretching", "minutes": 4}, {"activityID": "squats", "minutes": 4}, {"activityID": "plank", "minutes": 3}]},
+  {"id": "energy_break",      "title": "Pause énergie",       "emoji": "⚡", "steps": [{"activityID": "stairs", "minutes": 5}, {"activityID": "dance", "minutes": 5}, {"activityID": "stretching", "minutes": 3}]},
+  {"id": "evening_wind_down", "title": "Détente du soir",     "emoji": "🌙", "steps": [{"activityID": "yoga", "minutes": 8}, {"activityID": "stretching", "minutes": 5}]},
+  {"id": "quick_tone",        "title": "Tonus express",       "emoji": "💪", "steps": [{"activityID": "squats", "minutes": 4}, {"activityID": "wall_pushups", "minutes": 4}, {"activityID": "plank", "minutes": 4}]},
+  {"id": "fresh_air",         "title": "Bol d'air",           "emoji": "🚶", "steps": [{"activityID": "walk", "minutes": 15}]},
+  {"id": "mood_boost",        "title": "Boost bonne humeur",  "emoji": "🎵", "steps": [{"activityID": "dance", "minutes": 10}, {"activityID": "stretching", "minutes": 4}]},
+  {"id": "zen_core",          "title": "Zen & gainage",       "emoji": "🧘", "steps": [{"activityID": "yoga", "minutes": 6}, {"activityID": "plank", "minutes": 4}, {"activityID": "stretching", "minutes": 4}]},
+  {"id": "home_cardio",       "title": "Cardio maison",       "emoji": "🪜", "steps": [{"activityID": "stairs", "minutes": 6}, {"activityID": "squats", "minutes": 3}, {"activityID": "stretching", "minutes": 4}]}
+]

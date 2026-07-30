@@ -1,0 +1,14 @@
+[
+  {"id": "walk",            "name": "Marche",               "emoji": "🚶",  "location": "outdoor", "kcalPerMin": 4.0, "durations": [10, 20, 40]},
+  {"id": "brisk_walk",      "name": "Marche rapide",        "emoji": "🚶‍♀️", "location": "outdoor", "kcalPerMin": 5.5, "durations": [10, 20, 30]},
+  {"id": "bike",            "name": "Vélo tranquille",      "emoji": "🚴",  "location": "outdoor", "kcalPerMin": 6.0, "durations": [15, 30, 45]},
+  {"id": "stairs",          "name": "Montées d'escaliers",  "emoji": "🪜",  "location": "both",    "kcalPerMin": 8.0, "durations": [5, 10, 15]},
+  {"id": "dance",           "name": "Danse libre",          "emoji": "💃",  "location": "home",    "kcalPerMin": 5.5, "durations": [10, 15, 25]},
+  {"id": "stretching",      "name": "Étirements",           "emoji": "🧘",  "location": "home",    "kcalPerMin": 2.5, "durations": [5, 10, 15]},
+  {"id": "plank",           "name": "Gainage / planche",    "emoji": "🧎",  "location": "home",    "kcalPerMin": 4.0, "durations": [3, 5, 8]},
+  {"id": "squats",          "name": "Squats",               "emoji": "🦵",  "location": "home",    "kcalPerMin": 5.5, "durations": [3, 5, 10]},
+  {"id": "wall_pushups",    "name": "Pompes murales",       "emoji": "🧱",  "location": "home",    "kcalPerMin": 4.0, "durations": [3, 5, 8]},
+  {"id": "active_cleaning", "name": "Ménage actif",         "emoji": "🧹",  "location": "home",    "kcalPerMin": 3.5, "durations": [15, 30, 45]},
+  {"id": "yoga",            "name": "Yoga doux",            "emoji": "🧘‍♀️", "location": "home",    "kcalPerMin": 3.0, "durations": [10, 20, 30]},
+  {"id": "digestive_walk",  "name": "Balade digestive",     "emoji": "🌳",  "location": "outdoor", "kcalPerMin": 3.5, "durations": [10, 15, 20]}
+]
