@@ -78,8 +78,9 @@ struct HomeView: View {
         .sheet(isPresented: $showMealLog, onDismiss: updateBubble) {
             MealLogSheet()
         }
-        .sheet(isPresented: $showSettings) {
+        .sheet(isPresented: $showSettings, onDismiss: updateBubble) {
             SettingsView()
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -132,10 +133,12 @@ struct HomeView: View {
             } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.headline)
-                    .foregroundStyle(Theme.subtext)
+                    .foregroundStyle(Theme.orange)
                     .frame(width: 40, height: 40)
                     .background(Theme.card, in: Circle())
                     .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Réglages")
