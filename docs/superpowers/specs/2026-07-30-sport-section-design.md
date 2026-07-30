@@ -62,7 +62,7 @@ Chaque séance : `id`, `title`, `emoji`, `steps` (liste ordonnée de `{activityI
 
 ### 3.3 Séance du jour — rotation déterministe
 
-`indexDuJour = (nombre de jours calendaires écoulés depuis une date de référence fixe) % sessions.count`, calculé avec le calendrier canonique de `GameService`. Aucun aléatoire, aucune persistance : **les deux iPhones affichent la même séance le même jour** sans synchronisation (« t'as fait la séance du jour ? »). La logique vit dans NivelCore (testable avec des dates injectées).
+`indexDuJour = (nombre de jours calendaires écoulés depuis le **1ᵉʳ janvier 2026**, date de référence fixe) % sessions.count`, calculé avec le calendrier canonique de `GameService`. Aucun aléatoire, aucune persistance : **les deux iPhones affichent la même séance le même jour** sans synchronisation (« t'as fait la séance du jour ? »). La logique vit dans NivelCore (testable avec des dates injectées).
 
 ## 4. Modèle de données
 
@@ -94,7 +94,7 @@ Extension de la façade existante, mêmes patterns que `logMeal` :
 
 - `logActivity(activity:durationMinutes:date:)` et `logDailySession(session:date:)` : insertion `ActivityEntry`, XP plafonné, `refreshQuestProgress()`, `evaluateBadges()`, `detectLevelUp()`, `saveOrAssert()`.
 - `lastActivityXPAwarded: Int?` (miroir de `lastMealXPAwarded`) : consommé par l'accueil pour la bulle `afterActivity`. Si un log de repas et une activité sont en attente, le repas garde la priorité (cas rarissime).
-- `deleteActivity(entry:)` : jour même uniquement (swipe), XP conservé, quêtes/badges réévalués — comme `deleteMeal`.
+- `deleteActivity(entry:)` : jour même uniquement (swipe), XP conservé, quêtes/badges réévalués — comme `deleteMeal`. Cas assumé (hérité du pattern repas) : supprimer une entrée récompensée fait baisser le compteur du jour, un re-log peut donc être récompensé à nouveau — acceptable pour une app de confiance à deux utilisateurs.
 - `dailySession(for date:)` : expose la séance du jour (rotation §3.3) + l'état « déjà faite aujourd'hui » (existence d'une `ActivityEntry` kind `dailySession` du jour).
 - `todayActivities()` : entrées du jour pour la liste « Fait aujourd'hui ».
 
