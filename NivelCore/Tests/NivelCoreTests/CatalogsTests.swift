@@ -16,11 +16,13 @@ final class CatalogsTests: XCTestCase {
 
     func testQuestsLoadAndIdsAreUnique() throws {
         let quests = try Catalogs.quests()
-        XCTAssertEqual(quests.count, 15)
-        XCTAssertEqual(Set(quests.map(\.id)).count, 15)
+        XCTAssertEqual(quests.count, 18)
+        XCTAssertEqual(Set(quests.map(\.id)).count, 18)
         // Guards the eligible-pool invariant: steps-denied users must still have at least
         // 3 quests to draw from, so a future catalog edit can't silently break weeklyDraw.
         XCTAssertGreaterThanOrEqual(quests.filter { !$0.requiresSteps }.count, 3)
+        XCTAssertTrue(quests.contains { $0.id == "activities_3" && $0.metric == .activitiesDone })
+        XCTAssertTrue(quests.contains { $0.id == "daily_sessions_2" && $0.metric == .dailySessionsDone })
     }
 
     func testBadgesLoadAndIdsAreUnique() throws {

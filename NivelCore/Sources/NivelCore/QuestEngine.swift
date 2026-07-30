@@ -3,7 +3,8 @@ import Foundation
 public struct Quest: Codable, Identifiable, Hashable, Sendable {
     public enum Metric: String, Codable, Sendable {
         case mealsLogged, weeklySteps, weighIns,
-             daysWithinTarget, daysWithoutAlcohol, lightDessertDays, stepGoalDays
+             daysWithinTarget, daysWithoutAlcohol, lightDessertDays, stepGoalDays,
+             activitiesDone, dailySessionsDone
     }
     public let id: String
     public let title: String

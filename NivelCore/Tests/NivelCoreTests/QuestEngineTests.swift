@@ -15,7 +15,7 @@ final class QuestEngineTests: XCTestCase {
         let b = QuestEngine.weeklyDraw(pool: pool, weekID: "2026-W31", stepsAvailable: true)
         XCTAssertEqual(a.map(\.id), b.map(\.id))
         let c = QuestEngine.weeklyDraw(pool: pool, weekID: "2026-W32", stepsAvailable: true)
-        XCTAssertNotEqual(a.map(\.id), c.map(\.id)) // très probable ; pool de 15
+        XCTAssertNotEqual(a.map(\.id), c.map(\.id)) // très probable ; pool de 18
     }
 
     func testExcludesStepQuestsWhenHealthKitDenied() throws {
@@ -32,7 +32,7 @@ final class QuestEngineTests: XCTestCase {
         // if it ever changes, this regression test will catch the silent change in weekly draws.
         let pool = try Catalogs.quests()
         let drawn = QuestEngine.weeklyDraw(pool: pool, weekID: "2026-W31", stepsAvailable: true)
-        XCTAssertEqual(drawn.map(\.id), ["log_dinners_5", "light_dessert_5", "log_meals_14"])
+        XCTAssertEqual(drawn.map(\.id), ["log_meals_10", "steps_25k", "log_meals_14"])
     }
 
     func testWeekID() {

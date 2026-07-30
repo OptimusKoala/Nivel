@@ -13,5 +13,8 @@
   {"id": "light_dessert_3",   "title": "3 jours en dessert léger (ou sans)",      "emoji": "🍎", "metric": "lightDessertDays", "target": 3,     "requiresSteps": false},
   {"id": "light_dessert_5",   "title": "5 jours en dessert léger (ou sans)",      "emoji": "🍏", "metric": "lightDessertDays", "target": 5,     "requiresSteps": false},
   {"id": "log_breakfast_4",   "title": "Logge 4 petits-déjeuners",                "emoji": "☀️", "metric": "mealsLogged",      "target": 4,     "requiresSteps": false, "slot": "breakfast"},
-  {"id": "steps_25k",         "title": "25 000 pas cette semaine",                "emoji": "🚶", "metric": "weeklySteps",      "target": 25000, "requiresSteps": true}
+  {"id": "steps_25k",         "title": "25 000 pas cette semaine",                "emoji": "🚶", "metric": "weeklySteps",      "target": 25000, "requiresSteps": true},
+  {"id": "activities_3",     "title": "Fais 3 activités cette semaine",          "emoji": "🏃", "metric": "activitiesDone",   "target": 3,     "requiresSteps": false},
+  {"id": "activities_5",     "title": "Fais 5 activités cette semaine",          "emoji": "💪", "metric": "activitiesDone",   "target": 5,     "requiresSteps": false},
+  {"id": "daily_sessions_2", "title": "Fais 2 séances du jour",                  "emoji": "📅", "metric": "dailySessionsDone","target": 2,     "requiresSteps": false}
 ]
