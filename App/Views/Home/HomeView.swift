@@ -19,6 +19,7 @@ struct HomeView: View {
     @State private var bubbleText = ""
     @State private var lastBubbleContext: MessageContext?
     @State private var showMealLog = false
+    @State private var showSettings = false
 
     init() {
         // Bornes du jour figées à la création de la vue. Le passage de minuit est géré
@@ -77,6 +78,9 @@ struct HomeView: View {
         .sheet(isPresented: $showMealLog, onDismiss: updateBubble) {
             MealLogSheet()
         }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
     }
 
     private func refresh() async {
@@ -123,6 +127,18 @@ struct HomeView: View {
             }
             Spacer()
             levelPill
+            Button {
+                showSettings = true
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.headline)
+                    .foregroundStyle(Theme.subtext)
+                    .frame(width: 40, height: 40)
+                    .background(Theme.card, in: Circle())
+                    .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Réglages")
         }
     }
 

@@ -48,7 +48,7 @@ private struct MainTabView: View {
     /// explicite, un re-rendu du parent (déclenché ici par le `save()` SwiftData du
     /// `.task` d'un onglet, ex. `refreshQuestProgress`) fait retomber la sélection
     /// implicite sur le premier onglet : on tapait "Quêtes" et on revenait à l'accueil.
-    private enum Tab: Hashable { case home, meals, progress, quests, settings }
+    private enum Tab: Hashable { case home, meals, sport, progress, quests }
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(GameService.self) private var gameService
@@ -76,6 +76,13 @@ private struct MainTabView: View {
                 .tabItem { Label("Repas", systemImage: "fork.knife") }
                 .tag(Tab.meals)
 
+            // .id(dayKey) : la séance du jour et « Fait aujourd'hui » repartent
+            // sur le bon jour au retour au premier plan après minuit.
+            SportView()
+                .id(dayKey)
+                .tabItem { Label("Sport", systemImage: "figure.walk") }
+                .tag(Tab.sport)
+
             // .id(dayKey) : les bornes "aujourd'hui" (pas, pesée) suivent le changement de jour.
             ProgressScreen()
                 .id(dayKey)
@@ -88,10 +95,6 @@ private struct MainTabView: View {
                 .id(dayKey)
                 .tabItem { Label("Quêtes", systemImage: "trophy.fill") }
                 .tag(Tab.quests)
-
-            SettingsView()
-                .tabItem { Label("Réglages", systemImage: "gearshape.fill") }
-                .tag(Tab.settings)
         }
         .tint(Theme.orange)
         // Présentation des célébrations (level-up plein écran, bannières badge/quête)
