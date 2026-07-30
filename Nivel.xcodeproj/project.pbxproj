@@ -11,8 +11,10 @@
 		13007E67FB6C5D21D8A723AE /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EACEDF64B0B6576809396B1 /* NivelitoShapes.swift */; };
 		13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD0D49D1E0B2314767BA85A /* DayCloser.swift */; };
 		1B36CC033AB07BEB581D664D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9782153DD5F0B9BABA5132F1 /* Theme.swift */; };
+		337E23B682E798CD2172D36A /* SessionDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE83D25304F28493A61E2BD4 /* SessionDetailSheet.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
 		43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */; };
+		4CE4E454AA136D82709CEB76 /* ActivityLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */; };
 		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
 		54786F0394B67DE901FD1C19 /* MealLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3D92F71CC93D99201C361E /* MealLogSheet.swift */; };
@@ -30,6 +32,7 @@
 		846FB76C89B63E0E8EA18B9F /* SportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */; };
 		8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */; };
 		8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96415D84EF698197C100E80 /* WeightChart.swift */; };
+		93AED358242CE2BD999D1419 /* SportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4542B7EDA424C2DF0AF4CD23 /* SportView.swift */; };
 		98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABBAD095DB88DF009C167B /* PersistentModels.swift */; };
 		9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */; };
 		AC058589EEDA0F462DF1730B /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */; };
@@ -42,6 +45,7 @@
 		E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */; };
 		E9E07644DA5B531E655EFC74 /* WeighInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079075DA2E6A1C77564F067B /* WeighInSheet.swift */; };
 		ECBE1CB18EBCE075EFFAE24B /* MealsJournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A694B98073276CD2FA798820 /* MealsJournalView.swift */; };
+		ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */; };
 		FDCB8202104609DE46003A7A /* GameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A1F6969B88BCA1A9BE77195 /* GameService.swift */; };
 		FF12E9FD2218E9B1A09DFA9A /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2749E47DBFD2A5D89042A89E /* HealthKitService.swift */; };
 /* End PBXBuildFile section */
@@ -69,6 +73,7 @@
 		2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportServiceTests.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		34F99A2EA3F3B3FD6B5FB4AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
 		5A3D92F71CC93D99201C361E /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
@@ -77,6 +82,7 @@
 		6909EF00448EC3D59E1F1401 /* GameService+Sport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameService+Sport.swift"; sourceTree = "<group>"; };
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
 		7900354E6B00D231F84DEFD2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySessionCard.swift; sourceTree = "<group>"; };
 		7FD0D49D1E0B2314767BA85A /* DayCloser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloser.swift; sourceTree = "<group>"; };
 		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NivelCore; path = NivelCore; sourceTree = SOURCE_ROOT; };
 		848BA4571516E35FCEA2402D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -94,10 +100,12 @@
 		C923A46DDC21834AB6E06D1B /* NivelitoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoView.swift; sourceTree = "<group>"; };
 		C9AB33328B42B0A39E65B608 /* NivelTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9245CF3C47048DB9D88C2E5 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
+		DE83D25304F28493A61E2BD4 /* SessionDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailSheet.swift; sourceTree = "<group>"; };
 		DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesChart.swift; sourceTree = "<group>"; };
 		DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestsView.swift; sourceTree = "<group>"; };
 		E59866C500AE8AE430E9AE18 /* StepsChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsChart.swift; sourceTree = "<group>"; };
 		EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServiceTests.swift; sourceTree = "<group>"; };
+		F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,6 +120,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		052330B4B681C6D505AEDE64 /* Sport */ = {
+			isa = PBXGroup;
+			children = (
+				F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */,
+				7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */,
+				DE83D25304F28493A61E2BD4 /* SessionDetailSheet.swift */,
+				4542B7EDA424C2DF0AF4CD23 /* SportView.swift */,
+			);
+			path = Sport;
+			sourceTree = "<group>";
+		};
 		0B4F6F76ABBD14348F01E9E5 /* Progress */ = {
 			isa = PBXGroup;
 			children = (
@@ -135,6 +154,7 @@
 				6D8B05E92C0C472AB7A4E3AA /* Quests */,
 				3CCABC2F326C552D11C59080 /* Settings */,
 				C3990C32BFA134E789BE524D /* Splash */,
+				052330B4B681C6D505AEDE64 /* Sport */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -381,9 +401,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CE4E454AA136D82709CEB76 /* ActivityLogSheet.swift in Sources */,
 				DBA75C60C34D6D51CBD43CF2 /* CalorieRing.swift in Sources */,
 				E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */,
 				57A40EADB63F64054A4795D7 /* CelebrationsHost.swift in Sources */,
+				ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */,
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				5A7B97883F447747C5AC4269 /* GameService+Sport.swift in Sources */,
 				FDCB8202104609DE46003A7A /* GameService.swift in Sources */,
@@ -401,9 +423,11 @@
 				D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */,
 				7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */,
 				CA44B39964325597C05E92A6 /* RootView.swift in Sources */,
+				337E23B682E798CD2172D36A /* SessionDetailSheet.swift in Sources */,
 				4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */,
 				8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */,
 				61E2605647D0942C07D4ED9D /* SplashView.swift in Sources */,
+				93AED358242CE2BD999D1419 /* SportView.swift in Sources */,
 				CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */,
 				0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */,
 				1B36CC033AB07BEB581D664D /* Theme.swift in Sources */,
