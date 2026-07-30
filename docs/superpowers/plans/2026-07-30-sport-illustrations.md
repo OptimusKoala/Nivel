@@ -8,7 +8,11 @@
 
 **Tech Stack:** Swift/SwiftUI, XCTest, XcodeGen (`xcodegen generate` après tout ajout/suppression de fichier sous `App/` ou `scripts/`), `sips` (redimensionnement).
 
-**Branche : `feat/v1.2`** (existante, contient déjà des commits de Michaël, dont « remove em dashes from all user-facing text » : **aucun tiret cadratin (—) dans les textes utilisateur** de ce plan).
+**Branche : créer `feat/sport-illustrations` depuis `main`** (la v1.2 est mergée : `main` porte déjà les conventions « aucun tiret cadratin (—) dans les textes utilisateur » et les styles partagés `PrimaryButtonStyle`/sheets radius 28).
+
+### Task 0 : Branche
+
+- [ ] `cd /Users/mbernard/perso/Nivel && git checkout -b feat/sport-illustrations`
 
 **Commandes de test :**
 - NivelCore : `cd NivelCore && swift test`
@@ -685,4 +689,4 @@ Onglet Sport : vignettes partout, tap séance → player (aperçu → étapes �
 git add -A && git commit -m "docs: README, séances guidées illustrées"
 ```
 
-La branche `feat/v1.2` contient aussi des commits de Michaël : ne PAS merger dans `main` sans son accord explicite.
+Fin de branche : options merge/PR présentées à Michaël (superpowers:finishing-a-development-branch).
