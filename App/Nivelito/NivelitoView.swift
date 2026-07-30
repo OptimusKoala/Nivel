@@ -300,7 +300,7 @@ struct NivelitoView: View {
         microWink = false
     }
 
-    /// Regard de côté : les yeux glissent de ±3 pt (à l'échelle de référence,
+    /// Regard de côté : les yeux glissent de ±6 pt (à l'échelle de référence 200,
     /// proportionnel à `size`) pendant ~0,8 s puis reviennent au centre.
     private func playGlance() async {
         let dx: CGFloat = (Bool.random() ? 6 : -6) * scale
