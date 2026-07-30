@@ -61,15 +61,15 @@
   "afterActivity": [
     {"id": "act1",  "text": "Et hop, +{value} XP ! Ton corps te dit merci 🧡"},
     {"id": "act2",  "text": "Bien bougé, {name} ! +{value} XP au compteur."},
-    {"id": "act3",  "text": "Chaque mouvement compte. +{value} XP !"},
-    {"id": "act4",  "text": "Moi je fais la sieste, toi tu bouges — chacun son talent. +{value} XP !"},
+    {"id": "act3",  "text": "Chaque mouvement compte, et tu viens de le prouver."},
+    {"id": "act4",  "text": "Moi je fais la sieste, toi tu bouges… chacun son talent. +{value} XP !"},
     {"id": "act5",  "text": "Tu l'as fait ! +{value} XP bien mérités."},
-    {"id": "act6",  "text": "Ni vu ni connu, +{value} XP dans la poche."},
-    {"id": "act7",  "text": "Ton cœur bat un peu plus fort, moi je suis un peu plus fier. +{value} XP !"},
+    {"id": "act6",  "text": "Un petit effort, une belle récompense : +{value} XP."},
+    {"id": "act7",  "text": "Ton cœur bat un peu plus fort, moi je suis un peu plus fier de toi."},
     {"id": "act8",  "text": "Une activité de plus ! +{value} XP, bravo {name}."},
-    {"id": "act9",  "text": "Le canapé attendra — bien joué ! +{value} XP"},
+    {"id": "act9",  "text": "Le canapé attendra… bien joué ! +{value} XP 🧡"},
     {"id": "act10", "text": "Petit exercice, grand effet. +{value} XP 🧡"},
-    {"id": "act11", "text": "Même un panda applaudirait… si ses pattes suivaient. +{value} XP !"},
+    {"id": "act11", "text": "Même un panda applaudirait… si ses pattes suivaient. Bravo !"},
     {"id": "act12", "text": "Bouger comme ça, ça mérite bien +{value} XP."}
   ],
   "afterWeighIn": [
