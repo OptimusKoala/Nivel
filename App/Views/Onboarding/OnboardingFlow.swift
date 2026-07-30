@@ -219,8 +219,8 @@ private struct ProfileChoicePage: View {
             header
             Spacer()
             VStack(spacing: 16) {
-                profileCard(emoji: "👨", name: "Michaël") { onChoose(("Michaël", .male)) }
-                profileCard(emoji: "👩", name: "Marion") { onChoose(("Marion", .female)) }
+                profileCard(emoji: "🧔🏻‍♂️", name: "Michaël") { onChoose(("Michaël", .male)) }
+                profileCard(emoji: "👩🏻", name: "Marion") { onChoose(("Marion", .female)) }
             }
             .padding(.horizontal, 24)
             Spacer()
@@ -314,10 +314,10 @@ private struct InfosPage: View {
                     }
                     infoCard("Niveau d'activité") {
                         VStack(spacing: 8) {
-                            activityRow(.sedentary, "Sédentaire", "surtout assis·e")
+                            activityRow(.sedentary, "Sédentaire", "beaucoup de temps assis")
                             activityRow(.light, "Léger", "je bouge un peu chaque jour")
-                            activityRow(.moderate, "Modéré", "actif·ve régulièrement")
-                            activityRow(.active, "Actif·ve", "sport fréquent")
+                            activityRow(.moderate, "Modéré", "de l'exercice régulier")
+                            activityRow(.active, "Actif", "sport fréquent")
                         }
                     }
                 }

@@ -155,7 +155,7 @@ private struct SettingsContent: View {
                     Text("Sédentaire").tag(ActivityLevel.sedentary)
                     Text("Léger").tag(ActivityLevel.light)
                     Text("Modéré").tag(ActivityLevel.moderate)
-                    Text("Actif·ve").tag(ActivityLevel.active)
+                    Text("Actif").tag(ActivityLevel.active)
                 }
                 .pickerStyle(.menu)
             }

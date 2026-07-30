@@ -1,6 +1,6 @@
 {
   "morning": [
-    {"id": "m1", "text": "Bonjour {name} ! Prêt·e pour une belle journée ? ☀️"},
+    {"id": "m1", "text": "Bonjour {name} ! En route pour une belle journée ? ☀️"},
     {"id": "m2", "text": "Salut {name} ! Un petit-déj et c'est parti."},
     {"id": "m3", "text": "Coucou {name} ! Le soleil se lève, et moi aussi… enfin, presque."},
     {"id": "m4", "text": "Bien dormi ? Moi, j'ai rêvé de bambou. Bonne journée !"},
@@ -45,7 +45,7 @@
   ],
   "afterMealLog": [
     {"id": "aml1", "text": "Miam, c'est noté ! +{value} XP 🎉"},
-    {"id": "aml2", "text": "Journal à jour, chef·fe !"},
+    {"id": "aml2", "text": "Journal à jour, chapeau !"},
     {"id": "aml3", "text": "Et hop, un repas de plus dans le carnet. +{value} XP !"},
     {"id": "aml4", "text": "C'est enregistré ! Tu gères, {name}."},
     {"id": "aml5", "text": "Noté avec soin dans mon petit carnet de panda 📓"},
@@ -63,7 +63,7 @@
     {"id": "awi2", "text": "C'est noté ! Peu importe le chiffre, tu avances."},
     {"id": "awi3", "text": "Merci pour la pesée. Une donnée de plus, zéro pression."},
     {"id": "awi4", "text": "Pesée faite ! Le plus important, c'est la tendance, pas le jour."},
-    {"id": "awi5", "text": "Bravo d'être monté·e sur la balance : c'est déjà une victoire."},
+    {"id": "awi5", "text": "Monter sur la balance, c'est déjà une victoire. Bravo !"},
     {"id": "awi6", "text": "Noté ! La balance raconte une histoire, pas un jugement."},
     {"id": "awi7", "text": "Et voilà, c'est dans la boîte. À la semaine prochaine !"},
     {"id": "awi8", "text": "Pesée du jour enregistrée. Tu peux passer à autre chose 😌"},
@@ -182,7 +182,7 @@
     {"id": "f9", "text": "On dit que je suis mignon. Je confirme, en toute humilité."},
     {"id": "f10", "text": "J'ai fait une sieste au soleil. Puis une autre, pour vérifier."},
     {"id": "f11", "text": "Astuce de panda : tout paraît plus simple après un bon étirement."},
-    {"id": "f12", "text": "Entre nous, {name}, tu es mon humain·e préféré·e."},
+    {"id": "f12", "text": "Entre nous, {name}, de tous les humains, c'est toi que je préfère."},
     {"id": "f13", "text": "Tu savais ça ? En chinois, on m'appelle « petit renard de feu ». La classe."}
   ]
 }
