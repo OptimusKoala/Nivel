@@ -1,7 +1,7 @@
 import Foundation
 
 public enum MessageContext: String, Codable, CaseIterable, Sendable {
-    case morning, midday, evening, afterMealLog, afterWeighIn, weighReminder,
+    case morning, midday, evening, afterMealLog, afterActivity, afterWeighIn, weighReminder,
          levelUp, badge, questCompleted, stepsEncouragement, overTarget, comeback, fun
 }
 
@@ -31,7 +31,7 @@ public struct MessageBank: Sendable {
     /// Choix aléatoire hors dernier message utilisé, avec substitution {name}/{value} (spec §8).
     ///
     /// Contrat : les contextes dont les messages contiennent `{value}` (`afterMealLog`,
-    /// `levelUp`, `questCompleted`) requièrent un `value` non nil — sinon le placeholder
+    /// `afterActivity`, `levelUp`, `questCompleted`) requièrent un `value` non nil — sinon le placeholder
     /// survit dans le texte (assert en debug, silencieux en release).
     ///
     /// Si le seul message du contexte est celui exclu, il est réutilisé (la répétition

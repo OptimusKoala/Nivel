@@ -25,4 +25,13 @@ final class MessageBankTests: XCTestCase {
         XCTAssertFalse(msg.text.contains("{name}"))
         XCTAssertFalse(msg.text.contains("{value}"))
     }
+
+    func testAfterActivityMessagesSubstituteValue() throws {
+        let bank = try MessageBank.load()
+        for _ in 0..<20 {
+            let msg = bank.pick(context: .afterActivity, excluding: nil, name: "Marion", value: 30)
+            XCTAssertFalse(msg.text.contains("{name}"))
+            XCTAssertFalse(msg.text.contains("{value}"))
+        }
+    }
 }
