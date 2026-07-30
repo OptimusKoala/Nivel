@@ -492,7 +492,7 @@ Expected: `testWeeklyDrawIsPinnedForKnownWeek` **FAIL** — le pool a changé, l
 
 Copier les 3 ids réellement tirés (affichés dans le message d'échec) dans l'assertion du test, et mettre à jour le commentaire « pool de 15 » de `testDrawIsDeterministicForSameWeek` en « pool de 18 ».
 
-⚠️ Conséquence produit assumée : les quêtes de la semaine COURANTE re-tirées après mise à jour de l'app changeront une fois (le tirage dépend du pool). Les progressions/récompenses déjà acquises sont conservées (`completedThisWeekQuestIDs` garde la re-récompense). Pas de code à écrire — juste ne pas s'étonner.
+⚠️ Conséquence produit (vérifiée en review) : les installs existantes ne re-tirent PAS en cours de semaine — `DayCloser` ne re-tire qu'au changement de `questWeekID` (lundi). Les 3 quêtes actives restent donc inchangées après la mise à jour, et **aucune quête sport ne peut apparaître avant le lundi suivant**. Ce n'est pas un bug (à savoir pour la vérification manuelle de la Task 12). Le pin du test change quand même : il fige la sortie de la fonction pure, pas l'état utilisateur.
 
 - [ ] **Step 5 : Vérifier le vert complet**
 
@@ -1570,7 +1570,7 @@ Mettre à jour la description des onglets (Sport remplace Réglages dans la tab 
 
 - [ ] **Step 3 : Vérification visuelle sur simulateur (optionnelle mais recommandée)**
 
-Lancer l'app sur le simulateur, vérifier : encart séance du jour sur l'accueil (tap → sheet → valider → bulle Nivelito au retour), onglet Sport complet (valider une activité, la voir dans « Fait aujourd'hui », swipe supprimer), ⚙️ → Réglages.
+Lancer l'app sur le simulateur, vérifier : encart séance du jour sur l'accueil (tap → sheet → valider → bulle Nivelito au retour), onglet Sport complet (valider une activité, la voir dans « Fait aujourd'hui », swipe supprimer), ⚙️ → Réglages. Rappel : sur un store existant, les quêtes sport n'apparaissent qu'au prochain lundi (pas de re-tirage en cours de semaine) — comportement normal.
 
 - [ ] **Step 4 : Commit final**
 
