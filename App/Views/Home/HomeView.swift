@@ -20,6 +20,8 @@ struct HomeView: View {
     @State private var lastBubbleContext: MessageContext?
     @State private var showMealLog = false
     @State private var showSettings = false
+    @State private var sessionStatus: (session: ActivitySession, done: Bool)?
+    @State private var showSessionDetail = false
 
     init() {
         // Bornes du jour figées à la création de la vue. Le passage de minuit est géré
@@ -66,6 +68,17 @@ struct HomeView: View {
                         QuestCard(status: featured)
                     }
                     logMealButton
+                    if let status = sessionStatus {
+                        Button {
+                            showSessionDetail = true
+                        } label: {
+                            DailySessionCard(session: status.session,
+                                             kcal: game.sessionKcal(status.session),
+                                             done: status.done)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -73,7 +86,10 @@ struct HomeView: View {
             }
             .refreshable { await refresh() }
         }
-        .onAppear(perform: updateBubble)
+        .onAppear {
+            sessionStatus = game.dailySessionStatus()
+            updateBubble()
+        }
         .task { await refresh() }
         .sheet(isPresented: $showMealLog, onDismiss: updateBubble) {
             MealLogSheet()
@@ -82,12 +98,26 @@ struct HomeView: View {
             SettingsView()
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showSessionDetail, onDismiss: refreshSessionStatus) {
+            if let status = sessionStatus {
+                SessionDetailSheet(session: status.session, done: status.done)
+                    .presentationDragIndicator(.visible)
+            }
+        }
     }
 
     private func refresh() async {
         await game.refreshQuestProgress()
         steps = await game.todaySteps()
+        sessionStatus = game.dailySessionStatus()
         // Le refresh peut lever une célébration → le contexte du message peut changer.
+        updateBubble()
+    }
+
+    /// Rafraîchit l'encart séance ET la bulle (une validation dans la sheet peut
+    /// avoir attribué de l'XP d'activité, cf. `lastActivityXPAwarded`).
+    private func refreshSessionStatus() {
+        sessionStatus = game.dailySessionStatus()
         updateBubble()
     }
 
@@ -95,18 +125,25 @@ struct HomeView: View {
     /// nouvelle tranche horaire…) : les retours sur l'onglet ne font pas churner le
     /// message, mais un événement survenu entre-temps est bien reflété.
     private func updateBubble() {
-        // Bulle "après log" prioritaire (spec §4.2) : signal consommé une seule fois,
-        // quel que soit l'onglet d'origine du log (sheet de l'accueil OU journal Repas —
-        // le retour sur l'accueil repasse par onAppear). L'XP attribué alimente les
-        // messages "+{value} XP" ; à 0 (plafond du jour atteint), pas de bulle de
-        // récompense — on retombe sur le contexte normal ci-dessous.
-        if let mealXP = game.lastMealXPAwarded {
-            game.lastMealXPAwarded = nil
-            if mealXP > 0 {
-                lastBubbleContext = .afterMealLog
-                bubbleText = game.nivelitoSays(context: .afterMealLog, value: mealXP)
-                return
-            }
+        // Consomme les DEUX signaux à chaque passage : si le repas gagne la priorité,
+        // le signal d'activité ne doit pas survivre et ressortir en bulle périmée.
+        let mealXP = game.lastMealXPAwarded
+        let activityXP = game.lastActivityXPAwarded
+        game.lastMealXPAwarded = nil
+        game.lastActivityXPAwarded = nil
+
+        // Bulle "après log" prioritaire (spec §4.2) : repas d'abord (cas rarissime où
+        // les deux sont en attente), sinon activité. À 0 XP (plafond atteint), pas de
+        // bulle de récompense — on retombe sur le contexte normal ci-dessous.
+        if let mealXP, mealXP > 0 {
+            lastBubbleContext = .afterMealLog
+            bubbleText = game.nivelitoSays(context: .afterMealLog, value: mealXP)
+            return
+        }
+        if let activityXP, activityXP > 0 {
+            lastBubbleContext = .afterActivity
+            bubbleText = game.nivelitoSays(context: .afterActivity, value: activityXP)
+            return
         }
         let (context, value) = game.homeMessageContext()
         guard context != lastBubbleContext else { return }
@@ -263,7 +300,8 @@ private func homePreviewFixture(
     kcalEaten: Int,
     totalXP: Int,
     stepsAuthorized: Bool,
-    steps: Int = 5400
+    steps: Int = 5400,
+    sessionDone: Bool = false
 ) -> (container: ModelContainer, game: GameService) {
     let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
                          DayLog.self, GamificationState.self, ActivityEntry.self])
@@ -281,6 +319,14 @@ private func homePreviewFixture(
     ))
     context.insert(MealEntry(slot: .lunch, dishID: "pasta", portion: .normal,
                              estimatedKcal: kcalEaten))
+
+    if sessionDone {
+        let sessions = (try? Catalogs.sessions()) ?? []
+        let refID = DailySessionPicker.session(for: .now, sessions: sessions,
+                                               calendar: GameService.calendar)?.id ?? "wake_up"
+        context.insert(ActivityEntry(date: .now, kind: .dailySession, refID: refID,
+                                     durationMinutes: 10, estimatedKcal: 60, xpAwarded: 40))
+    }
 
     let quests = (try? Catalogs.quests()) ?? []
     let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
@@ -300,6 +346,15 @@ private func homePreviewFixture(
 
 #Preview("Accueil") {
     let (container, game) = homePreviewFixture(kcalEaten: 1240, totalXP: 780, stepsAuthorized: true)
+    return HomeView()
+        .fontDesign(.rounded)
+        .modelContainer(container)
+        .environment(game)
+}
+
+#Preview("Séance faite") {
+    let (container, game) = homePreviewFixture(kcalEaten: 1240, totalXP: 780,
+                                               stepsAuthorized: true, sessionDone: true)
     return HomeView()
         .fontDesign(.rounded)
         .modelContainer(container)
