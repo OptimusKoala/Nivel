@@ -81,18 +81,17 @@ Pager horizontal (`TabView(.page)` ou équivalent) avec points de progression :
 - **Page 0 — aperçu** : grande image héro de la séance (`Sport/<session.id>` — pleine largeur, carrée, coins arrondis, hauteur plafonnée ~280pt), titre, « X min · ~Y kcal », liste résumée des étapes (vignette 40pt + nom + durée), bouton « **C'est parti !** » (avance à la page 1). Si la séance est déjà faite aujourd'hui : état ✓ « Déjà faite » à la place du bouton — on peut quand même feuilleter les étapes (consultation libre).
 - **Pages 1..n — une par étape** : grande illustration de l'activité (`Sport/<activityID>`, même gabarit que la héro), nom + « Étape i/n · X min », les puces `instructions` de l'activité, badge `tempo` de l'étape, bouton « **Étape suivante →** ».
 - Navigation **libre** (swipe avant/arrière autorisé) : c'est un guide, pas un chrono. Pas de timer.
-- La logique « page courante + état done + XP à venir → libellé/action du bouton » est extraite en **fonction pure testable** (`SessionPlayerSheet.buttonState(...)`), avec ce contrat EXHAUSTIF :
+- La logique « page courante + état done → libellé/action du bouton » est extraite en **fonction pure testable** (`SessionPlayerSheet.buttonState(...)`), avec ce contrat EXHAUSTIF :
 
-| Page | done | XP à venir | Bouton |
-|---|---|---|---|
-| 0 (aperçu) | non | — | « C'est parti ! » → avance à la page 1 |
-| 0 (aperçu) | oui | — | état ✓ « Déjà faite » (pas d'action ; feuilletage libre) |
-| étape i < n | — | — | « Étape suivante → » → page i+1 |
-| étape n | non | 40 | « C'est fait ! (+40 XP) » → `logDailySession`, dismiss |
-| étape n | non | 0 | « C'est fait ! » → `logDailySession`, dismiss (entrée enregistrée, 0 XP, pas de bulle) |
-| étape n | oui | — | état ✓ « Déjà faite » (pas de re-validation) |
+| Page | done | Bouton |
+|---|---|---|
+| 0 (aperçu) | non | « C'est parti ! » → avance à la page 1 |
+| 0 (aperçu) | oui | état ✓ « Déjà faite » (pas d'action ; feuilletage libre) |
+| étape i < n | — | « Étape suivante → » → page i+1 |
+| étape n | non | « C'est fait ! (+40 XP) » → `logDailySession`, dismiss |
+| étape n | oui | état ✓ « Déjà faite » (pas de re-validation) |
 
-- **XP à venir** = `nextDailySessionXP()`, NOUVELLE méthode `GameService+Sport` miroir de `nextActivityXP()`. Nécessaire (et pas déductible de `done`) : après une suppression puis re-validation le même jour, `done` redevient faux mais le plafond XP est déjà consommé (`xpAwarded > 0` persiste au premier log) — le CTA doit alors afficher « C'est fait ! » sans promesse.
+- **Pourquoi la promesse « +40 XP » est toujours honnête quand `done` est faux** (vérifié en review contre `GameService+Sport`) : `done` compte TOUTES les entrées séance du jour, le plafond XP ne compte que celles avec `xpAwarded > 0` — un sous-ensemble. `done == false` implique donc mathématiquement 0 entrée, donc plafond libre, donc 40 XP. La suppression (`deleteActivity`) efface l'entrée entière et libère le plafond (comportement assumé du pattern repas). **Aucune méthode `nextDailySessionXP()` n'est nécessaire** — contrairement aux activités libres (plafond 2/jour, où un état intermédiaire existe).
 - Détents : `[.large]`, poignée visible.
 
 ### 5.2 `ActivityLogSheet` enrichie
@@ -107,12 +106,12 @@ Au-dessus du choix de durée : l'illustration de l'activité (moyenne, ~140pt, c
 
 ## 6. Ce qui ne change PAS
 
-Aucun modèle SwiftData, aucune règle XP/quêtes/badges, aucune notification. Côté `GameService` : uniquement l'ajout de `nextDailySessionXP()` (décidé, voir §5.1) — le player appelle `logDailySession` existant.
+Aucun modèle SwiftData, aucune règle XP/quêtes/badges, aucune notification, **aucun changement `GameService`** — le player appelle `logDailySession` et `dailySessionStatus` existants (voir §5.1 pour la preuve que `done` suffit au CTA honnête).
 
 ## 7. Tests
 
 - **NivelCore** : décodage des catalogues enrichis — `instructions` non vides (12 activités), `tempo` non vide (toutes les étapes de toutes les séances) ; comptes inchangés.
-- **App** : la fonction pure `buttonState` testée sur les 6 lignes du contrat du §5.1 ; `nextDailySessionXP()` testé (40 avant, 0 après validation, 0 après suppression + re-log) ; smoke test existant inchangé.
+- **App** : la fonction pure `buttonState` testée sur les 5 lignes du contrat du §5.1 ; smoke test existant inchangé.
 - **Vérification visuelle** : les 20 assets présents dans le catalogue (un test app peut vérifier `UIImage(named: "Sport/<id>")` non nil pour chaque id des catalogues — garde anti-typo de nommage).
 
 ## 8. Hors périmètre
