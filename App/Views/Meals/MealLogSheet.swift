@@ -440,7 +440,7 @@ struct MealLogSheet: View {
 
 #Preview("Nouveau repas") {
     let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
-                         DayLog.self, GamificationState.self])
+                         DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
         configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
@@ -454,7 +454,7 @@ struct MealLogSheet: View {
 
 #Preview("Édition") {
     let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
-                         DayLog.self, GamificationState.self])
+                         DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
         configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]

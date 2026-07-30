@@ -126,7 +126,7 @@ struct WeighInSheet: View {
 #Preview {
     @Previewable @State var shown = true
     let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
-                         DayLog.self, GamificationState.self])
+                         DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
         configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]

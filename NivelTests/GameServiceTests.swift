@@ -16,7 +16,7 @@ final class GameServiceTests: XCTestCase {
     override func setUp() async throws {
         let schema = Schema([
             UserProfile.self, MealEntry.self, WeightEntry.self,
-            DayLog.self, GamificationState.self
+            DayLog.self, GamificationState.self, ActivityEntry.self
         ])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [configuration])

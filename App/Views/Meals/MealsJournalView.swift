@@ -263,7 +263,7 @@ struct MealsJournalView: View {
 @MainActor
 private func journalPreviewFixture() -> (container: ModelContainer, game: GameService) {
     let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
-                         DayLog.self, GamificationState.self])
+                         DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
         configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
@@ -298,7 +298,7 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
 
 #Preview("Journal vide") {
     let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
-                         DayLog.self, GamificationState.self])
+                         DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
         configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]

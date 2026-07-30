@@ -10,7 +10,7 @@ struct NivelApp: App {
 
     init() {
         let container = try! ModelContainer(for: UserProfile.self, MealEntry.self, WeightEntry.self,
-                                            DayLog.self, GamificationState.self)
+                                            DayLog.self, GamificationState.self, ActivityEntry.self)
         self.container = container
         _gameService = State(initialValue: GameService(
             modelContext: container.mainContext,

@@ -1,13 +1,14 @@
 // NivelTests/AppSmokeTests.swift
 import XCTest
 import SwiftData
+import NivelCore
 @testable import Nivel
 
 final class AppSmokeTests: XCTestCase {
     func testInMemoryContainerInsertsAndFetchesModels() throws {
         let schema = Schema([
             UserProfile.self, MealEntry.self, WeightEntry.self,
-            DayLog.self, GamificationState.self
+            DayLog.self, GamificationState.self, ActivityEntry.self
         ])
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [configuration])
@@ -32,6 +33,10 @@ final class AppSmokeTests: XCTestCase {
         )
         context.insert(meal)
 
+        let activity = ActivityEntry(kind: .activity, refID: "walk",
+                                     durationMinutes: 20, estimatedKcal: 80, xpAwarded: 30)
+        context.insert(activity)
+
         try context.save()
 
         let fetchedProfiles = try context.fetch(FetchDescriptor<UserProfile>())
@@ -44,5 +49,10 @@ final class AppSmokeTests: XCTestCase {
         XCTAssertEqual(fetchedMeals.count, 1)
         XCTAssertEqual(fetchedMeals.first?.dishID, "poulet_riz")
         XCTAssertEqual(fetchedMeals.first?.slot, .lunch)
+
+        let fetchedActivities = try context.fetch(FetchDescriptor<ActivityEntry>())
+        XCTAssertEqual(fetchedActivities.count, 1)
+        XCTAssertEqual(fetchedActivities.first?.kind, .activity)
+        XCTAssertEqual(fetchedActivities.first?.refID, "walk")
     }
 }

@@ -94,6 +94,37 @@ final class MealEntry {
 }
 
 @Model
+final class ActivityEntry {
+    var date: Date
+    var kindRaw: String                  // ActivityKind (activité libre / séance du jour)
+    var refID: String                    // activityID ou sessionID selon kind
+    var durationMinutes: Int
+    var estimatedKcal: Int               // indicatif — jamais crédité au budget (spec sport §2)
+    var xpAwarded: Int
+
+    init(
+        date: Date = .now,
+        kind: ActivityKind,
+        refID: String,
+        durationMinutes: Int,
+        estimatedKcal: Int,
+        xpAwarded: Int = 0
+    ) {
+        self.date = date
+        self.kindRaw = kind.rawValue
+        self.refID = refID
+        self.durationMinutes = durationMinutes
+        self.estimatedKcal = estimatedKcal
+        self.xpAwarded = xpAwarded
+    }
+
+    var kind: ActivityKind {
+        get { ActivityKind(rawValue: kindRaw) ?? .activity }
+        set { kindRaw = newValue.rawValue }
+    }
+}
+
+@Model
 final class WeightEntry {
     var date: Date
     var weightKg: Double

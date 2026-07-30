@@ -503,5 +503,5 @@ private struct PrimaryButtonStyle: ButtonStyle {
     OnboardingFlow()
         .fontDesign(.rounded)
         .modelContainer(for: [UserProfile.self, MealEntry.self, WeightEntry.self,
-                               DayLog.self, GamificationState.self], inMemory: true)
+                               DayLog.self, GamificationState.self, ActivityEntry.self], inMemory: true)
 }

@@ -332,6 +332,9 @@ final class GameService {
         case .stepGoalDays:
             let goal = fetchProfile()?.dailyStepGoal ?? 8000
             return stepsByDay.values.count { $0 >= goal }
+        case .activitiesDone, .dailySessionsDone:
+            // Provisoire (Task 7) : implémenté par GameService+Sport (Task 8).
+            return 0
         }
     }
 
