@@ -121,7 +121,7 @@ Nouveaux compteurs : `stats.activitiesDone` (all-time, tous kinds), `stats.daily
 | sport_first | 🥇 Premier pas | 1 activité validée |
 | sport_10 | 🏃 En mouvement | 10 activités |
 | sport_50 | 🔥 Machine | 50 activités |
-| sport_sessions_5 | 📅 Rituel du jour | 5 séances du jour |
+| sport_sessions_5 | 🔁 Rituel du jour | 5 séances du jour |
 
 Pas de badge « X jours d'affilée » : contraire au principe « pas de streaks » (spec v1 §7.4).
 

@@ -549,7 +549,7 @@ Dans `badges.json`, ajouter :
   {"id": "sport_first",      "title": "Premier pas",           "emoji": "🥇", "hint": "Valide ta première activité",          "metric": "activitiesDone",    "threshold": 1},
   {"id": "sport_10",         "title": "En mouvement",          "emoji": "🏃", "hint": "Valide 10 activités",                  "metric": "activitiesDone",    "threshold": 10},
   {"id": "sport_50",         "title": "Machine",               "emoji": "🔥", "hint": "Valide 50 activités",                  "metric": "activitiesDone",    "threshold": 50},
-  {"id": "sport_sessions_5", "title": "Rituel du jour",        "emoji": "📅", "hint": "Fais 5 séances du jour",               "metric": "dailySessionsDone", "threshold": 5}
+  {"id": "sport_sessions_5", "title": "Rituel du jour",        "emoji": "🔁", "hint": "Fais 5 séances du jour",               "metric": "dailySessionsDone", "threshold": 5}
 ]
 ```
 
