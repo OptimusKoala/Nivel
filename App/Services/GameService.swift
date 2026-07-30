@@ -119,7 +119,9 @@ final class GameService {
         self.messageBank = Self.loadOrAssert({ try MessageBank.load() }, fallback: nil)
         self.activityCatalog = Self.loadOrAssert({ try Catalogs.activities() }, fallback: [])
         self.sessionCatalog = Self.loadOrAssert({ try Catalogs.sessions() }, fallback: [])
-        self.activitiesByID = Dictionary(uniqueKeysWithValues: activityCatalog.map { ($0.id, $0) })
+        // uniquingKeysWith (et non uniqueKeysWithValues) : un id dupliqué dans un
+        // bundle corrompu ne doit jamais crasher — on garde la première occurrence.
+        self.activitiesByID = Dictionary(activityCatalog.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
     /// Fallback silencieux en release (jamais de crash), mais signal en debug :
@@ -347,7 +349,7 @@ final class GameService {
         case .activitiesDone:
             return activityCount(from: week.start, to: week.end)
         case .dailySessionsDone:
-            return activityCount(from: week.start, to: week.end, kind: .dailySession)
+            return dailySessionDayCount(from: week.start, to: week.end)
         }
     }
 
@@ -376,7 +378,11 @@ final class GameService {
 
         let activities = (try? modelContext.fetch(FetchDescriptor<ActivityEntry>())) ?? []
         stats.activitiesDone = activities.count
-        stats.dailySessionsDone = activities.count { $0.kind == .dailySession }
+        // Jours distincts (et non entrées) : une double séance le même jour ne
+        // compte qu'une fois pour le badge "Rituel du jour" (spec sport §6, amendée).
+        stats.dailySessionsDone = Set(
+            activities.filter { $0.kind == .dailySession }.map { Self.calendar.startOfDay(for: $0.date) }
+        ).count
 
         return stats
     }

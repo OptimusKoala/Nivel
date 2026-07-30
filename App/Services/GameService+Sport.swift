@@ -13,8 +13,9 @@ extension GameService {
     /// Valide une activité libre : +30 XP (max 2 activités récompensées/jour).
     @discardableResult
     func logActivity(activity: Activity, durationMinutes: Int, date: Date = .now) async -> ActivityEntry {
-        await logSport(kind: .activity, refID: activity.id, minutes: durationMinutes,
-                       kcal: activity.estimatedKcal(minutes: durationMinutes), date: date)
+        assert(durationMinutes > 0, "durée d'activité invalide")
+        return await logSport(kind: .activity, refID: activity.id, minutes: durationMinutes,
+                              kcal: activity.estimatedKcal(minutes: durationMinutes), date: date)
     }
 
     /// Valide la séance du jour : +40 XP (max 1/jour, indépendant du plafond activités).
@@ -30,11 +31,18 @@ extension GameService {
         let levelBefore = LevelSystem.level(forXP: state.totalXP)
 
         // Plafond robuste aux relances : dérivé des ActivityEntry persistées (par kind).
-        let action: XPAction = kind == .dailySession ? .dailySessionDone : .activityDone
+        let action: XPAction
+        switch kind {
+        case .dailySession: action = .dailySessionDone
+        case .activity: action = .activityDone
+        }
         let xp = XPEngine.award(action, todayCount: sportAwardedCount(kind: kind, on: date))
 
         let entry = ActivityEntry(date: date, kind: kind, refID: refID,
                                   durationMinutes: minutes, estimatedKcal: kcal, xpAwarded: xp)
+        // ⚠️ ORDRE contractuel : insert AVANT le premier await — les fetchCount du
+        // même contexte voient les inserts non sauvegardés, c'est ce qui rend le
+        // plafond robuste à deux validations simultanées (tap-tap rapide).
         modelContext.insert(entry)
         state.totalXP += xp
         lastActivityXPAwarded = xp
@@ -84,6 +92,17 @@ extension GameService {
     }
 
     // MARK: - Compteurs
+
+    /// Jours DISTINCTS avec au moins une séance du jour sur [start, end[ — une double
+    /// validation le même jour ne compte qu'une fois (quêtes et badge "Rituel du jour").
+    func dailySessionDayCount(from start: Date, to end: Date) -> Int {
+        let kindRaw = ActivityKind.dailySession.rawValue
+        let predicate = #Predicate<ActivityEntry> {
+            $0.date >= start && $0.date < end && $0.kindRaw == kindRaw
+        }
+        let entries = (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
+        return Set(entries.map { Self.calendar.startOfDay(for: $0.date) }).count
+    }
 
     /// Validations sur [start, end[, optionnellement filtrées par kind (quêtes hebdo).
     func activityCount(from start: Date, to end: Date, kind: ActivityKind? = nil) -> Int {

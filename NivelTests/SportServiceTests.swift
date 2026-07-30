@@ -105,4 +105,70 @@ final class SportServiceTests: XCTestCase {
         XCTAssertEqual(after.session.id, before.session.id)
         XCTAssertTrue(after.done)
     }
+
+    func testDoubleDailySessionSameDayCountsOnceForQuestsAndBadges() async throws {
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
+        state.activeQuestIDs = ["daily_sessions_2"]
+        try context.save()
+
+        _ = await service.logDailySession(session: session)
+        _ = await service.logDailySession(session: session)
+        XCTAssertEqual(state.questProgress["daily_sessions_2"], 1)
+        XCTAssertEqual(service.badgeStats().dailySessionsDone, 1)
+        XCTAssertFalse(state.completedThisWeekQuestIDs.contains("daily_sessions_2"))
+    }
+
+    func testDeleteActivityLowersQuestProgressAndSessionDone() async throws {
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
+        state.activeQuestIDs = ["activities_3"]
+        try context.save()
+
+        _ = await service.logActivity(activity: walk, durationMinutes: 10)
+        let second = await service.logActivity(activity: walk, durationMinutes: 10)
+        XCTAssertEqual(state.questProgress["activities_3"], 2)
+
+        await service.deleteActivity(entry: second)
+        XCTAssertEqual(state.questProgress["activities_3"], 1)
+
+        let sessionEntry = await service.logDailySession(session: session)
+        XCTAssertTrue(try XCTUnwrap(service.dailySessionStatus()).done)
+        await service.deleteActivity(entry: sessionEntry)
+        XCTAssertFalse(try XCTUnwrap(service.dailySessionStatus()).done)
+    }
+
+    /// Épingle le contrat d'ordre de `logSport` (insert AVANT le premier await) :
+    /// trois validations concurrentes (tap-tap-tap) ne doivent jamais dépasser le
+    /// plafond de 2 activités récompensées/jour, même en vol simultané. On force
+    /// `refreshQuestProgress` à suspendre sur une quête de pas (`steps_25k`) pour
+    /// que les trois tâches s'entrelacent réellement sur le MainActor.
+    func testConcurrentLogActivityRespectsCapEvenWhileSuspended() async throws {
+        let slowSteps = SlowStepsService()
+        let concurrentService = GameService(modelContext: context, stepsService: slowSteps)
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
+        state.activeQuestIDs = ["steps_25k"]
+        try context.save()
+
+        async let a = concurrentService.logActivity(activity: walk, durationMinutes: 10)
+        async let b = concurrentService.logActivity(activity: walk, durationMinutes: 10)
+        async let c = concurrentService.logActivity(activity: walk, durationMinutes: 10)
+        let entries = await [a, b, c]
+        let awarded = entries.map(\.xpAwarded).sorted()
+        XCTAssertEqual(awarded, [0, 30, 30])   // le plafond tient même en vol simultané
+    }
+}
+
+/// StepsProviding disponible mais lent (simule l'attente HealthKit) — force
+/// `refreshQuestProgress` à suspendre sur `await dailySteps(...)`, condition
+/// nécessaire pour que les tâches concurrentes s'entrelacent réellement.
+private final class SlowStepsService: StepsProviding {
+    var isAvailable: Bool { true }
+    func requestAuthorization() async -> Bool { true }
+    func steps(on day: Date) async -> Int? { 0 }
+    func dailySteps(from: Date, to: Date) async -> [Date: Int]? {
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        return [:]
+    }
 }
