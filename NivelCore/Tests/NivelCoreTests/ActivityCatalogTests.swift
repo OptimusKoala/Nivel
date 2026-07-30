@@ -14,6 +14,7 @@ final class ActivityCatalogTests: XCTestCase {
             XCTAssertEqual(activity.durations.count, 3, "\(activity.id)")
             XCTAssertEqual(activity.durations, activity.durations.sorted(), "\(activity.id)")
             XCTAssertEqual(Set(activity.durations).count, 3, "\(activity.id) : durées dupliquées")
+            XCTAssertGreaterThan(activity.durations.first ?? 0, 0, "\(activity.id)")
         }
     }
 
@@ -38,6 +39,15 @@ final class ActivityCatalogTests: XCTestCase {
         XCTAssertEqual(walk.estimatedKcal(minutes: 20), 80)
         let plank = try XCTUnwrap(activities.first { $0.id == "plank" })     // 4,0 kcal/min
         XCTAssertEqual(plank.estimatedKcal(minutes: 5), 20)
+
+        // Pin le mode d'arrondi (.rounded() = to-nearest-or-away-from-zero) sur des cas
+        // qui ne sont pas des multiples exacts de 10.
+        let briskWalk = try XCTUnwrap(activities.first { $0.id == "brisk_walk" }) // 5,5 kcal/min
+        XCTAssertEqual(briskWalk.estimatedKcal(minutes: 10), 60)                  // 55 → arrondi au-dessus
+        let dance = try XCTUnwrap(activities.first { $0.id == "dance" })          // 5,5 kcal/min
+        XCTAssertEqual(dance.estimatedKcal(minutes: 15), 80)                      // 82,5 → arrondi en dessous
+        let squats = try XCTUnwrap(activities.first { $0.id == "squats" })        // 5,5 kcal/min
+        XCTAssertEqual(squats.estimatedKcal(minutes: 3), 20)                      // 16,5 → arrondi au-dessus
 
         // wake_up = étirements 4×2,5 + squats 4×5,5 + gainage 3×4,0 = 44 → 40.
         let sessions = try Catalogs.sessions()
