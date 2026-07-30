@@ -71,10 +71,12 @@ struct SessionDetailSheet: View {
                 Text("\(session.totalMinutes) min · ~\(game.sessionKcal(session).frFormatted) kcal")
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.text)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
             Spacer()
             if done {
-                Label("Déjà faite aujourd'hui", systemImage: "checkmark.circle.fill")
+                Label("Déjà faite", systemImage: "checkmark.circle.fill")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(Theme.green)
             } else {
@@ -82,6 +84,7 @@ struct SessionDetailSheet: View {
                     Text("C'est fait ! (+40 XP)")
                         .font(.headline)
                         .foregroundStyle(.white)
+                        .lineLimit(1)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 14)
                         .background(

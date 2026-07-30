@@ -31,6 +31,7 @@ struct SportView: View {
                             DailySessionCardContent(session: status.session,
                                                     kcal: game.sessionKcal(status.session),
                                                     done: status.done)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .listRowBackground(Theme.card)
@@ -56,6 +57,7 @@ struct SportView: View {
             .scrollContentBackground(.hidden)
         }
         .task { reload() }
+        .onAppear(perform: reload)
         .sheet(isPresented: $showSessionDetail, onDismiss: reload) {
             if let status = sessionStatus {
                 SessionDetailSheet(session: status.session, done: status.done)
@@ -91,8 +93,8 @@ struct SportView: View {
                                 .foregroundStyle(Theme.text)
                             // Fourchette kcal indicative (spec sport §8.3) sur les durées min/max.
                             Text(activity.durations.map(String.init).joined(separator: " / ")
-                                 + " min · ~\(activity.estimatedKcal(minutes: activity.durations.first ?? 0))"
-                                 + " à \(activity.estimatedKcal(minutes: activity.durations.last ?? 0)) kcal")
+                                 + " min · ~\(activity.estimatedKcal(minutes: activity.durations.first ?? 0).frFormatted)"
+                                 + " à \(activity.estimatedKcal(minutes: activity.durations.last ?? 0).frFormatted) kcal")
                                 .font(.caption)
                                 .foregroundStyle(Theme.subtext)
                         }
@@ -101,6 +103,7 @@ struct SportView: View {
                             .font(.caption.weight(.bold))
                             .foregroundStyle(Theme.subtext)
                     }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .listRowBackground(Theme.card)
@@ -171,6 +174,18 @@ private func sportPreviewFixture() -> (container: ModelContainer, game: GameServ
         heightCm: 180, initialWeightKg: 90, activity: .moderate,
         dailyCalorieTarget: 2000
     ))
+
+    // Deux entrées du jour pour peupler « Fait aujourd'hui » ET l'état ✓ de la
+    // carte séance (même session que la rotation du jour, spec sport §3.3).
+    context.insert(ActivityEntry(kind: .activity, refID: "walk", durationMinutes: 20,
+                                 estimatedKcal: 80, xpAwarded: 30))
+    let sessions = (try? Catalogs.sessions()) ?? []
+    if let todaySession = DailySessionPicker.session(for: .now, sessions: sessions,
+                                                     calendar: GameService.calendar) {
+        context.insert(ActivityEntry(kind: .dailySession, refID: todaySession.id,
+                                     durationMinutes: todaySession.totalMinutes,
+                                     estimatedKcal: 120, xpAwarded: 40))
+    }
     try? context.save()
 
     let fake = FakeStepsService()

@@ -17,27 +17,28 @@ struct ActivityLogSheet: View {
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
-            VStack(alignment: .leading, spacing: 22) {
-                HStack(spacing: 10) {
-                    Text(activity.emoji).font(.system(size: 40))
-                    Text(activity.name)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    HStack(spacing: 10) {
+                        Text(activity.emoji).font(.system(size: 40))
+                        Text(activity.name)
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.text)
+                    }
+                    Text("Durée")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.text)
-                }
-                Text("Durée")
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.text)
-                HStack(spacing: 8) {
-                    ForEach(activity.durations, id: \.self) { minutes in
-                        durationButton(minutes)
+                    HStack(spacing: 8) {
+                        ForEach(activity.durations, id: \.self) { minutes in
+                            durationButton(minutes)
+                        }
                     }
                 }
-                Spacer(minLength: 0)
+                .padding(20)
             }
-            .padding(20)
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     private func durationButton(_ minutes: Int) -> some View {
@@ -49,11 +50,15 @@ struct ActivityLogSheet: View {
                 Text("\(minutes) min")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(isSelected ? .white : Theme.text)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
                 Text("~\(activity.estimatedKcal(minutes: minutes).frFormatted) kcal")
                     .font(.caption2)
                     .foregroundStyle(isSelected ? .white.opacity(0.85) : Theme.subtext)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, minHeight: 56)
             .padding(.vertical, 12)
             .background(isSelected ? Theme.orange : Theme.card,
                         in: RoundedRectangle(cornerRadius: 14))
