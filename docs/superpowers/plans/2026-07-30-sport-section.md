@@ -811,7 +811,9 @@ Expected: BUILD FAILED (`activityCatalog`, `logActivity`… inconnus).
         case .activitiesDone:
             return activityCount(from: week.start, to: week.end)
         case .dailySessionsDone:
-            return activityCount(from: week.start, to: week.end, kind: .dailySession)
+            // Jours DISTINCTS (spec §7.1 amendée) : une double validation le même
+            // jour ne compte qu'une fois — helper dailySessionDayCount (Step 4).
+            return dailySessionDayCount(from: week.start, to: week.end)
 ```
 
 5. Dans `badgeStats()`, avant `return stats` :
@@ -819,7 +821,9 @@ Expected: BUILD FAILED (`activityCatalog`, `logActivity`… inconnus).
 ```swift
         let activities = (try? modelContext.fetch(FetchDescriptor<ActivityEntry>())) ?? []
         stats.activitiesDone = activities.count
-        stats.dailySessionsDone = activities.count { $0.kind == .dailySession }
+        // Jours distincts (spec §7.2 amendée), cohérent avec la métrique de quête.
+        stats.dailySessionsDone = Set(activities.filter { $0.kind == .dailySession }
+            .map { Self.calendar.startOfDay(for: $0.date) }).count
 ```
 
 6. Visibilité pour l'extension (même type, autre fichier — `private` n'y est PAS visible, contrairement à DayCloser qui ne touche jamais le store directement) :

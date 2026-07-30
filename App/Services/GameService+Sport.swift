@@ -21,8 +21,9 @@ extension GameService {
     /// Valide la séance du jour : +40 XP (max 1/jour, indépendant du plafond activités).
     @discardableResult
     func logDailySession(session: ActivitySession, date: Date = .now) async -> ActivityEntry {
-        await logSport(kind: .dailySession, refID: session.id, minutes: session.totalMinutes,
-                       kcal: session.estimatedKcal(activitiesByID: activitiesByID), date: date)
+        assert(session.totalMinutes > 0, "séance sans étapes")
+        return await logSport(kind: .dailySession, refID: session.id, minutes: session.totalMinutes,
+                              kcal: session.estimatedKcal(activitiesByID: activitiesByID), date: date)
     }
 
     private func logSport(kind: ActivityKind, refID: String, minutes: Int,
@@ -79,6 +80,12 @@ extension GameService {
     /// Kcal estimées d'une séance (catalogue chargé une fois à l'init).
     func sessionKcal(_ session: ActivitySession) -> Int {
         session.estimatedKcal(activitiesByID: activitiesByID)
+    }
+
+    /// XP que rapporterait une activité libre validée maintenant — 0 une fois le
+    /// plafond du jour atteint : le CTA de la sheet ne promet pas d'XP fantôme.
+    func nextActivityXP(now: Date = .now) -> Int {
+        XPEngine.award(.activityDone, todayCount: sportAwardedCount(kind: .activity, on: now))
     }
 
     /// Validations du jour, chronologiques — liste « Fait aujourd'hui ».

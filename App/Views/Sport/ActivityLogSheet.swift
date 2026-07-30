@@ -13,6 +13,9 @@ struct ActivityLogSheet: View {
     let activity: Activity
     @State private var selectedMinutes: Int?
     @State private var isSaving = false
+    /// XP que rapporterait la validation maintenant — 0 une fois le plafond du jour
+    /// atteint : le CTA ne promet alors plus d'XP (honnêteté, spec v1 §13).
+    @State private var xpReward = 30
 
     var body: some View {
         ZStack {
@@ -39,6 +42,7 @@ struct ActivityLogSheet: View {
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
         .presentationDetents([.medium, .large])
+        .onAppear { xpReward = game.nextActivityXP() }
     }
 
     private func durationButton(_ minutes: Int) -> some View {
@@ -68,7 +72,7 @@ struct ActivityLogSheet: View {
 
     private var bottomBar: some View {
         Button(action: validate) {
-            Text("C'est fait ! (+30 XP)")
+            Text(xpReward > 0 ? "C'est fait ! (+\(xpReward) XP)" : "C'est fait !")
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)

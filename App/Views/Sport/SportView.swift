@@ -56,7 +56,7 @@ struct SportView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
         }
-        .task { reload() }
+        // reload() est synchrone : onAppear suffit (couvre 1ᵉʳ affichage ET retours d'onglet).
         .onAppear(perform: reload)
         .sheet(isPresented: $showSessionDetail, onDismiss: reload) {
             if let status = sessionStatus {

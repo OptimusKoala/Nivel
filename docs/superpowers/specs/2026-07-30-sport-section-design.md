@@ -127,13 +127,13 @@ Pas de badge « X jours d'affilée » : contraire au principe « pas de streaks 
 
 ### 7.3 Nivelito
 
-Nouveau contexte `afterActivity` dans `MessageContext` + ~8 messages dans `messages.json` (dont des « +{value} XP »), ton bienveillant. Consommé par la bulle de l'accueil exactement comme `afterMealLog` (signal consommé une fois, pas de bulle si XP = 0).
+Nouveau contexte `afterActivity` dans `MessageContext` + 12 messages dans `messages.json` (la banque exige ≥ 12 par contexte ; mix de messages « +{value} XP » et de messages chaleureux sans XP), ton bienveillant. Consommé par la bulle de l'accueil exactement comme `afterMealLog` (signal consommé une fois, pas de bulle si XP = 0).
 
 ## 8. UI
 
 ### 8.1 Navigation
 
-Tab bar à 5 onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. L'onglet Sport utilise `figure.walk`. **Réglages** devient un bouton ⚙️ dans l'en-tête de l'accueil (à droite, à côté de la pastille de niveau) qui pousse l'écran Réglages existant (aucun changement de contenu).
+Tab bar à 5 onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. L'onglet Sport utilise `figure.walk`. **Réglages** devient un bouton ⚙️ dans l'en-tête de l'accueil (à droite, à côté de la pastille de niveau) qui présente l'écran Réglages existant en sheet, poignée de fermeture visible (aucun changement de contenu).
 
 ### 8.2 Encart « Activité du jour » (accueil)
 
