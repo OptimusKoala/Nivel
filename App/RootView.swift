@@ -28,9 +28,10 @@ struct RootView: View {
                     }
             }
         }
-        // Thème clair unique (spec §12) : le chrome système (tab bar, alertes,
-        // clavier) ne doit pas passer en sombre la nuit sur notre fond crème.
-        .preferredColorScheme(.light)
+        // Le chrome système (tab bar, alertes, clavier) suit l'ambiance de la
+        // palette choisie (v1.1) : clair pour Crème/Menthe/Océan, sombre pour
+        // Nuit douce — jamais le réglage système, qui casserait le thème.
+        .preferredColorScheme(ThemeStore.shared.palette.isDark ? .dark : .light)
     }
 
     private func dismissSplash() {

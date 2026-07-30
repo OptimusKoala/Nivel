@@ -25,7 +25,11 @@ struct NivelitoView: View {
     @State private var bounceOffsetY: CGFloat = 0
     @State private var wobbleDegrees: Double = 0
 
-    // Palette du SVG (le contour/yeux/truffe/bouche viennent de Theme.outline).
+    // Palette du SVG — les couleurs de Nivelito sont FIXES (identité de la
+    // mascotte) : sa fourrure reste orange quel que soit le thème choisi.
+    // Le contour/yeux/truffe/bouche restent Theme.outline, identique dans
+    // les 4 palettes (bordeaux #3A1220).
+    private let fur = Color(hex: 0xF57C1F)
     private let cream = Color(hex: 0xF2EDE0)
     private let earBrown = Color(hex: 0x7D3F1E)
     private let cheekBrown = Color(hex: 0x8A4B2A)
@@ -53,7 +57,7 @@ struct NivelitoView: View {
             NivelitoEarInnerRight().fill(earBrown)
 
             // Tête (fill orange + contour)
-            NivelitoHead().fill(Theme.orange)
+            NivelitoHead().fill(fur)
             NivelitoHead().stroke(Theme.outline, style: outlineStyle)
 
             // Joues brunes

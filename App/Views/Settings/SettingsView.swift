@@ -51,6 +51,7 @@ private struct SettingsContent: View {
                     profileSection
                     goalsSection
                     remindersSection
+                    themeSection
                     healthSection
                     aboutSection
                 }
@@ -249,6 +250,27 @@ private struct SettingsContent: View {
         )
     }
 
+    // MARK: - Thème
+
+    /// Choix de la palette (v1.1) — PAR APPAREIL : persisté dans UserDefaults
+    /// par ThemeStore, indépendant du profil SwiftData. Le changement re-rend
+    /// toute l'app instantanément (façade Theme + @Observable).
+    private var themeSection: some View {
+        section("Thème") {
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible())],
+                      spacing: 10) {
+                ForEach(ThemePalette.all) { palette in
+                    ThemeSwatchCard(palette: palette,
+                                    isSelected: ThemeStore.shared.palette.id == palette.id) {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            ThemeStore.shared.palette = palette
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - Santé
 
     // iOS ne révèle jamais si une autorisation de LECTURE Santé a été accordée ou
@@ -351,6 +373,69 @@ private struct SettingsContent: View {
         } catch {
             assertionFailure("SwiftData save failed in SettingsView: \(error)")
         }
+    }
+}
+
+/// Carte de sélection d'une palette : pastille d'aperçu (fond du thème +
+/// points primaire/accent), emoji + nom, coche animée sur la sélection.
+private struct ThemeSwatchCard: View {
+    let palette: ThemePalette
+    let isSelected: Bool
+    let select: () -> Void
+
+    var body: some View {
+        Button(action: select) {
+            VStack(spacing: 8) {
+                swatch
+                HStack(spacing: 5) {
+                    Text(palette.emoji).font(.footnote)
+                    Text(palette.name)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.text)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Theme.background.opacity(0.6))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Theme.orange : Theme.track,
+                            lineWidth: isSelected ? 2 : 1)
+            )
+            .overlay(alignment: .topTrailing) {
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Theme.orange)
+                        .background(Circle().fill(Theme.card))
+                        .padding(6)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Thème \(palette.name)")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+    }
+
+    /// Cercle d'aperçu construit sur `palette.previewSwatches`.
+    private var swatch: some View {
+        let preview = palette.previewSwatches
+        return ZStack {
+            Circle().fill(preview.background)
+            Circle().stroke(palette.subtext.opacity(0.45), lineWidth: 1)
+            HStack(spacing: 3) {
+                ForEach(Array(preview.dots.enumerated()), id: \.offset) { _, dot in
+                    Circle().fill(dot).frame(width: 12, height: 12)
+                }
+            }
+        }
+        .frame(width: 42, height: 42)
     }
 }
 

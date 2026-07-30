@@ -11,6 +11,10 @@ targets:
     type: application
     platform: iOS
     sources: [App]
+    settings:
+      base:
+        DEVELOPMENT_TEAM: 5V52773QN3
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
     dependencies:
       - package: NivelCore
     entitlements:

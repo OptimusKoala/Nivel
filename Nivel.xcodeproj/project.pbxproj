@@ -16,6 +16,7 @@
 		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
 		54786F0394B67DE901FD1C19 /* MealLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3D92F71CC93D99201C361E /* MealLogSheet.swift */; };
+		54F0635AFE571DA500073C77 /* ThemeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */; };
 		57A40EADB63F64054A4795D7 /* CelebrationsHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2333A9029C3BCBFBBF4FB976 /* CelebrationsHost.swift */; };
 		5A40096E1BB5A7713251D5C1 /* NivelitoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C923A46DDC21834AB6E06D1B /* NivelitoView.swift */; };
 		5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67EB506351740B5EC992E309 /* AppSmokeTests.swift */; };
@@ -65,14 +66,15 @@
 		2749E47DBFD2A5D89042A89E /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		34F99A2EA3F3B3FD6B5FB4AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
 		5A3D92F71CC93D99201C361E /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
 		671D6B6E3581A479FFED40C2 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		67EB506351740B5EC992E309 /* AppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTests.swift; sourceTree = "<group>"; };
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
 		7900354E6B00D231F84DEFD2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		7FD0D49D1E0B2314767BA85A /* DayCloser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloser.swift; sourceTree = "<group>"; };
-		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = NivelCore; sourceTree = SOURCE_ROOT; };
+		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NivelCore; path = NivelCore; sourceTree = SOURCE_ROOT; };
 		848BA4571516E35FCEA2402D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		9782153DD5F0B9BABA5132F1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A694B98073276CD2FA798820 /* MealsJournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealsJournalView.swift; sourceTree = "<group>"; };
@@ -235,6 +237,7 @@
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
 				C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */,
+				4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */,
 			);
 			path = NivelTests;
 			sourceTree = "<group>";
@@ -327,6 +330,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					75F9E279A12A830E33238A0B = {
+						DevelopmentTeam = 5V52773QN3;
+					};
+				};
 			};
 			buildConfigurationList = 6D59E3BA22F6B18CD1F33C4D /* Build configuration list for PBXProject "Nivel" */;
 			developmentRegion = en;
@@ -406,6 +414,7 @@
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
 				43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */,
+				54F0635AFE571DA500073C77 /* ThemeStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -621,7 +630,7 @@
 				AA3B4CDE4446D043722CA44D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		6D59E3BA22F6B18CD1F33C4D /* Build configuration list for PBXProject "Nivel" */ = {
 			isa = XCConfigurationList;
@@ -630,7 +639,7 @@
 				57D9D36D439461EC8FA85191 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		EF80D40966584D66EEABCDC3 /* Build configuration list for PBXNativeTarget "NivelTests" */ = {
 			isa = XCConfigurationList;
@@ -639,7 +648,7 @@
 				96F8A22F0A393B2B5FED0806 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
