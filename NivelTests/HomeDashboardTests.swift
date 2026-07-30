@@ -138,6 +138,37 @@ final class HomeDashboardTests: XCTestCase {
                        .context(.levelUp, 5))
     }
 
+    // MARK: - Expression de Nivelito (accueil)
+
+    func testNivelitoExpressionPriorities() {
+        // Célébration en attente → joy, même la nuit, même avec bulle de récompense.
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 23, celebrationPending: true,
+                                                   rewardBubbleActive: true), .joy)
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 10, celebrationPending: true,
+                                                   rewardBubbleActive: false), .joy)
+        // Bulle de récompense active → encouraging, y compris la nuit.
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 14, celebrationPending: false,
+                                                   rewardBubbleActive: true), .encouraging)
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 23, celebrationPending: false,
+                                                   rewardBubbleActive: true), .encouraging)
+        // Nuit (après 22 h ou avant 7 h) → sleepy.
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 22, celebrationPending: false,
+                                                   rewardBubbleActive: false), .sleepy)
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 23, celebrationPending: false,
+                                                   rewardBubbleActive: false), .sleepy)
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 0, celebrationPending: false,
+                                                   rewardBubbleActive: false), .sleepy)
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 6, celebrationPending: false,
+                                                   rewardBubbleActive: false), .sleepy)
+        // Journée normale (7 h–21 h) → happy.
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 7, celebrationPending: false,
+                                                   rewardBubbleActive: false), .happy)
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 12, celebrationPending: false,
+                                                   rewardBubbleActive: false), .happy)
+        XCTAssertEqual(HomeView.nivelitoExpression(hour: 21, celebrationPending: false,
+                                                   rewardBubbleActive: false), .happy)
+    }
+
     // MARK: - Quêtes
 
     func testActiveQuestStatusesReflectStateAndCompletion() throws {

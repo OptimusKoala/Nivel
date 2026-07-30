@@ -73,6 +73,20 @@ struct HomeView: View {
         return .context(fallback, fallbackValue)
     }
 
+    /// Expression de Nivelito sur l'accueil — logique PURE, testable (HomeDashboardTests).
+    /// Les événements transitoires priment sur l'humeur horaire : une célébration
+    /// en attente (.joy) puis une bulle de récompense (.encouraging) l'emportent
+    /// sur la fatigue nocturne (.sleepy après 22 h ou avant 7 h) — Nivelito ne
+    /// bâille pas en criant « +20 XP ». Sinon : .happy.
+    static func nivelitoExpression(
+        hour: Int, celebrationPending: Bool, rewardBubbleActive: Bool
+    ) -> NivelitoExpression {
+        if celebrationPending { return .joy }
+        if rewardBubbleActive { return .encouraging }
+        if hour >= 22 || hour < 7 { return .sleepy }
+        return .happy
+    }
+
     // MARK: - Corps
 
     var body: some View {
@@ -232,7 +246,16 @@ struct HomeView: View {
     private var nivelitoRow: some View {
         HStack(alignment: .top, spacing: 10) {
             NivelitoView(
-                expression: .happy,
+                // Expression contextuelle (v1.2-B) : célébration → joy, bulle de
+                // récompense → encouraging, nuit → sleepy, sinon happy. Le corps est
+                // réévalué quand `pendingCelebrations` (GameService observable) ou
+                // `rewardBubbleActive` changent ; l'heure suit via la recréation de
+                // la vue (`.id(dayKey)` du parent) et les retours au premier plan.
+                expression: Self.nivelitoExpression(
+                    hour: GameService.calendar.component(.hour, from: .now),
+                    celebrationPending: !game.pendingCelebrations.isEmpty,
+                    rewardBubbleActive: rewardBubbleActive
+                ),
                 size: 86,
                 // Compteur MONOTONE : une célébration levée pendant que l'accueil est
                 // visible fait rebondir Nivelito, mais le dépilage de la file (Task 19)

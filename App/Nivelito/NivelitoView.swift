@@ -25,6 +25,17 @@ struct NivelitoView: View {
     @State private var bounceOffsetY: CGFloat = 0
     @State private var wobbleDegrees: Double = 0
 
+    // Micro-gestes d'idle (v1.2-B) : toutes les 6–14 s, UN geste aléatoire parmi
+    // frémissement d'oreilles / inclinaison de tête / clin d'œil / regard de côté.
+    // Jamais deux à la fois, suspendus pendant un rebond de célébration,
+    // désactivés sous Reduce Motion. Premier délai ≥ 6 s : la chorégraphie du
+    // splash (~2,5 s) et les pages d'onboarding ne sont pas perturbées.
+    @State private var earWiggleDegrees: Double = 0
+    @State private var headTiltDegrees: Double = 0
+    @State private var eyeGlanceX: CGFloat = 0
+    @State private var microWink = false
+    @State private var isCelebrating = false
+
     // Palette du SVG — les couleurs de Nivelito sont FIXES (identité de la
     // mascotte) : sa fourrure reste orange quel que soit le thème choisi.
     // Le contour/yeux/truffe/bouche restent Theme.outline, identique dans
@@ -48,13 +59,24 @@ struct NivelitoView: View {
 
     var body: some View {
         ZStack {
-            // Oreilles (fill crème + contour), intérieurs bruns
-            NivelitoEarLeft().fill(cream)
-            NivelitoEarLeft().stroke(Theme.outline, style: outlineStyle)
-            NivelitoEarRight().fill(cream)
-            NivelitoEarRight().stroke(Theme.outline, style: outlineStyle)
-            NivelitoEarInnerLeft().fill(earBrown)
-            NivelitoEarInnerRight().fill(earBrown)
+            // Oreilles (fill crème + contour), intérieurs bruns — chaque paire
+            // oreille + intérieur est groupée pour le frémissement : rotation
+            // miroir ±6° ancrée à la base de l'oreille (jonction avec la tête,
+            // ~(61,66) et ~(139,66) dans l'espace 200×200), la tête couvre la base.
+            ZStack {
+                NivelitoEarLeft().fill(cream)
+                NivelitoEarLeft().stroke(Theme.outline, style: outlineStyle)
+                NivelitoEarInnerLeft().fill(earBrown)
+            }
+            .rotationEffect(.degrees(earWiggleDegrees),
+                            anchor: UnitPoint(x: 61.0 / 200.0, y: 66.0 / 200.0))
+            ZStack {
+                NivelitoEarRight().fill(cream)
+                NivelitoEarRight().stroke(Theme.outline, style: outlineStyle)
+                NivelitoEarInnerRight().fill(earBrown)
+            }
+            .rotationEffect(.degrees(-earWiggleDegrees),
+                            anchor: UnitPoint(x: 139.0 / 200.0, y: 66.0 / 200.0))
 
             // Tête (fill orange + contour)
             NivelitoHead().fill(fur)
@@ -79,9 +101,11 @@ struct NivelitoView: View {
             NivelitoEllipse(center: .init(x: 138, y: 122), rx: 8, ry: 5)
                 .fill(blushPink.opacity(0.85))
 
-            // Yeux (dépendent de l'expression)
+            // Yeux (dépendent de l'expression) — le regard de côté décale la
+            // couche des yeux horizontalement (micro-geste « glance »).
             eyes
                 .transition(.opacity.combined(with: .scale(scale: 0.85)))
+                .offset(x: eyeGlanceX)
 
             // Truffe
             NivelitoNose().fill(Theme.outline)
@@ -91,10 +115,12 @@ struct NivelitoView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.85)))
         }
         .animation(reduceMotion ? .default : .spring(response: 0.3, dampingFraction: 0.65),
-                   value: expression)
+                   value: effectiveExpression)
         .frame(width: size, height: size)
         .scaleEffect(y: reduceMotion ? 1 : (breathe ? 1.02 : 0.98), anchor: .bottom)
-        .rotationEffect(.degrees(wobbleDegrees))
+        // Une seule rotation : célébration (wobble) et inclinaison de tête ne
+        // jouent jamais ensemble (micro-gestes suspendus pendant la célébration).
+        .rotationEffect(.degrees(wobbleDegrees + headTiltDegrees))
         .offset(y: bounceOffsetY)
         .onAppear {
             guard !reduceMotion else { return }
@@ -106,14 +132,27 @@ struct NivelitoView: View {
             guard !reduceMotion else { return }
             Task { await celebrate() }
         }
+        .onChange(of: expression) { _, _ in
+            // Un changement d'expression piloté par l'appelant annule un
+            // micro-clin d'œil en cours (pas de .wink fantôme sur .joy/.sleepy).
+            microWink = false
+        }
         .task(id: hasOpenEyes) { await blinkLoop() }
+        .task { await microGestureLoop() }
         .accessibilityLabel("Nivelito")
+    }
+
+    /// Expression réellement affichée : le micro-clin d'œil remplace brièvement
+    /// happy/encouraging par .wink ; les autres expressions ne sont jamais altérées.
+    private var effectiveExpression: NivelitoExpression {
+        if microWink, expression == .happy || expression == .encouraging { return .wink }
+        return expression
     }
 
     // MARK: - Yeux
 
     @ViewBuilder private var eyes: some View {
-        switch expression {
+        switch effectiveExpression {
         case .happy, .encouraging:
             openEye(cx: 70)
             openEye(cx: 130)
@@ -147,7 +186,7 @@ struct NivelitoView: View {
     // MARK: - Bouche
 
     @ViewBuilder private var mouth: some View {
-        switch expression {
+        switch effectiveExpression {
         case .happy, .wink:
             NivelitoMouth().stroke(Theme.outline, style: mouthStyle)
         case .encouraging:
@@ -162,7 +201,7 @@ struct NivelitoView: View {
     // MARK: - Clignement
 
     private var hasOpenEyes: Bool {
-        switch expression {
+        switch effectiveExpression {
         case .happy, .encouraging, .wink: true
         case .joy, .sleepy: false
         }
@@ -171,8 +210,18 @@ struct NivelitoView: View {
     // MARK: - Célébration
 
     /// Rebond de célébration : offset y −8 + oscillation ±4° en spring (~1 s au total).
+    /// Suspend les micro-gestes le temps du rebond et remet leurs états à zéro
+    /// (un geste qui serait en cours ne doit pas se superposer au wobble).
     private func celebrate() async {
+        isCelebrating = true
+        defer { isCelebrating = false }
         let spring = Animation.spring(response: 0.25, dampingFraction: 0.5)
+        withAnimation(spring) {
+            earWiggleDegrees = 0
+            headTiltDegrees = 0
+            eyeGlanceX = 0
+        }
+        microWink = false
         withAnimation(spring) { bounceOffsetY = -8; wobbleDegrees = 4 }
         try? await Task.sleep(nanoseconds: 250_000_000)
         withAnimation(spring) { wobbleDegrees = -4 }
@@ -192,6 +241,73 @@ struct NivelitoView: View {
             try? await Task.sleep(nanoseconds: 120_000_000)
             withAnimation(.easeOut(duration: 0.09)) { isBlinking = false }
         }
+    }
+
+    // MARK: - Micro-gestes d'idle
+
+    private enum MicroGesture: CaseIterable {
+        case earWiggle, headTilt, quickWink, glance
+    }
+
+    /// Toutes les 6–14 s (aléatoire), joue UN micro-geste tiré au sort.
+    /// Jamais pendant une célébration ; rien sous Reduce Motion ; le premier
+    /// tirage n'arrive qu'après 6 s minimum (splash/onboarding non perturbés).
+    private func microGestureLoop() async {
+        guard !reduceMotion else { return }
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: UInt64.random(in: 6_000_000_000...14_000_000_000))
+            guard !Task.isCancelled else { return }
+            guard !isCelebrating else { continue }
+            switch MicroGesture.allCases.randomElement() ?? .headTilt {
+            case .earWiggle: await playEarWiggle()
+            case .headTilt: await playHeadTilt()
+            case .quickWink: await playQuickWink()
+            case .glance: await playGlance()
+            }
+        }
+    }
+
+    /// Frémissement d'oreilles : 3 oscillations rapides ±6°, rotation miroir
+    /// ancrée à la base de chaque oreille (voir le corps de la vue).
+    private func playEarWiggle() async {
+        let quick = Animation.easeInOut(duration: 0.09)
+        for _ in 0..<3 {
+            guard !Task.isCancelled, !isCelebrating else { return }
+            withAnimation(quick) { earWiggleDegrees = 6 }
+            try? await Task.sleep(nanoseconds: 90_000_000)
+            withAnimation(quick) { earWiggleDegrees = -6 }
+            try? await Task.sleep(nanoseconds: 90_000_000)
+        }
+        withAnimation(quick) { earWiggleDegrees = 0 }
+    }
+
+    /// Inclinaison de tête : ±3° (côté aléatoire) en spring, tenue brève, retour.
+    private func playHeadTilt() async {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            headTiltDegrees = Bool.random() ? 3 : -3
+        }
+        try? await Task.sleep(nanoseconds: 450_000_000)
+        guard !isCelebrating else { return }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { headTiltDegrees = 0 }
+    }
+
+    /// Clin d'œil éclair : bascule sur .wink ~0,6 s puis retour — uniquement
+    /// depuis happy/encouraging (les autres expressions restent intactes).
+    private func playQuickWink() async {
+        guard expression == .happy || expression == .encouraging else { return }
+        microWink = true
+        try? await Task.sleep(nanoseconds: 600_000_000)
+        microWink = false
+    }
+
+    /// Regard de côté : les yeux glissent de ±3 pt (à l'échelle de référence,
+    /// proportionnel à `size`) pendant ~0,8 s puis reviennent au centre.
+    private func playGlance() async {
+        let dx: CGFloat = (Bool.random() ? 6 : -6) * scale
+        withAnimation(.easeInOut(duration: 0.18)) { eyeGlanceX = dx }
+        try? await Task.sleep(nanoseconds: 800_000_000)
+        guard !isCelebrating else { return }
+        withAnimation(.easeInOut(duration: 0.25)) { eyeGlanceX = 0 }
     }
 }
 
