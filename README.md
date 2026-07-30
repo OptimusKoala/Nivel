@@ -4,7 +4,9 @@
   <img src="design/appicon.svg" alt="Nivelito, la mascotte de Nivel" width="160"/>
 </p>
 
-**Nivel** est une app iOS de perte de poids **gamifiée et zéro pression** : on logge ses repas en quelques secondes, on suit ses pas et son poids, et on gagne de l'XP, des niveaux, des quêtes et des badges — sans jamais de rouge, de culpabilité ni d'échec. Un jour "raté" n'existe pas : Nivel encourage, il ne juge pas.
+**Nivel** est une app iOS de perte de poids **gamifiée et zéro pression** : on logge ses repas en quelques secondes, on suit ses pas et son poids, on valide de petites activités physiques (marche, étirements, gainage… et la « séance du jour », la même sur les deux téléphones), et on gagne de l'XP, des niveaux, des quêtes et des badges — sans jamais de rouge, de culpabilité ni d'échec. Un jour "raté" n'existe pas : Nivel encourage, il ne juge pas.
+
+Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes** — les Réglages sont accessibles via le bouton ⚙️ en haut de l'accueil.
 
 Le tout est accompagné de **Nivelito**, un petit panda roux qui commente la journée avec bienveillance (et qui sert d'icône à l'app).
 
@@ -57,12 +59,13 @@ Pas besoin de compte développeur payant — mais l'app **expire au bout de 7 jo
 Nivel/
 ├── project.yml              # Définition XcodeGen (targets Nivel + NivelTests)
 ├── NivelCore/               # Package Swift : logique métier pure + tests unitaires
-│   ├── Sources/NivelCore/   #   Calories, XP, niveaux, quêtes, badges, tendance poids…
+│   ├── Sources/NivelCore/   #   Calories, XP, niveaux, quêtes, badges, tendance poids,
+│   │                        #   catalogues JSON (plats, extras, activités, séances…)
 │   └── Tests/               #   `swift test`
 ├── App/                     # App SwiftUI + SwiftData
 │   ├── Models/              #   Modèles persistés (profil, repas, pesées, journal…)
 │   ├── Services/            #   GameService, HealthKit, notifications, clôture de journée
-│   ├── Views/               #   Accueil, repas, progrès, quêtes, réglages, onboarding…
+│   ├── Views/               #   Accueil, repas, sport, progrès, quêtes, réglages, onboarding…
 │   ├── Nivelito/            #   La mascotte (formes vectorielles, bulles de dialogue)
 │   └── Assets.xcassets/     #   Icône d'app, couleurs
 ├── NivelTests/              # Tests d'intégration de l'app (simulateur)
