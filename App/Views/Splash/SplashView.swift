@@ -104,32 +104,34 @@ struct SplashView: View {
         }
 
         // 0,0 s — le halo s'étend ; Nivelito monte depuis le bas, étiré pendant le vol.
+        // Chaque pause vérifie l'annulation (tap-skip) : sans quoi les étapes
+        // restantes se déclencheraient d'un coup sur la vue en cours de fondu.
         withAnimation(.easeOut(duration: 0.6)) { glowOn = true }
         withAnimation(.easeOut(duration: 0.18)) { mascotOpacity = 1 }
         withAnimation(.easeOut(duration: 0.32)) { mascotOffsetY = 0 }
-        try? await Task.sleep(for: .seconds(0.30))
+        guard (try? await Task.sleep(for: .seconds(0.30))) != nil else { return }
 
         // 0,3 s — atterrissage : squash bref (aplati + élargi), ancré au sol.
         withAnimation(.easeOut(duration: 0.09)) {
             mascotScaleX = 1.10
             mascotScaleY = 0.84
         }
-        try? await Task.sleep(for: .seconds(0.10))
+        guard (try? await Task.sleep(for: .seconds(0.10))) != nil else { return }
 
         // 0,4 s — détente en spring peu amorti → 2-3 rebonds décroissants vers 1.
         withAnimation(.spring(response: 0.42, dampingFraction: 0.32)) {
             mascotScaleX = 1
             mascotScaleY = 1
         }
-        try? await Task.sleep(for: .seconds(0.20))
+        guard (try? await Task.sleep(for: .seconds(0.20))) != nil else { return }
 
         // 0,6 s — frétillement : rebond de célébration existant de NivelitoView (~1 s).
         celebration += 1
-        try? await Task.sleep(for: .seconds(0.30))
+        guard (try? await Task.sleep(for: .seconds(0.30))) != nil else { return }
 
         // 0,9 s — étincelles (chacune scintille une fois, en décalé, jusqu'à ~2 s).
         sparkles = true
-        try? await Task.sleep(for: .seconds(0.30))
+        guard (try? await Task.sleep(for: .seconds(0.30))) != nil else { return }
 
         // 1,2 s — logotype lettre par lettre.
         titleVisible = true
