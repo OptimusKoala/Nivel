@@ -6,8 +6,10 @@ struct RootView: View {
     @Query private var profiles: [UserProfile]
 
     /// Splash à chaque lancement à froid (spec §5) — AVANT l'onboarding aussi :
-    /// c'est l'ouverture de l'app. ~1,5 s, skippable d'un tap.
+    /// c'est l'ouverture de l'app. Chorégraphie "scène vivante" ~2,4 s
+    /// (~1,2 s en Reduce Motion : simple fondu), skippable d'un tap à tout moment.
     @State private var showSplash = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -23,7 +25,7 @@ struct RootView: View {
                     .transition(.opacity)
                     .onTapGesture { dismissSplash() }
                     .task {
-                        try? await Task.sleep(for: .seconds(1.5))
+                        try? await Task.sleep(for: .seconds(reduceMotion ? 1.2 : 2.4))
                         dismissSplash()
                     }
             }
