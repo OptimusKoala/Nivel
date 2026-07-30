@@ -41,39 +41,54 @@ struct RootView: View {
 }
 
 private struct MainTabView: View {
+    /// Onglets — tags STABLES pour le binding `selection` du TabView. Sans binding
+    /// explicite, un re-rendu du parent (déclenché ici par le `save()` SwiftData du
+    /// `.task` d'un onglet, ex. `refreshQuestProgress`) fait retomber la sélection
+    /// implicite sur le premier onglet : on tapait "Quêtes" et on revenait à l'accueil.
+    private enum Tab: Hashable { case home, meals, progress, quests, settings }
+
     @Environment(\.scenePhase) private var scenePhase
     @Environment(GameService.self) private var gameService
     @Query private var profiles: [UserProfile]
+
+    /// Onglet sélectionné — persiste à travers les re-rendus (contrairement à la
+    /// sélection implicite d'un TabView sans binding).
+    @State private var selectedTab: Tab = .home
 
     /// Jour courant (minuit local). HomeView fige ses bornes "aujourd'hui" à sa création :
     /// `.id(dayKey)` la recrée quand le jour change — rafraîchi au retour au premier plan.
     @State private var dayKey = Self.currentDayKey()
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             HomeView()
                 .id(dayKey)
                 .tabItem { Label("Accueil", systemImage: "house.fill") }
+                .tag(Tab.home)
 
             // .id(dayKey) : comme l'accueil, le journal repart sur "aujourd'hui"
             // quand le jour change (retour au premier plan après minuit).
             MealsJournalView()
                 .id(dayKey)
                 .tabItem { Label("Repas", systemImage: "fork.knife") }
+                .tag(Tab.meals)
 
             // .id(dayKey) : les bornes "aujourd'hui" (pas, pesée) suivent le changement de jour.
             ProgressScreen()
                 .id(dayKey)
                 .tabItem { Label("Progrès", systemImage: "chart.line.uptrend.xyaxis") }
+                .tag(Tab.progress)
 
             // .id(dayKey) : le refresh des quêtes (.task) repart au changement de jour
             // (retour au premier plan après minuit — dont le lundi de renouvellement).
             QuestsView()
                 .id(dayKey)
                 .tabItem { Label("Quêtes", systemImage: "trophy.fill") }
+                .tag(Tab.quests)
 
             SettingsView()
                 .tabItem { Label("Réglages", systemImage: "gearshape.fill") }
+                .tag(Tab.settings)
         }
         .tint(Theme.orange)
         // Présentation des célébrations (level-up plein écran, bannières badge/quête)

@@ -65,14 +65,14 @@
 		2749E47DBFD2A5D89042A89E /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		34F99A2EA3F3B3FD6B5FB4AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A3D92F71CC93D99201C361E /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
 		671D6B6E3581A479FFED40C2 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		67EB506351740B5EC992E309 /* AppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTests.swift; sourceTree = "<group>"; };
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
 		7900354E6B00D231F84DEFD2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		7FD0D49D1E0B2314767BA85A /* DayCloser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloser.swift; sourceTree = "<group>"; };
-		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NivelCore; path = NivelCore; sourceTree = SOURCE_ROOT; };
+		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = NivelCore; sourceTree = SOURCE_ROOT; };
 		848BA4571516E35FCEA2402D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		9782153DD5F0B9BABA5132F1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A694B98073276CD2FA798820 /* MealsJournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealsJournalView.swift; sourceTree = "<group>"; };
@@ -327,8 +327,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 6D59E3BA22F6B18CD1F33C4D /* Build configuration list for PBXProject "Nivel" */;
 			developmentRegion = en;
@@ -484,7 +482,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/Nivel.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 5V52773QN3;
 				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -518,7 +518,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/Nivel.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 5V52773QN3;
 				INFOPLIST_FILE = App/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -619,7 +621,7 @@
 				AA3B4CDE4446D043722CA44D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		6D59E3BA22F6B18CD1F33C4D /* Build configuration list for PBXProject "Nivel" */ = {
 			isa = XCConfigurationList;
@@ -628,7 +630,7 @@
 				57D9D36D439461EC8FA85191 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		EF80D40966584D66EEABCDC3 /* Build configuration list for PBXNativeTarget "NivelTests" */ = {
 			isa = XCConfigurationList;
@@ -637,7 +639,7 @@
 				96F8A22F0A393B2B5FED0806 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
