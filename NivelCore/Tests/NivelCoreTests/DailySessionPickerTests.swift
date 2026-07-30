@@ -56,6 +56,19 @@ final class DailySessionPickerTests: XCTestCase {
         }
     }
 
+    func testIndexIsIndependentOfDeviceCalendarIdentifier() {
+        // Le réglage Région > Calendrier du device (bouddhiste, japonais…) ne doit PAS
+        // déplacer la référence, sinon les deux iPhones divergent (revue Task 2).
+        for identifier in [Calendar.Identifier.gregorian, .buddhist, .japanese, .hebrew, .persian] {
+            var deviceCalendar = Calendar(identifier: identifier)
+            deviceCalendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+            XCTAssertEqual(
+                DailySessionPicker.index(for: date(2026, 7, 30), count: 8, calendar: deviceCalendar),
+                2, "\(identifier)"
+            )
+        }
+    }
+
     func testIndexWithNonPositiveCountReturnsZero() {
         XCTAssertEqual(DailySessionPicker.index(for: date(2026, 1, 1), count: 0, calendar: calendar), 0)
     }
