@@ -29,5 +29,7 @@ final class CatalogsTests: XCTestCase {
         let badges = try Catalogs.badges()
         XCTAssertEqual(badges.count, 24)
         XCTAssertEqual(Set(badges.map(\.id)).count, 24)
+        // Chaque badge a un emoji distinct : la grille des badges les utilise comme identité visuelle.
+        XCTAssertEqual(Set(badges.map(\.emoji)).count, badges.count)
     }
 }
