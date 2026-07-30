@@ -54,5 +54,8 @@ final class AppSmokeTests: XCTestCase {
         XCTAssertEqual(fetchedActivities.count, 1)
         XCTAssertEqual(fetchedActivities.first?.kind, .activity)
         XCTAssertEqual(fetchedActivities.first?.refID, "walk")
+        XCTAssertEqual(fetchedActivities.first?.durationMinutes, 20)
+        XCTAssertEqual(fetchedActivities.first?.estimatedKcal, 80)
+        XCTAssertEqual(fetchedActivities.first?.xpAwarded, 30)
     }
 }

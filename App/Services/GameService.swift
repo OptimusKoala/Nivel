@@ -36,15 +36,20 @@ struct ActiveQuestStatus: Identifiable {
 /// SwiftData + StepsProviding.
 @Observable @MainActor
 final class GameService {
-    private let modelContext: ModelContext
-    // `internal` (et non `private`) : partagé avec la clôture des journées,
-    // rangée dans sa propre extension (DayCloser.swift) — même type, autre fichier.
+    // `internal` (et non `private`) : partagé avec les extensions Sport et clôture
+    // des journées, rangées dans leurs propres fichiers (GameService+Sport.swift,
+    // DayCloser.swift) — même type, autre fichier.
+    let modelContext: ModelContext
     let stepsService: StepsProviding
 
     /// Catalogues embarqués (chargés une fois ; vides si le bundle est corrompu — jamais de crash).
     let questCatalog: [Quest]
     private let badgeCatalog: [Badge]
     private let messageBank: MessageBank?
+    let activityCatalog: [Activity]
+    let sessionCatalog: [ActivitySession]
+    /// Index id → Activity (kcal des séances, libellés des vues).
+    let activitiesByID: [String: Activity]
 
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
@@ -58,6 +63,10 @@ final class GameService {
     /// messages contiennent "+{value} XP" (spec §4.2). 0 = repas loggé mais XP plafonné
     /// (5ᵉ repas du jour) : l'accueil n'affiche alors PAS de bulle de récompense.
     var lastMealXPAwarded: Int?
+
+    /// XP attribué à l'activité qui VIENT d'être validée — consommé par l'accueil
+    /// pour la bulle `afterActivity` (miroir de `lastMealXPAwarded`).
+    var lastActivityXPAwarded: Int?
 
     /// Compteur MONOTONE de célébrations levées (jamais décrémenté) — à utiliser comme
     /// `celebrationTrigger` de NivelitoView : le dépilage de la file (Task 19) ne doit
@@ -108,6 +117,9 @@ final class GameService {
         self.questCatalog = Self.loadOrAssert({ try Catalogs.quests() }, fallback: [])
         self.badgeCatalog = Self.loadOrAssert({ try Catalogs.badges() }, fallback: [])
         self.messageBank = Self.loadOrAssert({ try MessageBank.load() }, fallback: nil)
+        self.activityCatalog = Self.loadOrAssert({ try Catalogs.activities() }, fallback: [])
+        self.sessionCatalog = Self.loadOrAssert({ try Catalogs.sessions() }, fallback: [])
+        self.activitiesByID = Dictionary(uniqueKeysWithValues: activityCatalog.map { ($0.id, $0) })
     }
 
     /// Fallback silencieux en release (jamais de crash), mais signal en debug :
@@ -332,9 +344,10 @@ final class GameService {
         case .stepGoalDays:
             let goal = fetchProfile()?.dailyStepGoal ?? 8000
             return stepsByDay.values.count { $0 >= goal }
-        case .activitiesDone, .dailySessionsDone:
-            // Provisoire (Task 7) : implémenté par GameService+Sport (Task 8).
-            return 0
+        case .activitiesDone:
+            return activityCount(from: week.start, to: week.end)
+        case .dailySessionsDone:
+            return activityCount(from: week.start, to: week.end, kind: .dailySession)
         }
     }
 
@@ -360,6 +373,11 @@ final class GameService {
         stats.questsCompleted = state.completedQuestIDs.count
         stats.weekWithinTarget = hasSevenConsecutiveDaysWithinTarget(closed) ? 1 : 0
         stats.trendDownFortnight = isTrendDownOverFortnight() ? 1 : 0
+
+        let activities = (try? modelContext.fetch(FetchDescriptor<ActivityEntry>())) ?? []
+        stats.activitiesDone = activities.count
+        stats.dailySessionsDone = activities.count { $0.kind == .dailySession }
+
         return stats
     }
 
@@ -614,7 +632,8 @@ final class GameService {
         return (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
     }
 
-    private func dayBounds(for date: Date) -> (Date, Date)? {
+    // internal : aussi utilisé par GameService+Sport.swift et DayCloser.swift.
+    func dayBounds(for date: Date) -> (Date, Date)? {
         let start = Self.calendar.startOfDay(for: date)
         guard let end = Self.calendar.date(byAdding: .day, value: 1, to: start) else { return nil }
         return (start, end)
