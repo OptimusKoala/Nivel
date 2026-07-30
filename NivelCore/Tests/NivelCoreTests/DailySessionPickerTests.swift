@@ -2,11 +2,11 @@ import XCTest
 @testable import NivelCore
 
 final class DailySessionPickerTests: XCTestCase {
-    /// Calendrier identique à GameService.calendar (ISO, lundi premier jour).
+    /// Calendrier hermétique (indépendant du réglage Région du host) — le picker
+    /// n'utilise que les unités de jour, pas les semaines.
     private var calendar: Calendar {
-        var c = Calendar.current
-        c.firstWeekday = 2
-        c.minimumDaysInFirstWeek = 4
+        var c = Calendar(identifier: .iso8601)
+        c.timeZone = TimeZone(identifier: "Europe/Paris")!
         return c
     }
 
@@ -38,6 +38,26 @@ final class DailySessionPickerTests: XCTestCase {
     func testDatesBeforeReferenceStayInRange() {
         let index = DailySessionPicker.index(for: date(2025, 12, 31), count: 8, calendar: calendar)
         XCTAssertEqual(index, 7) // jour -1 → modulo positif
+        XCTAssertEqual(
+            DailySessionPicker.index(for: date(2025, 12, 31, hour: 23), count: 8, calendar: calendar),
+            7
+        )
+    }
+
+    func testRotationStaysContiguousAcrossDSTTransitions() {
+        // Passages à l'heure d'été (29/03/2026) et d'hiver (25/10/2026) en Europe/Paris.
+        for (y, m, dRange) in [(2026, 3, 28...30), (2026, 10, 24...26)] {
+            var previous: Int?
+            for d in dRange {
+                let index = DailySessionPicker.index(for: date(y, m, d), count: 8, calendar: calendar)
+                if let previous { XCTAssertEqual(index, (previous + 1) % 8, "\(d)/\(m)") }
+                previous = index
+            }
+        }
+    }
+
+    func testIndexWithNonPositiveCountReturnsZero() {
+        XCTAssertEqual(DailySessionPicker.index(for: date(2026, 1, 1), count: 0, calendar: calendar), 0)
     }
 
     func testSessionForDate() throws {

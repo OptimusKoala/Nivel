@@ -7,7 +7,12 @@ public enum DailySessionPicker {
     /// 1ᵉʳ janvier 2026 — date de référence FIXE de la rotation : ne JAMAIS la changer
     /// (elle est pinnée par les tests et partagée par les deux installations).
     static func referenceDay(calendar: Calendar) -> Date {
-        calendar.date(from: DateComponents(year: 2026, month: 1, day: 1))!
+        // Identifiant PINNÉ : Calendar.current suit le réglage Région > Calendrier du
+        // device (bouddhiste, japonais…), qui décalerait la référence de plusieurs
+        // siècles — seul le fuseau du calendrier appelant est repris.
+        var iso = Calendar(identifier: .iso8601)
+        iso.timeZone = calendar.timeZone
+        return iso.date(from: DateComponents(year: 2026, month: 1, day: 1))!
     }
 
     /// Index du jour dans [0, count) — modulo positif (les dates antérieures à la
