@@ -6,13 +6,16 @@ import Foundation
 public struct WidgetSnapshot: Codable, Equatable, Sendable {
     /// Minuit local du jour auquel appartiennent les kcal.
     public let dayKey: Date
+    /// Somme estimée du jour (affichée avec « ~ » : ce sont des estimations).
     public let kcalEaten: Int
     public let kcalTarget: Int
+    /// XP cumulé : le widget recalcule niveau et progression via LevelSystem.
     public let totalXP: Int
     /// Prénom du profil : substitue `{name}` dans les messages de Nivelito.
     public let userName: String
     /// Id de palette (`ThemePalette.id`) ; id inconnu → Crème côté widget.
     public let themeID: String
+    /// Debug / fraîcheur : jamais utilisé pour gater l'affichage.
     public let generatedAt: Date
 
     public init(dayKey: Date, kcalEaten: Int, kcalTarget: Int, totalXP: Int,
