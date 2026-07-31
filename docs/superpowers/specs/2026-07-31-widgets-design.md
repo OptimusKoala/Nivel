@@ -81,7 +81,7 @@ Tous suivent la palette du snapshot et la règle **zéro rouge** : en dépasseme
 ## 7. Deep link `nivel://log-meal`
 
 - Schéma URL `nivel` déclaré dans l'Info.plist de l'app (`CFBundleURLTypes` via `project.yml`).
-- `RootView` gère `.onOpenURL` : si l'onboarding est terminé, ouvrir la sheet « Logger un repas » (onglet Accueil) ; sinon ignorer silencieusement.
+- `MainTabView` gère `.onOpenURL` (`App/RootView.swift`) : si l'onboarding est terminé, ouvrir la sheet « Logger un repas » (onglet Accueil) ; sinon ignorer silencieusement — `MainTabView` n'existe pas tant que l'onboarding n'est pas fini, c'est une garde structurelle.
 - La décision de routage est une fonction pure testable (même pattern que `HomeView.bubbleDecision`).
 - Le tap ailleurs sur un widget ouvre simplement l'app (comportement par défaut).
 

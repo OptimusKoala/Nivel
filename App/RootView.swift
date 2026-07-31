@@ -109,6 +109,10 @@ private struct MainTabView: View {
         // que l'onboarding n'est pas fini : le lien est alors ignoré.
         .onOpenURL { url in
             guard DeepLink.parse(url) == .logMeal else { return }
+            // Rafraîchit le jour AVANT de poser le signal : sinon le rattrapage
+            // minuit d'onForeground() recrée HomeView (.id(dayKey)) après coup et
+            // emporte le showMealLog qui vient d'être posé.
+            dayKey = Self.currentDayKey()
             selectedTab = .home
             gameService.pendingMealLogDeepLink = true
         }

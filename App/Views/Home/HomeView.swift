@@ -155,6 +155,9 @@ struct HomeView: View {
 
     /// Deep link « + Repas » du widget : consomme le signal et ouvre la sheet
     /// (l'app peut être à froid — onAppear — ou déjà ouverte — onChange).
+    /// Collision connue et acceptée : si Réglages ou le player de séance est déjà
+    /// présenté au moment du lien, UIKit abandonne la présentation de la sheet
+    /// repas (cas rare) — le tap se contente alors de ramener sur l'app.
     private func consumeDeepLink() {
         guard game.pendingMealLogDeepLink else { return }
         game.pendingMealLogDeepLink = false
