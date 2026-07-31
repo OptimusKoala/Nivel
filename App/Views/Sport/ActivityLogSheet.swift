@@ -22,7 +22,9 @@ struct ActivityLogSheet: View {
             Theme.background.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    SportHeroIllustration(name: activity.id, fallbackEmoji: activity.emoji)
+                    SportIllustration(name: activity.id, fallbackEmoji: activity.emoji,
+                                      size: 140, cornerRadius: 20)
+                        .frame(maxWidth: .infinity, alignment: .center)
                     Text(activity.name)
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.text)
@@ -36,6 +38,7 @@ struct ActivityLogSheet: View {
                                     .foregroundStyle(Theme.text)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
+                            .accessibilityElement(children: .combine)
                         }
                     }
                     SectionTitle("Durée")

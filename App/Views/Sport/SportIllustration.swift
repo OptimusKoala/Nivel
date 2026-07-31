@@ -41,9 +41,9 @@ struct SportHeroIllustration: View {
             Image(decorative: "Sport/\(name)")
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .frame(maxHeight: 280)
+                .frame(maxWidth: 280, maxHeight: 280)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
+                .frame(maxWidth: .infinity)
         } else {
             Text(fallbackEmoji)
                 .font(.system(size: 80))
@@ -51,6 +51,7 @@ struct SportHeroIllustration: View {
                 .background(Theme.accent.opacity(0.12),
                             in: RoundedRectangle(cornerRadius: 20))
                 .accessibilityHidden(true)
+                .frame(maxWidth: .infinity)
         }
     }
 }
