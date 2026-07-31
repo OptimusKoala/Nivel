@@ -6,6 +6,8 @@
 
 **Nivel** est une app iOS de perte de poids **gamifiée et zéro pression** : on logge ses repas en quelques secondes, on suit ses pas et son poids, on valide de petites activités physiques (marche, étirements, gainage… et la « séance du jour », la même sur les deux téléphones), et on gagne de l'XP, des niveaux, des quêtes et des badges — sans jamais de rouge, de culpabilité ni d'échec. Un jour "raté" n'existe pas : Nivel encourage, il ne juge pas.
 
+Chaque sport est **illustré par Nivelito en action**, et la séance du jour se suit en **mode pas-à-pas guidé** : une étape par écran, avec les consignes (« comment faire ») et un rythme suggéré — un guide, pas un chrono.
+
 Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes** — les Réglages sont accessibles via le bouton ⚙️ en haut de l'accueil.
 
 Le tout est accompagné de **Nivelito**, un petit panda roux qui commente la journée avec bienveillance (et qui sert d'icône à l'app).
@@ -36,6 +38,9 @@ cd NivelCore && swift test
 # Tests de l'app (SwiftData, services) sur simulateur
 xcodebuild -project Nivel.xcodeproj -scheme Nivel \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
+
+# Régénérer les assets sport (App/Assets.xcassets/Sport) depuis design/sport/*.png
+./scripts/import-sport-images.sh
 ```
 
 ## Installer Nivel sur ton iPhone (compte Apple gratuit)
@@ -67,8 +72,9 @@ Nivel/
 │   ├── Services/            #   GameService, HealthKit, notifications, clôture de journée
 │   ├── Views/               #   Accueil, repas, sport, progrès, quêtes, réglages, onboarding…
 │   ├── Nivelito/            #   La mascotte (formes vectorielles, bulles de dialogue)
-│   └── Assets.xcassets/     #   Icône d'app, couleurs
+│   └── Assets.xcassets/     #   Icône d'app, couleurs, illustrations sport (Sport/, générées)
 ├── NivelTests/              # Tests d'intégration de l'app (simulateur)
-├── design/                  # SVG sources (Nivelito, icône d'app)
+├── design/                  # Sources : SVG (Nivelito, icône) + sport/ (PNG 1254px des illustrations)
+├── scripts/                 # import-sport-images.sh (régénère les assets sport)
 └── docs/                    # Spec et plan d'implémentation
 ```
