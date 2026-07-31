@@ -30,8 +30,8 @@ struct SessionPlayerSheet: View {
     enum PlayerButton: Equatable { case start, next, validate, alreadyDone }
 
     static func buttonState(page: Int, stepCount: Int, done: Bool) -> PlayerButton {
-        // Séance sans étape (catalogue futur) : pas de page blanche, l'aperçu valide direct.
-        if stepCount == 0 { return done ? .alreadyDone : .validate }
+        // Pré-condition : stepCount ≥ 1 — garanti par le catalogue
+        // (ActivityCatalogTests.testSessionsLoadAndStepsResolve).
         if page == 0 { return done ? .alreadyDone : .start }
         if page < stepCount { return .next }
         return done ? .alreadyDone : .validate
@@ -68,7 +68,10 @@ struct SessionPlayerSheet: View {
             }
         }
         .padding(.top, 14)
-        .accessibilityHidden(true)
+        // Même pattern que les points de l'onboarding : position exposée à VoiceOver.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Étape \(page + 1) sur \(session.steps.count + 1)")
+        .animation(.spring(duration: 0.4), value: page)
     }
 
     // MARK: Page 0 : aperçu

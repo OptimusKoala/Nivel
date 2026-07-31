@@ -18,7 +18,7 @@ Donner un visage aux sports : chaque activité et chaque séance est illustrée 
 
 ## 3. Assets et intégration
 
-- **Pipeline** : les sources 1254px restent dans `design/sport/` (non embarquées). Chaque image est redimensionnée en **JPEG 750×750, qualité ~80** (~100-150 Ko ; `sips -Z 750 -s format jpeg -s formatOptions 80`) et intégrée dans `App/Assets.xcassets` sous un **dossier `Sport` avec namespace activé** → `Image("Sport/walk")`, `Image("Sport/wake_up")`… Imagesets single-scale (universal). Poids total ajouté à l'app : ~2,5 Mo.
+- **Pipeline** : les sources 1254px restent dans `design/sport/` (non embarquées). Chaque image est redimensionnée en **JPEG 750×750, qualité ~80** (~100-150 Ko ; `sips -Z 750 -s format jpeg -s formatOptions 80`) et intégrée dans `App/Assets.xcassets` sous un **dossier `Sport` avec namespace activé** → `Image("Sport/walk")`, `Image("Sport/wake_up")`… Imagesets single-scale (universal). Poids total ajouté à l'app : ~1,9 Mo.
 - **Composant `SportIllustration`** (`App/Views/Sport/SportIllustration.swift`) : affiche l'image `Sport/<name>` avec coins arrondis et taille paramétrable ; si `UIImage(named:)` est nil → **fallback emoji en pastille** (emoji passé en paramètre ; teinte fixe `Theme.accent`, ce chemin étant inatteignable tant que le test de présence des assets passe). Un seul point de vérité pour toutes les vignettes sport.
 - Aucun changement de modèle persisté : les images sont référencées par les ids existants (`Activity.id`, `ActivitySession.id`).
 
@@ -78,7 +78,7 @@ Les deux champs sont **requis** (pas d'optionnel) : les catalogues sont livrés 
 
 Pager horizontal (`TabView(.page)` ou équivalent) avec points de progression :
 
-- **Page 0 — aperçu** : grande image héro de la séance (`Sport/<session.id>` — pleine largeur, carrée, coins arrondis, hauteur plafonnée ~280pt), titre, « X min · ~Y kcal », liste résumée des étapes (vignette 40pt + nom + durée), bouton « **C'est parti !** » (avance à la page 1). Si la séance est déjà faite aujourd'hui : état ✓ « Déjà faite » à la place du bouton — on peut quand même feuilleter les étapes (consultation libre).
+- **Page 0 — aperçu** : grande image héro de la séance (`Sport/<session.id>` — carrée centrée, coins arrondis, plafonnée ~280pt), titre, « X min · ~Y kcal », liste résumée des étapes (vignette 40pt + nom + durée), bouton « **C'est parti !** » (avance à la page 1). Si la séance est déjà faite aujourd'hui : état ✓ « Déjà faite » à la place du bouton — on peut quand même feuilleter les étapes (consultation libre).
 - **Pages 1..n — une par étape** : grande illustration de l'activité (`Sport/<activityID>`, même gabarit que la héro), nom + « Étape i/n · X min », les puces `instructions` de l'activité, badge `tempo` de l'étape, bouton « **Étape suivante →** ».
 - Navigation **libre** (swipe avant/arrière autorisé) : c'est un guide, pas un chrono. Pas de timer.
 - La logique « page courante + état done → libellé/action du bouton » est extraite en **fonction pure testable** (`SessionPlayerSheet.buttonState(...)`), avec ce contrat EXHAUSTIF :
@@ -123,7 +123,7 @@ Aucun modèle SwiftData, aucune règle XP/quêtes/badges, aucune notification, *
 
 ## 9. Points d'attention
 
-- **Poids de l'app** : +~2,5 Mo (20 JPEG 750px). Acceptable ; ne pas embarquer les PNG 1254px.
+- **Poids de l'app** : +~1,9 Mo (20 JPEG 750px). Acceptable ; ne pas embarquer les PNG 1254px.
 - **Nommage strict** : les assets DOIVENT porter exactement les ids des catalogues (le test §7 le garantit).
 - **Nuit douce** : vignettes claires sur fond sombre — assumé.
 - **`SessionDetailSheet` disparaît** au profit du player : l'encart accueil et l'onglet Sport pointent tous deux vers `SessionPlayerSheet`.

@@ -15,8 +15,7 @@ final class SessionPlayerTests: XCTestCase {
         XCTAssertEqual(SessionPlayerSheet.buttonState(page: 3, stepCount: 3, done: false), .validate)
         XCTAssertEqual(SessionPlayerSheet.buttonState(page: 3, stepCount: 3, done: true), .alreadyDone)
         // Séance à une seule étape (fresh_air) : la page 1 est déjà la dernière.
+        // (stepCount ≥ 1 est garanti par le catalogue — testSessionsLoadAndStepsResolve.)
         XCTAssertEqual(SessionPlayerSheet.buttonState(page: 1, stepCount: 1, done: false), .validate)
-        // Séance sans étape (catalogue futur) : pas de page blanche, validation directe.
-        XCTAssertEqual(SessionPlayerSheet.buttonState(page: 0, stepCount: 0, done: false), .validate)
     }
 }

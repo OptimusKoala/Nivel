@@ -296,13 +296,14 @@ struct SportIllustration: View {
 
     var body: some View {
         if UIImage(named: "Sport/\(name)") != nil {
-            Image("Sport/\(name)")
+            Image(decorative: "Sport/\(name)")   // decorative : VoiceOver n'annonce pas l'id d'asset
                 .resizable()
                 .scaledToFill()
                 .frame(width: size, height: size)
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         } else {
             Text(fallbackEmoji)
+                .accessibilityHidden(true)
                 .font(.system(size: size * 0.55))
                 .frame(width: size, height: size)
                 .background(Theme.accent.opacity(0.15),
@@ -317,16 +318,19 @@ struct SportHeroIllustration: View {
     let fallbackEmoji: String
 
     var body: some View {
+        // (Version finale post-reviews : Image(decorative:) pour VoiceOver, carré ≤ 280pt
+        // centré SANS recadrage vertical — voir le fichier livré, qui fait foi.)
         if UIImage(named: "Sport/\(name)") != nil {
-            Image("Sport/\(name)")
+            Image(decorative: "Sport/\(name)")
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .frame(maxHeight: 280)
+                .frame(maxWidth: 280, maxHeight: 280)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
+                .frame(maxWidth: .infinity)
         } else {
             Text(fallbackEmoji)
                 .font(.system(size: 80))
+                .accessibilityHidden(true)
                 .frame(maxWidth: .infinity, minHeight: 180)
                 .background(Theme.accent.opacity(0.12),
                             in: RoundedRectangle(cornerRadius: 20))
