@@ -27,8 +27,8 @@ targets:
         CFBundleDisplayName: Nivel
         CFBundleDevelopmentRegion: fr
         # Version affichée dans Réglages > À propos — à incrémenter à chaque jalon.
-        CFBundleShortVersionString: "1.3"
-        CFBundleVersion: "4"
+        CFBundleShortVersionString: "1.4"
+        CFBundleVersion: "5"
         NSHealthShareUsageDescription: "Nivel lit tes pas pour suivre ton activité quotidienne."
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
