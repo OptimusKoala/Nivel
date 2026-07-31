@@ -21,17 +21,12 @@ struct ActivityLogSheet: View {
     /// Timer opt-in : nil tant qu'aucune durée n'est choisie (spec timer §3.1). Recréé à
     /// chaque changement de durée (`.onChange(of: selectedMinutes)`), ce qui vaut reset.
     @State private var timer: ExerciseTimerModel?
-    /// Promu à `.large` dès qu'une durée est choisie : révèle l'anneau + les contrôles au lieu
-    /// de les insérer hors écran dans une sheet restée à `.medium` (review Task 5).
-    @State private var detent: PresentationDetent = .medium
-
     /// `initialMinutes` permet aux previews de s'ouvrir directement avec une durée choisie
     /// (anneau du timer visible) sans simuler un tap, sur le modèle d'`initialPage` du player.
     init(activity: Activity, initialMinutes: Int? = nil) {
         self.activity = activity
         _selectedMinutes = State(initialValue: initialMinutes)
         _timer = State(initialValue: initialMinutes.map { ExerciseTimerModel(durationMinutes: $0) })
-        _detent = State(initialValue: initialMinutes != nil ? .large : .medium)
     }
 
     var body: some View {
@@ -67,18 +62,19 @@ struct ActivityLogSheet: View {
             }
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
-        .presentationDetents([.medium, .large], selection: $detent)
+        // Grand détent d'office (retour de Michaël) : au medium, les boutons de durée
+        // passaient sous le pli, il fallait scroller avant même de pouvoir choisir.
+        // Même présentation que le player (SessionPlayerSheet).
+        .presentationDetents([.large])
         .presentationCornerRadius(28)
         .presentationDragIndicator(.visible)
         .onAppear { xpReward = game.nextActivityXP() }
         // Recrée le timer (reset implicite) à chaque nouvelle durée choisie ; re-taper la durée
         // déjà sélectionnée ne relance pas le timer (même valeur, pas d'événement) : Recommencer
-        // couvre ce geste. Le passage à `.large` révèle l'anneau + les contrôles au lieu de les
-        // insérer hors écran dans une sheet restée à `.medium`.
+        // couvre ce geste.
         .onChange(of: selectedMinutes) { _, minutes in
             timer = minutes.map { ExerciseTimerModel(durationMinutes: $0) }
             UIApplication.shared.isIdleTimerDisabled = false
-            if minutes != nil { detent = .large }
         }
         .onChange(of: timer?.isRunning ?? false) { _, running in
             UIApplication.shared.isIdleTimerDisabled = running
