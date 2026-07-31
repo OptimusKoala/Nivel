@@ -15,8 +15,10 @@ struct NivelTimelineEntry: TimelineEntry {
 }
 
 struct NivelWidgetProvider: TimelineProvider {
+    // Squelette de chargement d'un widget déjà configuré : la vraie donnée si
+    // elle existe, sinon l'état d'accueil (nouvel utilisateur).
     func placeholder(in context: Context) -> NivelTimelineEntry {
-        NivelTimelineEntry(date: .now, planned: nil)
+        NivelTimelineEntry(date: .now, planned: plannedEntries().first)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NivelTimelineEntry) -> Void) {
@@ -53,14 +55,5 @@ struct NivelWidgetProvider: TimelineProvider {
         }
         return WidgetTimelinePlanner.entries(snapshot: snapshot, from: now,
                                              bank: bank, calendar: .current)
-    }
-}
-
-/// Placeholder remplacé en Task 7 par les vraies vues (SystemWidgetViews.swift).
-struct NivelWidgetEntryView: View {
-    let entry: NivelTimelineEntry
-    var body: some View {
-        Text("Nivel")
-            .containerBackground(for: .widget) { Color.white }
     }
 }

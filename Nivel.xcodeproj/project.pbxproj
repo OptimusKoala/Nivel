@@ -8,10 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59866C500AE8AE430E9AE18 /* StepsChart.swift */; };
+		0FAF06974700B656604E7BA8 /* SystemWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61A0C215E7AF8D8BAB3D8A4 /* SystemWidgetViews.swift */; };
 		13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD0D49D1E0B2314767BA85A /* DayCloser.swift */; };
 		1B36CC033AB07BEB581D664D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9782153DD5F0B9BABA5132F1 /* Theme.swift */; };
 		1D1E36C74A9B09A9D1678F59 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
 		229BF4CEFB8B9929D59ED697 /* WidgetSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B501D130466BA533B52476E1 /* WidgetSyncTests.swift */; };
+		291CD5438E6A3A57272E0D3D /* WidgetNivelito.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */; };
+		3823F2CEF73FE2E0AF8B05D6 /* AccessoryWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
 		3CD389A424895D03BA0D911B /* NivelWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */; };
 		43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */; };
@@ -45,6 +48,7 @@
 		A8F3FF34B7D7CB7770F78CDF /* SportIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */; };
 		A9598A7C27939AE025FABCB2 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E840C37923218C1DC6C0614D /* Formatting.swift */; };
 		AC058589EEDA0F462DF1730B /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */; };
+		C4741F7A70E605F1FC308D14 /* WidgetCalorieRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */; };
 		C57910A2F19CC7C8B8FC2E4E /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */; };
 		CA44B39964325597C05E92A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671D6B6E3581A479FFED40C2 /* RootView.swift */; };
 		CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9245CF3C47048DB9D88C2E5 /* StatCard.swift */; };
@@ -109,6 +113,7 @@
 		2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportServiceTests.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		34F99A2EA3F3B3FD6B5FB4AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNivelito.swift; sourceTree = "<group>"; };
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
@@ -135,6 +140,7 @@
 		A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportIllustration.swift; sourceTree = "<group>"; };
 		ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechBubble.swift; sourceTree = "<group>"; };
+		AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryWidgetViews.swift; sourceTree = "<group>"; };
 		B1E734571AD23AE4CDC74D01 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		B501D130466BA533B52476E1 /* WidgetSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSyncTests.swift; sourceTree = "<group>"; };
 		B96415D84EF698197C100E80 /* WeightChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightChart.swift; sourceTree = "<group>"; };
@@ -146,6 +152,7 @@
 		C75615282503FC8044658A28 /* DayCloserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloserTests.swift; sourceTree = "<group>"; };
 		C923A46DDC21834AB6E06D1B /* NivelitoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoView.swift; sourceTree = "<group>"; };
 		C9AB33328B42B0A39E65B608 /* NivelTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCalorieRing.swift; sourceTree = "<group>"; };
 		D9245CF3C47048DB9D88C2E5 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
 		DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesChart.swift; sourceTree = "<group>"; };
 		DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestsView.swift; sourceTree = "<group>"; };
@@ -153,6 +160,7 @@
 		E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerTests.swift; sourceTree = "<group>"; };
 		E840C37923218C1DC6C0614D /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServiceTests.swift; sourceTree = "<group>"; };
+		F61A0C215E7AF8D8BAB3D8A4 /* SystemWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemWidgetViews.swift; sourceTree = "<group>"; };
 		F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -243,6 +251,17 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		4890E7E55C1AB41DACFB1ABA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */,
+				F61A0C215E7AF8D8BAB3D8A4 /* SystemWidgetViews.swift */,
+				D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */,
+				3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		55F522696164C90847F50AEC /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -304,6 +323,7 @@
 				8E2385787BD003A25BF9AC5C /* NivelWidgetProvider.swift */,
 				C2F1F7C3748561A5F2562708 /* NivelWidgets.entitlements */,
 				0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */,
+				4890E7E55C1AB41DACFB1ABA /* Views */,
 			);
 			path = Widgets;
 			sourceTree = "<group>";
@@ -554,12 +574,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3823F2CEF73FE2E0AF8B05D6 /* AccessoryWidgetViews.swift in Sources */,
 				A9598A7C27939AE025FABCB2 /* Formatting.swift in Sources */,
 				4E8C2BBA3CC86D6E72F06955 /* NivelWidgetProvider.swift in Sources */,
 				3CD389A424895D03BA0D911B /* NivelWidgets.swift in Sources */,
 				E25C6AEB1505C0C69F8CB630 /* NivelitoShapes.swift in Sources */,
+				0FAF06974700B656604E7BA8 /* SystemWidgetViews.swift in Sources */,
 				5250E4B0045E3F3A037708F2 /* ThemePalette.swift in Sources */,
 				A092FB1BE78830552301E9AE /* WidgetBridge.swift in Sources */,
+				C4741F7A70E605F1FC308D14 /* WidgetCalorieRing.swift in Sources */,
+				291CD5438E6A3A57272E0D3D /* WidgetNivelito.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
