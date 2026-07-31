@@ -46,3 +46,4 @@ Petit widget, accessoires écran verrouillé, état d'accueil, snapshot (`Widget
 - Ne pas toucher au seed des créneaux ailleurs : la « séance du jour » (`DailySessionPicker`) garde sa rotation propre.
 - Le nombre d'entrées reste borné (≤ 32) : aucun risque côté WidgetKit, mais ne pas descendre sous l'heure (pas de minutes).
 - Si les tailles de pools changent un jour (ajout de messages), la propriété « même heure, jour suivant = différent » peut casser pour un pool multiple de 24 : le test §6 le signalera, c'est voulu.
+- Avec le seed ×24, une heure murale donnée ne parcourt que la moitié d'un pool de 26 (gcd(24,26) = 2, cycle de 13 jours) : accepté, la variété promise (§3 : d'heure en heure et de jour en jour) n'est pas affectée.

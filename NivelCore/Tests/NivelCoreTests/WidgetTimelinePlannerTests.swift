@@ -28,7 +28,7 @@ final class WidgetTimelinePlannerTests: XCTestCase {
                        generatedAt: date(hour: 9))
     }
 
-    // MARK: - Bornes
+    // MARK: - Entrées horaires
 
     /// from 9 h : toutes les heures pleines jusqu'à 7 h du lendemain inclus
     /// (spec vivant §3) : 9 h (from), 10 h … 23 h, minuit, 1 h … 7 h = 23 entrées.
@@ -63,12 +63,12 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         XCTAssertEqual(entries.count, 32)
     }
 
-    func testPreDawnGetsSameDaySevenAMBoundary() {
+    func testPreDawnCoversSameDaySevenAM() {
         let from = date(hour: 2)
         let entries = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: from,
                                                     bank: bank, calendar: calendar)
         XCTAssertTrue(entries.map(\.date).contains(date(hour: 7)),
-                      "avant l'aube, une borne 7 h le jour même réveille Nivelito")
+                      "avant l'aube, une entrée 7 h le jour même réveille Nivelito")
     }
 
     // MARK: - Bascule de minuit
@@ -114,7 +114,7 @@ final class WidgetTimelinePlannerTests: XCTestCase {
 
     // MARK: - Hermétisme (fuseau, DST, cohérence des bornes)
 
-    /// Les bornes restent strictement croissantes et uniques les jours de changement
+    /// Les entrées restent strictement croissantes et uniques les jours de changement
     /// d'heure (29/03 et 25/10/2026, Europe/Paris) — WidgetKit exige des dates ordonnées.
     func testTimelineStaysOrderedAcrossDSTTransitions() {
         for (m, d) in [(3, 28), (3, 29), (10, 25)] {
@@ -165,8 +165,8 @@ final class WidgetTimelinePlannerTests: XCTestCase {
     /// L'index est stable et borné pour la même heure absolue.
     func testMessageIndexDeterministicAndBounded() {
         for hours in [-25, 0, 1, 24, 1_000] {
-            let a = WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours, count: 7)
-            let b = WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours, count: 7)
+            let a = WidgetTimelinePlanner.messageIndex(absoluteHour: hours, count: 7)
+            let b = WidgetTimelinePlanner.messageIndex(absoluteHour: hours, count: 7)
             XCTAssertEqual(a, b)
             XCTAssertTrue((0..<7).contains(a))
         }
@@ -180,8 +180,8 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         for count in [2, 25, 26] {
             for hours in [0, 23, 47, 500] {
                 XCTAssertNotEqual(
-                    WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours, count: count),
-                    WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours + 1, count: count),
+                    WidgetTimelinePlanner.messageIndex(absoluteHour: hours, count: count),
+                    WidgetTimelinePlanner.messageIndex(absoluteHour: hours + 1, count: count),
                     "count \(count), heure \(hours)")
             }
         }
@@ -190,7 +190,7 @@ final class WidgetTimelinePlannerTests: XCTestCase {
     /// La même heure d'un jour à l'autre change aussi (delta 24, non multiple
     /// des tailles de pools actuelles 25/26). Si un futur pool devient multiple
     /// de 24, ce test le signalera : c'est voulu (spec vivant §7).
-    func testSameHourNextDayDiffers() {
+    func testPoolSizesKeepSameHourNextDayDistinct() {
         for context in [MessageContext.morning, .midday, .evening] {
             let count = bank.messages(for: context).count + bank.messages(for: .fun).count
             XCTAssertNotEqual(24 % count, 0, "pool \(context) de taille \(count)")
@@ -198,8 +198,9 @@ final class WidgetTimelinePlannerTests: XCTestCase {
     }
 
     /// Compagnon du canary arithmétique ci-dessus : pinne la variété jour à
-    /// jour sur une VRAIE timeline (une mutation qui perdrait la composante
-    /// jour du seed passerait tous les autres tests).
+    /// jour sur une VRAIE timeline, sur TOUTES les heures communes (pas
+    /// seulement 9 h) — tue la mutation `&* 24` → `&* 25` qui figerait le pool
+    /// de midi (25 ≡ 0 mod 25, une mutation qu'une seule heure ne verrait pas).
     func testSameHourNextDayDiffersOnRealTimeline() {
         let today = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 9),
                                                   bank: bank, calendar: calendar)
@@ -208,13 +209,20 @@ final class WidgetTimelinePlannerTests: XCTestCase {
             from: date(hour: 9, day: 32),
             bank: bank, calendar: calendar
         )
-        XCTAssertNotEqual(today.first!.message, tomorrow.first!.message)
+        for entry in today {
+            let sameHourTomorrow = tomorrow.first {
+                calendar.component(.hour, from: $0.date) == calendar.component(.hour, from: entry.date)
+            }
+            guard let sameHourTomorrow else { continue }
+            XCTAssertNotEqual(entry.message, sameHourTomorrow.message,
+                              "\(calendar.component(.hour, from: entry.date)) h")
+        }
     }
 
     /// Parité avec DailySessionPickerTests : count non positif renvoie 0 (pas de crash).
     func testMessageIndexWithNonPositiveCountReturnsZero() {
-        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(hoursSinceReference: 5, count: 0), 0)
-        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(hoursSinceReference: 5, count: -1), 0)
+        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(absoluteHour: 5, count: 0), 0)
+        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(absoluteHour: 5, count: -1), 0)
     }
 
     /// Pinne explicitement la non-collision de minuit sur une VRAIE timeline :

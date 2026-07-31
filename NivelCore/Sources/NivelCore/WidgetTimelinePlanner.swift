@@ -56,8 +56,10 @@ public enum WidgetTimelinePlanner {
                 }
             }
         }
-        // Tri + déduplication : WidgetKit exige des dates strictement croissantes
-        // (pinné par testTimelineStaysOrderedAcrossDSTTransitions).
+        // Déduplication (pinnée par testTimelineStaysOrderedAcrossDSTTransitions :
+        // le 29/03, bySettingHour(2) renvoie 3 h, déjà présente). Le tri est une
+        // assurance contre la politique de résolution de Foundation, pas un
+        // invariant testé : les dates sortent déjà croissantes.
         var unique: [Date] = []
         for d in dates.sorted() where d != unique.last {
             unique.append(d)
@@ -92,9 +94,9 @@ public enum WidgetTimelinePlanner {
     /// l'heure absolue) — nuit (< 7 h) : pool du soir.
     enum Slot: Equatable { case morning, midday, evening }
 
-    /// Avant 7 h, le pool du soir peut évoquer le dîner : fenêtre étroite et
-    /// assumée, l'entrée affichée la nuit est normalement celle de minuit (le
-    /// message a déjà tourné) et Nivelito y est de toute façon sleepy.
+    /// Les 7 entrées de nuit (0 h-6 h) tirent du pool du soir : une phrase de
+    /// dîner peut sortir à 4 h du matin — assumé (Nivelito y est sleepy et
+    /// l'écran est rarement regardé la nuit ; spec vivant §3, pool inchangé).
     static func slot(hour: Int) -> Slot {
         if hour < 7 { return .evening }
         if hour < 12 { return .morning }
@@ -102,13 +104,13 @@ public enum WidgetTimelinePlanner {
         return .evening
     }
 
-    /// Index déterministe dans le pool, seedé sur l'heure ABSOLUE (heures écoulées
-    /// depuis la référence fixe partagée avec DailySessionPicker). Le seed avance
-    /// de 1 par heure : deux heures consécutives d'un même pool ne coïncident
-    /// jamais, y compris 23 h vers 0 h (spec vivant §3). Modulo positif.
-    static func messageIndex(hoursSinceReference: Int, count: Int) -> Int {
+    /// Index déterministe dans le pool, seedé sur `absoluteHour` : le rang de
+    /// l'heure MURALE depuis la référence (dayIndex × 24 + heure), pas des
+    /// heures physiques : au changement d'heure le rang saute (printemps) ou
+    /// stagne (automne), sans collision avec les pools actuels. Modulo positif.
+    static func messageIndex(absoluteHour: Int, count: Int) -> Int {
         guard count > 0 else { return 0 }
-        return ((hoursSinceReference % count) + count) % count
+        return ((absoluteHour % count) + count) % count
     }
 
     static func message(at date: Date, snapshot: WidgetSnapshot,
@@ -124,9 +126,9 @@ public enum WidgetTimelinePlanner {
         // (MessageBankTests.testBankHasAllContextsWithEnoughVariety, >= 12 par contexte).
         // Heure absolue depuis la référence fixe (01/01/2026) : une phrase
         // différente à chaque heure, la même sur les deux iPhones.
-        let hoursSinceReference = DailySessionPicker.dayIndex(for: date, calendar: calendar) &* 24
+        let absoluteHour = DailySessionPicker.dayIndex(for: date, calendar: calendar) &* 24
             &+ calendar.component(.hour, from: date)
-        let chosen = pool[messageIndex(hoursSinceReference: hoursSinceReference, count: pool.count)]
+        let chosen = pool[messageIndex(absoluteHour: absoluteHour, count: pool.count)]
         return chosen.text.replacingOccurrences(of: "{name}", with: snapshot.userName)
     }
 }
