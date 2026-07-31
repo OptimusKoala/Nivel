@@ -192,7 +192,7 @@ private let previewEntrySleepyNight = WidgetEntry(
         .background(ThemePalette.creme.background)
 }
 
-#Preview("Moyen — Nuit douce, sleepy") {
+#Preview("Moyen (nuit douce, sleepy)") {
     MediumWidgetView(entry: previewEntrySleepyNight, palette: .nuitDouce)
         .padding()
         .frame(width: 338, height: 158)

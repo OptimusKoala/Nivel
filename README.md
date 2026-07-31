@@ -10,6 +10,8 @@ Chaque sport est **illustré par Nivelito en action**, et la séance du jour se 
 
 Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes** — les Réglages sont accessibles via le bouton ⚙️ en haut de l'accueil.
 
+L'essentiel de la journée (anneau calories, niveau, un mot de Nivelito) reste visible sans ouvrir l'app grâce à des **widgets** sur l'écran d'accueil et l'écran verrouillé, avec un raccourci pour logger un repas en un geste.
+
 Le tout est accompagné de **Nivelito**, un petit panda roux qui commente la journée avec bienveillance (et qui sert d'icône à l'app).
 
 ## Captures
@@ -60,11 +62,13 @@ Pas besoin de compte développeur payant — mais l'app **expire au bout de 7 jo
 
 **Deux utilisateurs, deux téléphones** : chacun (Michaël / Marion) choisit **son profil à l'onboarding sur SON téléphone**. Les données restent locales à chaque appareil.
 
+**Widgets** : après installation, appui long sur l'écran d'accueil → **+** → chercher « Nivel » (petit et moyen), ou personnaliser l'écran verrouillé pour les accessoires. Quand la signature expire (7 jours, compte gratuit), le widget se fige avec l'app — le re-build hebdomadaire réveille les deux.
+
 ## Structure du projet
 
 ```
 Nivel/
-├── project.yml              # Définition XcodeGen (targets Nivel + NivelTests)
+├── project.yml              # Définition XcodeGen (targets Nivel + NivelTests + NivelWidgets)
 ├── NivelCore/               # Package Swift : logique métier pure + tests unitaires
 │   ├── Sources/NivelCore/   #   Calories, XP, niveaux, quêtes, badges, tendance poids,
 │   │                        #   catalogues JSON (plats, extras, activités, séances…)
@@ -75,6 +79,8 @@ Nivel/
 │   ├── Views/               #   Accueil, repas, sport, progrès, quêtes, réglages, onboarding…
 │   ├── Nivelito/            #   La mascotte (formes vectorielles, bulles de dialogue)
 │   └── Assets.xcassets/     #   Icône d'app, couleurs, illustrations sport (Sport/, générées)
+├── Shared/                  # Code compilé dans l'app ET le widget (palettes, formes Nivelito, pont App Group)
+├── Widgets/                 # Extension WidgetKit (provider, vues des 4 familles)
 ├── NivelTests/              # Tests d'intégration de l'app (simulateur)
 ├── design/                  # Sources : SVG (Nivelito, icône) + sport/ (PNG 1254px des illustrations)
 ├── scripts/                 # import-sport-images.sh (régénère les assets sport)
