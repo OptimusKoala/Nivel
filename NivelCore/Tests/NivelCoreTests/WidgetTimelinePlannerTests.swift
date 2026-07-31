@@ -197,6 +197,20 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         }
     }
 
+    /// Compagnon du canary arithmétique ci-dessus : pinne la variété jour à
+    /// jour sur une VRAIE timeline (une mutation qui perdrait la composante
+    /// jour du seed passerait tous les autres tests).
+    func testSameHourNextDayDiffersOnRealTimeline() {
+        let today = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 9),
+                                                  bank: bank, calendar: calendar)
+        let tomorrow = WidgetTimelinePlanner.entries(
+            snapshot: snapshot(dayKey: calendar.startOfDay(for: date(hour: 0, day: 32))),
+            from: date(hour: 9, day: 32),
+            bank: bank, calendar: calendar
+        )
+        XCTAssertNotEqual(today.first!.message, tomorrow.first!.message)
+    }
+
     /// Parité avec DailySessionPickerTests : count non positif renvoie 0 (pas de crash).
     func testMessageIndexWithNonPositiveCountReturnsZero() {
         XCTAssertEqual(WidgetTimelinePlanner.messageIndex(hoursSinceReference: 5, count: 0), 0)
