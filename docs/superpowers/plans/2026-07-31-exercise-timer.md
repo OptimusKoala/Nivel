@@ -378,7 +378,7 @@ struct TimerControls: View {
 - `TimerControls(timer: timer, now: context.date)` sous le badge tempo.
 - **Écran allumé** : `.onChange(of: timer.isRunning) { UIApplication.shared.isIdleTimerDisabled = $0 }` ET `.onDisappear { UIApplication.shared.isIdleTimerDisabled = false }`.
 - ⚠️ **`TabView(.page)` garde les pages adjacentes VIVANTES : `onDisappear` ne se déclenche PAS au swipe.** D'où `isCurrent` : `.onChange(of: isCurrent) { _, current in if !current { timer.reset(); UIApplication.shared.isIdleTimerDisabled = false } }` — quitter la page abandonne le timer (spec §3.1) et relâche l'écran (piège #3). Sans ça : timer fantôme qui sonne depuis une page invisible + batterie vidée.
-- **Son/haptique honnêtes** : au `syncNow() == true`, ne jouer haptique+son QUE si `isCurrent` ET si la fin vient d'arriver (dépassement < 2 s ; la date de fin théorique se dérive de la phase AVANT `syncNow()` : `if case .running(let since, let already) = timer.phase { let end = since.addingTimeInterval(timer.duration - already) }`) — un timer expiré pendant que l'app était en arrière-plan affiche l'état fini sans sonner (spec §5).
+- **Son/haptique honnêtes** : AVANT d'appeler `syncNow()`, lire `let overrun = timer.overrun(at: context.date)` (API du modèle, testée) ; si `syncNow()` retourne `true`, ne jouer haptique+son QUE si `isCurrent` ET `overrun ?? .infinity < 2` — un timer expiré pendant que l'app était en arrière-plan affiche l'état fini sans sonner (spec §5).
 - Garder l'ordre visuel : ring → nom/« Étape i/n » → puces → tempo → contrôles (ajuster l'espacement pour rester lisible ; le ScrollView absorbe le reste).
 
 - [ ] **Step 3 : Pulse du CTA (spec §5, contrat exact)**
