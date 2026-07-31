@@ -10,6 +10,20 @@ import UIKit
 import AudioToolbox
 import NivelCore
 
+extension View {
+    /// Pulse doux du CTA quand le timer de la page est fini (spec timer §5) : scale +3%
+    /// aller-retour en continu, jamais figé sur 1.03 (le retour à 1 se fait toujours en
+    /// douceur, `active` ou non). Reduce Motion coupe l'oscillation, garde un fondu bref.
+    func gentlePulse(_ active: Bool, reduceMotion: Bool) -> some View {
+        self
+            .scaleEffect(active && !reduceMotion ? 1.03 : 1)
+            .animation(active && !reduceMotion
+                       ? .easeInOut(duration: 1.2).repeatForever(autoreverses: true)
+                       : .easeOut(duration: 0.2),
+                       value: active)
+    }
+}
+
 struct SessionPlayerSheet: View {
     @Environment(GameService.self) private var game
     @Environment(\.dismiss) private var dismiss
@@ -53,7 +67,7 @@ struct SessionPlayerSheet: View {
                         StepPageView(step: step, number: index + 1, stepCount: session.steps.count,
                                      activity: game.activitiesByID[step.activityID],
                                      isCurrent: page == index + 1,
-                                     onTimerFinished: { pulsingCTA = true })
+                                     onTimerFinishedChanged: { pulsingCTA = $0 })
                             .tag(index + 1)
                     }
                 }
@@ -141,15 +155,13 @@ struct SessionPlayerSheet: View {
                 Button("Étape suivante →") { withAnimation(.snappy) { page += 1 } }
                     .buttonStyle(PrimaryButtonStyle())
                     .disabled(isSaving)
-                    .scaleEffect(pulsingCTA ? 1.03 : 1)
-                    .animation(reduceMotion ? nil : .easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: pulsingCTA)
+                    .gentlePulse(pulsingCTA, reduceMotion: reduceMotion)
             case .validate:
                 // Montant depuis XPEngine : le libellé ne peut pas mentir si la règle change.
                 Button("C'est fait ! (+\(XPEngine.award(.dailySessionDone, todayCount: 0)) XP)", action: validate)
                     .buttonStyle(PrimaryButtonStyle())
                     .disabled(isSaving)
-                    .scaleEffect(pulsingCTA ? 1.03 : 1)
-                    .animation(reduceMotion ? nil : .easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: pulsingCTA)
+                    .gentlePulse(pulsingCTA, reduceMotion: reduceMotion)
             case .alreadyDone:
                 Label("Déjà faite", systemImage: "checkmark.circle.fill")
                     .font(.subheadline.weight(.bold))
@@ -187,18 +199,21 @@ private struct StepPageView: View {
     let stepCount: Int
     let activity: Activity?
     let isCurrent: Bool
-    let onTimerFinished: () -> Void
+    /// État dérivé (pas un événement) : reflète `timer.isFinished`, tant que la page est
+    /// courante. Ainsi « Recommencer » (qui fait retomber `isFinished` à false) éteint le
+    /// pulse du CTA au même titre qu'un changement de page — un seul mécanisme, pas un latch.
+    let onTimerFinishedChanged: (Bool) -> Void
 
     @State private var timer: ExerciseTimerModel
 
     init(step: SessionStep, number: Int, stepCount: Int, activity: Activity?,
-         isCurrent: Bool, onTimerFinished: @escaping () -> Void) {
+         isCurrent: Bool, onTimerFinishedChanged: @escaping (Bool) -> Void) {
         self.step = step
         self.number = number
         self.stepCount = stepCount
         self.activity = activity
         self.isCurrent = isCurrent
-        self.onTimerFinished = onTimerFinished
+        self.onTimerFinishedChanged = onTimerFinishedChanged
         _timer = State(initialValue: ExerciseTimerModel(durationMinutes: step.minutes))
     }
 
@@ -211,6 +226,8 @@ private struct StepPageView: View {
                                   fraction: timer.fraction(at: context.date),
                                   finished: timer.isFinished,
                                   segments: step.segments)
+                        .frame(maxWidth: .infinity)
+                    TimerTimeLabel(timer: timer, now: context.date)
                         .frame(maxWidth: .infinity)
                     HStack(alignment: .firstTextBaseline) {
                         Text(activity?.name ?? step.activityID)
@@ -239,7 +256,7 @@ private struct StepPageView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(Theme.accent.opacity(0.15), in: Capsule())
-                    TimerControls(timer: timer, now: context.date)
+                    TimerButtons(timer: timer, now: context.date)
                         .frame(maxWidth: .infinity)
                 }
                 .padding(20)
@@ -254,12 +271,10 @@ private struct StepPageView: View {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                     AudioServicesPlaySystemSound(1103)
                 }
-                // Le pulse du CTA, lui, ne dépend que de la présence sur la page (pas de l'overrun) :
-                // même revenue en avant-plan longtemps après, une étape finie mérite son CTA qui pulse.
-                if isCurrent {
-                    onTimerFinished()
-                }
             }
+        }
+        .onChange(of: timer.isFinished) { _, finished in
+            if isCurrent { onTimerFinishedChanged(finished) }
         }
         .onChange(of: timer.isRunning) { _, running in
             UIApplication.shared.isIdleTimerDisabled = running
@@ -322,4 +337,14 @@ private func sessionPlayerPreviewFixture() -> (container: ModelContainer, game: 
         .modelContainer(container)
         .environment(game)
         .environment(\.dynamicTypeSize, .accessibility3)
+}
+
+// Séance déjà validée : le timer d'étape reste utilisable (spec §3.1), et le CTA bas est
+// `.alreadyDone` (jamais de pulse possible, cf. gentlePulse appliqué uniquement à .next/.validate).
+#Preview("Séance faite, étape") {
+    let (container, game, session) = sessionPlayerPreviewFixture()
+    SessionPlayerSheet(session: session, done: true, initialPage: 1)
+        .fontDesign(.rounded)
+        .modelContainer(container)
+        .environment(game)
 }

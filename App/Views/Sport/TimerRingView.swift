@@ -38,7 +38,9 @@ struct TimerRingView: View {
                     Capsule()
                         .fill(Theme.background)
                         .frame(width: 4, height: lineWidth + 6)
-                        .offset(y: -size / 2)
+                        // Suit le rayon RÉEL du trait (après le padding ci-dessous), pas le rayon
+                        // géométrique du frame : sinon les encoches dérivent hors de l'anneau.
+                        .offset(y: -(size - lineWidth) / 2)
                         .rotationEffect(.degrees(Double(index) / Double(segments) * 360))
                 }
             }
@@ -52,39 +54,64 @@ struct TimerRingView: View {
     }
 }
 
-/// Temps restant + contrôles Lancer/Pause/Reprendre/Recommencer, pilotés par le modèle.
+/// Gros temps restant (ou « Bien joué ! » une fois fini), piloté par le modèle.
 /// `now` vient du TimelineView de l'appelant (lecture pure, pas de tick interne) : l'appelant
 /// DOIT appeler `timer.syncNow(at:)` sur chaque tick (`.onChange`/`.task`) pour que la
 /// transition vers `.finished` se produise — cette vue ne mute jamais le modèle elle-même.
-struct TimerControls: View {
+/// Lit `timer.isFinished` directement (SOURCE UNIQUE de l'état fini, cf. `TimerButtons`) :
+/// le contrat « l'appelant appelle syncNow à chaque tick » couvre le décalage d'au plus une frame.
+struct TimerTimeLabel: View {
     let timer: ExerciseTimerModel
     let now: Date
 
-    /// Blindage d'affichage : si l'appelant tarde à appeler `syncNow(at:)` (ou l'a manqué),
-    /// on affiche quand même l'état fini dès que l'échéance est dépassée hors idle.
-    private var showsFinished: Bool {
-        timer.isFinished || (!timer.isIdle && timer.remaining(at: now) <= 0)
+    var body: some View {
+        Group {
+            if timer.isFinished {
+                Text("Bien joué !")
+                    .foregroundStyle(Theme.green)
+            } else {
+                Text(Self.format(timer.remaining(at: now)))
+                    .foregroundStyle(Theme.text)
+                    .contentTransition(.numericText())
+                    .animation(.snappy, value: timer.remaining(at: now))
+            }
+        }
+        .font(.system(.largeTitle, design: .rounded).weight(.heavy))
+        .minimumScaleFactor(0.7)
+        .monospacedDigit()
+        .accessibilityLabel(timer.isFinished ? "Terminé, bien joué" : Self.spokenRemaining(timer.remaining(at: now)))
+        .accessibilityAddTraits(.updatesFrequently)
     }
+
+    /// "2:41" (minutes:secondes, arrondi à la seconde supérieure pour ne jamais afficher 0:00 en cours).
+    static func format(_ seconds: TimeInterval) -> String {
+        let total = Int(seconds.rounded(.up))
+        return "\(total / 60):" + String(format: "%02d", total % 60)
+    }
+
+    static func spokenRemaining(_ seconds: TimeInterval) -> String {
+        let total = Int(seconds.rounded(.up))
+        let minutes = total / 60, secs = total % 60
+        let minutesPart = minutes > 0 ? "\(minutes) minute\(minutes > 1 ? "s" : "")" : nil
+        let secondsPart = secs > 0 ? "\(secs) seconde\(secs > 1 ? "s" : "")" : nil
+        let parts = [minutesPart, secondsPart].compactMap { $0 }
+        guard !parts.isEmpty else { return "0 seconde restante" }
+        // "restante" ne s'accorde au singulier que si l'unique quantité énoncée vaut 1
+        // (« 1 minute restante », « 1 seconde restante ») ; sinon pluriel, y compris
+        // pour une durée composée (« 1 minute 30 secondes restantes »).
+        let isSingular = parts.count == 1 && (minutes == 1 || secs == 1)
+        return parts.joined(separator: " ") + (isSingular ? " restante" : " restantes")
+    }
+}
+
+/// Contrôles Lancer/Pause/Reprendre/Recommencer + message de pause, pilotés par le modèle.
+/// Mêmes contraintes que `TimerTimeLabel` (lecture pure, `syncNow` à la charge de l'appelant).
+struct TimerButtons: View {
+    let timer: ExerciseTimerModel
+    let now: Date
 
     var body: some View {
         VStack(spacing: 8) {
-            Group {
-                if showsFinished {
-                    Text("Bien joué !")
-                        .foregroundStyle(Theme.green)
-                } else {
-                    Text(Self.format(timer.remaining(at: now)))
-                        .foregroundStyle(Theme.text)
-                        .contentTransition(.numericText())
-                        .animation(.snappy, value: timer.remaining(at: now))
-                }
-            }
-            .font(.system(.largeTitle, design: .rounded).weight(.heavy))
-            .minimumScaleFactor(0.7)
-            .monospacedDigit()
-            .accessibilityLabel(showsFinished ? "Terminé, bien joué" : Self.spokenRemaining(timer.remaining(at: now)))
-            .accessibilityAddTraits(.updatesFrequently)
-
             if timer.isPaused {
                 Text("En pause, prends ton temps 🧡")
                     .font(.footnote)
@@ -115,108 +142,105 @@ struct TimerControls: View {
             }
         }
     }
-
-    /// "2:41" (minutes:secondes, arrondi à la seconde supérieure pour ne jamais afficher 0:00 en cours).
-    static func format(_ seconds: TimeInterval) -> String {
-        let total = Int(seconds.rounded(.up))
-        return "\(total / 60):" + String(format: "%02d", total % 60)
-    }
-
-    static func spokenRemaining(_ seconds: TimeInterval) -> String {
-        let total = Int(seconds.rounded(.up))
-        let minutes = total / 60, secs = total % 60
-        let minutesPart = minutes > 0 ? "\(minutes) minute\(minutes > 1 ? "s" : "")" : nil
-        let secondsPart = secs > 0 ? "\(secs) seconde\(secs > 1 ? "s" : "")" : nil
-        let parts = [minutesPart, secondsPart].compactMap { $0 }
-        guard !parts.isEmpty else { return "0 seconde restante" }
-        // "restante" ne s'accorde au singulier que si l'unique quantité énoncée vaut 1
-        // (« 1 minute restante », « 1 seconde restante ») ; sinon pluriel, y compris
-        // pour une durée composée (« 1 minute 30 secondes restantes »).
-        let isSingular = parts.count == 1 && (minutes == 1 || secs == 1)
-        return parts.joined(separator: " ") + (isSingular ? " restante" : " restantes")
-    }
 }
 
 // MARK: - Previews
 
-#Preview("Anneau — idle") {
+#Preview("Anneau (idle)") {
     TimerRingView(illustrationName: "plank", fallbackEmoji: "🧘",
                   fraction: 0, finished: false, segments: 3)
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Anneau — en cours (segments 3)") {
+#Preview("Anneau (en cours, segments 3)") {
     TimerRingView(illustrationName: "plank", fallbackEmoji: "🧘",
                   fraction: 0.6, finished: false, segments: 3)
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Anneau — terminé (vert)") {
+#Preview("Anneau (terminé, vert)") {
     TimerRingView(illustrationName: "plank", fallbackEmoji: "🧘",
                   fraction: 1, finished: true, segments: 3)
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Anneau — sans graduations (activité libre)") {
+#Preview("Anneau (sans graduations, activité libre)") {
     TimerRingView(illustrationName: "walk", fallbackEmoji: "🚶",
                   fraction: 0.4, finished: false, segments: nil)
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Anneau — 180pt (ActivityLogSheet)") {
+#Preview("Anneau (180pt, ActivityLogSheet)") {
     TimerRingView(illustrationName: "walk", fallbackEmoji: "🚶",
                   fraction: 0.4, finished: false, segments: nil, size: 180)
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Contrôles — idle") {
+#Preview("Temps (idle)") {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
     let timer = ExerciseTimerModel(durationMinutes: 3)
-    return TimerControls(timer: timer, now: t0)
+    return TimerTimeLabel(timer: timer, now: t0)
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Contrôles — en cours") {
-    let t0 = Date(timeIntervalSince1970: 1_000_000)
-    let timer = ExerciseTimerModel(durationMinutes: 3)
-    timer.start(at: t0)
-    return TimerControls(timer: timer, now: t0.addingTimeInterval(90))
-        .padding()
-        .background(Theme.background)
-}
-
-#Preview("Contrôles — en pause") {
+#Preview("Temps (en cours)") {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
     let timer = ExerciseTimerModel(durationMinutes: 3)
     timer.start(at: t0)
-    timer.pause(at: t0.addingTimeInterval(30))
-    return TimerControls(timer: timer, now: t0.addingTimeInterval(120))
+    return TimerTimeLabel(timer: timer, now: t0.addingTimeInterval(90))
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Contrôles — terminé") {
+#Preview("Temps (terminé)") {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
     let timer = ExerciseTimerModel(durationMinutes: 3)
     timer.start(at: t0)
     timer.syncNow(at: t0.addingTimeInterval(200))
-    return TimerControls(timer: timer, now: t0.addingTimeInterval(200))
+    return TimerTimeLabel(timer: timer, now: t0.addingTimeInterval(200))
         .padding()
         .background(Theme.background)
 }
 
-#Preview("Contrôles — Dynamic Type AX3") {
+#Preview("Temps (Dynamic Type AX3)") {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
     let timer = ExerciseTimerModel(durationMinutes: 3)
     timer.start(at: t0)
-    return TimerControls(timer: timer, now: t0.addingTimeInterval(90))
+    return TimerTimeLabel(timer: timer, now: t0.addingTimeInterval(90))
         .padding()
         .background(Theme.background)
         .environment(\.dynamicTypeSize, .accessibility3)
+}
+
+#Preview("Boutons (idle)") {
+    let t0 = Date(timeIntervalSince1970: 1_000_000)
+    let timer = ExerciseTimerModel(durationMinutes: 3)
+    return TimerButtons(timer: timer, now: t0)
+        .padding()
+        .background(Theme.background)
+}
+
+#Preview("Boutons (en cours)") {
+    let t0 = Date(timeIntervalSince1970: 1_000_000)
+    let timer = ExerciseTimerModel(durationMinutes: 3)
+    timer.start(at: t0)
+    return TimerButtons(timer: timer, now: t0.addingTimeInterval(90))
+        .padding()
+        .background(Theme.background)
+}
+
+#Preview("Boutons (en pause)") {
+    let t0 = Date(timeIntervalSince1970: 1_000_000)
+    let timer = ExerciseTimerModel(durationMinutes: 3)
+    timer.start(at: t0)
+    timer.pause(at: t0.addingTimeInterval(30))
+    return TimerButtons(timer: timer, now: t0.addingTimeInterval(120))
+        .padding()
+        .background(Theme.background)
 }

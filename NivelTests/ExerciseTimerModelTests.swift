@@ -84,15 +84,15 @@ final class ExerciseTimerModelTests: XCTestCase {
         XCTAssertNil(timer.overrun(at: t(182)))          // finished → nil
     }
 
-    // MARK: Formatage (TimerControls)
+    // MARK: Formatage (TimerTimeLabel)
 
     func testTimeFormattingNeverShowsZeroWhileRunning() {
-        XCTAssertEqual(TimerControls.format(0.4), "0:01")
-        XCTAssertEqual(TimerControls.format(59.9), "1:00")
-        XCTAssertEqual(TimerControls.format(0), "0:00")
-        XCTAssertEqual(TimerControls.format(180), "3:00")
+        XCTAssertEqual(TimerTimeLabel.format(0.4), "0:01")
+        XCTAssertEqual(TimerTimeLabel.format(59.9), "1:00")
+        XCTAssertEqual(TimerTimeLabel.format(0), "0:00")
+        XCTAssertEqual(TimerTimeLabel.format(180), "3:00")
         // Accord singulier/pluriel de la formulation vocale (VoiceOver).
-        XCTAssertEqual(TimerControls.spokenRemaining(60), "1 minute restante")
-        XCTAssertEqual(TimerControls.spokenRemaining(1), "1 seconde restante")
+        XCTAssertEqual(TimerTimeLabel.spokenRemaining(60), "1 minute restante")
+        XCTAssertEqual(TimerTimeLabel.spokenRemaining(1), "1 seconde restante")
     }
 }
