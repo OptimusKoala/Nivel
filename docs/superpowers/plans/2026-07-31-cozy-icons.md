@@ -398,7 +398,7 @@ Mapping : home→tab_home, meals→tab_meals, sport→tab_sport, progress→tab_
 
 - [ ] **Step 4 : Timer** — TimerRingView, les 4 `Label(..., systemImage:)` → `Label(..., image:)` : Lancer/Reprendre `Icons/icon_play`, Pause `Icons/icon_pause`, Recommencer `Icons/icon_restart`.
 
-- [ ] **Step 5 : Vert** — suite complète → 56 tests. Vérifier qu'AUCUN des symboles remplacés ne reste : `grep -rn 'house.fill\|fork.knife\|figure.walk\|chart.line.uptrend\|trophy.fill\|gearshape.fill' App` → vide ; `grep -rn 'checkmark.circle.fill' App` → exactement 2 hits (radio OnboardingFlow ~l.356) ; `grep -rn 'play.fill\|pause.fill\|arrow.counterclockwise' App` → vide.
+- [ ] **Step 5 : Vert** — suite complète → 56 tests. Vérifier qu'AUCUN des symboles remplacés ne reste : `grep -rn 'house.fill\|fork.knife\|figure.walk\|chart.line.uptrend\|trophy.fill\|gearshape.fill' App` → vide ; `grep -rn 'checkmark.circle.fill' App` → exactement 1 hit (le radio d'OnboardingFlow ~l.356, dont la ligne ternaire contient l'unique occurrence restante) ; `grep -rn 'play.fill\|pause.fill\|arrow.counterclockwise' App` → vide.
 
 - [ ] **Step 6 : Commit** — `git add -A && git commit -m "feat(app): icônes cozy branchées (tab bar contour/rempli, ⚙️, coches, timer)"`
 
@@ -409,7 +409,7 @@ Mapping : home→tab_home, meals→tab_meals, sport→tab_sport, progress→tab_
 **Files:**
 - Modify: `project.yml` (1.6/7 → 1.7/8)
 
-- [ ] **Step 1 : Bump** — `CFBundleShortVersionString: "1.7"`, `CFBundleVersion: "8"`, `xcodegen generate`.
+- [ ] **Step 1 : Bump** — `CFBundleShortVersionString: "1.7"`, `CFBundleVersion: "8"` dans les DEUX targets de `project.yml` (app ET Widgets — le commentaire du fichier l'exige : versions alignées sinon XcodeGen retombe sur 1.0/1), puis `xcodegen generate`.
 - [ ] **Step 2 : Suites** — NivelCore 51 + app 56, tout vert.
 - [ ] **Step 3 : Vérification simulateur (spec §7)** — tab bar : contour au repos, rempli + orange sur l'onglet actif, sur les 4 palettes (surtout Nuit douce) ; pas de rendu NOIR (piège #1) ; ⚙️, coches, boutons timer ; équilibre optique des 5 glyphes à taille réelle.
 - [ ] **Step 4 : Commit** — `git add -A && git commit -m "chore: version 1.7 (build 8)"`
