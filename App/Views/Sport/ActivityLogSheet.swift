@@ -22,11 +22,21 @@ struct ActivityLogSheet: View {
             Theme.background.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    HStack(spacing: 10) {
-                        Text(activity.emoji).font(.system(size: 40))
-                        Text(activity.name)
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(Theme.text)
+                    SportHeroIllustration(name: activity.id, fallbackEmoji: activity.emoji)
+                    Text(activity.name)
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.text)
+                    SectionTitle("Comment faire")
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(activity.instructions, id: \.self) { line in
+                            HStack(alignment: .top, spacing: 8) {
+                                Text("•").foregroundStyle(Theme.orange)
+                                Text(line)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Theme.text)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
                     }
                     SectionTitle("Durée")
                     HStack(spacing: 8) {

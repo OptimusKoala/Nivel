@@ -15,7 +15,7 @@ struct SportIllustration: View {
 
     var body: some View {
         if UIImage(named: "Sport/\(name)") != nil {
-            Image("Sport/\(name)")
+            Image(decorative: "Sport/\(name)")
                 .resizable()
                 .scaledToFill()
                 .frame(width: size, height: size)
@@ -26,6 +26,7 @@ struct SportIllustration: View {
                 .frame(width: size, height: size)
                 .background(Theme.accent.opacity(0.15),
                             in: RoundedRectangle(cornerRadius: cornerRadius))
+                .accessibilityHidden(true)
         }
     }
 }
@@ -37,7 +38,7 @@ struct SportHeroIllustration: View {
 
     var body: some View {
         if UIImage(named: "Sport/\(name)") != nil {
-            Image("Sport/\(name)")
+            Image(decorative: "Sport/\(name)")
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity)
@@ -49,6 +50,7 @@ struct SportHeroIllustration: View {
                 .frame(maxWidth: .infinity, minHeight: 180)
                 .background(Theme.accent.opacity(0.12),
                             in: RoundedRectangle(cornerRadius: 20))
+                .accessibilityHidden(true)
         }
     }
 }
