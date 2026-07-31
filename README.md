@@ -55,6 +55,8 @@ Pas besoin de compte développeur payant — mais l'app **expire au bout de 7 jo
 5. **Premier lancement uniquement** : l'iPhone bloque l'app. Aller dans **Réglages → Général → VPN et gestion de l'appareil**, toucher ton profil développeur et **faire confiance**. Relancer l'app.
 
 > ⚠️ **À refaire TOUS LES 7 JOURS** : avec un compte gratuit, la signature expire au bout d'une semaine — l'app refuse alors de se lancer. Il suffit de rebrancher **chaque téléphone** et de refaire ⌘R (étapes 3-4). Si c'est trop contraignant à l'usage, le compte développeur payant (99 €/an) supprime cette limite.
+>
+> 📅 Builder les deux téléphones **depuis le même commit** (dans la même session, sans `git pull` entre les deux) : la « séance du jour » est calculée à partir du catalogue embarqué — deux versions différentes peuvent afficher deux séances différentes le même jour.
 
 **Deux utilisateurs, deux téléphones** : chacun (Michaël / Marion) choisit **son profil à l'onboarding sur SON téléphone**. Les données restent locales à chaque appareil.
 
