@@ -2,7 +2,13 @@ import XCTest
 @testable import NivelCore
 
 final class WidgetTimelinePlannerTests: XCTestCase {
-    private let calendar = Calendar.current
+    /// Calendrier PINNÉ (iso8601 + Europe/Paris) — indépendant du réglage
+    /// Région du host, comme DailySessionPickerTests.
+    private var calendar: Calendar {
+        var c = Calendar(identifier: .iso8601)
+        c.timeZone = TimeZone(identifier: "Europe/Paris")!
+        return c
+    }
     private var bank: MessageBank!
 
     override func setUpWithError() throws {
@@ -94,6 +100,57 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         XCTAssertEqual(entries.first { $0.date == date(hour: 7, day: 32) }?.expression, .happy)
     }
 
+    // MARK: - Hermétisme (fuseau, DST, cohérence des bornes)
+
+    /// Les bornes restent strictement croissantes et uniques les jours de changement
+    /// d'heure (29/03 et 25/10/2026, Europe/Paris) — WidgetKit exige des dates ordonnées.
+    func testTimelineStaysOrderedAcrossDSTTransitions() {
+        for (m, d) in [(3, 28), (3, 29), (10, 25)] {
+            for hour in [1, 9, 23] {
+                let from = calendar.date(from: DateComponents(year: 2026, month: m, day: d,
+                                                              hour: hour, minute: 30))!
+                let dates = WidgetTimelinePlanner.entries(
+                    snapshot: snapshot(dayKey: calendar.startOfDay(for: from)),
+                    from: from, bank: bank, calendar: calendar
+                ).map(\.date)
+                XCTAssertEqual(dates, dates.sorted(), "\(d)/\(m) \(hour)h")
+                XCTAssertEqual(Set(dates).count, dates.count, "\(d)/\(m) \(hour)h")
+                XCTAssertTrue(dates.allSatisfy { $0 >= from })
+            }
+        }
+    }
+
+    /// Le réglage Région > Calendrier du device ne déplace ni les bornes ni la
+    /// rotation (même leçon que DailySessionPicker).
+    func testEntriesAreIndependentOfDeviceCalendarIdentifier() {
+        let from = date(hour: 9)
+        let reference = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: from,
+                                                      bank: bank, calendar: calendar)
+        for id in [Calendar.Identifier.buddhist, .japanese, .hebrew] {
+            var device = Calendar(identifier: id)
+            device.timeZone = calendar.timeZone
+            XCTAssertEqual(WidgetTimelinePlanner.entries(snapshot: snapshot(), from: from,
+                                                         bank: bank, calendar: device),
+                           reference, "\(id)")
+        }
+    }
+
+    /// Toute heure où le créneau OU l'expression change doit être une borne, et
+    /// réciproquement — sinon un changement d'apparence passe inaperçu (pas d'entrée).
+    func testBoundaryHoursMatchEveryChangeOfSlotOrExpression() {
+        for hour in 1..<24 {
+            let changes = WidgetTimelinePlanner.slot(hour: hour) != WidgetTimelinePlanner.slot(hour: hour - 1)
+                || WidgetTimelinePlanner.expression(hour: hour) != WidgetTimelinePlanner.expression(hour: hour - 1)
+            XCTAssertEqual(changes, WidgetTimelinePlanner.boundaryHours.contains(hour), "\(hour) h")
+        }
+    }
+
+    /// Parité avec DailySessionPickerTests : count non positif → 0 (pas de crash).
+    func testMessageIndexWithNonPositiveCountReturnsZero() {
+        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(dayIndex: 5, slot: 1, count: 0), 0)
+        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(dayIndex: 5, slot: 1, count: -1), 0)
+    }
+
     // MARK: - Messages
 
     /// Créneau d'une entrée : nuit (< 7 h) et soirée partagent le pool du soir —
@@ -137,6 +194,8 @@ final class WidgetTimelinePlannerTests: XCTestCase {
             XCTAssertFalse(entry.message.contains("{name}"), entry.message)
             XCTAssertFalse(entry.message.contains("{value}"), entry.message)
         }
+        // La substitution insère bien le prénom (pas juste "aucun placeholder").
+        XCTAssertTrue(entries.contains { $0.message.contains("Michaël") })
     }
 
     func testSameDaySameSlotSameMessage() {
