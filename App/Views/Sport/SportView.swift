@@ -84,7 +84,7 @@ struct SportView: View {
             ForEach(activities) { activity in
                 Button { selectedActivity = activity } label: {
                     HStack(spacing: 12) {
-                        Text(activity.emoji).font(.system(size: 26))
+                        SportIllustration(name: activity.id, fallbackEmoji: activity.emoji)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(activity.name)
                                 .font(.subheadline.weight(.semibold))
@@ -123,7 +123,7 @@ struct SportView: View {
             }
         }()
         return HStack(spacing: 12) {
-            Text(emoji).font(.system(size: 26))
+            SportIllustration(name: entry.refID, fallbackEmoji: emoji)
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
                     .font(.subheadline.weight(.semibold))

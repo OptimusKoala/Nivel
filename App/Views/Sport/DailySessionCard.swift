@@ -25,8 +25,7 @@ struct DailySessionCardContent: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(session.emoji)
-                .font(.system(size: 32))
+            SportIllustration(name: session.id, fallbackEmoji: session.emoji, size: 56, cornerRadius: 14)
             VStack(alignment: .leading, spacing: 3) {
                 Text("SÉANCE DU JOUR")
                     .font(.system(size: 10, weight: .bold))
