@@ -14,7 +14,7 @@
 - NivelCore : `cd NivelCore && swift test`
 - App : `xcodebuild -project Nivel.xcodeproj -scheme Nivel -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`
 
-**État de départ (main, post-v1.6)** : `WidgetTimelinePlanner.swift` a `boundaryHours = [7, 12, 18, 22]`, `messageIndex(dayIndex:slot:count:)` (seed `jour×31 + créneau×7`), `Slot: Int` ; `WidgetTimelinePlannerTests.swift` a 17 tests ; `MediumWidgetView` a `WidgetNivelito(... size: 56)` — NON : size est passé en `let` sans défaut, l'appel du medium passe 48. Vérifier les valeurs exactes avant d'éditer. Suites attendues au départ : NivelCore 70, app 55 (des sessions parallèles peuvent avoir ajouté des tests : noter les comptes de départ mesurés et raisonner en deltas).
+**État de départ (main, post-v1.6)** : `WidgetTimelinePlanner.swift` a `boundaryHours = [7, 12, 18, 22]`, `messageIndex(dayIndex:slot:count:)` (seed `jour×31 + créneau×7`), `Slot: Int` ; `WidgetTimelinePlannerTests.swift` a 17 tests ; `MediumWidgetView` passe `size: 48` à WidgetNivelito, la bulle a `.lineLimit(4)` + `.minimumScaleFactor(0.8)`. Suites au départ (mesurées) : NivelCore 70, app 55 — des sessions parallèles peuvent les faire bouger : re-mesurer et raisonner en deltas.
 
 ---
 
@@ -33,9 +33,7 @@
 
 - [ ] **Step 0.1**
 
-```bash
-cd /Users/mbernard/perso/Nivel && git worktree add .worktrees/feat-widget-vivant -b feat/widget-vivant && cd .worktrees/feat-widget-vivant && xcodegen generate
-```
+Le worktree `.worktrees/feat-widget-vivant` (branche `feat/widget-vivant`) existe déjà, projet généré. Vérifier : `git -C /Users/mbernard/perso/Nivel/.worktrees/feat-widget-vivant status --short` (propre) — sinon le créer : `git worktree add .worktrees/feat-widget-vivant -b feat/widget-vivant && xcodegen generate`.
 
 - [ ] **Step 0.2 : Baseline** — `cd NivelCore && swift test` puis la suite app : noter les comptes (attendus ~70 / ~55), tout doit être vert avant de commencer.
 
@@ -137,7 +135,7 @@ Mettre à jour le doc comment de l'enum (« créneaux de messages (7 h, 12 h, 18
 - [ ] **Step 1.4 : Vérifier le vert (suite NivelCore complète)**
 
 Run: `cd NivelCore && swift test`
-Expected: PASS (le compte total baisse de 1 : test de couplage supprimé, 3 tests remplacent 2)
+Expected: PASS (compte inchangé, 70 : 3 tests remplacent 2, le test de couplage est supprimé)
 
 - [ ] **Step 1.5 : Commit**
 
@@ -266,7 +264,7 @@ Dans `WidgetTimelinePlanner.swift` :
 - [ ] **Step 2.4 : Vérifier le vert (suite complète)**
 
 Run: `cd NivelCore && swift test`
-Expected: PASS (+4 tests nets sur la task)
+Expected: PASS (73 tests : 6 remplacent 3, +3 nets ; suite planner 17 vers 20)
 
 - [ ] **Step 2.5 : Commit**
 
@@ -302,7 +300,7 @@ Expected: TEST SUCCEEDED (même compte qu'à la baseline).
 git add Widgets && git commit -m "feat(widgets): Nivelito 72pt dans le widget moyen (maquette A)"
 ```
 
-**Note pour la review qualité de cette task (critère d'acceptation, spec §4)** : re-mesurer au harnais de rendu ad hoc (macOS SwiftUI + ImageRenderer sur les vraies vues, comme en v1.6) que les 77 messages des pools widget passent sans troncature à 364/338/329/321 pt avec Nivelito 72 pt et scale 0,75. Si échec à 321 pt : passer `lineLimit(5)` ou scale 0,7 et re-mesurer.
+- [ ] **Step 3.4 (review qualité — critère d'acceptation, spec §4)** : re-mesurer au harnais de rendu ad hoc (macOS SwiftUI + ImageRenderer sur les vraies vues, comme en v1.6) que les 77 messages des pools widget passent sans troncature à 364/338/329/321 pt avec Nivelito 72 pt et scale 0,75. Si échec à 321 pt : passer `lineLimit(5)` ou scale 0,7 et re-mesurer. (« 77 messages » = somme des pools 26+25+26, soit 51 textes distincts, fun compté trois fois.)
 
 ---
 
@@ -331,5 +329,5 @@ git add -A && git commit -m "chore: version X.Y (build N) pour le widget vivant"
 ## Après le plan
 
 - Review finale holistique de la branche, puis superpowers:finishing-a-development-branch (merge dans main, attention aux sessions parallèles : re-merger main dans la branche d'abord si divergence, comme pour la v1.6).
-- Passe device : vérifier sur iPhone que la phrase change bien d'heure en heure et que les messages longs tiennent avec Nivelito 72 pt.
+- Passe device : vérifier sur iPhone que la phrase change bien d'heure en heure et que les messages longs tiennent avec Nivelito 72 pt. Comportement CONNU et accepté : aux frontières de pools (11 h vers 12 h, 17 h vers 18 h), un même message fun peut sortir deux heures de suite (~3 fois sur 40 jours) — pas un bug.
 - Mettre à jour la mémoire projet.
