@@ -137,12 +137,25 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
         strokePath(ctx, doorPath(closed: false), width: 2.2)
     }),
     ("tab_home_fill", { ctx in
-        let p = houseSilhouette()
-        p.addPath(doorPath(closed: true))
-        fillPath(ctx, p, evenOdd: true)
+        // MÊMES tracés que tab_home (toit débordant + corps arrondi), remplis sous les
+        // mêmes traits : la silhouette ne change pas quand l'onglet passe en sélectionné.
+        let roof = CGMutablePath()
+        roof.move(to: P(4, 13)); roof.addLine(to: P(14, 4.5)); roof.addLine(to: P(24, 13))
+        roof.closeSubpath()
+        fillPath(ctx, roof); strokePath(ctx, roof)
+        let body = CGMutablePath()
+        body.addPath(rr(6, 12.5, 16, 11.5, 3))
+        // La porte se ferme PILE sur le bord inférieur (y = 24) : le trou even-odd
+        // s'ouvre sur le bord sans déborder dessous (un dépassement crée un îlot rempli).
+        let door = doorPath(closed: true)
+        body.addPath(door)
+        fillPath(ctx, body, evenOdd: true)
     }),
     ("tab_meals", { ctx in strokePath(ctx, bowlPath()); steam(ctx) }),
-    ("tab_meals_fill", { ctx in fillPath(ctx, bowlPath()); steam(ctx) }),
+    ("tab_meals_fill", { ctx in
+        fillPath(ctx, bowlPath()); strokePath(ctx, bowlPath())   // même silhouette que le contour
+        steam(ctx)
+    }),
     ("tab_sport", { ctx in
         // Trait 2,6 (vs 2,4 ailleurs) : l'haltère était optiquement le plus léger des 5 (gate visuel).
         strokePath(ctx, rr(4, 9.5, 4.5, 9, 2.25), width: 2.6)
@@ -151,9 +164,12 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
         strokePath(ctx, bar, width: 2.6)
     }),
     ("tab_sport_fill", { ctx in
-        fillPath(ctx, rr(3.8, 9, 5.2, 10, 2.6))
-        fillPath(ctx, rr(19, 9, 5.2, 10, 2.6))
-        fillPath(ctx, pill(8, 12.6, 12, 2.8))
+        // MÊMES rects et barre que tab_sport, remplis sous les mêmes traits (2,6).
+        for r in [rr(4, 9.5, 4.5, 9, 2.25), rr(19.5, 9.5, 4.5, 9, 2.25)] {
+            fillPath(ctx, r); strokePath(ctx, r, width: 2.6)
+        }
+        let bar = CGMutablePath(); bar.move(to: P(8.5, 14)); bar.addLine(to: P(19.5, 14))
+        strokePath(ctx, bar, width: 2.6)
     }),
     ("tab_progress", { ctx in
         strokePath(ctx, leafLeft(), width: 2.2)
@@ -161,15 +177,20 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
         sproutLines(ctx)
     }),
     ("tab_progress_fill", { ctx in
-        fillPath(ctx, leafLeft()); fillPath(ctx, leafRight()); sproutLines(ctx)
+        for leaf in [leafLeft(), leafRight()] {
+            fillPath(ctx, leaf); strokePath(ctx, leaf, width: 2.2)   // même silhouette que le contour
+        }
+        sproutLines(ctx)
     }),
     ("tab_quests", { ctx in
         strokePath(ctx, cupPath()); trophyHandles(ctx); trophyStem(ctx)
         strokePath(ctx, trophyBase(), width: 2.2)
     }),
     ("tab_quests_fill", { ctx in
-        fillPath(ctx, cupPath()); trophyHandles(ctx); trophyStem(ctx)
-        fillPath(ctx, trophyBase())
+        // MÊMES tracés que tab_quests, remplis sous les mêmes traits.
+        fillPath(ctx, cupPath()); strokePath(ctx, cupPath())
+        trophyHandles(ctx); trophyStem(ctx)
+        fillPath(ctx, trophyBase()); strokePath(ctx, trophyBase(), width: 2.2)
     }),
     ("icon_settings", { ctx in
         strokePath(ctx, circle(14, 14, 5.6))

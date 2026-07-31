@@ -62,6 +62,8 @@ final class IconAssetsTests: XCTestCase {
 
 - [ ] **Step 3 : Écrire le générateur**
 
+> **Note post-livraison** : les variantes `_fill` du bloc ci-dessous ont été retravaillées après retour utilisateur — elles réutilisent désormais EXACTEMENT les tracés du contour (fill + stroke mêmes traits) pour que la silhouette ne change pas à la sélection de l'onglet. `scripts/gen-icons.swift` (livré) fait foi.
+
 ```swift
 // scripts/gen-icons.swift
 // Source UNIQUE des icônes cozy (spec icônes §3). Exécution : swift scripts/gen-icons.swift
