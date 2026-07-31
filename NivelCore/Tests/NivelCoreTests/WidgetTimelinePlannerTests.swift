@@ -112,7 +112,7 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         XCTAssertEqual(entries.first { $0.date == date(hour: 7, day: 32) }?.expression, .happy)
     }
 
-    // MARK: - Hermétisme (fuseau, DST, cohérence des bornes)
+    // MARK: - Hermétisme (fuseau, DST, cohérence des entrées)
 
     /// Les entrées restent strictement croissantes et uniques les jours de changement
     /// d'heure (29/03 et 25/10/2026, Europe/Paris) — WidgetKit exige des dates ordonnées.
@@ -132,7 +132,7 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         }
     }
 
-    /// Le réglage Région > Calendrier du device ne déplace ni les bornes ni la
+    /// Le réglage Région > Calendrier du device ne déplace ni les entrées ni la
     /// rotation (même leçon que DailySessionPicker).
     func testEntriesAreIndependentOfDeviceCalendarIdentifier() {
         let from = date(hour: 9)

@@ -84,12 +84,14 @@ struct MediumWidgetView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 8) {
                     WidgetNivelito(sleepy: entry.expression == .sleepy,
-                                   palette: palette, size: 48)
+                                   palette: palette, size: 72)
                     Text(entry.message)
                         .font(.caption)
                         .foregroundStyle(palette.text)
                         .lineLimit(4)
-                        .minimumScaleFactor(0.8)
+                        // La bulle perd ~24 pt au profit de Nivelito (spec vivant §4),
+                        // le scale compense pour les messages longs.
+                        .minimumScaleFactor(0.75)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
                         .background(palette.card,
