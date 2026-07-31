@@ -12,7 +12,7 @@ struct SportView: View {
     @State private var sessionStatus: (session: ActivitySession, done: Bool)?
     @State private var todayEntries: [ActivityEntry] = []
     @State private var selectedActivity: Activity?
-    @State private var showSessionDetail = false
+    @State private var showSessionPlayer = false
 
     private var homeActivities: [Activity] {
         game.activityCatalog.filter { $0.location != .outdoor }
@@ -27,7 +27,7 @@ struct SportView: View {
             List {
                 Section {
                     if let status = sessionStatus {
-                        Button { showSessionDetail = true } label: {
+                        Button { showSessionPlayer = true } label: {
                             DailySessionCardContent(session: status.session,
                                                     kcal: game.sessionKcal(status.session),
                                                     done: status.done)
@@ -56,7 +56,7 @@ struct SportView: View {
         }
         // reload() est synchrone : onAppear suffit (couvre 1ᵉʳ affichage ET retours d'onglet).
         .onAppear(perform: reload)
-        .sheet(isPresented: $showSessionDetail, onDismiss: reload) {
+        .sheet(isPresented: $showSessionPlayer, onDismiss: reload) {
             if let status = sessionStatus {
                 SessionPlayerSheet(session: status.session, done: status.done)
             }

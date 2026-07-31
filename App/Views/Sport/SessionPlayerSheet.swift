@@ -15,13 +15,23 @@ struct SessionPlayerSheet: View {
 
     let session: ActivitySession
     let done: Bool
-    @State private var page = 0
+    @State private var page: Int
     @State private var isSaving = false
+
+    /// `initialPage` permet aux previews de s'ouvrir directement sur une étape
+    /// (états à risque : puces longues, tempo, AX3) sans naviguer manuellement.
+    init(session: ActivitySession, done: Bool, initialPage: Int = 0) {
+        self.session = session
+        self.done = done
+        _page = State(initialValue: initialPage)
+    }
 
     /// Contrat du bouton bas (spec §5.1) : logique PURE, testée (SessionPlayerTests).
     enum PlayerButton: Equatable { case start, next, validate, alreadyDone }
 
     static func buttonState(page: Int, stepCount: Int, done: Bool) -> PlayerButton {
+        // Séance sans étape (catalogue futur) : pas de page blanche, l'aperçu valide direct.
+        if stepCount == 0 { return done ? .alreadyDone : .validate }
         if page == 0 { return done ? .alreadyDone : .start }
         if page < stepCount { return .next }
         return done ? .alreadyDone : .validate
@@ -131,6 +141,7 @@ struct SessionPlayerSheet: View {
                                 .foregroundStyle(Theme.text)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        .accessibilityElement(children: .combine)
                     }
                 }
                 Text(step.tempo)
@@ -158,7 +169,8 @@ struct SessionPlayerSheet: View {
                     .buttonStyle(PrimaryButtonStyle())
                     .disabled(isSaving)
             case .validate:
-                Button("C'est fait ! (+40 XP)", action: validate)
+                // Montant depuis XPEngine : le libellé ne peut pas mentir si la règle change.
+                Button("C'est fait ! (+\(XPEngine.award(.dailySessionDone, todayCount: 0)) XP)", action: validate)
                     .buttonStyle(PrimaryButtonStyle())
                     .disabled(isSaving)
             case .alreadyDone:
@@ -215,4 +227,21 @@ private func sessionPlayerPreviewFixture() -> (container: ModelContainer, game: 
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
+}
+
+#Preview("Étape") {
+    let (container, game, session) = sessionPlayerPreviewFixture()
+    SessionPlayerSheet(session: session, done: false, initialPage: 1)
+        .fontDesign(.rounded)
+        .modelContainer(container)
+        .environment(game)
+}
+
+#Preview("Étape (AX3)") {
+    let (container, game, session) = sessionPlayerPreviewFixture()
+    SessionPlayerSheet(session: session, done: false, initialPage: 1)
+        .fontDesign(.rounded)
+        .modelContainer(container)
+        .environment(game)
+        .environment(\.dynamicTypeSize, .accessibility3)
 }

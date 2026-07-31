@@ -24,7 +24,7 @@ struct HomeView: View {
     @State private var showMealLog = false
     @State private var showSettings = false
     @State private var sessionStatus: (session: ActivitySession, done: Bool)?
-    @State private var showSessionDetail = false
+    @State private var showSessionPlayer = false
 
     init() {
         // Bornes du jour figées à la création de la vue. Le passage de minuit est géré
@@ -104,7 +104,7 @@ struct HomeView: View {
                     logMealButton
                     if let status = sessionStatus {
                         Button {
-                            showSessionDetail = true
+                            showSessionPlayer = true
                         } label: {
                             DailySessionCard(session: status.session,
                                              kcal: game.sessionKcal(status.session),
@@ -134,7 +134,7 @@ struct HomeView: View {
         .sheet(isPresented: $showSettings, onDismiss: updateBubble) {
             SettingsView()
         }
-        .sheet(isPresented: $showSessionDetail, onDismiss: refreshSessionStatus) {
+        .sheet(isPresented: $showSessionPlayer, onDismiss: refreshSessionStatus) {
             if let status = sessionStatus {
                 SessionPlayerSheet(session: status.session, done: status.done)
             }
