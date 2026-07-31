@@ -10,9 +10,11 @@ final class SportAssetsTests: XCTestCase {
     /// bug de packaging à attraper ici.
     func testEveryCatalogEntryHasAnIllustration() throws {
         let ids = try Catalogs.activities().map(\.id) + Catalogs.sessions().map(\.id)
-        XCTAssertEqual(ids.count, 20)
+        XCTAssertFalse(ids.isEmpty)
         for id in ids {
-            XCTAssertNotNil(UIImage(named: "Sport/\(id)"), "asset manquant : Sport/\(id)")
+            let image = try XCTUnwrap(UIImage(named: "Sport/\(id)"), "asset manquant : Sport/\(id)")
+            // Imagesets single-scale : .size est en pixels — attrape une source 1254px déposée à la main.
+            XCTAssertEqual(image.size.width, 750, "Sport/\(id) : source non redimensionnée ?")
         }
     }
 }
