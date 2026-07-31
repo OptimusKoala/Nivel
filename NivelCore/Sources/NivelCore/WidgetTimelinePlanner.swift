@@ -28,18 +28,20 @@ public struct WidgetEntry: Equatable, Sendable {
     }
 }
 
-/// Planification PURE des entrées de la journée : créneaux de messages (7 h, 12 h,
-/// 18 h), passage en sleepy (22 h), bascule de minuit (kcal remises à 0) et réveil
-/// (7 h du lendemain). Une entrée WidgetKit est rendue à l'avance : chaque moment
-/// où l'apparence doit changer exige sa propre entrée.
+/// Planification PURE des entrées de la journée : une entrée par heure pleine
+/// (spec vivant §3 ; le message tourne encore par créneau, une phrase différente
+/// à chaque heure arrive avec le seed horaire absolu de la Task 2), passage en
+/// sleepy (22 h), bascule de minuit (kcal remises à 0) et réveil (7 h du
+/// lendemain). Une entrée WidgetKit est rendue à l'avance : chaque moment où
+/// l'apparence doit changer exige sa propre entrée.
 public enum WidgetTimelinePlanner {
-    /// Heures (jour de `from`) où l'apparence change : réveil, midi, soir, nuit.
-    static let boundaryHours = [7, 12, 18, 22]
-
     public static func entries(snapshot: WidgetSnapshot, from: Date,
                                bank: MessageBank, calendar: Calendar) -> [WidgetEntry] {
         var dates: [Date] = [from]
-        for hour in boundaryHours {
+        // Heures MURALES du jour de `from` (spec vivant §3/§7) : le jour du
+        // passage à l'heure d'été, 2 h n'existe pas et bySettingHour renvoie
+        // une date déjà présente — dédupliquée plus bas.
+        for hour in 0...23 {
             if let d = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: from),
                d > from {
                 dates.append(d)
@@ -48,11 +50,20 @@ public enum WidgetTimelinePlanner {
         let startOfDay = calendar.startOfDay(for: from)
         if let midnight = calendar.date(byAdding: .day, value: 1, to: startOfDay) {
             dates.append(midnight)
-            if let wakeUp = calendar.date(bySettingHour: 7, minute: 0, second: 0, of: midnight) {
-                dates.append(wakeUp)
+            // La rotation continue toute la nuit jusqu'au réveil (7 h inclus).
+            for hour in 1...7 {
+                if let d = calendar.date(bySettingHour: hour, minute: 0, second: 0, of: midnight) {
+                    dates.append(d)
+                }
             }
         }
-        return dates.map { entry(at: $0, snapshot: snapshot, bank: bank, calendar: calendar) }
+        // Tri + déduplication : WidgetKit exige des dates strictement croissantes
+        // (pinné par testTimelineStaysOrderedAcrossDSTTransitions).
+        var unique: [Date] = []
+        for d in dates.sorted() where d != unique.last {
+            unique.append(d)
+        }
+        return unique.map { entry(at: $0, snapshot: snapshot, bank: bank, calendar: calendar) }
     }
 
     static func entry(at date: Date, snapshot: WidgetSnapshot,

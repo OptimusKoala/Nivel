@@ -30,25 +30,37 @@ final class WidgetTimelinePlannerTests: XCTestCase {
 
     // MARK: - Bornes
 
-    func testEntriesFromMorningCoverAllRemainingBoundaries() {
+    /// from 9 h : toutes les heures pleines jusqu'à 7 h du lendemain inclus
+    /// (spec vivant §3) : 9 h (from), 10 h … 23 h, minuit, 1 h … 7 h = 23 entrées.
+    func testEntriesCoverEveryHourUntilNextMorning() {
         let from = date(hour: 9)
         let entries = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: from,
                                                     bank: bank, calendar: calendar)
-        // from, 12 h, 18 h, 22 h, minuit, 7 h du lendemain.
-        XCTAssertEqual(entries.map(\.date),
-                       [from, date(hour: 12), date(hour: 18), date(hour: 22),
-                        calendar.startOfDay(for: date(hour: 0, day: 32)),
-                        date(hour: 7, day: 32)])
+        var expected: [Date] = [from]
+        expected += (10...23).map { date(hour: $0) }
+        expected.append(calendar.startOfDay(for: date(hour: 0, day: 32)))
+        expected += (1...7).map { date(hour: $0, day: 32) }
+        XCTAssertEqual(entries.map(\.date), expected)
+        XCTAssertEqual(entries.count, 23)
     }
 
-    func testEntriesLateEveningSkipPastBoundaries() {
+    /// from 23 h : plus d'heure restante le jour même, la nuit du lendemain suit.
+    func testEntriesLateEveningRollIntoNextDay() {
         let from = date(hour: 23)
         let entries = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: from,
                                                     bank: bank, calendar: calendar)
-        XCTAssertEqual(entries.map(\.date),
-                       [from,
-                        calendar.startOfDay(for: date(hour: 0, day: 32)),
-                        date(hour: 7, day: 32)])
+        var expected: [Date] = [from]
+        expected.append(calendar.startOfDay(for: date(hour: 0, day: 32)))
+        expected += (1...7).map { date(hour: $0, day: 32) }
+        XCTAssertEqual(entries.map(\.date), expected)
+    }
+
+    /// Pire cas pré-aube (spec §3) : from entre 0 h et 1 h = 32 entrées.
+    func testPreDawnWorstCaseIsThirtyTwoEntries() {
+        let from = date(hour: 0, minute: 30)
+        let entries = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: from,
+                                                    bank: bank, calendar: calendar)
+        XCTAssertEqual(entries.count, 32)
     }
 
     func testPreDawnGetsSameDaySevenAMBoundary() {
@@ -132,16 +144,6 @@ final class WidgetTimelinePlannerTests: XCTestCase {
             XCTAssertEqual(WidgetTimelinePlanner.entries(snapshot: snapshot(), from: from,
                                                          bank: bank, calendar: device),
                            reference, "\(id)")
-        }
-    }
-
-    /// Toute heure où le créneau OU l'expression change doit être une borne, et
-    /// réciproquement — sinon un changement d'apparence passe inaperçu (pas d'entrée).
-    func testBoundaryHoursMatchEveryChangeOfSlotOrExpression() {
-        for hour in 1..<24 {
-            let changes = WidgetTimelinePlanner.slot(hour: hour) != WidgetTimelinePlanner.slot(hour: hour - 1)
-                || WidgetTimelinePlanner.expression(hour: hour) != WidgetTimelinePlanner.expression(hour: hour - 1)
-            XCTAssertEqual(changes, WidgetTimelinePlanner.boundaryHours.contains(hour), "\(hour) h")
         }
     }
 
