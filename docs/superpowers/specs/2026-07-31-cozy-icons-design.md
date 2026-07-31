@@ -27,10 +27,11 @@ Remplacer les SF Symbols **d'identité** par des glyphes dessinés dans le langa
 
 ## 3. Sources et pipeline
 
-- **Sources de vérité** : les tracés validés en démo sont **committés en SVG** dans `design/icons/*.svg` (un fichier par glyphe, viewBox 28×28) — même convention que `design/nivelito.svg`.
-- **Générateur** : `scripts/gen-icons.swift` (CoreGraphics pur, exécuté via `swift scripts/gen-icons.swift`, zéro dépendance) : les 15 glyphes y sont définis en `CGPath` (traduction fidèle des SVG — les arcs SVG deviennent des arcs/béziers CG), rendus en **PDF vectoriels** dans `App/Assets.xcassets/Icons/` (dossier à namespace).
-- **Imagesets** : universal, single scale, `preserves-vector-representation: true`, `template-rendering-intent: template` — les icônes se teintent automatiquement (orange/taupe, les 4 palettes suivent) et scalent proprement.
-- Le script est **idempotent et régénérable** (philosophie `import-sport-images.sh`) ; il refuse de tourner si sa liste interne et les SVG de `design/icons/` divergent (garde de synchronisation, noms exacts).
+- **Source de vérité UNIQUE** : `scripts/gen-icons.swift` (CoreGraphics pur, exécuté via `swift scripts/gen-icons.swift`, zéro dépendance) : les 15 glyphes y sont définis en primitives CG (arcs, béziers, rects arrondis — traduction fidèle des tracés validés en démo), canvas 28×28.
+- **Sorties générées** (les DEUX à chaque run, idempotent — philosophie `import-sport-images.sh`) :
+  1. **PDF vectoriels** dans `App/Assets.xcassets/Icons/` (dossier à namespace) — imagesets universal, single scale, `preserves-vector-representation: true`, `template-rendering-intent: template` : teinte automatique (orange/taupe, les 4 palettes suivent), scaling propre ;
+  2. **Exports de référence** dans `design/icons/` : une planche-contact PNG (`contact-sheet.png`, chaque glyphe à 25pt et 50pt) pour la relecture visuelle — c'est l'outil du contrôle qualité avant intégration.
+- Un seul endroit à éditer pour retoucher un glyphe ; pas de double maintenance SVG↔code.
 
 ## 4. Intégration
 
