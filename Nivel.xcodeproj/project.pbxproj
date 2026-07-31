@@ -27,6 +27,7 @@
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
 		7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75615282503FC8044658A28 /* DayCloserTests.swift */; };
 		75ADB553C3E21774DAF18E6A /* XPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D37C5B43BABA7C97A669DA /* XPBar.swift */; };
+		77B49E3992CE52CA8BD6F01A /* SportAssetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */; };
 		7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */; };
 		83A569C9282E797637B0C790 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D09557663FBEA7185F1839 /* HomeView.swift */; };
 		846FB76C89B63E0E8EA18B9F /* SportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */; };
@@ -76,6 +77,7 @@
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
+		586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAssetsTests.swift; sourceTree = "<group>"; };
 		5A3D92F71CC93D99201C361E /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
 		671D6B6E3581A479FFED40C2 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		67EB506351740B5EC992E309 /* AppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTests.swift; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
 				C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */,
+				586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */,
 				2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */,
 				4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */,
 			);
@@ -445,6 +448,7 @@
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
 				43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */,
+				77B49E3992CE52CA8BD6F01A /* SportAssetsTests.swift in Sources */,
 				846FB76C89B63E0E8EA18B9F /* SportServiceTests.swift in Sources */,
 				54F0635AFE571DA500073C77 /* ThemeStoreTests.swift in Sources */,
 			);
