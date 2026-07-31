@@ -29,7 +29,7 @@ Le widget moyen devient plus vivant sans tricher avec la plateforme : Nivelito p
 Dans `MediumWidgetView` uniquement :
 
 - `WidgetNivelito` passe de 48 à **72 pt** (même position, à gauche de la bulle).
-- La bulle perd ~24 pt de largeur : `minimumScaleFactor` passe de 0,8 à **0,75**, `lineLimit(4)` conservé.
+- La bulle perd ~24 pt de largeur : `minimumScaleFactor` passe de 0,8 à **0,75**, et `lineLimit` passe de 4 à **5** (clause de repli du critère ci-dessous, déclenchée : 4 messages fun débordaient à 321 pt avec 4 lignes ; le scale 0,7 seul ne suffisait pas, mesuré).
 - **Critère d'acceptation** : les 77 messages des pools widget passent sans troncature sur toutes les largeurs d'iPhone (364/338/329/321 pt). Mesure : harnais de rendu **ad hoc reconstruit par le reviewer qualité** (macOS SwiftUI + ImageRenderer compilant les vraies vues, comme pour la v1.6 — outil jetable, non committé). Si un message échoue à 321 pt : ajuster (lineLimit 5 ou scale 0,7) avant merge.
 
 ## 5. Ce qui ne change PAS
