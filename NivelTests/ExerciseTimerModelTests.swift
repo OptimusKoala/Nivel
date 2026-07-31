@@ -50,4 +50,37 @@ final class ExerciseTimerModelTests: XCTestCase {
         timer.start(at: t0)
         XCTAssertEqual(timer.fraction(at: t(9_999)), 1.0)
     }
+
+    func testSyncNowIsNoOpBeforeDeadline() {
+        let timer = ExerciseTimerModel(durationMinutes: 3)
+        timer.start(at: t0)
+        XCTAssertFalse(timer.syncNow(at: t(179)))
+        XCTAssertTrue(timer.isRunning)
+    }
+
+    func testPauseAndResumeAreNoOpsOutsideTheirPhase() {
+        let timer = ExerciseTimerModel(durationMinutes: 3)
+        timer.pause(at: t0);  XCTAssertTrue(timer.isIdle)
+        timer.resume(at: t0); XCTAssertTrue(timer.isIdle)
+        XCTAssertFalse(timer.syncNow(at: t(9_999)))
+        XCTAssertTrue(timer.isIdle)
+    }
+
+    func testPauseAtExactDeadlineStillFinishesOnNextSync() {
+        let timer = ExerciseTimerModel(durationMinutes: 3)
+        timer.start(at: t0)
+        timer.pause(at: t(180))                          // pile à l'échéance
+        XCTAssertTrue(timer.syncNow(at: t(180.5)))       // le tick suivant termine
+        XCTAssertTrue(timer.isFinished)
+    }
+
+    func testOverrunReportsSmallDelayAndNilWhenNotRunning() {
+        let timer = ExerciseTimerModel(durationMinutes: 3)
+        XCTAssertNil(timer.overrun(at: t0))              // idle
+        timer.start(at: t0)
+        XCTAssertNil(timer.overrun(at: t(100)))          // avant l'échéance
+        XCTAssertEqual(try XCTUnwrap(timer.overrun(at: t(181))), 1, accuracy: 0.001)
+        timer.syncNow(at: t(181))
+        XCTAssertNil(timer.overrun(at: t(182)))          // finished → nil
+    }
 }

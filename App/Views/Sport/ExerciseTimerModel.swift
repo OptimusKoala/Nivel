@@ -19,7 +19,7 @@ final class ExerciseTimerModel {
     private(set) var phase: Phase = .idle
 
     init(durationMinutes: Int) {
-        self.duration = TimeInterval(durationMinutes) * 60
+        self.duration = TimeInterval(max(0, durationMinutes)) * 60
     }
 
     // MARK: Lecture (pures, date injectée)
@@ -27,7 +27,7 @@ final class ExerciseTimerModel {
     func elapsed(at now: Date = .now) -> TimeInterval {
         switch phase {
         case .idle: 0
-        case .running(let since, let already): min(duration, already + now.timeIntervalSince(since))
+        case .running(let since, let already): max(0, min(duration, already + now.timeIntervalSince(since)))
         case .paused(let elapsed): elapsed
         case .finished: duration
         }
@@ -46,6 +46,7 @@ final class ExerciseTimerModel {
 
     // MARK: Transitions
 
+    /// Démarre depuis zéro, y compris depuis pause/finished (start == restart ; le bouton Lancer n'apparaît qu'en idle).
     func start(at now: Date = .now) { phase = .running(since: now, alreadyElapsed: 0) }
 
     func pause(at now: Date = .now) {
@@ -65,8 +66,19 @@ final class ExerciseTimerModel {
     /// (pour ne déclencher haptique/son qu'une fois).
     @discardableResult
     func syncNow(at now: Date = .now) -> Bool {
-        guard isRunning, remaining(at: now) <= 0 else { return false }
+        guard isRunning || isPaused, remaining(at: now) <= 0 else { return false }
         phase = .finished
         return true
+    }
+
+    /// Dépassement de l'échéance à `now` (nil si le timer ne tourne pas).
+    /// Sert au « son honnête » : on ne sonne que si le dépassement est petit
+    /// (fin vécue en direct), pas pour un timer expiré pendant une absence.
+    /// À appeler AVANT `syncNow` : une fois `.finished`, retourne toujours nil.
+    func overrun(at now: Date = .now) -> TimeInterval? {
+        guard case .running(let since, let already) = phase else { return nil }
+        let deadline = since.addingTimeInterval(duration - already)
+        let overrun = now.timeIntervalSince(deadline)
+        return overrun >= 0 ? overrun : nil
     }
 }
