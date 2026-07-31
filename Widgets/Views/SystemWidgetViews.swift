@@ -138,7 +138,7 @@ struct XPMiniBar: View {
         }
         .frame(height: 4)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Expérience : \(current) sur \(needed) vers le niveau suivant")
+        .accessibilityLabel("Expérience : \(current) sur \(needed) vers le niveau \(LevelSystem.level(forXP: totalXP) + 1)")
     }
 }
 
@@ -161,4 +161,41 @@ struct LevelPill: View {
         .padding(.vertical, 4)
         .background(palette.card, in: Capsule())
     }
+}
+
+// MARK: - Previews
+// Le provider (UserDefaults) rend `#Preview(as:)` sur NivelWidget inutilisable
+// ici : on prévisualise les vues simples, aux tailles réelles des familles.
+
+private let previewMessage = "Petit fait du jour : les pandas roux adorent les câlins. Enfin, moi surtout."
+
+private let previewEntry = WidgetEntry(
+    date: .now, kcalEaten: 1240, kcalTarget: 2000, totalXP: 860,
+    message: previewMessage, expression: .happy, themeID: "creme", userName: "Michaël"
+)
+
+private let previewEntrySleepyNight = WidgetEntry(
+    date: .now, kcalEaten: 2350, kcalTarget: 2000, totalXP: 4200,
+    message: previewMessage, expression: .sleepy, themeID: "nuit-douce", userName: "Michaël"
+)
+
+#Preview("Petit") {
+    SmallWidgetView(entry: previewEntry, palette: .creme)
+        .padding()
+        .frame(width: 158, height: 158)
+        .background(ThemePalette.creme.background)
+}
+
+#Preview("Moyen") {
+    MediumWidgetView(entry: previewEntry, palette: .creme)
+        .padding()
+        .frame(width: 338, height: 158)
+        .background(ThemePalette.creme.background)
+}
+
+#Preview("Moyen — Nuit douce, sleepy") {
+    MediumWidgetView(entry: previewEntrySleepyNight, palette: .nuitDouce)
+        .padding()
+        .frame(width: 338, height: 158)
+        .background(ThemePalette.nuitDouce.background)
 }

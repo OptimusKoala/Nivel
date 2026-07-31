@@ -70,3 +70,14 @@ struct WidgetNivelito: View {
         .accessibilityHidden(true)
     }
 }
+
+// MARK: - Previews
+
+#Preview("Expressions") {
+    HStack(spacing: 16) {
+        VStack { WidgetNivelito(sleepy: false, palette: .creme, size: 72); Text("happy").font(.caption2) }
+        VStack { WidgetNivelito(sleepy: true, palette: .creme, size: 72); Text("sleepy").font(.caption2) }
+    }
+    .padding()
+    .background(ThemePalette.creme.background)
+}

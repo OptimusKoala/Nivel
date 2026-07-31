@@ -3,7 +3,6 @@
 // la palette ne s'applique pas ici.
 
 import SwiftUI
-import WidgetKit
 import NivelCore
 
 struct CircularAccessoryView: View {
@@ -34,11 +33,12 @@ struct RectangularAccessoryView: View {
             Text("~\(entry.kcalEaten.frFormatted) / \(entry.kcalTarget.frFormatted) kcal")
                 .font(.headline)
                 .minimumScaleFactor(0.7)
-            Text("Niveau \(LevelSystem.level(forXP: entry.totalXP))")
+            Text("Niv. \(LevelSystem.level(forXP: entry.totalXP))")
                 .font(.caption)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Environ \(entry.kcalEaten) calories sur \(entry.kcalTarget), niveau \(LevelSystem.level(forXP: entry.totalXP))")
     }
 }
 
@@ -48,4 +48,24 @@ struct AccessoryWelcomeView: View {
             .font(.headline)
             .minimumScaleFactor(0.7)
     }
+}
+
+// MARK: - Previews
+// Fond noir : simule le fond de l'écran verrouillé, seul contexte de ces vues.
+
+private let previewAccessoryEntry = WidgetEntry(
+    date: .now, kcalEaten: 1240, kcalTarget: 2000, totalXP: 860,
+    message: "", expression: .happy, themeID: "creme", userName: "Michaël"
+)
+
+#Preview("Circulaire") {
+    CircularAccessoryView(entry: previewAccessoryEntry)
+        .frame(width: 160, height: 160)
+        .background(.black)
+}
+
+#Preview("Rectangulaire") {
+    RectangularAccessoryView(entry: previewAccessoryEntry)
+        .frame(width: 160, height: 72)
+        .background(.black)
 }

@@ -44,3 +44,26 @@ struct WidgetCalorieRing: View {
         .accessibilityLabel("Environ \(eaten) calories sur \(target)")
     }
 }
+
+// MARK: - Previews
+
+#Preview("Sous l'objectif") {
+    WidgetCalorieRing(eaten: 1240, target: 2000, palette: .creme)
+        .frame(width: 120, height: 120)
+        .padding()
+        .background(ThemePalette.creme.background)
+}
+
+#Preview("Dépassé (jamais rouge)") {
+    WidgetCalorieRing(eaten: 2350, target: 2000, palette: .creme)
+        .frame(width: 120, height: 120)
+        .padding()
+        .background(ThemePalette.creme.background)
+}
+
+#Preview("Cible à 0") {
+    WidgetCalorieRing(eaten: 0, target: 0, palette: .creme)
+        .frame(width: 120, height: 120)
+        .padding()
+        .background(ThemePalette.creme.background)
+}

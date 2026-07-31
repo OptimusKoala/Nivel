@@ -16,7 +16,9 @@ struct NivelTimelineEntry: TimelineEntry {
 
 struct NivelWidgetProvider: TimelineProvider {
     // Squelette de chargement d'un widget déjà configuré : la vraie donnée si
-    // elle existe, sinon l'état d'accueil (nouvel utilisateur).
+    // elle existe, sinon l'état d'accueil (nouvel utilisateur). WidgetKit
+    // applique `.redacted(reason: .placeholder)` aux deux branches : rien de
+    // ceci n'est jamais lu tel quel, seule la silhouette (mise en page) compte.
     func placeholder(in context: Context) -> NivelTimelineEntry {
         NivelTimelineEntry(date: .now, planned: plannedEntries().first)
     }
