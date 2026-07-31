@@ -66,6 +66,7 @@
 		E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */; };
 		E25C6AEB1505C0C69F8CB630 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
 		E798FE183A61FFB80A6842BC /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9E90148A545B2C16C0326922 /* NivelCore */; };
+		E7D4FDE0DBF28A9F40684FD8 /* CozyIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DFE3142B4FCF840E98BE4C6 /* CozyIcon.swift */; };
 		E9E07644DA5B531E655EFC74 /* WeighInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079075DA2E6A1C77564F067B /* WeighInSheet.swift */; };
 		ECBE1CB18EBCE075EFFAE24B /* MealsJournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A694B98073276CD2FA798820 /* MealsJournalView.swift */; };
 		ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */; };
@@ -110,6 +111,7 @@
 /* Begin PBXFileReference section */
 		02D37C5B43BABA7C97A669DA /* XPBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPBar.swift; sourceTree = "<group>"; };
 		079075DA2E6A1C77564F067B /* WeighInSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeighInSheet.swift; sourceTree = "<group>"; };
+		0DFE3142B4FCF840E98BE4C6 /* CozyIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CozyIcon.swift; sourceTree = "<group>"; };
 		0EC47BA19967A4B2085299D7 /* ProgressScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressScreen.swift; sourceTree = "<group>"; };
 		0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelWidgets.swift; sourceTree = "<group>"; };
 		16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 		1650BF6569EF9968A290ED20 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				0DFE3142B4FCF840E98BE4C6 /* CozyIcon.swift */,
 				8EC26C277A243F8A9AFC391B /* Celebrations */,
 				D6279C142D197187DA27FC89 /* Home */,
 				F0105491AB027C5B9444D071 /* Meals */,
@@ -555,6 +558,7 @@
 				DBA75C60C34D6D51CBD43CF2 /* CalorieRing.swift in Sources */,
 				E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */,
 				57A40EADB63F64054A4795D7 /* CelebrationsHost.swift in Sources */,
+				E7D4FDE0DBF28A9F40684FD8 /* CozyIcon.swift in Sources */,
 				ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */,
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */,

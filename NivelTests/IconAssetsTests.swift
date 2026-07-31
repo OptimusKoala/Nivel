@@ -14,7 +14,12 @@ final class IconAssetsTests: XCTestCase {
 
     func testEveryCozyIconAssetExists() {
         for name in Self.iconNames {
-            XCTAssertNotNil(UIImage(named: "Icons/\(name)"), "asset manquant : Icons/\(name)")
+            let image = UIImage(named: "Icons/\(name)")
+            XCTAssertNotNil(image, "asset manquant : Icons/\(name)")
+            // Garde du piège n°1 (spec §7) : sans template-rendering-intent, le PDF s'affiche en noir.
+            XCTAssertEqual(image?.renderingMode, .alwaysTemplate, "Icons/\(name) : pas template")
+            // Taille intrinsèque pinnée : les call sites (CozyIcon) dimensionnent explicitement.
+            XCTAssertEqual(image?.size, CGSize(width: 28, height: 28), "Icons/\(name)")
         }
     }
 }

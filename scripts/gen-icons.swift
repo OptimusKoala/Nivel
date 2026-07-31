@@ -82,6 +82,7 @@ func leafLeft() -> CGMutablePath {
     p.closeSubpath(); return p
 }
 func leafRight() -> CGMutablePath {
+    // Feuille droite légèrement élargie vs le plan (gate visuel : équilibre avec la gauche).
     let p = CGMutablePath()
     p.move(to: P(14, 16))
     p.addCurve(to: P(20.8, 10.4), control1: P(14, 12.4), control2: P(16.6, 10.4))
@@ -143,10 +144,11 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
     ("tab_meals", { ctx in strokePath(ctx, bowlPath()); steam(ctx) }),
     ("tab_meals_fill", { ctx in fillPath(ctx, bowlPath()); steam(ctx) }),
     ("tab_sport", { ctx in
-        strokePath(ctx, rr(4, 9.5, 4.5, 9, 2.25))
-        strokePath(ctx, rr(19.5, 9.5, 4.5, 9, 2.25))
+        // Trait 2,6 (vs 2,4 ailleurs) : l'haltère était optiquement le plus léger des 5 (gate visuel).
+        strokePath(ctx, rr(4, 9.5, 4.5, 9, 2.25), width: 2.6)
+        strokePath(ctx, rr(19.5, 9.5, 4.5, 9, 2.25), width: 2.6)
         let bar = CGMutablePath(); bar.move(to: P(8.5, 14)); bar.addLine(to: P(19.5, 14))
-        strokePath(ctx, bar)
+        strokePath(ctx, bar, width: 2.6)
     }),
     ("tab_sport_fill", { ctx in
         fillPath(ctx, rr(3.8, 9, 5.2, 10, 2.6))
@@ -224,6 +226,10 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
 // MARK: - Sorties
 
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+// Garde d'ancrage : à lancer depuis la RACINE du repo (sinon les sorties atterrissent n'importe où).
+guard FileManager.default.fileExists(atPath: root.appendingPathComponent("project.yml").path) else {
+    fatalError("Lancer depuis la racine du repo (project.yml introuvable dans \(root.path))")
+}
 let iconsDir = root.appendingPathComponent("App/Assets.xcassets/Icons")
 let designDir = root.appendingPathComponent("design/icons")
 let fm = FileManager.default
@@ -231,12 +237,12 @@ try? fm.removeItem(at: iconsDir)
 try fm.createDirectory(at: iconsDir, withIntermediateDirectories: true)
 try fm.createDirectory(at: designDir, withIntermediateDirectories: true)
 
-try #"""
+try (#"""
 {
   "info" : { "author" : "xcode", "version" : 1 },
   "properties" : { "provides-namespace" : true }
 }
-"""#.write(to: iconsDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
+"""# + "\n").write(to: iconsDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
 
 func drawFlipped(_ ctx: CGContext, _ draw: (CGContext) -> Void) {
     ctx.saveGState()
@@ -258,17 +264,17 @@ for glyph in glyphs {
     drawFlipped(ctx, glyph.draw)
     ctx.endPDFPage()
     ctx.closePDF()
-    try #"""
+    try (#"""
 {
   "images" : [ { "filename" : "\#(glyph.name).pdf", "idiom" : "universal" } ],
   "info" : { "author" : "xcode", "version" : 1 },
   "properties" : { "preserves-vector-representation" : true, "template-rendering-intent" : "template" }
 }
-"""#.write(to: setDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
+"""# + "\n").write(to: setDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
 }
 
 // Planche-contact PNG : chaque glyphe à 50px (≈25pt) et 100px (≈50pt), grille 2 rangées.
-let cell = 110, pad = 10
+let cell = 110
 let sheetW = glyphs.count * cell, sheetH = 2 * cell
 guard let bmp = CGContext(data: nil, width: sheetW, height: sheetH, bitsPerComponent: 8,
                           bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,

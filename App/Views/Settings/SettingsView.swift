@@ -406,7 +406,7 @@ private struct ThemeSwatchCard: View {
             )
             .overlay(alignment: .topTrailing) {
                 if isSelected {
-                    Image("Icons/icon_check")
+                    CozyIcon(name: "icon_check", size: 21)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Theme.orange)
                         .background(Circle().fill(Theme.card))

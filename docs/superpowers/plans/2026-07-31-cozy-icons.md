@@ -367,7 +367,7 @@ print("OK : \(glyphs.count) imagesets + contact-sheet.png")
 
 - [ ] **Step 4 : Générer + BOUCLE QUALITÉ VISUELLE**
 
-`chmod +x` inutile (lancé via `swift scripts/gen-icons.swift`). Lancer, puis OUVRIR `design/icons/contact-sheet.png` (outil Read) et JUGER chaque glyphe : lisibilité à 50px (rangée du bas ≈ taille tab bar), équilibre optique entre les 5 onglets, coche bien évidée, flèche du restart correctement orientée. **Ajuster les coordonnées et re-générer autant que nécessaire.** Ne passer à la suite qu'avec une planche propre. Dans le rapport final, DONNER le chemin de la planche : le contrôleur la regardera aussi avant d'autoriser la Task 2.
+`chmod +x` inutile (lancé via `swift scripts/gen-icons.swift`). Lancer, puis OUVRIR `design/icons/contact-sheet.png` (outil Read) et JUGER chaque glyphe : lisibilité à 50px (rangée du HAUT du PNG ≈ taille tab bar — origine bitmap CG en bas à gauche), équilibre optique entre les 5 onglets, coche bien évidée, flèche du restart correctement orientée. **Ajuster les coordonnées et re-générer autant que nécessaire.** Ne passer à la suite qu'avec une planche propre. Dans le rapport final, DONNER le chemin de la planche : le contrôleur la regardera aussi avant d'autoriser la Task 2.
 
 - [ ] **Step 5 : Vert** — `xcodegen generate && xcodebuild ... test` → TEST SUCCEEDED, **56 tests** (55 + 1).
 

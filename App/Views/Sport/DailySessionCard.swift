@@ -40,7 +40,7 @@ struct DailySessionCardContent: View {
             }
             Spacer()
             if done {
-                Label("Faite !", image: "Icons/icon_check")
+                Label { Text("Faite !") } icon: { CozyIcon(name: "icon_check", size: 20) }
                     .font(.caption.weight(.bold))
                     .foregroundStyle(Theme.green)
             } else {

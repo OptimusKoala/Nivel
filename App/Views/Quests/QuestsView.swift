@@ -124,7 +124,7 @@ private struct WeeklyQuestCard: View {
                         .lineLimit(2)
                     Spacer()
                     if status.isCompleted {
-                        Image("Icons/icon_check")
+                        CozyIcon(name: "icon_check", size: 20)
                             .font(.system(size: 15, weight: .bold))
                             .foregroundStyle(Theme.orange)
                     }

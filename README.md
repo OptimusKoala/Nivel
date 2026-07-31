@@ -43,6 +43,9 @@ xcodebuild -project Nivel.xcodeproj -scheme Nivel \
 
 # Régénérer les assets sport (App/Assets.xcassets/Sport) depuis design/sport/*.png
 ./scripts/import-sport-images.sh
+
+# Régénérer les icônes cozy (App/Assets.xcassets/Icons + design/icons/contact-sheet.png)
+swift scripts/gen-icons.swift
 ```
 
 ## Installer Nivel sur ton iPhone (compte Apple gratuit)
@@ -78,11 +81,12 @@ Nivel/
 │   ├── Services/            #   GameService, HealthKit, notifications, clôture de journée
 │   ├── Views/               #   Accueil, repas, sport, progrès, quêtes, réglages, onboarding…
 │   ├── Nivelito/            #   La mascotte (formes vectorielles, bulles de dialogue)
-│   └── Assets.xcassets/     #   Icône d'app, couleurs, illustrations sport (Sport/, générées)
+│   └── Assets.xcassets/     #   Icône d'app, couleurs, illustrations sport (Sport/) et
+│                            #   icônes cozy (Icons/, PDF template) — toutes générées
 ├── Shared/                  # Code compilé dans l'app ET le widget (palettes, formes Nivelito, pont App Group)
 ├── Widgets/                 # Extension WidgetKit (provider, vues des 4 familles)
 ├── NivelTests/              # Tests d'intégration de l'app (simulateur)
-├── design/                  # Sources : SVG (Nivelito, icône) + sport/ (PNG 1254px des illustrations)
-├── scripts/                 # import-sport-images.sh (régénère les assets sport)
+├── design/                  # Sources : SVG (Nivelito, icône), sport/ (PNG 1254px), icons/ (planche-contact)
+├── scripts/                 # import-sport-images.sh + gen-icons.swift (assets régénérables)
 └── docs/                    # Spec et plan d'implémentation
 ```
