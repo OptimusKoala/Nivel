@@ -15,15 +15,20 @@ public enum DailySessionPicker {
         return iso.date(from: DateComponents(year: 2026, month: 1, day: 1))!
     }
 
-    /// Index du jour dans [0, count) — modulo positif (les dates antérieures à la
-    /// référence restent valides).
-    public static func index(for date: Date, count: Int, calendar: Calendar) -> Int {
-        guard count > 0 else { return 0 }
-        let days = calendar.dateComponents(
+    /// Jours écoulés depuis la référence fixe — partagé avec WidgetTimelinePlanner.
+    static func dayIndex(for date: Date, calendar: Calendar) -> Int {
+        calendar.dateComponents(
             [.day],
             from: referenceDay(calendar: calendar),
             to: calendar.startOfDay(for: date)
         ).day ?? 0
+    }
+
+    /// Index du jour dans [0, count) — modulo positif (les dates antérieures à la
+    /// référence restent valides).
+    public static func index(for date: Date, count: Int, calendar: Calendar) -> Int {
+        guard count > 0 else { return 0 }
+        let days = dayIndex(for: date, calendar: calendar)
         return ((days % count) + count) % count
     }
 

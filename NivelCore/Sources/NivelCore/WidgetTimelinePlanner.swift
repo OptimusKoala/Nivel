@@ -113,12 +113,8 @@ public enum WidgetTimelinePlanner {
         let pool = bank.messages(for: context) + bank.messages(for: .fun)
         // Pré-condition : pool non vide — garanti par le catalogue
         // (MessageBankTests.testBankHasAllContextsWithEnoughVariety, >= 12 par contexte).
-        // Même référence fixe que la séance du jour (01/01/2026, interne au module).
-        let dayIndex = calendar.dateComponents(
-            [.day],
-            from: DailySessionPicker.referenceDay(calendar: calendar),
-            to: calendar.startOfDay(for: date)
-        ).day ?? 0
+        // Même référence fixe que la séance du jour (01/01/2026, partagée via DailySessionPicker).
+        let dayIndex = DailySessionPicker.dayIndex(for: date, calendar: calendar)
         let chosen = pool[messageIndex(dayIndex: dayIndex, slot: slot.rawValue, count: pool.count)]
         return chosen.text.replacingOccurrences(of: "{name}", with: snapshot.userName)
     }
