@@ -13,10 +13,13 @@
 		1D1E36C74A9B09A9D1678F59 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
 		229BF4CEFB8B9929D59ED697 /* WidgetSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B501D130466BA533B52476E1 /* WidgetSyncTests.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
+		3CD389A424895D03BA0D911B /* NivelWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */; };
 		43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */; };
 		44E73F722094C06855E93916 /* SessionPlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */; };
 		4CE4E454AA136D82709CEB76 /* ActivityLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */; };
 		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
+		4E8C2BBA3CC86D6E72F06955 /* NivelWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2385787BD003A25BF9AC5C /* NivelWidgetProvider.swift */; };
+		5250E4B0045E3F3A037708F2 /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4AF60C635E23219D03138E /* ThemePalette.swift */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
 		54786F0394B67DE901FD1C19 /* MealLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3D92F71CC93D99201C361E /* MealLogSheet.swift */; };
 		54F0635AFE571DA500073C77 /* ThemeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */; };
@@ -38,16 +41,21 @@
 		93AED358242CE2BD999D1419 /* SportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4542B7EDA424C2DF0AF4CD23 /* SportView.swift */; };
 		98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABBAD095DB88DF009C167B /* PersistentModels.swift */; };
 		9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */; };
+		A092FB1BE78830552301E9AE /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */; };
 		A8F3FF34B7D7CB7770F78CDF /* SportIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */; };
+		A9598A7C27939AE025FABCB2 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E840C37923218C1DC6C0614D /* Formatting.swift */; };
 		AC058589EEDA0F462DF1730B /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */; };
 		C57910A2F19CC7C8B8FC2E4E /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */; };
 		CA44B39964325597C05E92A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671D6B6E3581A479FFED40C2 /* RootView.swift */; };
 		CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9245CF3C47048DB9D88C2E5 /* StatCard.swift */; };
 		D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC47BA19967A4B2085299D7 /* ProgressScreen.swift */; };
 		D4DBCCCBE3F53C8F8882CC95 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E734571AD23AE4CDC74D01 /* NotificationService.swift */; };
+		D83B5EF71AE830A0DACABC6B /* NivelWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C658D5A942C3A751271B8BBD /* NivelWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DAAD239CC8C1DACA809A05DF /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */; };
 		DBA75C60C34D6D51CBD43CF2 /* CalorieRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBB38120226BC151CACEE2B /* CalorieRing.swift */; };
 		E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */; };
+		E25C6AEB1505C0C69F8CB630 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
+		E798FE183A61FFB80A6842BC /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9E90148A545B2C16C0326922 /* NivelCore */; };
 		E9E07644DA5B531E655EFC74 /* WeighInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079075DA2E6A1C77564F067B /* WeighInSheet.swift */; };
 		ECBE1CB18EBCE075EFFAE24B /* MealsJournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A694B98073276CD2FA798820 /* MealsJournalView.swift */; };
 		ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */; };
@@ -58,6 +66,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		44B18F77E53BE4786591C54F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 04E8B4E936966D5E7CBCE2A4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 11AE6BF7C657676797D2A148;
+			remoteInfo = NivelWidgets;
+		};
 		CB5119286F40B24428A37ADF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 04E8B4E936966D5E7CBCE2A4 /* Project object */;
@@ -67,10 +82,25 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		6B061F2D7BD4922606F5AC40 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D83B5EF71AE830A0DACABC6B /* NivelWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		02D37C5B43BABA7C97A669DA /* XPBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPBar.swift; sourceTree = "<group>"; };
 		079075DA2E6A1C77564F067B /* WeighInSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeighInSheet.swift; sourceTree = "<group>"; };
 		0EC47BA19967A4B2085299D7 /* ProgressScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressScreen.swift; sourceTree = "<group>"; };
+		0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelWidgets.swift; sourceTree = "<group>"; };
 		16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		1B870793FACF92E8A3EC300C /* Nivel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nivel.entitlements; sourceTree = "<group>"; };
 		2333A9029C3BCBFBBF4FB976 /* CelebrationsHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationsHost.swift; sourceTree = "<group>"; };
@@ -96,6 +126,8 @@
 		7FD0D49D1E0B2314767BA85A /* DayCloser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloser.swift; sourceTree = "<group>"; };
 		83A4DCCA0A5474334D59C73C /* NivelCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = NivelCore; path = NivelCore; sourceTree = SOURCE_ROOT; };
 		848BA4571516E35FCEA2402D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		89A915194925D9D5C1194AFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8E2385787BD003A25BF9AC5C /* NivelWidgetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelWidgetProvider.swift; sourceTree = "<group>"; };
 		9782153DD5F0B9BABA5132F1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridge.swift; sourceTree = "<group>"; };
 		A694B98073276CD2FA798820 /* MealsJournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealsJournalView.swift; sourceTree = "<group>"; };
@@ -107,7 +139,9 @@
 		B501D130466BA533B52476E1 /* WidgetSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSyncTests.swift; sourceTree = "<group>"; };
 		B96415D84EF698197C100E80 /* WeightChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightChart.swift; sourceTree = "<group>"; };
 		BCBB38120226BC151CACEE2B /* CalorieRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieRing.swift; sourceTree = "<group>"; };
+		C2F1F7C3748561A5F2562708 /* NivelWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NivelWidgets.entitlements; sourceTree = "<group>"; };
 		C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDashboardTests.swift; sourceTree = "<group>"; };
+		C658D5A942C3A751271B8BBD /* NivelWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = NivelWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
 		C75615282503FC8044658A28 /* DayCloserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloserTests.swift; sourceTree = "<group>"; };
 		C923A46DDC21834AB6E06D1B /* NivelitoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoView.swift; sourceTree = "<group>"; };
@@ -123,6 +157,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2DB7939AB8DDE890AC05393F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E798FE183A61FFB80A6842BC /* NivelCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D58D6C950BD27C805AE3E732 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -255,6 +297,17 @@
 			path = Celebrations;
 			sourceTree = "<group>";
 		};
+		9C16FE7DAAB4E790B8D3E256 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				89A915194925D9D5C1194AFD /* Info.plist */,
+				8E2385787BD003A25BF9AC5C /* NivelWidgetProvider.swift */,
+				C2F1F7C3748561A5F2562708 /* NivelWidgets.entitlements */,
+				0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
 		BFF6958B815AC1E48D671C2E = {
 			isa = PBXGroup;
 			children = (
@@ -262,6 +315,7 @@
 				D148F81EC70A7990945C04A7 /* NivelTests */,
 				3086EF3E7FB64FB4B497C1C6 /* Packages */,
 				0E9C852211D6211B94431778 /* Shared */,
+				9C16FE7DAAB4E790B8D3E256 /* Widgets */,
 				D7AB301520ABEA23F8475A93 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -314,6 +368,7 @@
 			children = (
 				458C2EFDE5A8833EB80D2F5C /* Nivel.app */,
 				C9AB33328B42B0A39E65B608 /* NivelTests.xctest */,
+				C658D5A942C3A751271B8BBD /* NivelWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -339,6 +394,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		11AE6BF7C657676797D2A148 /* NivelWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EB3BF924C955C8251F2082AD /* Build configuration list for PBXNativeTarget "NivelWidgets" */;
+			buildPhases = (
+				6AE2EA4C84B20487B0D5B619 /* Sources */,
+				2DB7939AB8DDE890AC05393F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NivelWidgets;
+			packageProductDependencies = (
+				9E90148A545B2C16C0326922 /* NivelCore */,
+			);
+			productName = NivelWidgets;
+			productReference = C658D5A942C3A751271B8BBD /* NivelWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		75F9E279A12A830E33238A0B /* Nivel */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3197E686F23E9F45A269CDE6 /* Build configuration list for PBXNativeTarget "Nivel" */;
@@ -346,10 +420,12 @@
 				16393D940E29D85B066DC4BC /* Sources */,
 				135C90D892911A980C9F51AF /* Resources */,
 				D58D6C950BD27C805AE3E732 /* Frameworks */,
+				6B061F2D7BD4922606F5AC40 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A2311267ED7C01EFA54C9C0A /* PBXTargetDependency */,
 			);
 			name = Nivel;
 			packageProductDependencies = (
@@ -386,6 +462,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					11AE6BF7C657676797D2A148 = {
+						DevelopmentTeam = 5V52773QN3;
+					};
 					75F9E279A12A830E33238A0B = {
 						DevelopmentTeam = 5V52773QN3;
 					};
@@ -409,6 +488,7 @@
 			projectRoot = "";
 			targets = (
 				75F9E279A12A830E33238A0B /* Nivel */,
+				11AE6BF7C657676797D2A148 /* NivelWidgets */,
 				8FDBDF29CEF0DF64A2106A52 /* NivelTests */,
 			);
 		};
@@ -470,6 +550,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6AE2EA4C84B20487B0D5B619 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A9598A7C27939AE025FABCB2 /* Formatting.swift in Sources */,
+				4E8C2BBA3CC86D6E72F06955 /* NivelWidgetProvider.swift in Sources */,
+				3CD389A424895D03BA0D911B /* NivelWidgets.swift in Sources */,
+				E25C6AEB1505C0C69F8CB630 /* NivelitoShapes.swift in Sources */,
+				5250E4B0045E3F3A037708F2 /* ThemePalette.swift in Sources */,
+				A092FB1BE78830552301E9AE /* WidgetBridge.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A033EE4E1D5B9DB6AF2E1A42 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -493,6 +586,11 @@
 			isa = PBXTargetDependency;
 			target = 75F9E279A12A830E33238A0B /* Nivel */;
 			targetProxy = CB5119286F40B24428A37ADF /* PBXContainerItemProxy */;
+		};
+		A2311267ED7C01EFA54C9C0A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 11AE6BF7C657676797D2A148 /* NivelWidgets */;
+			targetProxy = 44B18F77E53BE4786591C54F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -671,6 +769,40 @@
 			};
 			name = Debug;
 		};
+		BA7FA446D343440C7AC8E203 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Widgets/NivelWidgets.entitlements;
+				DEVELOPMENT_TEAM = 5V52773QN3;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = fr.mbernard.Nivel.Widgets;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D0DC86D65519AC4C3D72D5CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Widgets/NivelWidgets.entitlements;
+				DEVELOPMENT_TEAM = 5V52773QN3;
+				INFOPLIST_FILE = Widgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = fr.mbernard.Nivel.Widgets;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		ED89C477EF75DF6C30B598E4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -709,6 +841,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		EB3BF924C955C8251F2082AD /* Build configuration list for PBXNativeTarget "NivelWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0DC86D65519AC4C3D72D5CC /* Debug */,
+				BA7FA446D343440C7AC8E203 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		EF80D40966584D66EEABCDC3 /* Build configuration list for PBXNativeTarget "NivelTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -728,6 +869,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		9E90148A545B2C16C0326922 /* NivelCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NivelCore;
+		};
 		B88CBBE48B3261367C1BD66E /* NivelCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NivelCore;
