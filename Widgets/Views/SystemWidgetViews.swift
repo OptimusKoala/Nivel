@@ -88,9 +88,9 @@ struct MediumWidgetView: View {
                     Text(entry.message)
                         .font(.caption)
                         .foregroundStyle(palette.text)
-                        .lineLimit(4)
-                        // La bulle perd ~24 pt au profit de Nivelito (spec vivant §4),
-                        // le scale compense pour les messages longs.
+                        .lineLimit(5)
+                        // 5 lignes + scale 0,75 : les 51 messages du catalogue passent
+                        // sans troncature jusqu'à 321 pt (mesuré au harnais, spec vivant §4).
                         .minimumScaleFactor(0.75)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
@@ -168,7 +168,7 @@ struct LevelPill: View {
 // Le provider (UserDefaults) rend `#Preview(as:)` sur NivelWidget inutilisable
 // ici : on prévisualise les vues simples, aux tailles réelles des familles.
 
-private let previewMessage = "Petit fait du jour : les pandas roux adorent les câlins. Enfin, moi surtout."
+private let previewMessage = "Je m'entraîne à faire la roue. Pour l'instant, ça ressemble à une roulade."
 
 private let previewEntry = WidgetEntry(
     date: .now, kcalEaten: 1240, kcalTarget: 2000, totalXP: 860,
@@ -191,6 +191,13 @@ private let previewEntrySleepyNight = WidgetEntry(
     MediumWidgetView(entry: previewEntry, palette: .creme)
         .padding()
         .frame(width: 338, height: 158)
+        .background(ThemePalette.creme.background)
+}
+
+#Preview("Moyen (321, pire cas)") {
+    MediumWidgetView(entry: previewEntry, palette: .creme)
+        .padding()
+        .frame(width: 321, height: 148)
         .background(ThemePalette.creme.background)
 }
 
