@@ -126,8 +126,12 @@ struct HomeView: View {
             rewardBubbleActive = false
             sessionStatus = game.dailySessionStatus()
             updateBubble()
+            consumeDeepLink()
         }
         .task { await refresh() }
+        .onChange(of: game.pendingMealLogDeepLink) { _, pending in
+            if pending { consumeDeepLink() }
+        }
         .sheet(isPresented: $showMealLog, onDismiss: updateBubble) {
             MealLogSheet()
         }
@@ -147,6 +151,14 @@ struct HomeView: View {
         sessionStatus = game.dailySessionStatus()
         // Le refresh peut lever une célébration → le contexte du message peut changer.
         updateBubble()
+    }
+
+    /// Deep link « + Repas » du widget : consomme le signal et ouvre la sheet
+    /// (l'app peut être à froid — onAppear — ou déjà ouverte — onChange).
+    private func consumeDeepLink() {
+        guard game.pendingMealLogDeepLink else { return }
+        game.pendingMealLogDeepLink = false
+        showMealLog = true
     }
 
     /// Rafraîchit l'encart séance ET la bulle (une validation dans la sheet peut

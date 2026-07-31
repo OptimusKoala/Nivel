@@ -72,6 +72,10 @@ final class GameService {
     /// pour la bulle `afterActivity` (miroir de `lastMealXPAwarded`).
     var lastActivityXPAwarded: Int?
 
+    /// Deep link « + Repas » du widget en attente : posé par MainTabView
+    /// (onOpenURL), consommé par HomeView qui ouvre la sheet de log.
+    var pendingMealLogDeepLink = false
+
     /// Compteur MONOTONE de célébrations levées (jamais décrémenté) — à utiliser comme
     /// `celebrationTrigger` de NivelitoView : le dépilage de la file (Task 19) ne doit
     /// pas re-déclencher de rebond.

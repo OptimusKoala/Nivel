@@ -105,6 +105,13 @@ private struct MainTabView: View {
         // Présentation des célébrations (level-up plein écran, bannières badge/quête)
         // au niveau du TabView : visibles depuis n'importe quel onglet.
         .celebrationsHost()
+        // Deep link du widget (spec widgets §7). MainTabView n'existe pas tant
+        // que l'onboarding n'est pas fini : le lien est alors ignoré.
+        .onOpenURL { url in
+            guard DeepLink.parse(url) == .logMeal else { return }
+            selectedTab = .home
+            gameService.pendingMealLogDeepLink = true
+        }
         .onAppear {
             // Lancement à froid directement en .active : onChange ne se déclenche
             // pas — on exécute aussi le rattrapage ici.
