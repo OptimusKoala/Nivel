@@ -1,4 +1,4 @@
-# Nivel — Spécification Widgets iOS (v1.4)
+# Nivel — Spécification Widgets iOS (v1.5)
 
 Date : 2026-07-31
 Statut : validé avec Michaël (brainstorming du 31/07/2026)
@@ -11,17 +11,17 @@ Nivel s'invite sur l'écran d'accueil et l'écran verrouillé : d'un coup d'œil
 ## 2. Décisions validées (brainstorming)
 
 - **Rôle** : mix « journée d'un coup d'œil » + « raccourci pour logger » + « motivation Nivelito ».
-- **Formats** : petit (2×2), moyen (4×2), écran verrouillé (accessoires circulaire + rectangulaire). Pas de grand widget en v1.4.
+- **Formats** : petit (2×2), moyen (4×2), écran verrouillé (accessoires circulaire + rectangulaire). Pas de grand widget en v1.5.
 - **Pas de compteur de pas dans les widgets** : un widget ne peut pas lire HealthKit, il afficherait les pas de la dernière ouverture de l'app — un chiffre visiblement périmé contredit l'esprit soigné de l'app. Le widget se limite aux données produites par l'app elle-même (kcal, XP, thème).
 - **Architecture « snapshot léger »** : l'app écrit un petit résumé JSON dans l'App Group après chaque action ; le widget ne fait que lire. La base SwiftData ne bouge pas (aucune migration de store — décision explicite face à l'option « base partagée », jugée risquée pour les deux iPhones existants).
-- **Version** : 1.4 (build 5) dans `project.yml`.
+- **Version** : 1.5 (build 6) dans `project.yml` — la 1.4 (build 5) est prise par l'extension du catalogue sport committée pendant le brainstorming (`65be4cd`).
 
 ## 3. Architecture
 
 ### 3.1 Nouvelle target `NivelWidgets`
 
 - Extension WidgetKit (`type: app-extension` XcodeGen, `NSExtensionPointIdentifier: com.apple.widgetkit-extension`), bundle `fr.mbernard.Nivel.Widgets`, embarquée par l'app, `DEVELOPMENT_TEAM` identique.
-- Sources : nouveau dossier `Widgets/` (bundle `@main WidgetBundle`, provider, vues) + dossier partagé `Shared/` + package NivelCore.
+- Sources : nouveau dossier `Widgets/` (bundle `@main WidgetBundle`, provider, vues) + dossier partagé `Shared/` + package NivelCore. Dans `project.yml`, la target app passe de `sources: [App]` à `sources: [App, Shared]` (les fichiers de `Shared/` en sont extraits).
 
 ### 3.2 App Group
 
@@ -50,21 +50,20 @@ Nivel s'invite sur l'écran d'accueil et l'écran verrouillé : d'un coup d'œil
 
 ### 4.2 `WidgetTimelinePlanner`
 
-Fonction pure `entries(snapshot:from:calendar:) -> [WidgetEntry]` — `WidgetEntry` est une struct pure (date, kcalEaten, kcalTarget, totalXP, texte du message, themeID, userName). Règles :
+Fonction pure `entries(snapshot:from:bank:calendar:) -> [WidgetEntry]` — `bank` est la `MessageBank` (le provider du widget la charge, le planner reste pur et testable). `WidgetEntry` est une struct pure : date, kcalEaten, kcalTarget, totalXP, texte du message, **expression de Nivelito** (`sleepy`/`happy`, dérivée de la date de l'entrée — règle de l'accueil : ≥ 22 h ou < 7 h), themeID, userName. Règles :
 
-- **Créneaux de messages** alignés sur `GameService.homeMessageContext` : matin < 12 h, midi < 18 h, soir ≥ 18 h. Entrées générées à `from`, puis à chaque borne restante (12 h, 18 h) et à **minuit**.
+- **Bornes d'entrées** : `from`, puis chaque borne restante parmi **12 h, 18 h, 22 h** et **minuit**. 12 h/18 h suivent les créneaux de messages de `GameService.homeMessageContext` (matin < 12 h, midi < 18 h, soir ≥ 18 h) ; 22 h existe pour que Nivelito passe en `sleepy` sans attendre minuit (une entrée de timeline est rendue à l'avance, la vue ne peut pas changer d'expression sans nouvelle entrée).
 - **Bascule de minuit** : les entrées dont la date dépasse le jour de `dayKey` affichent `kcalEaten = 0` (nouveau jour), XP/niveau conservés. L'anneau ne montre jamais les kcal d'hier.
-- **Choix du message** : pool = `messages(context du créneau)` + `messages(.fun)` de la `MessageBank` existante ; index déterministe seedé sur (jour, créneau) — même principe que `DailySessionPicker` : stable, pas de `Date.now`, pas d'aléatoire. `{name}` substitué par `userName`.
+- **Choix du message** : pool = `messages(context du créneau)` + `messages(.fun)` ; index déterministe seedé sur (jour, créneau) — même principe que `DailySessionPicker` : stable, pas de `Date.now`, pas d'aléatoire. `{name}` substitué par `userName`. L'entrée de 22 h garde le pool du soir.
 - La timeline se termine sur l'entrée de minuit ; politique de rechargement « after » le prochain matin (7 h) pour reprendre la rotation même app fermée.
 
 ## 5. Synchronisation côté app — `WidgetSync`
 
-Petit service de l'app (pas de protocole, pas d'abstraction) : construit le `WidgetSnapshot` depuis l'état courant (repas du jour, profil, `GamificationState`, `ThemeStore`), l'écrit dans les UserDefaults partagés, puis appelle `WidgetCenter.reloadTimelines(ofKind:)`. Appelé à quatre moments :
+Petit service de l'app (pas de protocole, pas d'abstraction) : construit le `WidgetSnapshot` depuis l'état courant (repas du jour, profil, `GamificationState`, `ThemeStore`), l'écrit dans les UserDefaults partagés, puis appelle `WidgetCenter.reloadTimelines(ofKind:)`. Appelé à trois moments :
 
-1. **après chaque mutation persistée de `GameService`** — un crochet unique au point de sauvegarde (`saveOrAssert`), pas un appel dispersé dans chaque méthode ;
-2. **à la clôture de journée** (`DayCloser`) ;
-3. **au changement de thème** (Réglages) ;
-4. **au retour au premier plan** de l'app — rattrape tout le reste (minuit passé app fermée, quêtes du lundi…).
+1. **après chaque mutation persistée de `GameService`** — un crochet unique au point de sauvegarde (`saveOrAssert`), pas un appel dispersé dans chaque méthode. Couvre aussi la clôture de journée (`DayCloser` sauvegarde via `GameService`). Plusieurs écritures par action utilisateur (ex. `logMeal` sauvegarde deux fois) : sans importance, l'écriture est idempotente et `reloadTimelines` depuis l'app au premier plan n'est pas soumis au budget de rafraîchissement ;
+2. **au changement de thème** (Réglages) ;
+3. **au retour au premier plan** de l'app — rattrape tout le reste (minuit passé app fermée, quêtes du lundi…).
 
 Fire and forget : si l'écriture échoue, le widget garde le snapshot précédent — jamais d'erreur visible.
 
@@ -73,7 +72,7 @@ Fire and forget : si l'écriture échoue, le widget garde le snapshot précéden
 Tous suivent la palette du snapshot et la règle **zéro rouge** : en dépassement, l'anneau passe à `accent` (chaleureux) avec le même « ~X / Y kcal », exactement comme `CalorieRingCard`. Textes sans tiret cadratin ni point médian (conventions v1.1/v1.2).
 
 - **Petit (`systemSmall`)** : anneau calories (~mangé / objectif) + pastille « Niv. N ». Tap → app (accueil).
-- **Moyen (`systemMedium`)** : gauche = anneau + niveau et progression XP ; droite = Nivelito statique (expression `sleepy` de 22 h à 7 h, sinon `happy` — même règle que l'accueil) + bulle courte (message du créneau) ; zone « + Repas » (`Link`) → `nivel://log-meal`.
+- **Moyen (`systemMedium`)** : gauche = anneau + niveau et progression XP ; droite = Nivelito statique (expression portée par l'entrée de timeline, §4.2 : `sleepy` de 22 h à 7 h, sinon `happy` — même règle que l'accueil) + bulle courte (message du créneau) ; zone « + Repas » (`Link`) → `nivel://log-meal`.
 - **Écran verrouillé** : `accessoryCircular` = `Gauge` kcal (rendu monochrome système) ; `accessoryRectangular` = « ~850 / 1 800 kcal » + « Niv. 3 ». Kcal visibles sur l'écran verrouillé : choix assumé (comme les anneaux Activité d'Apple), c'est l'utilisateur qui décide d'ajouter le widget là.
 
 ## 7. Deep link `nivel://log-meal`
@@ -99,11 +98,11 @@ Tous suivent la palette du snapshot et la règle **zéro rouge** : en dépasseme
 
 ## 10. Tests
 
-- **NivelCore** : round-trip Codable du snapshot ; planner — bascule de minuit (kcal remises à 0, XP conservés), bornes des créneaux (11 h 59 / 12 h, 17 h 59 / 18 h), rotation déterministe (même jour + même créneau = même message, jours différents = rotation), substitution `{name}` ; garde : aucun message des pools widget (morning, midday, evening, fun) ne contient `{value}`.
+- **NivelCore** : round-trip Codable du snapshot ; planner — bascule de minuit (kcal remises à 0, XP conservés), bornes des créneaux (11 h 59 / 12 h, 17 h 59 / 18 h, 21 h 59 / 22 h), expression de Nivelito par entrée (`sleepy` à 22 h et avant 7 h, `happy` sinon), rotation déterministe (même jour + même créneau = même message, jours différents = rotation), substitution `{name}` ; garde : aucun message des pools widget (morning, midday, evening, fun) ne contient `{value}`.
 - **NivelTests** (simulateur) : `WidgetSync` écrit un snapshot cohérent après un `logMeal` (UserDefaults de suite de test injectés) ; fonction pure de routage du deep link.
 - Pas de tests UI des vues du widget (comme le reste de l'app).
 
-## 11. Hors périmètre (v1.4)
+## 11. Hors périmètre (v1.5)
 
 - Grand widget (4×4), widget StandBy dédié, contrôles interactifs (boutons AppIntent) : un repas ne se logge pas sans choisir un plat, le deep link est le bon geste.
 - Rafraîchissement des pas en arrière-plan (HealthKit background delivery).
