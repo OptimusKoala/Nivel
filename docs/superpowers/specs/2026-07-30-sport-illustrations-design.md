@@ -19,7 +19,7 @@ Donner un visage aux sports : chaque activité et chaque séance est illustrée 
 ## 3. Assets et intégration
 
 - **Pipeline** : les sources 1254px restent dans `design/sport/` (non embarquées). Chaque image est redimensionnée en **JPEG 750×750, qualité ~80** (~100-150 Ko ; `sips -Z 750 -s format jpeg -s formatOptions 80`) et intégrée dans `App/Assets.xcassets` sous un **dossier `Sport` avec namespace activé** → `Image("Sport/walk")`, `Image("Sport/wake_up")`… Imagesets single-scale (universal). Poids total ajouté à l'app : ~2,5 Mo.
-- **Composant `SportIllustration`** (`App/Views/Sport/SportIllustration.swift`) : affiche l'image `Sport/<name>` avec coins arrondis et taille paramétrable ; si `UIImage(named:)` est nil → **fallback emoji en pastille colorée** (l'emoji et la couleur sont passés en paramètres). Un seul point de vérité pour toutes les vignettes sport.
+- **Composant `SportIllustration`** (`App/Views/Sport/SportIllustration.swift`) : affiche l'image `Sport/<name>` avec coins arrondis et taille paramétrable ; si `UIImage(named:)` est nil → **fallback emoji en pastille** (emoji passé en paramètre ; teinte fixe `Theme.accent`, ce chemin étant inatteignable tant que le test de présence des assets passe). Un seul point de vérité pour toutes les vignettes sport.
 - Aucun changement de modèle persisté : les images sont référencées par les ids existants (`Activity.id`, `ActivitySession.id`).
 
 ## 4. Catalogues NivelCore — consignes et rythmes
