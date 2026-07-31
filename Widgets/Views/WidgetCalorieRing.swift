@@ -8,7 +8,7 @@ struct WidgetCalorieRing: View {
     let eaten: Int
     let target: Int
     let palette: ThemePalette
-    var lineWidth: CGFloat = 9
+    private let lineWidth: CGFloat = 9
 
     private var isOver: Bool { target > 0 && eaten > target }
     private var fraction: Double {
@@ -39,6 +39,7 @@ struct WidgetCalorieRing: View {
             .padding(.horizontal, 10)
         }
         .padding(lineWidth / 2)
+        .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Environ \(eaten) calories sur \(target)")
     }

@@ -7,7 +7,7 @@ import SwiftUI
 struct WidgetNivelito: View {
     let sleepy: Bool
     let palette: ThemePalette
-    var size: CGFloat = 72
+    let size: CGFloat
 
     private var scale: CGFloat { size / 200 }
     private var outlineStyle: StrokeStyle {
@@ -37,7 +37,9 @@ struct WidgetNivelito: View {
             NivelitoMuzzle().fill(NivelitoColors.cream)
 
             NivelitoBrowLeft().fill(NivelitoColors.cream)
+            NivelitoBrowLeft().stroke(NivelitoColors.cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
             NivelitoBrowRight().fill(NivelitoColors.cream)
+            NivelitoBrowRight().stroke(NivelitoColors.cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
 
             NivelitoEllipse(center: .init(x: 62, y: 122), rx: 8, ry: 5)
                 .fill(NivelitoColors.blushPink.opacity(0.85))

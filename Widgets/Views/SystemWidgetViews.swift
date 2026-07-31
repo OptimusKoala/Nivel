@@ -71,29 +71,34 @@ struct MediumWidgetView: View {
     let palette: ThemePalette
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             VStack(spacing: 6) {
                 WidgetCalorieRing(eaten: entry.kcalEaten, target: entry.kcalTarget,
                                   palette: palette)
+                    .aspectRatio(1, contentMode: .fit)
                 LevelPill(totalXP: entry.totalXP, palette: palette)
                 XPMiniBar(totalXP: entry.totalXP, palette: palette)
             }
+            // Colonne gauche PINNÉE : toute la largeur restante va à la bulle
+            // (sinon le HStack partage 50/50 et tronque les messages).
+            .frame(width: 96)
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 8) {
                     WidgetNivelito(sleepy: entry.expression == .sleepy,
-                                   palette: palette, size: 56)
+                                   palette: palette, size: 48)
                     Text(entry.message)
                         .font(.caption)
                         .foregroundStyle(palette.text)
-                        .lineLimit(3)
+                        .lineLimit(4)
                         .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
                         .background(palette.card,
                                     in: RoundedRectangle(cornerRadius: 12))
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
                 // Deep link : ouvre l'app directement sur la sheet repas (spec §7).
-                Link(destination: URL(string: "nivel://log-meal")!) {
+                Link(destination: WidgetBridge.logMealURL) {
                     Label("Repas", systemImage: "plus")
                         .font(.footnote.weight(.bold))
                         .foregroundStyle(.white)

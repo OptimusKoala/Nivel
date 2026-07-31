@@ -11,6 +11,9 @@ enum WidgetBridge {
     static let snapshotKey = "nivel.widget.snapshot"
     /// Kind unique du widget (les 4 familles) — cible de reloadTimelines(ofKind:).
     static let widgetKind = "NivelWidget"
+    /// Deep link du bouton « + Repas » du widget moyen — consommé par
+    /// RootView.onOpenURL côté app (contrat, comme appGroupID).
+    static let logMealURL = URL(string: "nivel://log-meal")!
 
     static var sharedDefaults: UserDefaults? { UserDefaults(suiteName: appGroupID) }
 
