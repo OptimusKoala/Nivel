@@ -4,9 +4,11 @@ import XCTest
 final class ActivityCatalogTests: XCTestCase {
     func testActivitiesLoadAndIdsAreUnique() throws {
         let activities = try Catalogs.activities()
-        XCTAssertEqual(activities.count, 12)
+        XCTAssertEqual(activities.count, 20)
         XCTAssertEqual(Set(activities.map(\.id)).count, activities.count)
         XCTAssertTrue(activities.contains { $0.id == "walk" && $0.location == .outdoor })
+        XCTAssertTrue(activities.contains { $0.id == "wall_sit" && $0.location == .home })
+        XCTAssertTrue(activities.contains { $0.id == "hike" && $0.location == .outdoor })
     }
 
     func testActivityDurationsAreThreeAscending() throws {
@@ -21,7 +23,7 @@ final class ActivityCatalogTests: XCTestCase {
     func testSessionsLoadAndStepsResolve() throws {
         let sessions = try Catalogs.sessions()
         let activityIDs = Set(try Catalogs.activities().map(\.id))
-        XCTAssertEqual(sessions.count, 8)
+        XCTAssertEqual(sessions.count, 11)
         XCTAssertEqual(Set(sessions.map(\.id)).count, sessions.count)
         for session in sessions {
             XCTAssertFalse(session.steps.isEmpty, "\(session.id)")
@@ -55,6 +57,11 @@ final class ActivityCatalogTests: XCTestCase {
         let byID = Dictionary(uniqueKeysWithValues: activities.map { ($0.id, $0) })
         XCTAssertEqual(wakeUp.totalMinutes, 11)
         XCTAssertEqual(wakeUp.estimatedKcal(activitiesByID: byID), 40)
+
+        // legs_day = squats 3×5,5 + fentes 3×5,5 + chaise murale 2×4,5 + étirements 3×2,5 = 49,5 → 50.
+        let legsDay = try XCTUnwrap(sessions.first { $0.id == "legs_day" })
+        XCTAssertEqual(legsDay.totalMinutes, 11)
+        XCTAssertEqual(legsDay.estimatedKcal(activitiesByID: byID), 50)
     }
 
     func testEveryActivityHasInstructions() throws {

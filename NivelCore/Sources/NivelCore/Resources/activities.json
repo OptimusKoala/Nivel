@@ -22,5 +22,21 @@
   {"id": "yoga",            "name": "Yoga doux",            "emoji": "🧘‍♀️", "location": "home",    "kcalPerMin": 3.0, "durations": [10, 20, 30],
    "instructions": ["Installe-toi au calme, sur un tapis si possible", "Enchaîne des postures simples, tenues quelques respirations", "Concentre-toi sur une respiration lente et profonde", "Ne force jamais une posture"]},
   {"id": "digestive_walk",  "name": "Balade digestive",     "emoji": "🌳",  "location": "outdoor", "kcalPerMin": 3.5, "durations": [10, 15, 20],
-   "instructions": ["Attends 10 à 20 minutes après le repas, puis pars tranquillement", "Rythme doux : c'est une balade, pas une marche sportive", "Profites-en pour prendre l'air et souffler"]}
+   "instructions": ["Attends 10 à 20 minutes après le repas, puis pars tranquillement", "Rythme doux : c'est une balade, pas une marche sportive", "Profites-en pour prendre l'air et souffler"]},
+  {"id": "lunges",          "name": "Fentes",               "emoji": "🤺",  "location": "home",    "kcalPerMin": 5.5, "durations": [3, 5, 10],
+   "instructions": ["Un grand pas en avant, le buste reste droit", "Descends le genou arrière vers le sol, sans le toucher", "Pousse sur la jambe avant pour revenir, puis change de côté", "Tiens-toi à un mur ou une chaise si l'équilibre manque"]},
+  {"id": "wall_sit",        "name": "Chaise contre le mur", "emoji": "🪑",  "location": "home",    "kcalPerMin": 4.5, "durations": [2, 4, 6],
+   "instructions": ["Dos plaqué contre le mur, pieds avancés", "Glisse jusqu'à avoir les genoux pliés, comme sur une chaise invisible", "Les genoux restent au-dessus des chevilles, pas au-delà", "Souffle régulier, remonte dès que les cuisses brûlent trop"]},
+  {"id": "high_knees",      "name": "Montées de genoux",    "emoji": "🏃",  "location": "home",    "kcalPerMin": 6.5, "durations": [3, 5, 8],
+   "instructions": ["Sur place, monte un genou après l'autre vers les hanches", "Pas besoin de sauter : un pied reste toujours au sol", "Les bras accompagnent comme en course", "Ralentis quand le souffle monte trop"]},
+  {"id": "march_in_place",  "name": "Marche sur place",     "emoji": "🧍",  "location": "home",    "kcalPerMin": 4.0, "durations": [5, 10, 15],
+   "instructions": ["Marche sur place d'un pas régulier, les bras balancent", "Devant la télé ou une fenêtre, comme tu préfères", "Monte un peu plus les genoux pour intensifier"]},
+  {"id": "shadow_boxing",   "name": "Boxe dans le vide",    "emoji": "🥊",  "location": "home",    "kcalPerMin": 6.0, "durations": [3, 5, 8],
+   "instructions": ["Poings devant le visage, genoux légèrement fléchis", "Enchaîne des coups légers dans le vide, sans verrouiller les coudes", "Garde des appuis légers, bouge un peu", "C'est aussi fait pour évacuer : lâche-toi"]},
+  {"id": "mobility",        "name": "Réveil articulaire",   "emoji": "🌀",  "location": "home",    "kcalPerMin": 2.5, "durations": [5, 8, 12],
+   "instructions": ["Des cercles lents : nuque, épaules, poignets, hanches, chevilles", "Amplitude confortable, jamais forcée", "Quelques respirations profondes entre chaque zone"]},
+  {"id": "gardening",       "name": "Jardinage",            "emoji": "🌻",  "location": "outdoor", "kcalPerMin": 4.0, "durations": [15, 30, 45],
+   "instructions": ["Plie les genoux pour jardiner au sol, pas le dos", "Alterne les tâches pour varier les postures", "L'arrosoir et la brouette comptent comme de la muscu douce"]},
+  {"id": "hike",            "name": "Randonnée légère",     "emoji": "🥾",  "location": "outdoor", "kcalPerMin": 5.5, "durations": [30, 45, 60],
+   "instructions": ["Choisis un sentier facile et de bonnes chaussures", "Petit rythme régulier, surtout en montée", "Emporte de l'eau et profite du paysage"]}
 ]

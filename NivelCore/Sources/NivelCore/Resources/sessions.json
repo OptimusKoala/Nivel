@@ -26,5 +26,19 @@
   {"id": "home_cardio",       "title": "Cardio maison",       "emoji": "🪜", "steps": [
     {"activityID": "stairs",     "minutes": 6, "tempo": "4-5 allers-retours, pause entre chaque"},
     {"activityID": "squats",     "minutes": 3, "tempo": "~10 squats × 2, bien poussés dans les talons"},
-    {"activityID": "stretching", "minutes": 4, "tempo": "Jambes surtout : mollets, cuisses, ~30 s chacun"}]}
+    {"activityID": "stretching", "minutes": 4, "tempo": "Jambes surtout : mollets, cuisses, ~30 s chacun"}]},
+  {"id": "legs_day",         "title": "Spécial jambes",       "emoji": "🦵", "steps": [
+    {"activityID": "squats",         "minutes": 3, "tempo": "~10 squats × 2, tranquilles"},
+    {"activityID": "lunges",         "minutes": 3, "tempo": "~8 fentes par jambe, en alternant"},
+    {"activityID": "wall_sit",       "minutes": 2, "tempo": "2-3 tenues de ~30 s, repos entre chaque"},
+    {"activityID": "stretching",     "minutes": 3, "tempo": "Cuisses et mollets, ~30 s chacun"}]},
+  {"id": "gentle_cardio",    "title": "Cardio tout doux",     "emoji": "💓", "steps": [
+    {"activityID": "march_in_place", "minutes": 4, "tempo": "Rythme régulier, accélère sur la fin si ça va"},
+    {"activityID": "shadow_boxing",  "minutes": 3, "tempo": "Séries de ~20 coups, pause quand tu veux"},
+    {"activityID": "high_knees",     "minutes": 3, "tempo": "3 × ~40 s, repos entre les séries"},
+    {"activityID": "stretching",     "minutes": 3, "tempo": "Épaules et jambes, ~30 s par étirement"}]},
+  {"id": "morning_mobility", "title": "Souplesse & mobilité", "emoji": "🌀", "steps": [
+    {"activityID": "mobility",       "minutes": 5, "tempo": "Chaque articulation y passe : ~30 s par zone"},
+    {"activityID": "yoga",           "minutes": 5, "tempo": "2-3 postures douces, 4-5 respirations chacune"},
+    {"activityID": "stretching",     "minutes": 4, "tempo": "Termine par le dos et la nuque, lentement"}]}
 ]
