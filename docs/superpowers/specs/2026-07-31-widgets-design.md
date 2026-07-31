@@ -74,7 +74,7 @@ Fire and forget : si l'écriture échoue, le widget garde le snapshot précéden
 
 Tous suivent la palette du snapshot et la règle **zéro rouge** : en dépassement, l'anneau passe à `accent` (chaleureux) avec le même « ~X / Y kcal », exactement comme `CalorieRingCard`. Textes sans tiret cadratin ni point médian (conventions v1.1/v1.2).
 
-- **Petit (`systemSmall`)** : anneau calories (~mangé / objectif) + pastille « Niv. N ». Tap → app (accueil).
+- **Petit (`systemSmall`)** : anneau calories (~mangé / objectif) + pastille « NIVEAU N » (libellé aligné sur la levelPill de l'accueil ; l'accessoire rectangulaire, plus étroit, garde « Niv. N »). Tap → app (accueil).
 - **Moyen (`systemMedium`)** : gauche = anneau + niveau et progression XP ; droite = Nivelito statique (expression portée par l'entrée de timeline, §4.2 : `sleepy` de 22 h à 7 h, sinon `happy` — même règle que l'accueil) + bulle courte (message du créneau) ; zone « + Repas » (`Link`) → `nivel://log-meal`.
 - **Écran verrouillé** : `accessoryCircular` = `Gauge` kcal (rendu monochrome système) ; `accessoryRectangular` = « ~850 / 1 800 kcal » + « Niv. 3 ». Kcal visibles sur l'écran verrouillé : choix assumé (comme les anneaux Activité d'Apple), c'est l'utilisateur qui décide d'ajouter le widget là.
 
