@@ -10,6 +10,8 @@
 
 **Branche : créer `feat/exercise-timer` depuis `main`.**
 
+> **Note post-exécution (reviews)** : le code livré dévie du plan sur trois points, tous des améliorations validées en review : `TimerControls` a été scindé en `TimerTimeLabel` + `TimerButtons` (ce dernier sans paramètre `now`, actions sur horloge réelle) ; le signal de pulse est un flux d'état `onTimerFinishedChanged: (Bool) -> Void` dérivé de `isFinished` (pas un latch événementiel) ; `ActivityLogSheet` promeut le détent à `.large` à la sélection d'une durée. Le code fait foi.
+
 ### Task 0 : Branche
 
 - [ ] `cd /Users/mbernard/perso/Nivel && git checkout -b feat/exercise-timer`

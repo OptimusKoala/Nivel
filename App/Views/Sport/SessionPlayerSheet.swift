@@ -79,6 +79,9 @@ struct SessionPlayerSheet: View {
         .presentationCornerRadius(28)
         .presentationDragIndicator(.visible)
         .onChange(of: page) { pulsingCTA = false }
+        // Filet racine (spec §10) : le dismiss de la sheet relâche l'écran quoi qu'il
+        // arrive aux pages enfants — symétrique d'ActivityLogSheet.
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
 
     // MARK: Progression

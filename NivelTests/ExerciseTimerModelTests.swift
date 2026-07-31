@@ -94,5 +94,8 @@ final class ExerciseTimerModelTests: XCTestCase {
         // Accord singulier/pluriel de la formulation vocale (VoiceOver).
         XCTAssertEqual(TimerTimeLabel.spokenRemaining(60), "1 minute restante")
         XCTAssertEqual(TimerTimeLabel.spokenRemaining(1), "1 seconde restante")
+        // Pluriel composé (accord sur le total) et clause secondes omise à zéro.
+        XCTAssertEqual(TimerTimeLabel.spokenRemaining(180), "3 minutes restantes")
+        XCTAssertEqual(TimerTimeLabel.spokenRemaining(90), "1 minute 30 secondes restantes")
     }
 }
