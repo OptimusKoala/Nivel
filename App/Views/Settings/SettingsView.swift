@@ -406,7 +406,7 @@ private struct ThemeSwatchCard: View {
             )
             .overlay(alignment: .topTrailing) {
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image("Icons/icon_check")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Theme.orange)
                         .background(Circle().fill(Theme.card))

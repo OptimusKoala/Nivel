@@ -224,7 +224,7 @@ struct HomeView: View {
             Button {
                 showSettings = true
             } label: {
-                Image(systemName: "gearshape.fill")
+                Image("Icons/icon_settings")
             }
             .buttonStyle(CircleIconButtonStyle())
             .accessibilityLabel("Réglages")

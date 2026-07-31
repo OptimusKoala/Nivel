@@ -458,7 +458,7 @@ private struct PermissionsPage: View {
             }
             Spacer()
             if asked {
-                Image(systemName: "checkmark.circle.fill")
+                Image("Icons/icon_check")
                     .font(.title2)
                     .foregroundStyle(Theme.green)
             } else {

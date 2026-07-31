@@ -166,7 +166,7 @@ struct SessionPlayerSheet: View {
                     .disabled(isSaving)
                     .gentlePulse(pulsingCTA, reduceMotion: reduceMotion)
             case .alreadyDone:
-                Label("Déjà faite", systemImage: "checkmark.circle.fill")
+                Label("Déjà faite", image: "Icons/icon_check")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(Theme.green)
                     .frame(maxWidth: .infinity)

@@ -122,27 +122,27 @@ struct TimerButtons: View {
             HStack(spacing: 10) {
                 if timer.isIdle {
                     Button { timer.start() } label: {
-                        Label("Lancer le timer", systemImage: "play.fill")
+                        Label("Lancer le timer", image: "Icons/icon_play")
                     }
                     .buttonStyle(PrimaryButtonStyle(size: .compact))
                     .frame(minWidth: 130)
                 } else if timer.isRunning {
                     Button { timer.pause() } label: {
-                        Label("Pause", systemImage: "pause.fill")
+                        Label("Pause", image: "Icons/icon_pause")
                     }
                     .buttonStyle(SecondaryButtonStyle())
                     .frame(minWidth: 130, minHeight: 44)
                     .contentShape(Rectangle())
                 } else if timer.isPaused {
                     Button { timer.resume() } label: {
-                        Label("Reprendre", systemImage: "play.fill")
+                        Label("Reprendre", image: "Icons/icon_play")
                     }
                     .buttonStyle(PrimaryButtonStyle(size: .compact))
                     .frame(minWidth: 130)
                 }
                 if !timer.isIdle {
                     Button { timer.reset() } label: {
-                        Label("Recommencer", systemImage: "arrow.counterclockwise")
+                        Label("Recommencer", image: "Icons/icon_restart")
                     }
                     .buttonStyle(SecondaryButtonStyle())
                     .frame(minHeight: 44)
