@@ -264,13 +264,13 @@ struct TimerRingView: View {
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.3), value: fraction)
+                .animation(.linear(duration: 1), value: fraction)
             if let segments, segments >= 2 {
                 ForEach(1..<segments, id: \.self) { index in
                     Capsule()
                         .fill(Theme.background)
                         .frame(width: 4, height: lineWidth + 6)
-                        .offset(y: -size / 2 + lineWidth / 2)
+                        .offset(y: -size / 2)
                         .rotationEffect(.degrees(Double(index) / Double(segments) * 360))
                 }
             }
@@ -301,7 +301,8 @@ struct TimerControls: View {
                         .contentTransition(.numericText())
                 }
             }
-            .font(.system(size: 34, weight: .heavy, design: .rounded))
+            .font(.system(.largeTitle, design: .rounded).weight(.heavy))   // scale en Dynamic Type (spec §7)
+            .minimumScaleFactor(0.7)
             .monospacedDigit()
             .accessibilityLabel(timer.isFinished ? "Terminé, bien joué" : Self.spokenRemaining(timer.remaining(at: now)))
 
