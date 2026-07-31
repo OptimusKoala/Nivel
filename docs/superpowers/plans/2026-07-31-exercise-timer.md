@@ -422,7 +422,7 @@ avec `@Environment(\.accessibilityReduceMotion) private var reduceMotion`.
 - Modify: `project.yml` (1.4/5 → 1.5/6)
 
 - [ ] **Step 1 : Bump** — `CFBundleShortVersionString: "1.5"`, `CFBundleVersion: "6"`, puis `xcodegen generate`.
-- [ ] **Step 2 : Suites complètes** — NivelCore **51** + app **41**, tout vert.
+- [ ] **Step 2 : Suites complètes** — NivelCore **51** + app **46**, tout vert (comptes finaux après les fixes de reviews).
 - [ ] **Step 3 : Vérification simulateur (recommandée)** — player wake_up : étape gainage (graduations ×3 visibles), Lancer → l'anneau progresse, Pause/Reprendre, fin → vert + « Bien joué ! » + pulse d'« Étape suivante » ; séance déjà faite → timer utilisable, pas de pulse ; ActivityLogSheet planche 4 min → anneau 180pt après choix de durée. Vérifier que l'écran ne se verrouille pas timer lancé, et se reverrouille après.
 - [ ] **Step 4 : Commit** — `git add -A && git commit -m "chore: version 1.5 (build 6)"`
 
