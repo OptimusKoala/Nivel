@@ -93,4 +93,70 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         XCTAssertEqual(entries.first { $0.date == date(hour: 22) }?.expression, .sleepy)
         XCTAssertEqual(entries.first { $0.date == date(hour: 7, day: 32) }?.expression, .happy)
     }
+
+    // MARK: - Messages
+
+    /// Créneau d'une entrée : nuit (< 7 h) et soirée partagent le pool du soir —
+    /// pas de « bonjour » à minuit (spec widgets §4.2).
+    func testSlotBoundaries() {
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 0), .evening)
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 6), .evening)
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 7), .morning)
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 11), .morning)
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 12), .midday)
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 17), .midday)
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 18), .evening)
+        XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 23), .evening)
+    }
+
+    /// L'index est stable pour (jour, créneau) et borné par count.
+    func testMessageIndexDeterministicAndBounded() {
+        for day in [-3, 0, 1, 42] {
+            for slot in 0...2 {
+                let a = WidgetTimelinePlanner.messageIndex(dayIndex: day, slot: slot, count: 7)
+                let b = WidgetTimelinePlanner.messageIndex(dayIndex: day, slot: slot, count: 7)
+                XCTAssertEqual(a, b)
+                XCTAssertTrue((0..<7).contains(a))
+            }
+        }
+    }
+
+    /// Des jours consécutifs parcourent le pool (rotation, pas un message figé).
+    func testMessageIndexRotatesAcrossDays() {
+        let indices = (0..<5).map {
+            WidgetTimelinePlanner.messageIndex(dayIndex: $0, slot: 0, count: 7)
+        }
+        XCTAssertTrue(Set(indices).count > 1)
+    }
+
+    func testEntriesSubstituteNameAndNeverLeavePlaceholders() {
+        let entries = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 9),
+                                                    bank: bank, calendar: calendar)
+        for entry in entries {
+            XCTAssertFalse(entry.message.isEmpty)
+            XCTAssertFalse(entry.message.contains("{name}"), entry.message)
+            XCTAssertFalse(entry.message.contains("{value}"), entry.message)
+        }
+    }
+
+    func testSameDaySameSlotSameMessage() {
+        let a = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 9),
+                                              bank: bank, calendar: calendar)
+        let b = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 10),
+                                              bank: bank, calendar: calendar)
+        // L'entrée de 12 h est présente dans les deux : même jour, même créneau, même message.
+        XCTAssertEqual(a.first { $0.date == date(hour: 12) }?.message,
+                       b.first { $0.date == date(hour: 12) }?.message)
+    }
+
+    /// Garde à la source (leçon v1.3) : les pools consommés par le widget ne
+    /// contiennent JAMAIS `{value}` — le planner n'a pas de valeur à substituer.
+    func testWidgetPoolsContainNoValuePlaceholder() {
+        for context in [MessageContext.morning, .midday, .evening, .fun] {
+            for message in bank.messages(for: context) {
+                XCTAssertFalse(message.text.contains("{value}"),
+                               "\(context) / \(message.id) contient {value}")
+            }
+        }
+    }
 }

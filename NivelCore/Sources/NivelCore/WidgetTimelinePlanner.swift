@@ -54,7 +54,7 @@ public enum WidgetTimelinePlanner {
             kcalEaten: isNewDay ? 0 : snapshot.kcalEaten,
             kcalTarget: snapshot.kcalTarget,
             totalXP: snapshot.totalXP,
-            message: "",
+            message: message(at: date, snapshot: snapshot, bank: bank, calendar: calendar),
             expression: expression(hour: hour),
             themeID: snapshot.themeID,
             userName: snapshot.userName
@@ -64,5 +64,43 @@ public enum WidgetTimelinePlanner {
     /// Même règle que l'accueil (`HomeView.nivelitoExpression`) : nuit de 22 h à 7 h.
     static func expression(hour: Int) -> WidgetEntry.Expression {
         (hour >= 22 || hour < 7) ? .sleepy : .happy
+    }
+
+    /// Créneau de messages d'une entrée — nuit (< 7 h) : pool du soir.
+    enum Slot: Int, Equatable { case morning = 0, midday = 1, evening = 2 }
+
+    static func slot(hour: Int) -> Slot {
+        if hour < 7 { return .evening }
+        if hour < 12 { return .morning }
+        if hour < 18 { return .midday }
+        return .evening
+    }
+
+    /// Index déterministe dans le pool, seedé sur (jour, créneau) — même principe
+    /// que DailySessionPicker : stable, aucun aléatoire, modulo positif.
+    static func messageIndex(dayIndex: Int, slot: Int, count: Int) -> Int {
+        guard count > 0 else { return 0 }
+        let seed = dayIndex &* 31 &+ slot &* 7
+        return ((seed % count) + count) % count
+    }
+
+    static func message(at date: Date, snapshot: WidgetSnapshot,
+                        bank: MessageBank, calendar: Calendar) -> String {
+        let slot = slot(hour: calendar.component(.hour, from: date))
+        let context: MessageContext = switch slot {
+        case .morning: .morning
+        case .midday: .midday
+        case .evening: .evening
+        }
+        let pool = bank.messages(for: context) + bank.messages(for: .fun)
+        guard !pool.isEmpty else { return "Salut \(snapshot.userName) !" }
+        // Même référence fixe que la séance du jour (01/01/2026, interne au module).
+        let dayIndex = calendar.dateComponents(
+            [.day],
+            from: DailySessionPicker.referenceDay(calendar: calendar),
+            to: calendar.startOfDay(for: date)
+        ).day ?? 0
+        let chosen = pool[messageIndex(dayIndex: dayIndex, slot: slot.rawValue, count: pool.count)]
+        return chosen.text.replacingOccurrences(of: "{name}", with: snapshot.userName)
     }
 }
