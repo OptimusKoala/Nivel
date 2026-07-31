@@ -147,12 +147,6 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         }
     }
 
-    /// Parité avec DailySessionPickerTests : count non positif → 0 (pas de crash).
-    func testMessageIndexWithNonPositiveCountReturnsZero() {
-        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(dayIndex: 5, slot: 1, count: 0), 0)
-        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(dayIndex: 5, slot: 1, count: -1), 0)
-    }
-
     // MARK: - Messages
 
     /// Créneau d'une entrée : nuit (< 7 h) et soirée partagent le pool du soir —
@@ -168,24 +162,67 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         XCTAssertEqual(WidgetTimelinePlanner.slot(hour: 23), .evening)
     }
 
-    /// L'index est stable pour (jour, créneau) et borné par count.
+    /// L'index est stable et borné pour la même heure absolue.
     func testMessageIndexDeterministicAndBounded() {
-        for day in [-3, 0, 1, 42] {
-            for slot in 0...2 {
-                let a = WidgetTimelinePlanner.messageIndex(dayIndex: day, slot: slot, count: 7)
-                let b = WidgetTimelinePlanner.messageIndex(dayIndex: day, slot: slot, count: 7)
-                XCTAssertEqual(a, b)
-                XCTAssertTrue((0..<7).contains(a))
+        for hours in [-25, 0, 1, 24, 1_000] {
+            let a = WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours, count: 7)
+            let b = WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours, count: 7)
+            XCTAssertEqual(a, b)
+            XCTAssertTrue((0..<7).contains(a))
+        }
+    }
+
+    /// Le seed avance de 1 par heure : deux heures consécutives ne coïncident
+    /// JAMAIS, quel que soit le pool (>= 2) — y compris 23 h vers 0 h, la
+    /// collision systématique qu'un seed (jour, créneau) multiplié aurait créée
+    /// (spec vivant §3).
+    func testConsecutiveHoursNeverCollide() {
+        for count in [2, 25, 26] {
+            for hours in [0, 23, 47, 500] {
+                XCTAssertNotEqual(
+                    WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours, count: count),
+                    WidgetTimelinePlanner.messageIndex(hoursSinceReference: hours + 1, count: count),
+                    "count \(count), heure \(hours)")
             }
         }
     }
 
-    /// Des jours consécutifs parcourent le pool (rotation, pas un message figé).
-    func testMessageIndexRotatesAcrossDays() {
-        let indices = (0..<5).map {
-            WidgetTimelinePlanner.messageIndex(dayIndex: $0, slot: 0, count: 7)
+    /// La même heure d'un jour à l'autre change aussi (delta 24, non multiple
+    /// des tailles de pools actuelles 25/26). Si un futur pool devient multiple
+    /// de 24, ce test le signalera : c'est voulu (spec vivant §7).
+    func testSameHourNextDayDiffers() {
+        for context in [MessageContext.morning, .midday, .evening] {
+            let count = bank.messages(for: context).count + bank.messages(for: .fun).count
+            XCTAssertNotEqual(24 % count, 0, "pool \(context) de taille \(count)")
         }
-        XCTAssertTrue(Set(indices).count > 1)
+    }
+
+    /// Parité avec DailySessionPickerTests : count non positif renvoie 0 (pas de crash).
+    func testMessageIndexWithNonPositiveCountReturnsZero() {
+        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(hoursSinceReference: 5, count: 0), 0)
+        XCTAssertEqual(WidgetTimelinePlanner.messageIndex(hoursSinceReference: 5, count: -1), 0)
+    }
+
+    /// Pinne explicitement la non-collision de minuit sur une VRAIE timeline :
+    /// l'entrée de 23 h et celle de minuit portent des messages différents.
+    func testMidnightEntryDiffersFromElevenPM() {
+        let entries = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 21),
+                                                    bank: bank, calendar: calendar)
+        let elevenPM = entries.first { $0.date == date(hour: 23) }!
+        let midnight = entries.first {
+            $0.date == calendar.startOfDay(for: date(hour: 0, day: 32))
+        }!
+        XCTAssertNotEqual(elevenPM.message, midnight.message)
+    }
+
+    /// Deux heures consécutives d'une vraie timeline (même pool du matin)
+    /// portent des messages différents.
+    func testHourlyEntriesRotateWithinASlot() {
+        let entries = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 8),
+                                                    bank: bank, calendar: calendar)
+        let nine = entries.first { $0.date == date(hour: 9) }!
+        let ten = entries.first { $0.date == date(hour: 10) }!
+        XCTAssertNotEqual(nine.message, ten.message)
     }
 
     func testEntriesSubstituteNameAndNeverLeavePlaceholders() {
@@ -200,12 +237,12 @@ final class WidgetTimelinePlannerTests: XCTestCase {
         XCTAssertTrue(entries.contains { $0.message.contains("Michaël") })
     }
 
-    func testSameDaySameSlotSameMessage() {
+    func testSameDaySameHourSameMessage() {
         let a = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 9),
                                               bank: bank, calendar: calendar)
         let b = WidgetTimelinePlanner.entries(snapshot: snapshot(), from: date(hour: 10),
                                               bank: bank, calendar: calendar)
-        // L'entrée de 12 h est présente dans les deux : même jour, même créneau, même message.
+        // L'entrée de 12 h est présente dans les deux : même jour, même heure, même message.
         XCTAssertEqual(a.first { $0.date == date(hour: 12) }?.message,
                        b.first { $0.date == date(hour: 12) }?.message)
     }

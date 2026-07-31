@@ -28,12 +28,11 @@ public struct WidgetEntry: Equatable, Sendable {
     }
 }
 
-/// Planification PURE des entrées de la journée : une entrée par heure pleine
-/// (spec vivant §3 ; le message tourne encore par créneau, une phrase différente
-/// à chaque heure arrive avec le seed horaire absolu de la Task 2), passage en
-/// sleepy (22 h), bascule de minuit (kcal remises à 0) et réveil (7 h du
-/// lendemain). Une entrée WidgetKit est rendue à l'avance : chaque moment où
-/// l'apparence doit changer exige sa propre entrée.
+/// Planification PURE des entrées de la journée : une entrée par heure pleine,
+/// phrase différente à chaque heure (seed horaire absolu, spec vivant §3),
+/// passage en sleepy (22 h), bascule de minuit (kcal remises à 0) et réveil
+/// (7 h du lendemain). Une entrée WidgetKit est rendue à l'avance : chaque
+/// moment où l'apparence doit changer exige sa propre entrée.
 public enum WidgetTimelinePlanner {
     public static func entries(snapshot: WidgetSnapshot, from: Date,
                                bank: MessageBank, calendar: Calendar) -> [WidgetEntry] {
@@ -89,11 +88,9 @@ public enum WidgetTimelinePlanner {
         (hour >= 22 || hour < 7) ? .sleepy : .happy
     }
 
-    /// Créneau de messages d'une entrée — nuit (< 7 h) : pool du soir. `rawValue`
-    /// Int STABLE utilisé comme composante du seed de `messageIndex` : ne PAS le
-    /// coupler à l'ordre de déclaration de `MessageContext`, qu'un réordonnancement
-    /// de ce dernier remélangerait silencieusement.
-    enum Slot: Int, Equatable { case morning = 0, midday = 1, evening = 2 }
+    /// Créneau de messages d'une entrée (choix du POOL uniquement : le seed est
+    /// l'heure absolue) — nuit (< 7 h) : pool du soir.
+    enum Slot: Equatable { case morning, midday, evening }
 
     /// Avant 7 h, le pool du soir peut évoquer le dîner : fenêtre étroite et
     /// assumée, l'entrée affichée la nuit est normalement celle de minuit (le
@@ -105,12 +102,13 @@ public enum WidgetTimelinePlanner {
         return .evening
     }
 
-    /// Index déterministe dans le pool, seedé sur (jour, créneau) — même principe
-    /// que DailySessionPicker : stable, aucun aléatoire, modulo positif.
-    static func messageIndex(dayIndex: Int, slot: Int, count: Int) -> Int {
+    /// Index déterministe dans le pool, seedé sur l'heure ABSOLUE (heures écoulées
+    /// depuis la référence fixe partagée avec DailySessionPicker). Le seed avance
+    /// de 1 par heure : deux heures consécutives d'un même pool ne coïncident
+    /// jamais, y compris 23 h vers 0 h (spec vivant §3). Modulo positif.
+    static func messageIndex(hoursSinceReference: Int, count: Int) -> Int {
         guard count > 0 else { return 0 }
-        let seed = dayIndex &* 31 &+ slot &* 7
-        return ((seed % count) + count) % count
+        return ((hoursSinceReference % count) + count) % count
     }
 
     static func message(at date: Date, snapshot: WidgetSnapshot,
@@ -124,9 +122,11 @@ public enum WidgetTimelinePlanner {
         let pool = bank.messages(for: context) + bank.messages(for: .fun)
         // Pré-condition : pool non vide — garanti par le catalogue
         // (MessageBankTests.testBankHasAllContextsWithEnoughVariety, >= 12 par contexte).
-        // Même référence fixe que la séance du jour (01/01/2026, partagée via DailySessionPicker).
-        let dayIndex = DailySessionPicker.dayIndex(for: date, calendar: calendar)
-        let chosen = pool[messageIndex(dayIndex: dayIndex, slot: slot.rawValue, count: pool.count)]
+        // Heure absolue depuis la référence fixe (01/01/2026) : une phrase
+        // différente à chaque heure, la même sur les deux iPhones.
+        let hoursSinceReference = DailySessionPicker.dayIndex(for: date, calendar: calendar) &* 24
+            &+ calendar.component(.hour, from: date)
+        let chosen = pool[messageIndex(hoursSinceReference: hoursSinceReference, count: pool.count)]
         return chosen.text.replacingOccurrences(of: "{name}", with: snapshot.userName)
     }
 }
