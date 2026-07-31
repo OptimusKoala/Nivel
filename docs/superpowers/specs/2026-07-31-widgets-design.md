@@ -52,10 +52,10 @@ Nivel s'invite sur l'écran d'accueil et l'écran verrouillé : d'un coup d'œil
 
 Fonction pure `entries(snapshot:from:bank:calendar:) -> [WidgetEntry]` — `bank` est la `MessageBank` (le provider du widget la charge, le planner reste pur et testable). `WidgetEntry` est une struct pure : date, kcalEaten, kcalTarget, totalXP, texte du message, **expression de Nivelito** (`sleepy`/`happy`, dérivée de la date de l'entrée — règle de l'accueil : ≥ 22 h ou < 7 h), themeID, userName. Règles :
 
-- **Bornes d'entrées** : `from`, puis chaque borne restante parmi **12 h, 18 h, 22 h** et **minuit**. 12 h/18 h suivent les créneaux de messages de `GameService.homeMessageContext` (matin < 12 h, midi < 18 h, soir ≥ 18 h) ; 22 h existe pour que Nivelito passe en `sleepy` sans attendre minuit (une entrée de timeline est rendue à l'avance, la vue ne peut pas changer d'expression sans nouvelle entrée).
+- **Bornes d'entrées** : `from`, puis chaque borne restante parmi **12 h, 18 h, 22 h, minuit** et **7 h du lendemain**. 12 h/18 h suivent les créneaux de messages de `GameService.homeMessageContext` (matin < 12 h, midi < 18 h, soir ≥ 18 h) ; 22 h et 7 h existent pour que l'expression de Nivelito bascule au bon moment (une entrée de timeline est rendue à l'avance, la vue ne peut pas changer d'expression sans nouvelle entrée).
 - **Bascule de minuit** : les entrées dont la date dépasse le jour de `dayKey` affichent `kcalEaten = 0` (nouveau jour), XP/niveau conservés. L'anneau ne montre jamais les kcal d'hier.
-- **Choix du message** : pool = `messages(context du créneau)` + `messages(.fun)` ; index déterministe seedé sur (jour, créneau) — même principe que `DailySessionPicker` : stable, pas de `Date.now`, pas d'aléatoire. `{name}` substitué par `userName`. L'entrée de 22 h garde le pool du soir.
-- La timeline se termine sur l'entrée de minuit ; politique de rechargement « after » le prochain matin (7 h) pour reprendre la rotation même app fermée.
+- **Choix du message** : pool = `messages(context du créneau)` + `messages(.fun)` ; index déterministe seedé sur (jour, créneau) — même principe que `DailySessionPicker` : stable, pas de `Date.now`, pas d'aléatoire. `{name}` substitué par `userName`. Les entrées de 22 h ET de minuit gardent le pool du soir (pas de « bonjour » à 0 h) ; celle de 7 h passe au pool du matin.
+- La timeline se termine sur l'entrée de 7 h du lendemain (matin, `happy`) ; politique de rechargement « after » cette dernière entrée pour reprendre la rotation même app fermée.
 
 ## 5. Synchronisation côté app — `WidgetSync`
 
@@ -64,6 +64,8 @@ Petit service de l'app (pas de protocole, pas d'abstraction) : construit le `Wid
 1. **après chaque mutation persistée de `GameService`** — un crochet unique au point de sauvegarde (`saveOrAssert`), pas un appel dispersé dans chaque méthode. Couvre aussi la clôture de journée (`DayCloser` sauvegarde via `GameService`). Plusieurs écritures par action utilisateur (ex. `logMeal` sauvegarde deux fois) : sans importance, l'écriture est idempotente et `reloadTimelines` depuis l'app au premier plan n'est pas soumis au budget de rafraîchissement ;
 2. **au changement de thème** (Réglages) ;
 3. **au retour au premier plan** de l'app — rattrape tout le reste (minuit passé app fermée, quêtes du lundi…).
+
+`WidgetSync` ne fait rien tant que l'onboarding n'est pas terminé (pas de profil → pas de snapshot) : le widget reste sur son état d'accueil (§9).
 
 Fire and forget : si l'écriture échoue, le widget garde le snapshot précédent — jamais d'erreur visible.
 
