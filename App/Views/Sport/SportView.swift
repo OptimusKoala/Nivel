@@ -58,7 +58,7 @@ struct SportView: View {
         .onAppear(perform: reload)
         .sheet(isPresented: $showSessionDetail, onDismiss: reload) {
             if let status = sessionStatus {
-                SessionDetailSheet(session: status.session, done: status.done)
+                SessionPlayerSheet(session: status.session, done: status.done)
             }
         }
         .sheet(item: $selectedActivity, onDismiss: reload) { activity in

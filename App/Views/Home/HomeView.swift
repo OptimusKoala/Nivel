@@ -136,7 +136,7 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showSessionDetail, onDismiss: refreshSessionStatus) {
             if let status = sessionStatus {
-                SessionDetailSheet(session: status.session, done: status.done)
+                SessionPlayerSheet(session: status.session, done: status.done)
             }
         }
     }

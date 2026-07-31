@@ -11,9 +11,9 @@
 		13007E67FB6C5D21D8A723AE /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EACEDF64B0B6576809396B1 /* NivelitoShapes.swift */; };
 		13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD0D49D1E0B2314767BA85A /* DayCloser.swift */; };
 		1B36CC033AB07BEB581D664D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9782153DD5F0B9BABA5132F1 /* Theme.swift */; };
-		337E23B682E798CD2172D36A /* SessionDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE83D25304F28493A61E2BD4 /* SessionDetailSheet.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
 		43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */; };
+		44E73F722094C06855E93916 /* SessionPlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */; };
 		4CE4E454AA136D82709CEB76 /* ActivityLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */; };
 		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
@@ -24,6 +24,7 @@
 		5A7B97883F447747C5AC4269 /* GameService+Sport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6909EF00448EC3D59E1F1401 /* GameService+Sport.swift */; };
 		5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67EB506351740B5EC992E309 /* AppSmokeTests.swift */; };
 		61E2605647D0942C07D4ED9D /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7900354E6B00D231F84DEFD2 /* SplashView.swift */; };
+		6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */; };
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
 		7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75615282503FC8044658A28 /* DayCloserTests.swift */; };
 		75ADB553C3E21774DAF18E6A /* XPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D37C5B43BABA7C97A669DA /* XPBar.swift */; };
@@ -78,6 +79,7 @@
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
+		50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerSheet.swift; sourceTree = "<group>"; };
 		586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAssetsTests.swift; sourceTree = "<group>"; };
 		5A3D92F71CC93D99201C361E /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
 		671D6B6E3581A479FFED40C2 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -104,10 +106,10 @@
 		C923A46DDC21834AB6E06D1B /* NivelitoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoView.swift; sourceTree = "<group>"; };
 		C9AB33328B42B0A39E65B608 /* NivelTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9245CF3C47048DB9D88C2E5 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
-		DE83D25304F28493A61E2BD4 /* SessionDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailSheet.swift; sourceTree = "<group>"; };
 		DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesChart.swift; sourceTree = "<group>"; };
 		DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestsView.swift; sourceTree = "<group>"; };
 		E59866C500AE8AE430E9AE18 /* StepsChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsChart.swift; sourceTree = "<group>"; };
+		E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerTests.swift; sourceTree = "<group>"; };
 		EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServiceTests.swift; sourceTree = "<group>"; };
 		F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -129,7 +131,7 @@
 			children = (
 				F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */,
 				7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */,
-				DE83D25304F28493A61E2BD4 /* SessionDetailSheet.swift */,
+				50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */,
 				A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */,
 				4542B7EDA424C2DF0AF4CD23 /* SportView.swift */,
 			);
@@ -267,6 +269,7 @@
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
 				C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */,
+				E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */,
 				586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */,
 				2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */,
 				4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */,
@@ -429,7 +432,7 @@
 				D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */,
 				7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */,
 				CA44B39964325597C05E92A6 /* RootView.swift in Sources */,
-				337E23B682E798CD2172D36A /* SessionDetailSheet.swift in Sources */,
+				44E73F722094C06855E93916 /* SessionPlayerSheet.swift in Sources */,
 				4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */,
 				8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */,
 				61E2605647D0942C07D4ED9D /* SplashView.swift in Sources */,
@@ -452,6 +455,7 @@
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
 				43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */,
+				6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */,
 				77B49E3992CE52CA8BD6F01A /* SportAssetsTests.swift in Sources */,
 				846FB76C89B63E0E8EA18B9F /* SportServiceTests.swift in Sources */,
 				54F0635AFE571DA500073C77 /* ThemeStoreTests.swift in Sources */,
