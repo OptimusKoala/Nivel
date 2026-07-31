@@ -364,7 +364,11 @@ git add -A && git commit -m "feat(app): vignettes illustrées (SportIllustration
 Dans le `VStack` du `ScrollView`, remplacer l'en-tête actuel (emoji 40pt + nom) par :
 
 ```swift
-                    SportHeroIllustration(name: activity.id, fallbackEmoji: activity.emoji)
+                    // Spec §5.2 : illustration MOYENNE ~140pt centrée (pas le héro 280pt du player,
+                    // qui pousserait les boutons de durée sous le pli au détent .medium).
+                    SportIllustration(name: activity.id, fallbackEmoji: activity.emoji,
+                                      size: 140, cornerRadius: 20)
+                        .frame(maxWidth: .infinity, alignment: .center)
                     Text(activity.name)
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.text)
