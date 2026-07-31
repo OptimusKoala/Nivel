@@ -121,24 +121,32 @@ struct TimerButtons: View {
 
             HStack(spacing: 10) {
                 if timer.isIdle {
-                    Button("Lancer le timer") { timer.start() }
-                        .buttonStyle(PrimaryButtonStyle(size: .compact))
-                        .frame(minWidth: 130)
+                    Button { timer.start() } label: {
+                        Label("Lancer le timer", systemImage: "play.fill")
+                    }
+                    .buttonStyle(PrimaryButtonStyle(size: .compact))
+                    .frame(minWidth: 130)
                 } else if timer.isRunning {
-                    Button("Pause") { timer.pause() }
-                        .buttonStyle(SecondaryButtonStyle())
-                        .frame(minWidth: 130, minHeight: 44)
-                        .contentShape(Rectangle())
+                    Button { timer.pause() } label: {
+                        Label("Pause", systemImage: "pause.fill")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .frame(minWidth: 130, minHeight: 44)
+                    .contentShape(Rectangle())
                 } else if timer.isPaused {
-                    Button("Reprendre") { timer.resume() }
-                        .buttonStyle(PrimaryButtonStyle(size: .compact))
-                        .frame(minWidth: 130)
+                    Button { timer.resume() } label: {
+                        Label("Reprendre", systemImage: "play.fill")
+                    }
+                    .buttonStyle(PrimaryButtonStyle(size: .compact))
+                    .frame(minWidth: 130)
                 }
                 if !timer.isIdle {
-                    Button("Recommencer") { timer.reset() }
-                        .buttonStyle(SecondaryButtonStyle())
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
+                    Button { timer.reset() } label: {
+                        Label("Recommencer", systemImage: "arrow.counterclockwise")
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
             }
         }
