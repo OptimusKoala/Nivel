@@ -36,11 +36,9 @@ struct NivelitoView: View {
     @State private var microWink = false
     @State private var isCelebrating = false
 
-    // Palette du SVG — les couleurs de Nivelito sont FIXES (identité de la
-    // mascotte) : sa fourrure reste orange quel que soit le thème choisi.
-    // Elles vivent dans `NivelitoColors` (Shared), partagées avec le widget.
-    // Le contour/yeux/truffe/bouche restent Theme.outline, identique dans
-    // les 4 palettes (bordeaux #3A1220).
+    // Couleurs fixes de la mascotte : NivelitoColors (Shared/NivelitoShapes.swift).
+    // Le contour/yeux/truffe/bouche suivent Theme.outline, identique dans les
+    // 4 palettes (bordeaux #3A1220).
 
     private var scale: CGFloat { size / 200 }
     private var outlineStyle: StrokeStyle {

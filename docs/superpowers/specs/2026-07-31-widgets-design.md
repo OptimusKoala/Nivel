@@ -32,6 +32,7 @@ Nivel s'invite sur l'écran d'accueil et l'écran verrouillé : d'un coup d'œil
 
 - **`ThemePalette`** : la struct existe déjà dans `App/Theme.swift` (couleurs en dur, aucun asset) — elle est déplacée telle quelle dans `Shared/ThemePalette.swift` avec le helper `Color(hex:)`. La façade `Theme.*` et `ThemeStore` restent dans l'app, inchangées. Le widget résout sa palette depuis le `themeID` du snapshot (fallback Crème si id inconnu).
 - **`NivelitoShapes`** (+ ses dépendances minimales, ex. l'enum d'expression) : déplacé de `App/Nivelito/` vers `Shared/` pour dessiner Nivelito en vectoriel dans le widget moyen. `NivelitoView` (micro-gestes d'idle, animations) reste dans l'app — le widget affiche un Nivelito statique.
+  - *Déviation assumée (Task 4)* : seules les formes et les couleurs fixes (`NivelitoColors`) sont partagées. `NivelitoExpression` (5 cas, dont `joy`/`wink`/`encouraging` qui n'existent que pour les animations de l'app) **reste dans l'app** : le widget consomme `WidgetEntry.Expression` de NivelCore, qui ne connaît que `happy`/`sleepy`. Aucune dépendance à déplacer, la Task 7 n'a pas à rouvrir ce point.
 - Règle : `Shared/` ne contient QUE du code compilable sans SwiftData ni services.
 
 ## 4. NivelCore — snapshot et planner (logique pure, testée `swift test`)

@@ -1,4 +1,6 @@
 // Shared/Formatting.swift
+// Formatage partagé app et widget : groupement français des nombres.
+
 import Foundation
 
 extension Int {
