@@ -80,6 +80,20 @@ final class ActivityCatalogTests: XCTestCase {
         }
     }
 
+    func testSegmentsDecodeWhenPresentAndNilOtherwise() throws {
+        let sessions = try Catalogs.sessions()
+        let wakeUp = try XCTUnwrap(sessions.first { $0.id == "wake_up" })
+        XCTAssertEqual(wakeUp.steps.map(\.segments), [2, 3, 3])           // stretching, squats, plank
+        let freshAir = try XCTUnwrap(sessions.first { $0.id == "fresh_air" })
+        XCTAssertEqual(freshAir.steps.map(\.segments), [nil])             // pas de séries explicites
+        // Cohérence : jamais 0 ou 1 (une graduation n'a de sens qu'à partir de 2).
+        for session in sessions {
+            for step in session.steps {
+                if let segments = step.segments { XCTAssertGreaterThanOrEqual(segments, 2, "\(session.id)/\(step.activityID)") }
+            }
+        }
+    }
+
     func testNoBundleResourceContainsEmDash() throws {
         // Convention v1.2 : aucun tiret cadratin dans les textes utilisateur.
         let urls = Bundle.module.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []

@@ -28,8 +28,11 @@ public struct SessionStep: Codable, Hashable, Sendable {
     /// Rythme suggéré et petits rappels de forme, affiché en badge dans le player (spec §4.2).
     /// Jamais un programme rigide : une suggestion, pas un chrono.
     public let tempo: String
-    public init(activityID: String, minutes: Int, tempo: String) {
-        self.activityID = activityID; self.minutes = minutes; self.tempo = tempo
+    /// Nombre de séries affiché en graduations sur l'anneau du timer (spec timer §4).
+    /// nil = pas de graduations (tempos en fourchette ou sans séries explicites).
+    public let segments: Int?
+    public init(activityID: String, minutes: Int, tempo: String, segments: Int? = nil) {
+        self.activityID = activityID; self.minutes = minutes; self.tempo = tempo; self.segments = segments
     }
 }
 

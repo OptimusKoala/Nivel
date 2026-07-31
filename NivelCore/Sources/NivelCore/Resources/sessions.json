@@ -1,8 +1,8 @@
 [
   {"id": "wake_up",           "title": "Réveil musculaire",   "emoji": "🌅", "steps": [
-    {"activityID": "stretching", "minutes": 4, "tempo": "~30 s par position : bras, nuque, dos, jambes, deux tours"},
-    {"activityID": "squats",     "minutes": 4, "tempo": "~10 squats tranquilles × 3, avec des pauses"},
-    {"activityID": "plank",      "minutes": 3, "tempo": "3 × ~30 s, repos entre chaque, genoux posés si besoin"}]},
+    {"activityID": "stretching", "minutes": 4, "tempo": "~30 s par position : bras, nuque, dos, jambes, deux tours", "segments": 2},
+    {"activityID": "squats",     "minutes": 4, "tempo": "~10 squats tranquilles × 3, avec des pauses", "segments": 3},
+    {"activityID": "plank",      "minutes": 3, "tempo": "3 × ~30 s, repos entre chaque, genoux posés si besoin", "segments": 3}]},
   {"id": "energy_break",      "title": "Pause énergie",       "emoji": "⚡", "steps": [
     {"activityID": "stairs",     "minutes": 5, "tempo": "Monte et descends à ton rythme, pause à mi-parcours"},
     {"activityID": "dance",      "minutes": 5, "tempo": "1-2 morceaux, lâche-toi !"},
@@ -11,9 +11,9 @@
     {"activityID": "yoga",       "minutes": 8, "tempo": "5-6 postures douces, tenues 4-5 respirations"},
     {"activityID": "stretching", "minutes": 5, "tempo": "Étirements lents, ~40 s chacun, pour préparer la nuit"}]},
   {"id": "quick_tone",        "title": "Tonus express",       "emoji": "💪", "steps": [
-    {"activityID": "squats",       "minutes": 4, "tempo": "~10 squats × 3, la dernière série plus lente"},
-    {"activityID": "wall_pushups", "minutes": 4, "tempo": "~8 pompes × 3, coudes près du corps"},
-    {"activityID": "plank",        "minutes": 4, "tempo": "4 × ~30 s, souffle régulier"}]},
+    {"activityID": "squats",       "minutes": 4, "tempo": "~10 squats × 3, la dernière série plus lente", "segments": 3},
+    {"activityID": "wall_pushups", "minutes": 4, "tempo": "~8 pompes × 3, coudes près du corps", "segments": 3},
+    {"activityID": "plank",        "minutes": 4, "tempo": "4 × ~30 s, souffle régulier", "segments": 4}]},
   {"id": "fresh_air",         "title": "Bol d'air",           "emoji": "🚶", "steps": [
     {"activityID": "walk",       "minutes": 15, "tempo": "Un tour de quartier d'un bon pas, en respirant à fond"}]},
   {"id": "mood_boost",        "title": "Boost bonne humeur",  "emoji": "🎵", "steps": [
@@ -21,21 +21,21 @@
     {"activityID": "stretching", "minutes": 4,  "tempo": "Redescends en douceur, ~30 s par étirement"}]},
   {"id": "zen_core",          "title": "Zen & gainage",       "emoji": "🧘", "steps": [
     {"activityID": "yoga",       "minutes": 6, "tempo": "3-4 postures d'équilibre, un mur à portée de main"},
-    {"activityID": "plank",      "minutes": 4, "tempo": "3 × ~40 s, concentration sur la respiration"},
+    {"activityID": "plank",      "minutes": 4, "tempo": "3 × ~40 s, concentration sur la respiration", "segments": 3},
     {"activityID": "stretching", "minutes": 4, "tempo": "Dos et épaules, lentement"}]},
   {"id": "home_cardio",       "title": "Cardio maison",       "emoji": "🪜", "steps": [
     {"activityID": "stairs",     "minutes": 6, "tempo": "4-5 allers-retours, pause entre chaque"},
-    {"activityID": "squats",     "minutes": 3, "tempo": "~10 squats × 2, bien poussés dans les talons"},
+    {"activityID": "squats",     "minutes": 3, "tempo": "~10 squats × 2, bien poussés dans les talons", "segments": 2},
     {"activityID": "stretching", "minutes": 4, "tempo": "Jambes surtout : mollets, cuisses, ~30 s chacun"}]},
   {"id": "legs_day",         "title": "Spécial jambes",       "emoji": "🦵", "steps": [
-    {"activityID": "squats",         "minutes": 3, "tempo": "~10 squats × 2, tranquilles"},
+    {"activityID": "squats",         "minutes": 3, "tempo": "~10 squats × 2, tranquilles", "segments": 2},
     {"activityID": "lunges",         "minutes": 3, "tempo": "~8 fentes par jambe, en alternant"},
     {"activityID": "wall_sit",       "minutes": 2, "tempo": "2-3 tenues de ~30 s, repos entre chaque"},
     {"activityID": "stretching",     "minutes": 3, "tempo": "Cuisses et mollets, ~30 s chacun"}]},
   {"id": "gentle_cardio",    "title": "Cardio tout doux",     "emoji": "💓", "steps": [
     {"activityID": "march_in_place", "minutes": 4, "tempo": "Rythme régulier, accélère sur la fin si ça va"},
     {"activityID": "shadow_boxing",  "minutes": 3, "tempo": "Séries de ~20 coups, pause quand tu veux"},
-    {"activityID": "high_knees",     "minutes": 3, "tempo": "3 × ~40 s, repos entre les séries"},
+    {"activityID": "high_knees",     "minutes": 3, "tempo": "3 × ~40 s, repos entre les séries", "segments": 3},
     {"activityID": "stretching",     "minutes": 3, "tempo": "Épaules et jambes, ~30 s par étirement"}]},
   {"id": "morning_mobility", "title": "Souplesse & mobilité", "emoji": "🌀", "steps": [
     {"activityID": "mobility",       "minutes": 5, "tempo": "Chaque articulation y passe : ~30 s par zone"},
