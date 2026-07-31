@@ -52,6 +52,7 @@
 		ECBE1CB18EBCE075EFFAE24B /* MealsJournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A694B98073276CD2FA798820 /* MealsJournalView.swift */; };
 		ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */; };
 		FDCB8202104609DE46003A7A /* GameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A1F6969B88BCA1A9BE77195 /* GameService.swift */; };
+		FE4A11B0B48A1B381C926EC7 /* TimerRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79570BB8A6B99B6D9314323 /* TimerRingView.swift */; };
 		FF12E9FD2218E9B1A09DFA9A /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2749E47DBFD2A5D89042A89E /* HealthKitService.swift */; };
 /* End PBXBuildFile section */
 
@@ -99,6 +100,7 @@
 		A694B98073276CD2FA798820 /* MealsJournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealsJournalView.swift; sourceTree = "<group>"; };
 		A6D09557663FBEA7185F1839 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A79570BB8A6B99B6D9314323 /* TimerRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRingView.swift; sourceTree = "<group>"; };
 		A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportIllustration.swift; sourceTree = "<group>"; };
 		ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechBubble.swift; sourceTree = "<group>"; };
 		B1E734571AD23AE4CDC74D01 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 				50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */,
 				A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */,
 				4542B7EDA424C2DF0AF4CD23 /* SportView.swift */,
+				A79570BB8A6B99B6D9314323 /* TimerRingView.swift */,
 			);
 			path = Sport;
 			sourceTree = "<group>";
@@ -448,6 +451,7 @@
 				CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */,
 				0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */,
 				1B36CC033AB07BEB581D664D /* Theme.swift in Sources */,
+				FE4A11B0B48A1B381C926EC7 /* TimerRingView.swift in Sources */,
 				E9E07644DA5B531E655EFC74 /* WeighInSheet.swift in Sources */,
 				8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */,
 				75ADB553C3E21774DAF18E6A /* XPBar.swift in Sources */,
