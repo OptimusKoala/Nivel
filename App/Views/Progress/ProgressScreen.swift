@@ -236,7 +236,7 @@ private func progressPreviewFixture(stepsAuthorized: Bool) -> (ModelContainer, G
     try? context.save()
 
     let fake = FakeStepsService(stepsByDay: steps, authorized: stepsAuthorized)
-    return (container, GameService(modelContext: context, stepsService: fake))
+    return (container, GameService(modelContext: context, stepsService: fake, widgetDefaults: nil))
 }
 
 #Preview("Progrès") {

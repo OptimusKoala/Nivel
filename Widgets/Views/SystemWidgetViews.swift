@@ -75,7 +75,6 @@ struct MediumWidgetView: View {
             VStack(spacing: 6) {
                 WidgetCalorieRing(eaten: entry.kcalEaten, target: entry.kcalTarget,
                                   palette: palette)
-                    .aspectRatio(1, contentMode: .fit)
                 LevelPill(totalXP: entry.totalXP, palette: palette)
                 XPMiniBar(totalXP: entry.totalXP, palette: palette)
             }

@@ -268,7 +268,8 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
                              estimatedKcal: 1445, xpAwarded: 20))
     try? context.save()
 
-    return (container, GameService(modelContext: context, stepsService: FakeStepsService()))
+    return (container, GameService(modelContext: context, stepsService: FakeStepsService(),
+                                   widgetDefaults: nil))
 }
 
 #Preview("Journal") {
@@ -290,5 +291,5 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(GameService(modelContext: container.mainContext,
-                                 stepsService: FakeStepsService()))
+                                 stepsService: FakeStepsService(), widgetDefaults: nil))
 }

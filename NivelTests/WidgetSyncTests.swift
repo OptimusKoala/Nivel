@@ -65,8 +65,8 @@ final class WidgetSnapshotBuildingTests: XCTestCase {
         context = ModelContext(container)
         suiteName = "nivel.tests.widgetsync.\(UUID().uuidString)"
         defaults = UserDefaults(suiteName: suiteName)
-        service = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false))
-        service.widgetDefaults = defaults
+        service = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
+                              widgetDefaults: defaults)
     }
 
     override func tearDown() {

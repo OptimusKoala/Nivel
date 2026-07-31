@@ -313,7 +313,7 @@ private func questsPreviewFixture(unlockedBadges: Bool) -> (ModelContainer, Game
     try? context.save()
 
     let fake = FakeStepsService(stepsByDay: [:], authorized: true)
-    return (container, GameService(modelContext: context, stepsService: fake))
+    return (container, GameService(modelContext: context, stepsService: fake, widgetDefaults: nil))
 }
 
 #Preview("Quêtes & trophées") {

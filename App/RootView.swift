@@ -176,5 +176,5 @@ private extension View {
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(GameService(modelContext: container.mainContext,
-                                 stepsService: FakeStepsService()))
+                                 stepsService: FakeStepsService(), widgetDefaults: nil))
 }

@@ -383,7 +383,7 @@ private func homePreviewFixture(
 
     let today = GameService.calendar.startOfDay(for: .now)
     let fake = FakeStepsService(stepsByDay: [today: steps], authorized: stepsAuthorized)
-    return (container, GameService(modelContext: context, stepsService: fake))
+    return (container, GameService(modelContext: context, stepsService: fake, widgetDefaults: nil))
 }
 
 #Preview("Accueil") {

@@ -69,3 +69,9 @@ private let previewAccessoryEntry = WidgetEntry(
         .frame(width: 160, height: 72)
         .background(.black)
 }
+
+#Preview("Accueil") {
+    AccessoryWelcomeView()
+        .frame(width: 160, height: 72)
+        .background(.black)
+}

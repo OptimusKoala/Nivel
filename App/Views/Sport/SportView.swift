@@ -185,7 +185,7 @@ private func sportPreviewFixture() -> (container: ModelContainer, game: GameServ
     try? context.save()
 
     let fake = FakeStepsService()
-    return (container, GameService(modelContext: context, stepsService: fake))
+    return (container, GameService(modelContext: context, stepsService: fake, widgetDefaults: nil))
 }
 
 #Preview("Sport") {

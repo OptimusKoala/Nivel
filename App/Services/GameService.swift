@@ -44,7 +44,7 @@ final class GameService {
 
     /// Destination du snapshot widget — injectable pour les tests (suite dédiée,
     /// pas de pollution du vrai App Group), comme ThemeStore(defaults:).
-    var widgetDefaults: UserDefaults? = WidgetBridge.sharedDefaults
+    let widgetDefaults: UserDefaults?
 
     /// Catalogues embarqués (chargés une fois ; vides si le bundle est corrompu — jamais de crash).
     let questCatalog: [Quest]
@@ -119,9 +119,11 @@ final class GameService {
     /// Extras alcoolisés du catalogue (spec §7.3 : "jours sans alcool" = pas de bière/vin).
     private static let alcoholExtraIDs: Set<String> = ["beer", "wine"]
 
-    init(modelContext: ModelContext, stepsService: StepsProviding) {
+    init(modelContext: ModelContext, stepsService: StepsProviding,
+         widgetDefaults: UserDefaults? = WidgetBridge.sharedDefaults) {
         self.modelContext = modelContext
         self.stepsService = stepsService
+        self.widgetDefaults = widgetDefaults
         self.questCatalog = Self.loadOrAssert({ try Catalogs.quests() }, fallback: [])
         self.badgeCatalog = Self.loadOrAssert({ try Catalogs.badges() }, fallback: [])
         self.messageBank = Self.loadOrAssert({ try MessageBank.load() }, fallback: nil)

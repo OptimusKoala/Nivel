@@ -211,7 +211,8 @@ private func sessionPlayerPreviewFixture() -> (container: ModelContainer, game: 
         for: schema,
         configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
     )
-    let game = GameService(modelContext: container.mainContext, stepsService: FakeStepsService())
+    let game = GameService(modelContext: container.mainContext, stepsService: FakeStepsService(),
+                           widgetDefaults: nil)
     // Catalogue toujours non vide (chargé depuis le bundle) — force-unwrap acceptable en preview.
     return (container, game, game.sessionCatalog.first!)
 }

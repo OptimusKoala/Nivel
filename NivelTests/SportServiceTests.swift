@@ -25,7 +25,8 @@ final class SportServiceTests: XCTestCase {
         context.insert(GamificationState())
         try context.save()
 
-        service = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false))
+        service = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
+                              widgetDefaults: nil)
         walk = try XCTUnwrap(service.activityCatalog.first { $0.id == "walk" })
         session = try XCTUnwrap(service.sessionCatalog.first { $0.id == "wake_up" })
     }
@@ -40,7 +41,8 @@ final class SportServiceTests: XCTestCase {
         XCTAssertEqual(service.lastActivityXPAwarded, 0)
 
         // Le plafond est dérivé des ActivityEntry persistées → tient à la "relance".
-        let restarted = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false))
+        let restarted = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
+                                    widgetDefaults: nil)
         let fourth = await restarted.logActivity(activity: walk, durationMinutes: 10)
         XCTAssertEqual(fourth.xpAwarded, 0)
 
@@ -145,7 +147,8 @@ final class SportServiceTests: XCTestCase {
     /// que les trois tâches s'entrelacent réellement sur le MainActor.
     func testConcurrentLogActivityRespectsCapEvenWhileSuspended() async throws {
         let slowSteps = SlowStepsService()
-        let concurrentService = GameService(modelContext: context, stepsService: slowSteps)
+        let concurrentService = GameService(modelContext: context, stepsService: slowSteps,
+                                            widgetDefaults: nil)
         let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
         state.questWeekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
         state.activeQuestIDs = ["steps_25k"]
