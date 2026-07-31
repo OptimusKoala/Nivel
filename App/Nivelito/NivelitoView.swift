@@ -38,13 +38,9 @@ struct NivelitoView: View {
 
     // Palette du SVG — les couleurs de Nivelito sont FIXES (identité de la
     // mascotte) : sa fourrure reste orange quel que soit le thème choisi.
+    // Elles vivent dans `NivelitoColors` (Shared), partagées avec le widget.
     // Le contour/yeux/truffe/bouche restent Theme.outline, identique dans
     // les 4 palettes (bordeaux #3A1220).
-    private let fur = Color(hex: 0xF57C1F)
-    private let cream = Color(hex: 0xF2EDE0)
-    private let earBrown = Color(hex: 0x7D3F1E)
-    private let cheekBrown = Color(hex: 0x8A4B2A)
-    private let blushPink = Color(hex: 0xFFB09B)
 
     private var scale: CGFloat { size / 200 }
     private var outlineStyle: StrokeStyle {
@@ -64,42 +60,46 @@ struct NivelitoView: View {
             // miroir ±6° ancrée à la base de l'oreille (jonction avec la tête,
             // ~(61,66) et ~(139,66) dans l'espace 200×200), la tête couvre la base.
             ZStack {
-                NivelitoEarLeft().fill(cream)
+                NivelitoEarLeft().fill(NivelitoColors.cream)
                 NivelitoEarLeft().stroke(Theme.outline, style: outlineStyle)
-                NivelitoEarInnerLeft().fill(earBrown)
+                NivelitoEarInnerLeft().fill(NivelitoColors.earBrown)
             }
             .rotationEffect(.degrees(earWiggleDegrees),
                             anchor: UnitPoint(x: 61.0 / 200.0, y: 66.0 / 200.0))
             ZStack {
-                NivelitoEarRight().fill(cream)
+                NivelitoEarRight().fill(NivelitoColors.cream)
                 NivelitoEarRight().stroke(Theme.outline, style: outlineStyle)
-                NivelitoEarInnerRight().fill(earBrown)
+                NivelitoEarInnerRight().fill(NivelitoColors.earBrown)
             }
             .rotationEffect(.degrees(-earWiggleDegrees),
                             anchor: UnitPoint(x: 139.0 / 200.0, y: 66.0 / 200.0))
 
             // Tête (fill orange + contour)
-            NivelitoHead().fill(fur)
+            NivelitoHead().fill(NivelitoColors.fur)
             NivelitoHead().stroke(Theme.outline, style: outlineStyle)
 
             // Joues brunes
-            NivelitoEllipse(center: .init(x: 45, y: 134), rx: 19, ry: 16).fill(cheekBrown)
-            NivelitoEllipse(center: .init(x: 155, y: 134), rx: 19, ry: 16).fill(cheekBrown)
+            NivelitoEllipse(center: .init(x: 45, y: 134), rx: 19, ry: 16)
+                .fill(NivelitoColors.cheekBrown)
+            NivelitoEllipse(center: .init(x: 155, y: 134), rx: 19, ry: 16)
+                .fill(NivelitoColors.cheekBrown)
 
             // Museau crème
-            NivelitoMuzzle().fill(cream)
+            NivelitoMuzzle().fill(NivelitoColors.cream)
 
             // Sourcils virgules (fill + stroke crème 4, comme le SVG)
-            NivelitoBrowLeft().fill(cream)
-            NivelitoBrowLeft().stroke(cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
-            NivelitoBrowRight().fill(cream)
-            NivelitoBrowRight().stroke(cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
+            NivelitoBrowLeft().fill(NivelitoColors.cream)
+            NivelitoBrowLeft().stroke(NivelitoColors.cream,
+                                      style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
+            NivelitoBrowRight().fill(NivelitoColors.cream)
+            NivelitoBrowRight().stroke(NivelitoColors.cream,
+                                       style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
 
             // Blush rose
             NivelitoEllipse(center: .init(x: 62, y: 122), rx: 8, ry: 5)
-                .fill(blushPink.opacity(0.85))
+                .fill(NivelitoColors.blushPink.opacity(0.85))
             NivelitoEllipse(center: .init(x: 138, y: 122), rx: 8, ry: 5)
-                .fill(blushPink.opacity(0.85))
+                .fill(NivelitoColors.blushPink.opacity(0.85))
 
             // Yeux (dépendent de l'expression) — le regard de côté décale la
             // couche des yeux horizontalement (micro-geste « glance »).

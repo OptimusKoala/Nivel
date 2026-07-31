@@ -10,7 +10,7 @@ targets:
   Nivel:
     type: application
     platform: iOS
-    sources: [App]
+    sources: [App, Shared]
     settings:
       base:
         DEVELOPMENT_TEAM: 5V52773QN3

@@ -1,10 +1,21 @@
-// App/Nivelito/NivelitoShapes.swift
+// Shared/NivelitoShapes.swift
 // Traduction fidèle de design/nivelito.svg (espace de référence 200×200).
 // Chaque Shape reprend mécaniquement les coordonnées du SVG :
 //   C x1 y1, x2 y2, x y  →  addCurve(to: (x,y), control1: (x1,y1), control2: (x2,y2))
 //   Q cx cy, x y         →  addQuadCurve(to: (x,y), control: (cx,cy))
 
 import SwiftUI
+
+/// Couleurs FIXES de la mascotte (identité, jamais thémées) — partagées entre
+/// NivelitoView (app) et le Nivelito statique du widget. Le contour bordeaux
+/// vient de la palette (`palette.outline`, identique dans les 4 palettes).
+enum NivelitoColors {
+    static let fur = Color(hex: 0xF57C1F)
+    static let cream = Color(hex: 0xF2EDE0)
+    static let earBrown = Color(hex: 0x7D3F1E)
+    static let cheekBrown = Color(hex: 0x8A4B2A)
+    static let blushPink = Color(hex: 0xFFB09B)
+}
 
 // MARK: - Mise à l'échelle
 
