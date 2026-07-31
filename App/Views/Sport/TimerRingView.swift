@@ -105,10 +105,11 @@ struct TimerTimeLabel: View {
 }
 
 /// Contrôles Lancer/Pause/Reprendre/Recommencer + message de pause, pilotés par le modèle.
-/// Mêmes contraintes que `TimerTimeLabel` (lecture pure, `syncNow` à la charge de l'appelant).
+/// Contrairement à `TimerTimeLabel`, aucune lecture de date : chaque action (`start`/`pause`/
+/// `resume`/`reset`) prend l'horloge murale réelle au moment du tap, pas un `now` figé par
+/// l'appelant (piège repéré en review : un `now` de TimelineView non rafraîchi entre deux ticks).
 struct TimerButtons: View {
     let timer: ExerciseTimerModel
-    let now: Date
 
     var body: some View {
         VStack(spacing: 8) {
@@ -219,9 +220,8 @@ struct TimerButtons: View {
 }
 
 #Preview("Boutons (idle)") {
-    let t0 = Date(timeIntervalSince1970: 1_000_000)
     let timer = ExerciseTimerModel(durationMinutes: 3)
-    return TimerButtons(timer: timer, now: t0)
+    return TimerButtons(timer: timer)
         .padding()
         .background(Theme.background)
 }
@@ -230,7 +230,7 @@ struct TimerButtons: View {
     let t0 = Date(timeIntervalSince1970: 1_000_000)
     let timer = ExerciseTimerModel(durationMinutes: 3)
     timer.start(at: t0)
-    return TimerButtons(timer: timer, now: t0.addingTimeInterval(90))
+    return TimerButtons(timer: timer)
         .padding()
         .background(Theme.background)
 }
@@ -240,7 +240,7 @@ struct TimerButtons: View {
     let timer = ExerciseTimerModel(durationMinutes: 3)
     timer.start(at: t0)
     timer.pause(at: t0.addingTimeInterval(30))
-    return TimerButtons(timer: timer, now: t0.addingTimeInterval(120))
+    return TimerButtons(timer: timer)
         .padding()
         .background(Theme.background)
 }

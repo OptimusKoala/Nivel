@@ -21,6 +21,9 @@ struct ActivityLogSheet: View {
     /// Timer opt-in : nil tant qu'aucune durée n'est choisie (spec timer §3.1). Recréé à
     /// chaque changement de durée (`.onChange(of: selectedMinutes)`), ce qui vaut reset.
     @State private var timer: ExerciseTimerModel?
+    /// Promu à `.large` dès qu'une durée est choisie : révèle l'anneau + les contrôles au lieu
+    /// de les insérer hors écran dans une sheet restée à `.medium` (review Task 5).
+    @State private var detent: PresentationDetent = .medium
 
     /// `initialMinutes` permet aux previews de s'ouvrir directement avec une durée choisie
     /// (anneau du timer visible) sans simuler un tap, sur le modèle d'`initialPage` du player.
@@ -28,6 +31,7 @@ struct ActivityLogSheet: View {
         self.activity = activity
         _selectedMinutes = State(initialValue: initialMinutes)
         _timer = State(initialValue: initialMinutes.map { ExerciseTimerModel(durationMinutes: $0) })
+        _detent = State(initialValue: initialMinutes != nil ? .large : .medium)
     }
 
     var body: some View {
@@ -39,10 +43,6 @@ struct ActivityLogSheet: View {
                     Text(activity.name)
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.text)
-                    if let timer {
-                        TimerButtons(timer: timer, now: .now)
-                            .frame(maxWidth: .infinity)
-                    }
                     SectionTitle("Comment faire")
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(activity.instructions, id: \.self) { line in
@@ -67,13 +67,18 @@ struct ActivityLogSheet: View {
             }
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium, .large], selection: $detent)
         .presentationCornerRadius(28)
         .presentationDragIndicator(.visible)
         .onAppear { xpReward = game.nextActivityXP() }
+        // Recrée le timer (reset implicite) à chaque nouvelle durée choisie ; re-taper la durée
+        // déjà sélectionnée ne relance pas le timer (même valeur, pas d'événement) : Recommencer
+        // couvre ce geste. Le passage à `.large` révèle l'anneau + les contrôles au lieu de les
+        // insérer hors écran dans une sheet restée à `.medium`.
         .onChange(of: selectedMinutes) { _, minutes in
             timer = minutes.map { ExerciseTimerModel(durationMinutes: $0) }
             UIApplication.shared.isIdleTimerDisabled = false
+            if minutes != nil { detent = .large }
         }
         .onChange(of: timer?.isRunning ?? false) { _, running in
             UIApplication.shared.isIdleTimerDisabled = running
@@ -83,7 +88,7 @@ struct ActivityLogSheet: View {
         }
     }
 
-    // MARK: En-tête (vignette statique, ou anneau du timer une fois une durée choisie)
+    // MARK: En-tête (vignette statique, ou bloc anneau/temps/contrôles une fois une durée choisie)
 
     @ViewBuilder
     private var header: some View {
@@ -95,6 +100,7 @@ struct ActivityLogSheet: View {
                                   finished: timer.isFinished,
                                   segments: nil, size: 180)
                     TimerTimeLabel(timer: timer, now: context.date)
+                    TimerButtons(timer: timer)
                 }
                 .frame(maxWidth: .infinity)
                 .onChange(of: context.date) { _, date in

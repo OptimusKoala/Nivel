@@ -256,7 +256,7 @@ private struct StepPageView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(Theme.accent.opacity(0.15), in: Capsule())
-                    TimerButtons(timer: timer, now: context.date)
+                    TimerButtons(timer: timer)
                         .frame(maxWidth: .infinity)
                 }
                 .padding(20)
