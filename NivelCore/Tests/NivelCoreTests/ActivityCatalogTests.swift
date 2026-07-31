@@ -56,4 +56,33 @@ final class ActivityCatalogTests: XCTestCase {
         XCTAssertEqual(wakeUp.totalMinutes, 11)
         XCTAssertEqual(wakeUp.estimatedKcal(activitiesByID: byID), 40)
     }
+
+    func testEveryActivityHasInstructions() throws {
+        for activity in try Catalogs.activities() {
+            XCTAssertGreaterThanOrEqual(activity.instructions.count, 3, activity.id)
+            XCTAssertTrue(activity.instructions.allSatisfy { !$0.isEmpty }, activity.id)
+        }
+    }
+
+    func testEverySessionStepHasTempo() throws {
+        for session in try Catalogs.sessions() {
+            for step in session.steps {
+                XCTAssertFalse(step.tempo.isEmpty, "\(session.id)/\(step.activityID)")
+            }
+        }
+    }
+
+    func testUserFacingSportTextsHaveNoEmDash() throws {
+        // Convention de la branche (commit « remove em dashes ») : aucun — dans les textes.
+        for activity in try Catalogs.activities() {
+            for line in activity.instructions {
+                XCTAssertFalse(line.contains("—"), "\(activity.id): \(line)")
+            }
+        }
+        for session in try Catalogs.sessions() {
+            for step in session.steps {
+                XCTAssertFalse(step.tempo.contains("—"), "\(session.id)/\(step.activityID)")
+            }
+        }
+    }
 }

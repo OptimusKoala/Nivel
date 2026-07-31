@@ -1,10 +1,30 @@
 [
-  {"id": "wake_up",           "title": "Réveil musculaire",   "emoji": "🌅", "steps": [{"activityID": "stretching", "minutes": 4}, {"activityID": "squats", "minutes": 4}, {"activityID": "plank", "minutes": 3}]},
-  {"id": "energy_break",      "title": "Pause énergie",       "emoji": "⚡", "steps": [{"activityID": "stairs", "minutes": 5}, {"activityID": "dance", "minutes": 5}, {"activityID": "stretching", "minutes": 3}]},
-  {"id": "evening_wind_down", "title": "Détente du soir",     "emoji": "🌙", "steps": [{"activityID": "yoga", "minutes": 8}, {"activityID": "stretching", "minutes": 5}]},
-  {"id": "quick_tone",        "title": "Tonus express",       "emoji": "💪", "steps": [{"activityID": "squats", "minutes": 4}, {"activityID": "wall_pushups", "minutes": 4}, {"activityID": "plank", "minutes": 4}]},
-  {"id": "fresh_air",         "title": "Bol d'air",           "emoji": "🚶", "steps": [{"activityID": "walk", "minutes": 15}]},
-  {"id": "mood_boost",        "title": "Boost bonne humeur",  "emoji": "🎵", "steps": [{"activityID": "dance", "minutes": 10}, {"activityID": "stretching", "minutes": 4}]},
-  {"id": "zen_core",          "title": "Zen & gainage",       "emoji": "🧘", "steps": [{"activityID": "yoga", "minutes": 6}, {"activityID": "plank", "minutes": 4}, {"activityID": "stretching", "minutes": 4}]},
-  {"id": "home_cardio",       "title": "Cardio maison",       "emoji": "🪜", "steps": [{"activityID": "stairs", "minutes": 6}, {"activityID": "squats", "minutes": 3}, {"activityID": "stretching", "minutes": 4}]}
+  {"id": "wake_up",           "title": "Réveil musculaire",   "emoji": "🌅", "steps": [
+    {"activityID": "stretching", "minutes": 4, "tempo": "~30 s par position : bras, nuque, dos, jambes"},
+    {"activityID": "squats",     "minutes": 4, "tempo": "~10 squats tranquilles × 3, avec des pauses"},
+    {"activityID": "plank",      "minutes": 3, "tempo": "3 × ~30 s, repos entre chaque, genoux posés si besoin"}]},
+  {"id": "energy_break",      "title": "Pause énergie",       "emoji": "⚡", "steps": [
+    {"activityID": "stairs",     "minutes": 5, "tempo": "Monte et descends à ton rythme, pause à mi-parcours"},
+    {"activityID": "dance",      "minutes": 5, "tempo": "2-3 morceaux, lâche-toi !"},
+    {"activityID": "stretching", "minutes": 3, "tempo": "Jambes et dos, ~30 s par étirement"}]},
+  {"id": "evening_wind_down", "title": "Détente du soir",     "emoji": "🌙", "steps": [
+    {"activityID": "yoga",       "minutes": 8, "tempo": "3-4 postures douces, tenues 4-5 respirations"},
+    {"activityID": "stretching", "minutes": 5, "tempo": "Étirements lents, ~40 s chacun, pour préparer la nuit"}]},
+  {"id": "quick_tone",        "title": "Tonus express",       "emoji": "💪", "steps": [
+    {"activityID": "squats",       "minutes": 4, "tempo": "~10 squats × 3, la dernière série plus lente"},
+    {"activityID": "wall_pushups", "minutes": 4, "tempo": "~8 pompes × 3, coudes près du corps"},
+    {"activityID": "plank",        "minutes": 4, "tempo": "4 × ~30 s, souffle régulier"}]},
+  {"id": "fresh_air",         "title": "Bol d'air",           "emoji": "🚶", "steps": [
+    {"activityID": "walk",       "minutes": 15, "tempo": "Un tour de quartier d'un bon pas, en respirant à fond"}]},
+  {"id": "mood_boost",        "title": "Boost bonne humeur",  "emoji": "🎵", "steps": [
+    {"activityID": "dance",      "minutes": 10, "tempo": "3-4 morceaux qui font du bien, sans retenue"},
+    {"activityID": "stretching", "minutes": 4,  "tempo": "Redescends en douceur, ~30 s par étirement"}]},
+  {"id": "zen_core",          "title": "Zen & gainage",       "emoji": "🧘", "steps": [
+    {"activityID": "yoga",       "minutes": 6, "tempo": "2-3 postures d'équilibre, 5 respirations chacune"},
+    {"activityID": "plank",      "minutes": 4, "tempo": "3 × ~40 s, concentration sur la respiration"},
+    {"activityID": "stretching", "minutes": 4, "tempo": "Dos et épaules, lentement"}]},
+  {"id": "home_cardio",       "title": "Cardio maison",       "emoji": "🪜", "steps": [
+    {"activityID": "stairs",     "minutes": 6, "tempo": "3 allers-retours, pause entre chaque"},
+    {"activityID": "squats",     "minutes": 3, "tempo": "~10 squats × 2, bien poussés dans les talons"},
+    {"activityID": "stretching", "minutes": 4, "tempo": "Jambes surtout : mollets, cuisses, ~30 s chacun"}]}
 ]

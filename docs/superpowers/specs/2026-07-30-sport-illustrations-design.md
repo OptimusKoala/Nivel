@@ -30,13 +30,13 @@ Donner un visage aux sports : chaque activité et chaque séance est illustrée 
 
 | id | instructions |
 |---|---|
-| walk | Garde le dos droit, les épaules relâchées · Marche d'un bon pas, les bras balancent naturellement · Respire régulièrement — la conversation doit rester possible |
-| brisk_walk | Accélère le pas jusqu'à sentir le souffle monter · Les bras accompagnent, coudes pliés · Garde une foulée confortable — vitesse ne veut pas dire course |
+| walk | Garde le dos droit, les épaules relâchées · Marche d'un bon pas, les bras balancent naturellement · Respire régulièrement, la conversation doit rester possible |
+| brisk_walk | Accélère le pas jusqu'à sentir le souffle monter · Les bras accompagnent, coudes pliés · Garde une foulée confortable, vitesse ne veut pas dire course |
 | bike | Règle la selle : jambe presque tendue en bas de pédale · Pédale à un rythme régulier, sans forcer · Change de vitesse plutôt que de forcer sur les jambes |
-| stairs | Monte marche par marche, pose tout le pied · Aide-toi de la rampe si besoin · Redescends tranquillement — la descente compte aussi · Fais une pause dès que les jambes brûlent trop |
-| dance | Mets ta musique préférée, personne ne regarde · Bouge tout : bras, hanches, tête · Un léger essoufflement est bon signe — amuse-toi |
-| stretching | Étire-toi lentement, sans à-coups · Tiens chaque position environ 30 secondes · La tension doit rester agréable — jamais de douleur · Respire profondément pendant l'étirement |
-| plank | Avant-bras au sol, coudes sous les épaules · Corps aligné des épaules aux talons · Serre le ventre, ne creuse pas le dos · Pose les genoux quand ça tremble trop — c'est normal |
+| stairs | Monte marche par marche, pose tout le pied · Aide-toi de la rampe si besoin · Redescends tranquillement, la descente compte aussi · Fais une pause dès que les jambes brûlent trop |
+| dance | Mets ta musique préférée, personne ne regarde · Bouge tout : bras, hanches, tête · Un léger essoufflement est bon signe, amuse-toi |
+| stretching | Étire-toi lentement, sans à-coups · Tiens chaque position environ 30 secondes · La tension doit rester agréable, jamais de douleur · Respire profondément pendant l'étirement |
+| plank | Avant-bras au sol, coudes sous les épaules · Corps aligné des épaules aux talons · Serre le ventre, ne creuse pas le dos · Pose les genoux quand ça tremble trop, c'est normal |
 | squats | Pieds écartés largeur d'épaules · Descends comme pour t'asseoir sur une chaise · Le dos reste droit, les talons au sol · Remonte en poussant dans les talons |
 | wall_pushups | Face au mur, mains à plat largeur d'épaules · Recule d'un pas, corps bien aligné · Plie les coudes pour approcher le mur, puis repousse · Plus les pieds sont loin du mur, plus c'est intense |
 | active_cleaning | Mets de la musique et accélère le mouvement · Alterne les tâches pour faire bouger tout le corps · Plie les genoux pour ramasser, pas le dos |
@@ -51,12 +51,12 @@ Le rythme suggéré de chaque étape, affiché en badge dans le player. Contenu 
 |---|---|---|
 | wake_up | stretching 4 min | ~30 s par position : bras, nuque, dos, jambes |
 | wake_up | squats 4 min | ~10 squats tranquilles × 3, avec des pauses |
-| wake_up | plank 3 min | 3 × ~30 s, repos entre chaque — genoux posés si besoin |
+| wake_up | plank 3 min | 3 × ~30 s, repos entre chaque, genoux posés si besoin |
 | energy_break | stairs 5 min | Monte et descends à ton rythme, pause à mi-parcours |
 | energy_break | dance 5 min | 2-3 morceaux, lâche-toi ! |
 | energy_break | stretching 3 min | Jambes et dos, ~30 s par étirement |
 | evening_wind_down | yoga 8 min | 3-4 postures douces, tenues 4-5 respirations |
-| evening_wind_down | stretching 5 min | Étirements lents, ~40 s chacun — prépare la nuit |
+| evening_wind_down | stretching 5 min | Étirements lents, ~40 s chacun, pour préparer la nuit |
 | quick_tone | squats 4 min | ~10 squats × 3, la dernière série plus lente |
 | quick_tone | wall_pushups 4 min | ~8 pompes × 3, coudes près du corps |
 | quick_tone | plank 4 min | 4 × ~30 s, souffle régulier |

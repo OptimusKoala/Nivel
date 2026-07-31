@@ -12,6 +12,9 @@ public struct Activity: Codable, Identifiable, Hashable, Sendable {
     /// Les 3 durées proposées (minutes), croissantes — propres à l'activité
     /// (une planche ne se scale pas comme une marche).
     public let durations: [Int]
+    /// Consignes « comment faire » : 3-4 puces courtes (position, mouvement,
+    /// repère sécurité/respiration), ton bienveillant (spec illustrations §4.1).
+    public let instructions: [String]
 
     /// Estimation "~ kcal" arrondie à la dizaine — indicative, jamais créditée au budget.
     public func estimatedKcal(minutes: Int) -> Int {
@@ -22,8 +25,11 @@ public struct Activity: Codable, Identifiable, Hashable, Sendable {
 public struct SessionStep: Codable, Hashable, Sendable {
     public let activityID: String
     public let minutes: Int
-    public init(activityID: String, minutes: Int) {
-        self.activityID = activityID; self.minutes = minutes
+    /// Rythme suggéré de l'étape, affiché en badge dans le player (spec §4.2).
+    /// Jamais un programme rigide : une suggestion, pas un chrono.
+    public let tempo: String
+    public init(activityID: String, minutes: Int, tempo: String) {
+        self.activityID = activityID; self.minutes = minutes; self.tempo = tempo
     }
 }
 
