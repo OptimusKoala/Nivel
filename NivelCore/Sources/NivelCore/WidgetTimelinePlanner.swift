@@ -14,6 +14,18 @@ public struct WidgetEntry: Equatable, Sendable {
     public let expression: Expression
     public let themeID: String
     public let userName: String
+
+    public init(date: Date, kcalEaten: Int, kcalTarget: Int, totalXP: Int,
+                message: String, expression: Expression, themeID: String, userName: String) {
+        self.date = date
+        self.kcalEaten = kcalEaten
+        self.kcalTarget = kcalTarget
+        self.totalXP = totalXP
+        self.message = message
+        self.expression = expression
+        self.themeID = themeID
+        self.userName = userName
+    }
 }
 
 /// Planification PURE des entrées de la journée : créneaux de messages (7 h, 12 h,
@@ -66,9 +78,15 @@ public enum WidgetTimelinePlanner {
         (hour >= 22 || hour < 7) ? .sleepy : .happy
     }
 
-    /// Créneau de messages d'une entrée — nuit (< 7 h) : pool du soir.
+    /// Créneau de messages d'une entrée — nuit (< 7 h) : pool du soir. `rawValue`
+    /// Int STABLE utilisé comme composante du seed de `messageIndex` : ne PAS le
+    /// coupler à l'ordre de déclaration de `MessageContext`, qu'un réordonnancement
+    /// de ce dernier remélangerait silencieusement.
     enum Slot: Int, Equatable { case morning = 0, midday = 1, evening = 2 }
 
+    /// Avant 7 h, le pool du soir peut évoquer le dîner : fenêtre étroite et
+    /// assumée, l'entrée affichée la nuit est normalement celle de minuit (le
+    /// message a déjà tourné) et Nivelito y est de toute façon sleepy.
     static func slot(hour: Int) -> Slot {
         if hour < 7 { return .evening }
         if hour < 12 { return .morning }
@@ -93,7 +111,8 @@ public enum WidgetTimelinePlanner {
         case .evening: .evening
         }
         let pool = bank.messages(for: context) + bank.messages(for: .fun)
-        guard !pool.isEmpty else { return "Salut \(snapshot.userName) !" }
+        // Pré-condition : pool non vide — garanti par le catalogue
+        // (MessageBankTests.testBankHasAllContextsWithEnoughVariety, >= 12 par contexte).
         // Même référence fixe que la séance du jour (01/01/2026, interne au module).
         let dayIndex = calendar.dateComponents(
             [.day],
