@@ -1,70 +1,3 @@
-# Icônes cozy (v1.7) — Implementation Plan
-
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
-**Goal:** Remplacer les SF Symbols d'identité par 15 glyphes cozy générés (PDF template auto-teintés) : tab bar contour→rempli, ⚙️, coche, play/pause/recommencer.
-
-**Architecture:** Un générateur CoreGraphics (`scripts/gen-icons.swift`, source unique) émet les PDF dans `Assets.xcassets/Icons/` (namespace, template) ET une planche-contact PNG dans `design/icons/` pour la relecture visuelle. L'intégration est un pur remplacement d'images (aucune logique). Spec : `docs/superpowers/specs/2026-07-31-cozy-icons-design.md`.
-
-**Tech Stack:** Swift script (CoreGraphics/ImageIO, zéro dépendance), XCTest, XcodeGen.
-
-**Branche : créer `feat/cozy-icons` depuis `main`.**
-
-### Task 0 : Branche
-
-- [ ] `cd /Users/mbernard/perso/Nivel && git checkout -b feat/cozy-icons`
-
-**Commandes de test :** NivelCore `cd NivelCore && swift test` (51 attendus, non touché) ; app `xcodebuild -project Nivel.xcodeproj -scheme Nivel -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test` (55 actuels → 56 après Task 1).
-
-**Pièges connus :**
-1. Les PDF s'affichent en NOIR si `template-rendering-intent` manque dans le Contents.json de l'imageset.
-2. La géométrie des glyphes est un PREMIER JET : la boucle qualité passe par la planche-contact (`design/icons/contact-sheet.png`) — générer, REGARDER, ajuster les coordonnées, re-générer. Ne pas intégrer (Task 2) avant validation visuelle du contrôleur.
-3. Le contexte PDF CG est en y-vers-le-haut : le script applique un flip (translate/scale) pour dessiner en coordonnées « SVG » (y vers le bas) — ne pas le retirer.
-4. `xcodegen generate` après ajout de fichiers Swift (le script sous `scripts/` n'est PAS compilé dans l'app ; seul le fichier de test l'exige).
-5. OnboardingFlow contient DEUX `checkmark.circle.fill` : remplacer UNIQUEMENT le badge de permission (~ligne 461), PAS le radio de sélection (~ligne 356, paire avec `circle`) — spec §2.
-
----
-
-## Task 1 : Générateur + assets + planche-contact + test
-
-**Files:**
-- Create: `scripts/gen-icons.swift`
-- Create: `App/Assets.xcassets/Icons/` (généré — 15 imagesets PDF)
-- Create: `design/icons/contact-sheet.png` (généré)
-- Test (create): `NivelTests/IconAssetsTests.swift`
-
-- [ ] **Step 1 : Test (rouge)**
-
-```swift
-// NivelTests/IconAssetsTests.swift
-import XCTest
-import UIKit
-@testable import Nivel
-
-final class IconAssetsTests: XCTestCase {
-    /// Les 15 glyphes cozy (spec icônes §2) — liste PINNÉE, garde anti-typo de nommage.
-    static let iconNames = [
-        "tab_home", "tab_home_fill", "tab_meals", "tab_meals_fill",
-        "tab_sport", "tab_sport_fill", "tab_progress", "tab_progress_fill",
-        "tab_quests", "tab_quests_fill",
-        "icon_settings", "icon_check", "icon_play", "icon_pause", "icon_restart",
-    ]
-
-    func testEveryCozyIconAssetExists() {
-        for name in Self.iconNames {
-            XCTAssertNotNil(UIImage(named: "Icons/\(name)"), "asset manquant : Icons/\(name)")
-        }
-    }
-}
-```
-
-- [ ] **Step 2 : Vérifier l'échec** — `xcodegen generate && xcodebuild ... test` → FAIL (15 assertions).
-
-- [ ] **Step 3 : Écrire le générateur**
-
-> **Note post-livraison** : les variantes `_fill` du bloc ci-dessous ont été retravaillées après retour utilisateur — elles réutilisent désormais EXACTEMENT les tracés du contour (fill + stroke mêmes traits) pour que la silhouette ne change pas à la sélection de l'onglet. `scripts/gen-icons.swift` (livré) fait foi.
-
-```swift
 // scripts/gen-icons.swift
 // Source UNIQUE des icônes cozy (spec icônes §3). Exécution : swift scripts/gen-icons.swift
 // Émet : App/Assets.xcassets/Icons/<nom>.imageset/<nom>.pdf (template, vecteur préservé)
@@ -149,10 +82,11 @@ func leafLeft() -> CGMutablePath {
     p.closeSubpath(); return p
 }
 func leafRight() -> CGMutablePath {
+    // Feuille droite légèrement élargie vs le plan (gate visuel : équilibre avec la gauche).
     let p = CGMutablePath()
     p.move(to: P(14, 16))
-    p.addCurve(to: P(20.4, 10.8), control1: P(14, 12.8), control2: P(16.6, 10.8))
-    p.addCurve(to: P(14, 16), control1: P(20.4, 14.2), control2: P(17.8, 16.2))
+    p.addCurve(to: P(20.8, 10.4), control1: P(14, 12.4), control2: P(16.6, 10.4))
+    p.addCurve(to: P(14, 16), control1: P(20.8, 14.4), control2: P(17.6, 16.4))
     p.closeSubpath(); return p
 }
 func sproutLines(_ ctx: CGContext) {
@@ -195,30 +129,39 @@ func trophyStem(_ ctx: CGContext) {
 // MARK: - Les 15 glyphes
 
 let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
+    // UNE silhouette canonique pour la paire (retour Michaël : structure toit-chapeau
+    // vs masse pleine lisait comme deux maisons) : le contour est LE tracé du plein.
     ("tab_home", { ctx in
-        let roof = CGMutablePath()
-        roof.move(to: P(4, 13)); roof.addLine(to: P(14, 4.5)); roof.addLine(to: P(24, 13))
-        strokePath(ctx, roof)
-        strokePath(ctx, rr(6, 12.5, 16, 11.5, 3))
+        strokePath(ctx, houseSilhouette())
         strokePath(ctx, doorPath(closed: false), width: 2.2)
     }),
     ("tab_home_fill", { ctx in
         let p = houseSilhouette()
+        // Porte fermée PILE sur le bord inférieur (y = 24) : le trou even-odd s'ouvre
+        // sur le bord sans déborder dessous (un dépassement crée un îlot rempli).
         p.addPath(doorPath(closed: true))
         fillPath(ctx, p, evenOdd: true)
+        strokePath(ctx, houseSilhouette())   // même poids de contour que la version outline
     }),
     ("tab_meals", { ctx in strokePath(ctx, bowlPath()); steam(ctx) }),
-    ("tab_meals_fill", { ctx in fillPath(ctx, bowlPath()); steam(ctx) }),
+    ("tab_meals_fill", { ctx in
+        fillPath(ctx, bowlPath()); strokePath(ctx, bowlPath())   // même silhouette que le contour
+        steam(ctx)
+    }),
     ("tab_sport", { ctx in
-        strokePath(ctx, rr(4, 9.5, 4.5, 9, 2.25))
-        strokePath(ctx, rr(19.5, 9.5, 4.5, 9, 2.25))
+        // Trait 2,6 (vs 2,4 ailleurs) : l'haltère était optiquement le plus léger des 5 (gate visuel).
+        strokePath(ctx, rr(4, 9.5, 4.5, 9, 2.25), width: 2.6)
+        strokePath(ctx, rr(19.5, 9.5, 4.5, 9, 2.25), width: 2.6)
         let bar = CGMutablePath(); bar.move(to: P(8.5, 14)); bar.addLine(to: P(19.5, 14))
-        strokePath(ctx, bar)
+        strokePath(ctx, bar, width: 2.6)
     }),
     ("tab_sport_fill", { ctx in
-        fillPath(ctx, rr(3.8, 9, 5.2, 10, 2.6))
-        fillPath(ctx, rr(19, 9, 5.2, 10, 2.6))
-        fillPath(ctx, pill(8, 12.6, 12, 2.8))
+        // MÊMES rects et barre que tab_sport, remplis sous les mêmes traits (2,6).
+        for r in [rr(4, 9.5, 4.5, 9, 2.25), rr(19.5, 9.5, 4.5, 9, 2.25)] {
+            fillPath(ctx, r); strokePath(ctx, r, width: 2.6)
+        }
+        let bar = CGMutablePath(); bar.move(to: P(8.5, 14)); bar.addLine(to: P(19.5, 14))
+        strokePath(ctx, bar, width: 2.6)
     }),
     ("tab_progress", { ctx in
         strokePath(ctx, leafLeft(), width: 2.2)
@@ -226,23 +169,29 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
         sproutLines(ctx)
     }),
     ("tab_progress_fill", { ctx in
-        fillPath(ctx, leafLeft()); fillPath(ctx, leafRight()); sproutLines(ctx)
+        for leaf in [leafLeft(), leafRight()] {
+            fillPath(ctx, leaf); strokePath(ctx, leaf, width: 2.2)   // même silhouette que le contour
+        }
+        sproutLines(ctx)
     }),
     ("tab_quests", { ctx in
         strokePath(ctx, cupPath()); trophyHandles(ctx); trophyStem(ctx)
         strokePath(ctx, trophyBase(), width: 2.2)
     }),
     ("tab_quests_fill", { ctx in
-        fillPath(ctx, cupPath()); trophyHandles(ctx); trophyStem(ctx)
-        fillPath(ctx, trophyBase())
+        // MÊMES tracés que tab_quests, remplis sous les mêmes traits.
+        fillPath(ctx, cupPath()); strokePath(ctx, cupPath())
+        trophyHandles(ctx); trophyStem(ctx)
+        fillPath(ctx, trophyBase()); strokePath(ctx, trophyBase(), width: 2.2)
     }),
     ("icon_settings", { ctx in
         strokePath(ctx, circle(14, 14, 5.6))
+        // Dents ATTACHÉES à l'anneau (gate visuel : détachées, ça lisait "soleil").
         for i in 0..<8 {
             let a = CGFloat(i) * .pi / 4
             let stub = CGMutablePath()
-            stub.move(to: P(14 + 8.2 * cos(a), 14 + 8.2 * sin(a)))
-            stub.addLine(to: P(14 + 10.2 * cos(a), 14 + 10.2 * sin(a)))
+            stub.move(to: P(14 + 6.6 * cos(a), 14 + 6.6 * sin(a)))
+            stub.addLine(to: P(14 + 9.0 * cos(a), 14 + 9.0 * sin(a)))
             strokePath(ctx, stub)
         }
         fillPath(ctx, circle(14, 14, 1.7))
@@ -290,6 +239,10 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
 // MARK: - Sorties
 
 let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+// Garde d'ancrage : à lancer depuis la RACINE du repo (sinon les sorties atterrissent n'importe où).
+guard FileManager.default.fileExists(atPath: root.appendingPathComponent("project.yml").path) else {
+    fatalError("Lancer depuis la racine du repo (project.yml introuvable dans \(root.path))")
+}
 let iconsDir = root.appendingPathComponent("App/Assets.xcassets/Icons")
 let designDir = root.appendingPathComponent("design/icons")
 let fm = FileManager.default
@@ -297,12 +250,12 @@ try? fm.removeItem(at: iconsDir)
 try fm.createDirectory(at: iconsDir, withIntermediateDirectories: true)
 try fm.createDirectory(at: designDir, withIntermediateDirectories: true)
 
-try #"""
+try (#"""
 {
   "info" : { "author" : "xcode", "version" : 1 },
   "properties" : { "provides-namespace" : true }
 }
-"""#.write(to: iconsDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
+"""# + "\n").write(to: iconsDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
 
 func drawFlipped(_ ctx: CGContext, _ draw: (CGContext) -> Void) {
     ctx.saveGState()
@@ -324,17 +277,17 @@ for glyph in glyphs {
     drawFlipped(ctx, glyph.draw)
     ctx.endPDFPage()
     ctx.closePDF()
-    try #"""
+    try (#"""
 {
   "images" : [ { "filename" : "\#(glyph.name).pdf", "idiom" : "universal" } ],
   "info" : { "author" : "xcode", "version" : 1 },
   "properties" : { "preserves-vector-representation" : true, "template-rendering-intent" : "template" }
 }
-"""#.write(to: setDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
+"""# + "\n").write(to: setDir.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
 }
 
 // Planche-contact PNG : chaque glyphe à 50px (≈25pt) et 100px (≈50pt), grille 2 rangées.
-let cell = 110, pad = 10
+let cell = 110
 let sheetW = glyphs.count * cell, sheetH = 2 * cell
 guard let bmp = CGContext(data: nil, width: sheetW, height: sheetH, bitsPerComponent: 8,
                           bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
@@ -363,57 +316,3 @@ else { fatalError("png") }
 CGImageDestinationAddImage(dest, img, nil)
 CGImageDestinationFinalize(dest)
 print("OK : \(glyphs.count) imagesets + contact-sheet.png")
-```
-
-⚠️ Détails susceptibles d'ajustement à la compilation (adapter mécaniquement, signaler) : `CGPath.copy(strokingWithWidth:...)` (existe, vérifier la signature), la couleur du glyphe dans `drawFlipped` est posée APRÈS le flip pour rester dans le GState — si un glyphe repose la couleur, la re-poser. Le `setFill/setStroke` orange dans la planche-contact écrase le noir : c'est voulu (aperçu teinté).
-
-- [ ] **Step 4 : Générer + BOUCLE QUALITÉ VISUELLE**
-
-`chmod +x` inutile (lancé via `swift scripts/gen-icons.swift`). Lancer, puis OUVRIR `design/icons/contact-sheet.png` (outil Read) et JUGER chaque glyphe : lisibilité à 50px (rangée du HAUT du PNG ≈ taille tab bar — origine bitmap CG en bas à gauche), équilibre optique entre les 5 onglets, coche bien évidée, flèche du restart correctement orientée. **Ajuster les coordonnées et re-générer autant que nécessaire.** Ne passer à la suite qu'avec une planche propre. Dans le rapport final, DONNER le chemin de la planche : le contrôleur la regardera aussi avant d'autoriser la Task 2.
-
-- [ ] **Step 5 : Vert** — `xcodegen generate && xcodebuild ... test` → TEST SUCCEEDED, **56 tests** (55 + 1).
-
-- [ ] **Step 6 : Commit** — `git add scripts/gen-icons.swift App/Assets.xcassets/Icons design/icons NivelTests/IconAssetsTests.swift Nivel.xcodeproj && git commit -m "feat(app): générateur d'icônes cozy (15 glyphes PDF template + planche-contact)"`
-
----
-
-## Task 2 : Intégration (remplacement des SF Symbols d'identité)
-
-**GATE : ne commencer qu'après validation de la planche-contact par le contrôleur.**
-
-**Files:**
-- Modify: `App/RootView.swift` (5 tabItems)
-- Modify: `App/Views/Home/HomeView.swift` (⚙️)
-- Modify: `App/Views/Sport/DailySessionCard.swift`, `App/Views/Sport/SessionPlayerSheet.swift`, `App/Views/Settings/SettingsView.swift`, `App/Views/Quests/QuestsView.swift`, `App/Views/Onboarding/OnboardingFlow.swift` (coches badge)
-- Modify: `App/Views/Sport/TimerRingView.swift` (play/pause/restart)
-
-- [ ] **Step 1 : Tab bar** — dans `MainTabView`, chaque `.tabItem { Label("X", systemImage: "...") }` devient (exemple Accueil) :
-```swift
-                .tabItem { Label("Accueil", image: selectedTab == .home ? "Icons/tab_home_fill" : "Icons/tab_home") }
-```
-Mapping : home→tab_home, meals→tab_meals, sport→tab_sport, progress→tab_progress, quests→tab_quests. Adapter le commentaire d'en-tête si besoin.
-
-- [ ] **Step 2 : ⚙️** — HomeView : `Image(systemName: "gearshape.fill")` → `Image("Icons/icon_settings")` (modifiers identiques).
-
-- [ ] **Step 3 : Coches badge (5 sites, PAS le radio d'onboarding — piège #5)** — remplacer `checkmark.circle.fill` par l'asset :
-`Label(..., systemImage: "checkmark.circle.fill")` → `Label(..., image: "Icons/icon_check")` ; `Image(systemName: "checkmark.circle.fill")` → `Image("Icons/icon_check")`. Sites : DailySessionCard (~l.43), SessionPlayerSheet (~l.169), SettingsView (~l.409), QuestsView (~l.127), OnboardingFlow (~l.461 UNIQUEMENT).
-
-- [ ] **Step 4 : Timer** — TimerRingView, les 4 `Label(..., systemImage:)` → `Label(..., image:)` : Lancer/Reprendre `Icons/icon_play`, Pause `Icons/icon_pause`, Recommencer `Icons/icon_restart`.
-
-- [ ] **Step 5 : Vert** — suite complète → 56 tests. Vérifier qu'AUCUN des symboles remplacés ne reste : `grep -rn 'house.fill\|fork.knife\|figure.walk\|chart.line.uptrend\|trophy.fill\|gearshape.fill' App` → vide ; `grep -rn 'checkmark.circle.fill' App` → exactement 1 hit (le radio d'OnboardingFlow ~l.356, dont la ligne ternaire contient l'unique occurrence restante) ; `grep -rn 'play.fill\|pause.fill\|arrow.counterclockwise' App` → vide.
-
-- [ ] **Step 6 : Commit** — `git add -A && git commit -m "feat(app): icônes cozy branchées (tab bar contour/rempli, ⚙️, coches, timer)"`
-
----
-
-## Task 3 : Version 1.7 + vérification finale
-
-**Files:**
-- Modify: `project.yml` (1.6/7 → 1.7/8)
-
-- [ ] **Step 1 : Bump** — `CFBundleShortVersionString: "1.7"`, `CFBundleVersion: "8"` dans les DEUX targets de `project.yml` (app ET Widgets — le commentaire du fichier l'exige : versions alignées sinon XcodeGen retombe sur 1.0/1), puis `xcodegen generate`.
-- [ ] **Step 2 : Suites** — NivelCore 51 + app 56, tout vert.
-- [ ] **Step 3 : Vérification simulateur (spec §7)** — tab bar : contour au repos, rempli + orange sur l'onglet actif, sur les 4 palettes (surtout Nuit douce) ; pas de rendu NOIR (piège #1) ; ⚙️, coches, boutons timer ; équilibre optique des 5 glyphes à taille réelle.
-- [ ] **Step 4 : Commit** — `git add -A && git commit -m "chore: version 1.7 (build 8)"`
-
-Fin de branche : options merge/PR présentées à Michaël.

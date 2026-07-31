@@ -458,7 +458,7 @@ private struct PermissionsPage: View {
             }
             Spacer()
             if asked {
-                Image(systemName: "checkmark.circle.fill")
+                CozyIcon(name: "icon_check", size: 26)
                     .font(.title2)
                     .foregroundStyle(Theme.green)
             } else {

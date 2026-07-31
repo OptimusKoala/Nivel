@@ -224,7 +224,7 @@ struct HomeView: View {
             Button {
                 showSettings = true
             } label: {
-                Image(systemName: "gearshape.fill")
+                CozyIcon(name: "icon_settings", size: 24)
             }
             .buttonStyle(CircleIconButtonStyle())
             .accessibilityLabel("Réglages")

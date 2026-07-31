@@ -28,7 +28,7 @@ Remplacer les SF Symbols **d'identité** par des glyphes dessinés dans le langa
 ## 3. Sources et pipeline
 
 - **Source de vérité UNIQUE** : `scripts/gen-icons.swift` (CoreGraphics pur, exécuté via `swift scripts/gen-icons.swift`, zéro dépendance) : les 15 glyphes y sont définis en primitives CG (arcs, béziers, rects arrondis — traduction fidèle des tracés validés en démo), canvas 28×28.
-- **Sorties générées** (les DEUX à chaque run, idempotent — philosophie `import-sport-images.sh`) :
+- **Sorties générées** (les DEUX à chaque run ; contenu déterministe — les PDF portent des métadonnées de date Quartz, seuls artefacts variables entre deux runs, contrairement à `import-sport-images.sh` qui est byte-idempotent) :
   1. **PDF vectoriels** dans `App/Assets.xcassets/Icons/` (dossier à namespace) — imagesets universal, single scale, `preserves-vector-representation: true`, `template-rendering-intent: template` : teinte automatique (orange/taupe, les 4 palettes suivent), scaling propre ;
   2. **Exports de référence** dans `design/icons/` : une planche-contact PNG (`contact-sheet.png`, chaque glyphe à 25pt et 50pt) pour la relecture visuelle — c'est l'outil du contrôle qualité avant intégration.
 - Un seul endroit à éditer pour retoucher un glyphe ; pas de double maintenance SVG↔code.
@@ -36,10 +36,10 @@ Remplacer les SF Symbols **d'identité** par des glyphes dessinés dans le langa
 ## 4. Intégration
 
 - **`RootView.MainTabView`** : chaque `tabItem` devient `Label("Accueil", image: selectedTab == .home ? "Icons/tab_home_fill" : "Icons/tab_home")` (le body se ré-évalue à chaque changement de sélection — pattern standard). Idem pour les 5 onglets.
-- **`HomeView`** : `Image(systemName: "gearshape.fill")` → `Image("Icons/icon_settings")` (mêmes modifiers).
-- **Coches** : les 5 `checkmark.circle.fill` → `Image("Icons/icon_check")` (dans les `Label`, la partie texte ne change pas).
-- **Timer (`TimerRingView.TimerButtons`)** : `Label(..., systemImage:)` → `Label(..., image:)` avec `icon_play`/`icon_pause`/`icon_restart`.
-- Les `Label` gardent leurs textes : rien ne change pour VoiceOver.
+- **`HomeView`** et tous les sites hors tab bar : via le composant **`CozyIcon(name:size:)`** — un asset PDF IGNORE `.font()` (contrairement à un SF Symbol), la taille est donc explicite (size ≈ encre voulue / 0,76), et `Image(decorative:)` évite que VoiceOver annonce l'id d'asset.
+- **Coches** : les 5 `checkmark.circle.fill` → `CozyIcon(name: "icon_check", size: ...)` (dans les `Label`, via le builder `Label { Text } icon: { CozyIcon }` — le texte a11y ne change pas).
+- **Timer (`TimerRingView.TimerButtons`)** : `Label { Text } icon: { CozyIcon(...) }` avec `icon_play`/`icon_pause`/`icon_restart` (size 20).
+- Les `Label` gardent leurs textes ; les icônes sont `decorative` : VoiceOver lit les textes, jamais les ids d'assets.
 
 ## 5. Ce qui ne change PAS
 
@@ -52,6 +52,6 @@ Aucune logique, aucun modèle, aucun test métier. Chevrons/trash/steppers/spark
 
 ## 7. Points d'attention
 
-- **Taille tab bar** : glyphes dessinés plein cadre 28×28 ; iOS affiche ~25pt — vérifier l'équilibre optique entre les 5 (la pousse et l'haltère sont plus « légers » que la maison, ajuster les épaisseurs si besoin au simulateur).
+- **Taille tab bar** : glyphes dessinés sur canvas 28×28 (~76 % d'encre, ~3,5pt de marge par bord) ; iOS affiche ~25pt — vérifier l'équilibre optique entre les 5 (la pousse et l'haltère sont plus « légers » que la maison, ajuster les épaisseurs si besoin au simulateur).
 - **PDF template** : bien poser `template-rendering-intent` dans le Contents.json, sinon les PDF s'affichent en noir. Ce sont les PREMIERS imagesets PDF template du catalogue (Sport/ = JPEG) : valider UN glyphe à 25pt au simulateur (teinte, netteté) avant de générer les 15.
 - **Le switch contour/rempli au tap** doit être instantané (pas d'animation nécessaire, le cross-fade natif de la tab bar suffit).

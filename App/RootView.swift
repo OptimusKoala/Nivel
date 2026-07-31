@@ -67,7 +67,7 @@ private struct MainTabView: View {
             HomeView()
                 .id(dayKey)
                 .themedTabBar()
-                .tabItem { Label("Accueil", systemImage: "house.fill") }
+                .tabItem { Label("Accueil", image: selectedTab == .home ? "Icons/tab_home_fill" : "Icons/tab_home") }
                 .tag(Tab.home)
 
             // .id(dayKey) : comme l'accueil, le journal repart sur "aujourd'hui"
@@ -75,7 +75,7 @@ private struct MainTabView: View {
             MealsJournalView()
                 .id(dayKey)
                 .themedTabBar()
-                .tabItem { Label("Repas", systemImage: "fork.knife") }
+                .tabItem { Label("Repas", image: selectedTab == .meals ? "Icons/tab_meals_fill" : "Icons/tab_meals") }
                 .tag(Tab.meals)
 
             // .id(dayKey) : la séance du jour et « Fait aujourd'hui » repartent
@@ -83,14 +83,14 @@ private struct MainTabView: View {
             SportView()
                 .id(dayKey)
                 .themedTabBar()
-                .tabItem { Label("Sport", systemImage: "figure.walk") }
+                .tabItem { Label("Sport", image: selectedTab == .sport ? "Icons/tab_sport_fill" : "Icons/tab_sport") }
                 .tag(Tab.sport)
 
             // .id(dayKey) : les bornes "aujourd'hui" (pas, pesée) suivent le changement de jour.
             ProgressScreen()
                 .id(dayKey)
                 .themedTabBar()
-                .tabItem { Label("Progrès", systemImage: "chart.line.uptrend.xyaxis") }
+                .tabItem { Label("Progrès", image: selectedTab == .progress ? "Icons/tab_progress_fill" : "Icons/tab_progress") }
                 .tag(Tab.progress)
 
             // .id(dayKey) : le refresh des quêtes (.task) repart au changement de jour
@@ -98,7 +98,7 @@ private struct MainTabView: View {
             QuestsView()
                 .id(dayKey)
                 .themedTabBar()
-                .tabItem { Label("Quêtes", systemImage: "trophy.fill") }
+                .tabItem { Label("Quêtes", image: selectedTab == .quests ? "Icons/tab_quests_fill" : "Icons/tab_quests") }
                 .tag(Tab.quests)
         }
         .tint(Theme.orange)
