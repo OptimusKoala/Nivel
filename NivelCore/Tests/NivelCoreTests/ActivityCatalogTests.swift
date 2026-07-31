@@ -60,29 +60,26 @@ final class ActivityCatalogTests: XCTestCase {
     func testEveryActivityHasInstructions() throws {
         for activity in try Catalogs.activities() {
             XCTAssertGreaterThanOrEqual(activity.instructions.count, 3, activity.id)
-            XCTAssertTrue(activity.instructions.allSatisfy { !$0.isEmpty }, activity.id)
+            XCTAssertLessThanOrEqual(activity.instructions.count, 4, activity.id)
+            XCTAssertTrue(activity.instructions.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty }, activity.id)
         }
     }
 
     func testEverySessionStepHasTempo() throws {
         for session in try Catalogs.sessions() {
             for step in session.steps {
-                XCTAssertFalse(step.tempo.isEmpty, "\(session.id)/\(step.activityID)")
+                XCTAssertFalse(step.tempo.trimmingCharacters(in: .whitespaces).isEmpty, "\(session.id)/\(step.activityID)")
             }
         }
     }
 
-    func testUserFacingSportTextsHaveNoEmDash() throws {
-        // Convention de la branche (commit « remove em dashes ») : aucun — dans les textes.
-        for activity in try Catalogs.activities() {
-            for line in activity.instructions {
-                XCTAssertFalse(line.contains("—"), "\(activity.id): \(line)")
-            }
-        }
-        for session in try Catalogs.sessions() {
-            for step in session.steps {
-                XCTAssertFalse(step.tempo.contains("—"), "\(session.id)/\(step.activityID)")
-            }
+    func testNoBundleResourceContainsEmDash() throws {
+        // Convention v1.2 : aucun tiret cadratin dans les textes utilisateur.
+        let urls = Bundle.module.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
+        XCTAssertFalse(urls.isEmpty)
+        for url in urls {
+            let content = try String(contentsOf: url, encoding: .utf8)
+            XCTAssertFalse(content.contains("—"), url.lastPathComponent)
         }
     }
 }

@@ -25,7 +25,7 @@ public struct Activity: Codable, Identifiable, Hashable, Sendable {
 public struct SessionStep: Codable, Hashable, Sendable {
     public let activityID: String
     public let minutes: Int
-    /// Rythme suggéré de l'étape, affiché en badge dans le player (spec §4.2).
+    /// Rythme suggéré et petits rappels de forme, affiché en badge dans le player (spec §4.2).
     /// Jamais un programme rigide : une suggestion, pas un chrono.
     public let tempo: String
     public init(activityID: String, minutes: Int, tempo: String) {

@@ -1,14 +1,14 @@
 [
   {"id": "wake_up",           "title": "Réveil musculaire",   "emoji": "🌅", "steps": [
-    {"activityID": "stretching", "minutes": 4, "tempo": "~30 s par position : bras, nuque, dos, jambes"},
+    {"activityID": "stretching", "minutes": 4, "tempo": "~30 s par position : bras, nuque, dos, jambes, deux tours"},
     {"activityID": "squats",     "minutes": 4, "tempo": "~10 squats tranquilles × 3, avec des pauses"},
     {"activityID": "plank",      "minutes": 3, "tempo": "3 × ~30 s, repos entre chaque, genoux posés si besoin"}]},
   {"id": "energy_break",      "title": "Pause énergie",       "emoji": "⚡", "steps": [
     {"activityID": "stairs",     "minutes": 5, "tempo": "Monte et descends à ton rythme, pause à mi-parcours"},
-    {"activityID": "dance",      "minutes": 5, "tempo": "2-3 morceaux, lâche-toi !"},
+    {"activityID": "dance",      "minutes": 5, "tempo": "1-2 morceaux, lâche-toi !"},
     {"activityID": "stretching", "minutes": 3, "tempo": "Jambes et dos, ~30 s par étirement"}]},
   {"id": "evening_wind_down", "title": "Détente du soir",     "emoji": "🌙", "steps": [
-    {"activityID": "yoga",       "minutes": 8, "tempo": "3-4 postures douces, tenues 4-5 respirations"},
+    {"activityID": "yoga",       "minutes": 8, "tempo": "5-6 postures douces, tenues 4-5 respirations"},
     {"activityID": "stretching", "minutes": 5, "tempo": "Étirements lents, ~40 s chacun, pour préparer la nuit"}]},
   {"id": "quick_tone",        "title": "Tonus express",       "emoji": "💪", "steps": [
     {"activityID": "squats",       "minutes": 4, "tempo": "~10 squats × 3, la dernière série plus lente"},
@@ -20,11 +20,11 @@
     {"activityID": "dance",      "minutes": 10, "tempo": "3-4 morceaux qui font du bien, sans retenue"},
     {"activityID": "stretching", "minutes": 4,  "tempo": "Redescends en douceur, ~30 s par étirement"}]},
   {"id": "zen_core",          "title": "Zen & gainage",       "emoji": "🧘", "steps": [
-    {"activityID": "yoga",       "minutes": 6, "tempo": "2-3 postures d'équilibre, 5 respirations chacune"},
+    {"activityID": "yoga",       "minutes": 6, "tempo": "3-4 postures d'équilibre, un mur à portée de main"},
     {"activityID": "plank",      "minutes": 4, "tempo": "3 × ~40 s, concentration sur la respiration"},
     {"activityID": "stretching", "minutes": 4, "tempo": "Dos et épaules, lentement"}]},
   {"id": "home_cardio",       "title": "Cardio maison",       "emoji": "🪜", "steps": [
-    {"activityID": "stairs",     "minutes": 6, "tempo": "3 allers-retours, pause entre chaque"},
+    {"activityID": "stairs",     "minutes": 6, "tempo": "4-5 allers-retours, pause entre chaque"},
     {"activityID": "squats",     "minutes": 3, "tempo": "~10 squats × 2, bien poussés dans les talons"},
     {"activityID": "stretching", "minutes": 4, "tempo": "Jambes surtout : mollets, cuisses, ~30 s chacun"}]}
 ]

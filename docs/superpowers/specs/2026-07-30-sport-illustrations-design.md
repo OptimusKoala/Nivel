@@ -30,18 +30,18 @@ Donner un visage aux sports : chaque activité et chaque séance est illustrée 
 
 | id | instructions |
 |---|---|
-| walk | Garde le dos droit, les épaules relâchées · Marche d'un bon pas, les bras balancent naturellement · Respire régulièrement, la conversation doit rester possible |
+| walk | Garde le dos droit, les épaules relâchées · Marche d'un pas régulier, les bras balancent naturellement · Respire régulièrement : la conversation doit rester possible |
 | brisk_walk | Accélère le pas jusqu'à sentir le souffle monter · Les bras accompagnent, coudes pliés · Garde une foulée confortable, vitesse ne veut pas dire course |
 | bike | Règle la selle : jambe presque tendue en bas de pédale · Pédale à un rythme régulier, sans forcer · Change de vitesse plutôt que de forcer sur les jambes |
 | stairs | Monte marche par marche, pose tout le pied · Aide-toi de la rampe si besoin · Redescends tranquillement, la descente compte aussi · Fais une pause dès que les jambes brûlent trop |
 | dance | Mets ta musique préférée, personne ne regarde · Bouge tout : bras, hanches, tête · Un léger essoufflement est bon signe, amuse-toi |
 | stretching | Étire-toi lentement, sans à-coups · Tiens chaque position environ 30 secondes · La tension doit rester agréable, jamais de douleur · Respire profondément pendant l'étirement |
-| plank | Avant-bras au sol, coudes sous les épaules · Corps aligné des épaules aux talons · Serre le ventre, ne creuse pas le dos · Pose les genoux quand ça tremble trop, c'est normal |
-| squats | Pieds écartés largeur d'épaules · Descends comme pour t'asseoir sur une chaise · Le dos reste droit, les talons au sol · Remonte en poussant dans les talons |
+| plank | Avant-bras au sol, coudes sous les épaules · Corps aligné des épaules aux talons · Serre le ventre, souffle régulier, ne creuse pas le dos · Pose les genoux quand ça tremble trop, c'est normal |
+| squats | Pieds écartés largeur d'épaules · Descends comme pour t'asseoir sur une chaise · Le dos reste droit, les talons au sol · Remonte en poussant dans les talons, genoux dans l'axe des pieds |
 | wall_pushups | Face au mur, mains à plat largeur d'épaules · Recule d'un pas, corps bien aligné · Plie les coudes pour approcher le mur, puis repousse · Plus les pieds sont loin du mur, plus c'est intense |
 | active_cleaning | Mets de la musique et accélère le mouvement · Alterne les tâches pour faire bouger tout le corps · Plie les genoux pour ramasser, pas le dos |
 | yoga | Installe-toi au calme, sur un tapis si possible · Enchaîne des postures simples, tenues quelques respirations · Concentre-toi sur une respiration lente et profonde · Ne force jamais une posture |
-| digestive_walk | Pars tranquillement, 10 à 20 minutes après le repas · Rythme doux : c'est une balade, pas une marche sportive · Profites-en pour prendre l'air et souffler |
+| digestive_walk | Attends 10 à 20 minutes après le repas, puis pars tranquillement · Rythme doux : c'est une balade, pas une marche sportive · Profites-en pour prendre l'air et souffler |
 
 ### 4.2 `SessionStep.tempo: String` (nouveau champ requis)
 
@@ -49,13 +49,13 @@ Le rythme suggéré de chaque étape, affiché en badge dans le player. Contenu 
 
 | Séance | Étape | tempo |
 |---|---|---|
-| wake_up | stretching 4 min | ~30 s par position : bras, nuque, dos, jambes |
+| wake_up | stretching 4 min | ~30 s par position : bras, nuque, dos, jambes, deux tours |
 | wake_up | squats 4 min | ~10 squats tranquilles × 3, avec des pauses |
 | wake_up | plank 3 min | 3 × ~30 s, repos entre chaque, genoux posés si besoin |
 | energy_break | stairs 5 min | Monte et descends à ton rythme, pause à mi-parcours |
-| energy_break | dance 5 min | 2-3 morceaux, lâche-toi ! |
+| energy_break | dance 5 min | 1-2 morceaux, lâche-toi ! |
 | energy_break | stretching 3 min | Jambes et dos, ~30 s par étirement |
-| evening_wind_down | yoga 8 min | 3-4 postures douces, tenues 4-5 respirations |
+| evening_wind_down | yoga 8 min | 5-6 postures douces, tenues 4-5 respirations |
 | evening_wind_down | stretching 5 min | Étirements lents, ~40 s chacun, pour préparer la nuit |
 | quick_tone | squats 4 min | ~10 squats × 3, la dernière série plus lente |
 | quick_tone | wall_pushups 4 min | ~8 pompes × 3, coudes près du corps |
@@ -63,10 +63,10 @@ Le rythme suggéré de chaque étape, affiché en badge dans le player. Contenu 
 | fresh_air | walk 15 min | Un tour de quartier d'un bon pas, en respirant à fond |
 | mood_boost | dance 10 min | 3-4 morceaux qui font du bien, sans retenue |
 | mood_boost | stretching 4 min | Redescends en douceur, ~30 s par étirement |
-| zen_core | yoga 6 min | 2-3 postures d'équilibre, 5 respirations chacune |
+| zen_core | yoga 6 min | 3-4 postures d'équilibre, un mur à portée de main |
 | zen_core | plank 4 min | 3 × ~40 s, concentration sur la respiration |
 | zen_core | stretching 4 min | Dos et épaules, lentement |
-| home_cardio | stairs 6 min | 3 allers-retours, pause entre chaque |
+| home_cardio | stairs 6 min | 4-5 allers-retours, pause entre chaque |
 | home_cardio | squats 3 min | ~10 squats × 2, bien poussés dans les talons |
 | home_cardio | stretching 4 min | Jambes surtout : mollets, cuisses, ~30 s chacun |
 

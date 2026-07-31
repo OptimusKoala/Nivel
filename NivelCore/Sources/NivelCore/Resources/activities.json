@@ -1,6 +1,6 @@
 [
   {"id": "walk",            "name": "Marche",               "emoji": "🚶",  "location": "outdoor", "kcalPerMin": 4.0, "durations": [10, 20, 40],
-   "instructions": ["Garde le dos droit, les épaules relâchées", "Marche d'un bon pas, les bras balancent naturellement", "Respire régulièrement : la conversation doit rester possible"]},
+   "instructions": ["Garde le dos droit, les épaules relâchées", "Marche d'un pas régulier, les bras balancent naturellement", "Respire régulièrement : la conversation doit rester possible"]},
   {"id": "brisk_walk",      "name": "Marche rapide",        "emoji": "🚶‍♀️", "location": "outdoor", "kcalPerMin": 5.5, "durations": [10, 20, 30],
    "instructions": ["Accélère le pas jusqu'à sentir le souffle monter", "Les bras accompagnent, coudes pliés", "Garde une foulée confortable, vitesse ne veut pas dire course"]},
   {"id": "bike",            "name": "Vélo tranquille",      "emoji": "🚴",  "location": "outdoor", "kcalPerMin": 6.0, "durations": [15, 30, 45],
@@ -12,9 +12,9 @@
   {"id": "stretching",      "name": "Étirements",           "emoji": "🧘",  "location": "home",    "kcalPerMin": 2.5, "durations": [5, 10, 15],
    "instructions": ["Étire-toi lentement, sans à-coups", "Tiens chaque position environ 30 secondes", "La tension doit rester agréable, jamais de douleur", "Respire profondément pendant l'étirement"]},
   {"id": "plank",           "name": "Gainage / planche",    "emoji": "🧎",  "location": "home",    "kcalPerMin": 4.0, "durations": [3, 5, 8],
-   "instructions": ["Avant-bras au sol, coudes sous les épaules", "Corps aligné des épaules aux talons", "Serre le ventre, ne creuse pas le dos", "Pose les genoux quand ça tremble trop, c'est normal"]},
+   "instructions": ["Avant-bras au sol, coudes sous les épaules", "Corps aligné des épaules aux talons", "Serre le ventre, souffle régulier, ne creuse pas le dos", "Pose les genoux quand ça tremble trop, c'est normal"]},
   {"id": "squats",          "name": "Squats",               "emoji": "🦵",  "location": "home",    "kcalPerMin": 5.5, "durations": [3, 5, 10],
-   "instructions": ["Pieds écartés largeur d'épaules", "Descends comme pour t'asseoir sur une chaise", "Le dos reste droit, les talons au sol", "Remonte en poussant dans les talons"]},
+   "instructions": ["Pieds écartés largeur d'épaules", "Descends comme pour t'asseoir sur une chaise", "Le dos reste droit, les talons au sol", "Remonte en poussant dans les talons, genoux dans l'axe des pieds"]},
   {"id": "wall_pushups",    "name": "Pompes murales",       "emoji": "🧱",  "location": "home",    "kcalPerMin": 4.0, "durations": [3, 5, 8],
    "instructions": ["Face au mur, mains à plat largeur d'épaules", "Recule d'un pas, corps bien aligné", "Plie les coudes pour approcher le mur, puis repousse", "Plus les pieds sont loin du mur, plus c'est intense"]},
   {"id": "active_cleaning", "name": "Ménage actif",         "emoji": "🧹",  "location": "home",    "kcalPerMin": 3.5, "durations": [15, 30, 45],
@@ -22,5 +22,5 @@
   {"id": "yoga",            "name": "Yoga doux",            "emoji": "🧘‍♀️", "location": "home",    "kcalPerMin": 3.0, "durations": [10, 20, 30],
    "instructions": ["Installe-toi au calme, sur un tapis si possible", "Enchaîne des postures simples, tenues quelques respirations", "Concentre-toi sur une respiration lente et profonde", "Ne force jamais une posture"]},
   {"id": "digestive_walk",  "name": "Balade digestive",     "emoji": "🌳",  "location": "outdoor", "kcalPerMin": 3.5, "durations": [10, 15, 20],
-   "instructions": ["Pars tranquillement, 10 à 20 minutes après le repas", "Rythme doux : c'est une balade, pas une marche sportive", "Profites-en pour prendre l'air et souffler"]}
+   "instructions": ["Attends 10 à 20 minutes après le repas, puis pars tranquillement", "Rythme doux : c'est une balade, pas une marche sportive", "Profites-en pour prendre l'air et souffler"]}
 ]
