@@ -345,7 +345,7 @@ struct TimerControls: View {
 }
 ```
 
-⚠️ ADAPTER aux signatures réelles de `PrimaryButtonStyle`/`SecondaryButtonStyle` (lire `Theme.swift` : si `PrimaryButtonStyle(size:)` n'a pas de variante compacte, utiliser la forme existante la plus proche — ne PAS inventer de style inline). Si un helper de format existe déjà, le réutiliser.
+⚠️ Les signatures `PrimaryButtonStyle(size: .compact)` / `SecondaryButtonStyle()` sont vérifiées contre `Theme.swift` (elles compilent telles quelles). Le `LinearGradient` inline de l'ANNEAU est VOULU (même gradient que la famille d'anneaux/CTA maison — le piège #5 vise les boutons, pas les strokes d'anneau). Si un helper de format de temps existe déjà, le réutiliser.
 
 - [ ] **Step 2 : Previews** — dans le même fichier : anneau idle (fraction 0), en cours (0.6 avec segments 3), finished (1, vert), + un preview TimerControls par état (modèle piloté avec `start(at:)`/dates fixes).
 
@@ -360,7 +360,7 @@ struct TimerControls: View {
 **Files:**
 - Modify: `App/Views/Sport/SessionPlayerSheet.swift`
 
-- [ ] **Step 1 : Extraire `StepPageView`** — transformer la fonction privée `stepPage(_:number:)` en struct privée `StepPageView` (dans le même fichier) : propriétés `step: SessionStep`, `number: Int`, `stepCount: Int`, `activity: Activity?`, `finished: Binding<Bool>` OU closure `onFinished` — voir Step 2. Le `ForEach` l'instancie : `StepPageView(...).tag(index + 1)`. Aucun changement visuel à cette étape hors timer.
+- [ ] **Step 1 : Extraire `StepPageView`** — transformer la fonction privée `stepPage(_:number:)` en struct privée `StepPageView` (dans le même fichier) : propriétés `step: SessionStep`, `number: Int`, `stepCount: Int`, `activity: Activity?`, **`isCurrent: Bool`** (le parent passe `page == index + 1`) et **closure `onTimerFinished: () -> Void`** (forme retenue — pas de Binding). Le `ForEach` l'instancie : `StepPageView(..., isCurrent: page == index + 1, onTimerFinished: { ... }).tag(index + 1)`. Aucun changement visuel à cette étape hors timer.
 
 - [ ] **Step 2 : Intégrer le timer dans `StepPageView`**
 
@@ -376,7 +376,9 @@ struct TimerControls: View {
 ```
 - Envelopper le contenu de la page dans `TimelineView(.periodic(from: .now, by: 1)) { context in ... }` (le `now = context.date` alimente ring + contrôles). ⚠️ Ne PAS muter le modèle dans le body : la détection de fin passe par `.onChange(of: context.date)` (ou un `.task` par seconde) qui appelle `timer.syncNow()` ; quand il retourne `true` → haptique `.success` + `AudioServicesPlaySystemSound(1103)` (import AudioToolbox ; le son respecte le mode silencieux) + notifier le parent (voir pulse).
 - `TimerControls(timer: timer, now: context.date)` sous le badge tempo.
-- **Écran allumé** : `.onChange(of: timer.isRunning) { UIApplication.shared.isIdleTimerDisabled = $0 }` ET `.onDisappear { UIApplication.shared.isIdleTimerDisabled = false }` (chaque sortie de page/dismiss relâche — piège #3).
+- **Écran allumé** : `.onChange(of: timer.isRunning) { UIApplication.shared.isIdleTimerDisabled = $0 }` ET `.onDisappear { UIApplication.shared.isIdleTimerDisabled = false }`.
+- ⚠️ **`TabView(.page)` garde les pages adjacentes VIVANTES : `onDisappear` ne se déclenche PAS au swipe.** D'où `isCurrent` : `.onChange(of: isCurrent) { _, current in if !current { timer.reset(); UIApplication.shared.isIdleTimerDisabled = false } }` — quitter la page abandonne le timer (spec §3.1) et relâche l'écran (piège #3). Sans ça : timer fantôme qui sonne depuis une page invisible + batterie vidée.
+- **Son/haptique honnêtes** : au `syncNow() == true`, ne jouer haptique+son QUE si `isCurrent` ET si la fin vient d'arriver (dépassement < 2 s : `context.date.timeIntervalSince(dateDeFinThéorique) < 2`) — un timer expiré pendant que l'app était en arrière-plan affiche l'état fini sans sonner (spec §5).
 - Garder l'ordre visuel : ring → nom/« Étape i/n » → puces → tempo → contrôles (ajuster l'espacement pour rester lisible ; le ScrollView absorbe le reste).
 
 - [ ] **Step 3 : Pulse du CTA (spec §5, contrat exact)**
