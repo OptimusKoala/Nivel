@@ -18,12 +18,12 @@ Remplacer les SF Symbols **d'identité** par des glyphes dessinés dans le langa
 | `tab_progress` / `tab_progress_fill` | Pousse (2 feuilles + sol) | contour + rempli | `chart.line.uptrend.xyaxis` | Tab bar Progrès |
 | `tab_quests` / `tab_quests_fill` | Trophée joufflu | contour + rempli | `trophy.fill` | Tab bar Quêtes |
 | `icon_settings` | Engrenage dodu | contour | `gearshape.fill` | ⚙️ accueil (HomeView) |
-| `icon_check` | Sceau de validation rond | rempli | `checkmark.circle.fill` | « Faite ! », « Déjà faite » et autres coches (5 usages) |
+| `icon_check` | Sceau de validation rond | rempli | `checkmark.circle.fill` | Les 5 usages « badge/statut » : DailySessionCard, SessionPlayerSheet, badge de thème (Settings), badge de quête complétée (Quêtes), badge de permission (Onboarding). ⚠️ Le 6ᵉ usage (OnboardingFlow, radio de sélection `checkmark.circle.fill`/`circle`) reste en SF : c'est un contrôle de formulaire, pas un badge — le passer en cozy créerait un clash avec son état vide natif. |
 | `icon_play` | Triangle play dodu | rempli | `play.fill` | Timer : Lancer, Reprendre |
 | `icon_pause` | Deux barres rondes | rempli | `pause.fill` | Timer : Pause |
 | `icon_restart` | Flèche circulaire dodue | contour | `arrow.counterclockwise` | Timer : Recommencer |
 
-**Restent en SF Symbols (volontaire)** : chevrons de navigation, `trash` des swipes, `plus/minus.circle.fill` des steppers, `sparkles`/`sparkle` des célébrations. Utilitaire = natif (familiarité, accessibilité). Les **widgets** (v1.6) ne sont pas touchés.
+**Restent en SF Symbols (volontaire)** : chevrons de navigation, `trash` des swipes, `plus/minus.circle.fill` des steppers, `sparkles`/`sparkle` des célébrations (décoratifs, vérifiés), et le radio de sélection de l'onboarding (voir table). Utilitaire = natif (familiarité, accessibilité). Les **widgets** (v1.6) ne sont pas touchés.
 
 ## 3. Sources et pipeline
 
@@ -52,5 +52,5 @@ Aucune logique, aucun modèle, aucun test métier. Chevrons/trash/steppers/spark
 ## 7. Points d'attention
 
 - **Taille tab bar** : glyphes dessinés plein cadre 28×28 ; iOS affiche ~25pt — vérifier l'équilibre optique entre les 5 (la pousse et l'haltère sont plus « légers » que la maison, ajuster les épaisseurs si besoin au simulateur).
-- **PDF template** : bien poser `template-rendering-intent` dans le Contents.json, sinon les PDF s'affichent en noir.
+- **PDF template** : bien poser `template-rendering-intent` dans le Contents.json, sinon les PDF s'affichent en noir. Ce sont les PREMIERS imagesets PDF template du catalogue (Sport/ = JPEG) : valider UN glyphe à 25pt au simulateur (teinte, netteté) avant de générer les 15.
 - **Le switch contour/rempli au tap** doit être instantané (pas d'animation nécessaire, le cross-fade natif de la tab bar suffit).
