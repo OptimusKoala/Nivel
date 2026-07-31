@@ -140,6 +140,9 @@ final class GameService {
     func saveOrAssert() {
         do {
             try modelContext.save()
+            // Chaque état persisté part vers le widget (spec widgets §5) —
+            // couvre repas, pesées, activités, clôture de journée, quêtes.
+            syncWidget()
         } catch {
             assertionFailure("SwiftData save failed: \(error)")
         }
@@ -533,7 +536,8 @@ final class GameService {
     }
 
     /// Total mangé (somme des MealEntry) du jour contenant `date`.
-    private func kcalEaten(on date: Date) -> Int {
+    /// internal : aussi utilisée par GameService+WidgetSync.swift.
+    func kcalEaten(on date: Date) -> Int {
         guard let (start, end) = dayBounds(for: date) else { return 0 }
         return fetchMeals(from: start, to: end).reduce(0) { $0 + $1.estimatedKcal }
     }

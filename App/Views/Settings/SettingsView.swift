@@ -29,6 +29,7 @@ private struct SettingsContent: View {
     @Bindable var profile: UserProfile
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
+    @Environment(GameService.self) private var game
     @Query(sort: \WeightEntry.date) private var weights: [WeightEntry]
 
     @State private var kcalText = ""
@@ -257,6 +258,9 @@ private struct SettingsContent: View {
                                     isSelected: ThemeStore.shared.palette.id == palette.id) {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             ThemeStore.shared.palette = palette
+                            // Le thème vit dans UserDefaults, hors SwiftData : aucune
+                            // sauvegarde ne déclenche le hook, on synchronise ici.
+                            game.syncWidget()
                         }
                     }
                 }
@@ -359,6 +363,9 @@ private struct SettingsContent: View {
     private func save() {
         do {
             try modelContext.save()
+            // Ce chemin ne passe pas par GameService.saveOrAssert : prénom et
+            // objectif kcal sont dans le snapshot, on synchronise donc ici aussi.
+            game.syncWidget()
         } catch {
             assertionFailure("SwiftData save failed in SettingsView: \(error)")
         }

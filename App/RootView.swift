@@ -119,11 +119,15 @@ private struct MainTabView: View {
 
     /// Rattrapage au premier plan (spec §9) — ORDRE contractuel :
     /// 1. clôture des journées passées (XP, DayLogs, renouvellement des quêtes),
-    /// 2. re-planification des rappels (les textes de la banque se renouvellent, spec §10).
+    /// 2. synchronisation du widget (après la clôture : le snapshot part à jour),
+    /// 3. re-planification des rappels (les textes de la banque se renouvellent, spec §10).
     private func onForeground() {
         dayKey = Self.currentDayKey()
         Task {
             await gameService.closeOpenDays()
+            // Rattrape minuit passé app fermée : aucune sauvegarde n'a lieu s'il
+            // n'y avait rien à clôturer, donc le hook de saveOrAssert ne suffit pas.
+            gameService.syncWidget()
             rescheduleReminders()
         }
     }

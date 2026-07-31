@@ -12,6 +12,7 @@
 		13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD0D49D1E0B2314767BA85A /* DayCloser.swift */; };
 		1B36CC033AB07BEB581D664D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9782153DD5F0B9BABA5132F1 /* Theme.swift */; };
 		1D1E36C74A9B09A9D1678F59 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
+		1FF19C44AD93A713440F748D /* GameService+WidgetSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */; };
 		229BF4CEFB8B9929D59ED697 /* WidgetSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B501D130466BA533B52476E1 /* WidgetSyncTests.swift */; };
 		291CD5438E6A3A57272E0D3D /* WidgetNivelito.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */; };
 		3823F2CEF73FE2E0AF8B05D6 /* AccessoryWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */; };
@@ -116,6 +117,7 @@
 		3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNivelito.swift; sourceTree = "<group>"; };
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameService+WidgetSync.swift"; sourceTree = "<group>"; };
 		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
 		4E4AF60C635E23219D03138E /* ThemePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePalette.swift; sourceTree = "<group>"; };
 		50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerSheet.swift; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 				7FD0D49D1E0B2314767BA85A /* DayCloser.swift */,
 				6A1F6969B88BCA1A9BE77195 /* GameService.swift */,
 				6909EF00448EC3D59E1F1401 /* GameService+Sport.swift */,
+				46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */,
 				2749E47DBFD2A5D89042A89E /* HealthKitService.swift */,
 				B1E734571AD23AE4CDC74D01 /* NotificationService.swift */,
 			);
@@ -538,6 +541,7 @@
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */,
 				5A7B97883F447747C5AC4269 /* GameService+Sport.swift in Sources */,
+				1FF19C44AD93A713440F748D /* GameService+WidgetSync.swift in Sources */,
 				FDCB8202104609DE46003A7A /* GameService.swift in Sources */,
 				FF12E9FD2218E9B1A09DFA9A /* HealthKitService.swift in Sources */,
 				83A569C9282E797637B0C790 /* HomeView.swift in Sources */,
