@@ -1,92 +1,162 @@
+<div align="center">
+
+<img src="docs/logo.png" alt="Nivelito, la mascotte de Nivel" width="168"/>
+
 # Nivel
 
-<p align="center">
-  <img src="design/appicon.svg" alt="Nivelito, la mascotte de Nivel" width="160"/>
+**Perdre du poids en douceur, sans jamais culpabiliser.**
+
+Une app iOS gamifiée façon jeu vidéo cozy, en français, entièrement locale.
+
+<p>
+  <img src="https://img.shields.io/badge/iOS-17%2B-f57c1f?style=flat-square" alt="iOS 17+"/>
+  <img src="https://img.shields.io/badge/SwiftUI-SwiftData-f57c1f?style=flat-square" alt="SwiftUI + SwiftData"/>
+  <img src="https://img.shields.io/badge/WidgetKit-4%20familles-f57c1f?style=flat-square" alt="WidgetKit"/>
+  <img src="https://img.shields.io/badge/tests-74%20core%20%2B%2056%20app-3a1220?style=flat-square" alt="74 tests NivelCore + 56 tests app"/>
+  <img src="https://img.shields.io/badge/version-1.8-3a1220?style=flat-square" alt="version 1.8"/>
+  <img src="https://img.shields.io/badge/licence-MIT-3a1220?style=flat-square" alt="licence MIT"/>
 </p>
 
-**Nivel** est une app iOS de perte de poids **gamifiée et zéro pression** : on logge ses repas en quelques secondes, on suit ses pas et son poids, on valide de petites activités physiques (marche, étirements, gainage… et la « séance du jour », la même sur les deux téléphones), et on gagne de l'XP, des niveaux, des quêtes et des badges — sans jamais de rouge, de culpabilité ni d'échec. Un jour "raté" n'existe pas : Nivel encourage, il ne juge pas.
+<img src="docs/gallery/brisk_walk.png" width="108"/>
+<img src="docs/gallery/yoga.png" width="108"/>
+<img src="docs/gallery/plank.png" width="108"/>
+<img src="docs/gallery/stretching.png" width="108"/>
+<img src="docs/gallery/bike.png" width="108"/>
+<img src="docs/gallery/dance.png" width="108"/>
 
-Chaque sport est **illustré par Nivelito en action**, et la séance du jour se suit en **mode pas-à-pas guidé** : une étape par écran, avec les consignes (« comment faire »), un rythme suggéré et un **timer optionnel** qu'on lance si on veut (jamais imposé, jamais d'avance automatique) — un guide, pas un chef.
+<sub>Nivelito, petit panda roux, fait chaque exercice avec toi.</sub>
 
-Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes** — les Réglages sont accessibles via le bouton ⚙️ en haut de l'accueil.
+</div>
 
-L'essentiel de la journée (anneau calories, niveau, un mot de Nivelito) reste visible sans ouvrir l'app grâce à des **widgets** sur l'écran d'accueil et l'écran verrouillé, avec un raccourci pour logger un repas en un geste.
+---
 
-Le tout est accompagné de **Nivelito**, un petit panda roux qui commente la journée avec bienveillance (et qui sert d'icône à l'app).
+## L'idée
+
+On logge ses repas en quelques secondes, on suit ses pas et son poids, on valide de petites activités physiques, et on gagne de l'XP, des niveaux, des quêtes et des badges.
+
+**Zéro pression, c'est la règle du jeu :** pas de rouge, pas de streak à ne pas casser, pas de reproche. Un jour « raté » n'existe pas. Nivelito encourage, il ne juge jamais.
+
+## Ce qu'il y a dedans
+
+| | |
+|---|---|
+| 🍲 **Repas en 3 gestes** | 16 plats + 6 extras taggables, estimation kcal immédiate, objectif calculé (Mifflin-St Jeor moins 350). |
+| 🏃 **Sport tout doux** | 20 activités et 11 séances composées, chacune illustrée par Nivelito, avec consignes « comment faire » et rythme suggéré. |
+| ⏱️ **Séance du jour guidée** | Une étape par écran, un timer en anneau **optionnel** qu'on lance si on veut. Jamais d'avance automatique : un guide, pas un chef. |
+| 🏆 **XP, niveaux, quêtes, badges** | 18 quêtes hebdo tirées le lundi, 24 badges, progression visible sans jamais de score négatif. |
+| 📈 **Progrès honnêtes** | Pas quotidiens (HealthKit), tendance de poids lissée, historique. |
+| 🐼 **Nivelito** | 172 messages préécrits, une phrase adaptée au moment de la journée, micro-gestes d'idle, expression contextuelle. |
+| 📱 **Widgets** | Écran d'accueil et écran verrouillé, une nouvelle phrase **chaque heure**, raccourci « logger un repas » en un geste. |
+| 🎨 **4 thèmes** | Crème, Menthe, Océan, Nuit douce. Réglable par téléphone. |
+| 🔒 **100 % local** | Aucun compte, aucun serveur, aucun tracking. Les données ne quittent pas l'iPhone. |
+
+Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglages sont derrière le ⚙️ en haut de l'accueil.
 
 ## Captures
 
-| <img src="docs/captures/appicon-256.png" alt="Icône de l'app Nivel" width="200"/> | <img src="docs/captures/splash.png" alt="Écran de démarrage de Nivel" width="220"/> |
-|:---:|:---:|
-| L'icône de l'app : Nivelito sur fond crème. | L'écran de démarrage, avec Nivelito qui t'accueille. |
+<div align="center">
 
-*(davantage de captures après installation sur iPhone)*
+| <img src="docs/captures/appicon-256.png" alt="Icône de l'app Nivel" width="190"/> | <img src="docs/captures/splash.png" alt="Écran de démarrage de Nivel" width="215"/> | <img src="design/icons/contact-sheet.png" alt="Les 15 icônes cozy" width="400"/> |
+|:---:|:---:|:---:|
+| L'icône de l'app. | L'écran de démarrage. | Les 15 icônes cozy, dessinées à la main en CoreGraphics. |
+
+</div>
+
+<sub>Davantage de captures après installation sur iPhone.</sub>
 
 ## Architecture
 
-- **`NivelCore/`** — package Swift **pur** (aucune dépendance UI ni SwiftData) : calculs de calories, XP, niveaux, quêtes, badges, tendance de poids, banque de messages. Entièrement testé avec `swift test`.
-- **`App/`** — l'app **SwiftUI + SwiftData** : vues, services (HealthKit, notifications, clôture de journée, GameService), thème, Nivelito.
-- Le projet Xcode est **généré par [XcodeGen](https://github.com/yonaskolb/XcodeGen)** à partir de `project.yml` : ne pas éditer le `.xcodeproj` à la main, relancer `xcodegen generate` après toute modification de `project.yml`.
+```
+┌─ NivelCore/ ────────────────┐   Package Swift PUR (zéro dépendance UI, zéro SwiftData)
+│  calories · XP · niveaux    │   Calculs, catalogues JSON, banque de messages,
+│  quêtes · badges · tendance │   rotation de la séance du jour, planner de timeline.
+│  messages · planner widget  │   74 tests, `swift test` en 0,03 s.
+└─────────────┬───────────────┘
+              │
+    ┌─────────┴─────────┐
+┌───▼──────────┐  ┌─────▼─────────┐
+│ App/         │  │ Widgets/      │   Extension WidgetKit, 4 familles.
+│ SwiftUI +    │  │               │
+│ SwiftData    │  └─────┬─────────┘
+└───┬──────────┘        │
+    └────────┬──────────┘
+        ┌────▼────┐
+        │ Shared/ │   Compilé dans les DEUX targets : palettes, formes de
+        └─────────┘   Nivelito, pont App Group (`group.fr.mbernard.nivel`).
+```
+
+- **Aucune synchronisation.** Deux installations indépendantes (un iPhone chacun), tout en local. La « séance du jour » est identique sur les deux téléphones parce qu'elle est calculée de façon déterministe à partir de la date, pas partagée par un serveur.
+- **Le projet Xcode est généré** par [XcodeGen](https://github.com/yonaskolb/XcodeGen) depuis `project.yml`. Ne jamais éditer le `.xcodeproj` à la main : relancer `xcodegen generate`.
 
 ## Commandes
 
 ```sh
-# Générer le projet Xcode (après clone ou modification de project.yml)
+# Générer le projet Xcode (après clone, ou après modification de project.yml)
 xcodegen generate
 
-# Tests de la logique pure (NivelCore)
+# Tests de la logique pure
 cd NivelCore && swift test
 
-# Tests de l'app (SwiftData, services) sur simulateur
+# Tests d'intégration de l'app (SwiftData, services) sur simulateur
 xcodebuild -project Nivel.xcodeproj -scheme Nivel \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 
 # Régénérer les assets sport (App/Assets.xcassets/Sport) depuis design/sport/*.png
 ./scripts/import-sport-images.sh
 
-# Régénérer les icônes cozy (App/Assets.xcassets/Icons + design/icons/contact-sheet.png)
+# Régénérer les icônes cozy (App/Assets.xcassets/Icons + planche-contact)
 swift scripts/gen-icons.swift
 ```
 
-## Installer Nivel sur ton iPhone (compte Apple gratuit)
+## Installer sur ton iPhone (compte Apple gratuit)
 
-Pas besoin de compte développeur payant — mais l'app **expire au bout de 7 jours** (voir plus bas).
+Pas besoin de compte développeur payant, mais l'app **expire au bout de 7 jours** (voir l'encadré plus bas).
 
-1. Générer et ouvrir le projet : `xcodegen generate && open Nivel.xcodeproj`.
-2. Dans Xcode, sélectionner la target **Nivel** → onglet **Signing & Capabilities** → **Team** = ton Apple ID personnel.
-   *Si aucun compte n'apparaît : Xcode → **Settings…** → **Accounts** → **+** → ajouter ton Apple ID.*
-3. Brancher l'iPhone en USB (accepter "Se fier à cet ordinateur" sur le téléphone si demandé).
-4. Sélectionner l'iPhone comme **destination** en haut de la fenêtre Xcode, puis **⌘R**.
-5. **Premier lancement uniquement** : l'iPhone bloque l'app. Aller dans **Réglages → Général → VPN et gestion de l'appareil**, toucher ton profil développeur et **faire confiance**. Relancer l'app.
+1. `xcodegen generate && open Nivel.xcodeproj`
+2. Target **Nivel** → **Signing & Capabilities** → **Team** = ton Apple ID personnel.
+   *Aucun compte dans la liste ? Xcode → **Settings…** → **Accounts** → **+**.*
+3. Brancher l'iPhone en USB, accepter « Se fier à cet ordinateur » sur le téléphone.
+4. Choisir l'iPhone comme destination en haut de la fenêtre Xcode, puis **⌘R**.
+5. **Premier lancement uniquement :** l'iPhone bloque l'app. **Réglages → Général → VPN et gestion de l'appareil**, toucher le profil développeur, **faire confiance**, relancer.
 
-> ⚠️ **À refaire TOUS LES 7 JOURS** : avec un compte gratuit, la signature expire au bout d'une semaine — l'app refuse alors de se lancer. Il suffit de rebrancher **chaque téléphone** et de refaire ⌘R (étapes 3-4). Si c'est trop contraignant à l'usage, le compte développeur payant (99 €/an) supprime cette limite.
+> ⚠️ **À refaire tous les 7 jours.** Avec un compte gratuit, la signature expire au bout d'une semaine et l'app refuse de se lancer. Il suffit de rebrancher **chaque téléphone** et de refaire ⌘R (étapes 3 et 4). Le compte développeur payant (99 €/an) supprime cette limite.
 >
-> 📅 Builder les deux téléphones **depuis le même commit** (dans la même session, sans `git pull` entre les deux) : la « séance du jour » est calculée à partir du catalogue embarqué — deux versions différentes peuvent afficher deux séances différentes le même jour.
+> 📅 **Builder les deux téléphones depuis le même commit**, dans la même session, sans `git pull` entre les deux. La séance du jour est calculée à partir du catalogue embarqué : deux versions différentes peuvent afficher deux séances différentes le même jour.
 
-**Deux utilisateurs, deux téléphones** : chacun (Michaël / Marion) choisit **son profil à l'onboarding sur SON téléphone**. Les données restent locales à chaque appareil.
+**Deux utilisateurs, deux téléphones :** chacun choisit son profil à l'onboarding, sur son propre téléphone. Les données restent locales à chaque appareil.
 
-**Widgets** : après installation, appui long sur l'écran d'accueil → **+** → chercher « Nivel » (petit et moyen), ou personnaliser l'écran verrouillé pour les accessoires. Quand la signature expire (7 jours, compte gratuit), le widget se fige avec l'app — le re-build hebdomadaire réveille les deux.
+**Widgets :** appui long sur l'écran d'accueil → **+** → chercher « Nivel » (petit et moyen), ou personnaliser l'écran verrouillé pour les accessoires. Quand la signature expire, le widget se fige avec l'app ; le re-build hebdomadaire réveille les deux.
 
 ## Structure du projet
 
 ```
 Nivel/
-├── project.yml              # Définition XcodeGen (targets Nivel + NivelTests + NivelWidgets)
+├── project.yml              # Définition XcodeGen (Nivel + NivelWidgets + NivelTests)
 ├── NivelCore/               # Package Swift : logique métier pure + tests unitaires
-│   ├── Sources/NivelCore/   #   Calories, XP, niveaux, quêtes, badges, tendance poids,
-│   │                        #   catalogues JSON (plats, extras, activités, séances…)
+│   ├── Sources/NivelCore/   #   Calories, XP, niveaux, quêtes, badges, tendance de poids,
+│   │                        #   catalogues JSON (plats, extras, activités, séances, messages)
 │   └── Tests/               #   `swift test`
 ├── App/                     # App SwiftUI + SwiftData
-│   ├── Models/              #   Modèles persistés (profil, repas, pesées, journal…)
+│   ├── Models/              #   Modèles persistés (profil, repas, pesées, journal)
 │   ├── Services/            #   GameService, HealthKit, notifications, clôture de journée
-│   ├── Views/               #   Accueil, repas, sport, progrès, quêtes, réglages, onboarding…
-│   ├── Nivelito/            #   La mascotte (formes vectorielles, bulles de dialogue)
-│   └── Assets.xcassets/     #   Icône d'app, couleurs, illustrations sport (Sport/) et
-│                            #   icônes cozy (Icons/, PDF template) — toutes générées
-├── Shared/                  # Code compilé dans l'app ET le widget (palettes, formes Nivelito, pont App Group)
+│   ├── Views/               #   Accueil, repas, sport, progrès, quêtes, réglages, onboarding
+│   ├── Nivelito/            #   La mascotte : formes vectorielles, bulles, micro-gestes
+│   └── Assets.xcassets/     #   Icône d'app, couleurs, illustrations sport, icônes cozy
+├── Shared/                  # Compilé dans l'app ET le widget (palettes, Nivelito, App Group)
 ├── Widgets/                 # Extension WidgetKit (provider, vues des 4 familles)
 ├── NivelTests/              # Tests d'intégration de l'app (simulateur)
-├── design/                  # Sources : SVG (Nivelito, icône), sport/ (PNG 1254px), icons/ (planche-contact)
+├── design/                  # Sources : SVG (Nivelito, icône), sport/ (PNG 1254 px), icons/
 ├── scripts/                 # import-sport-images.sh + gen-icons.swift (assets régénérables)
-└── docs/                    # Spec et plan d'implémentation
+└── docs/                    # Specs, plans d'implémentation, captures
 ```
+
+## Palette
+
+| | Crème | Pêche | Orange Nivelito | Bordeaux |
+|---|---|---|---|---|
+| | `#fdf6ec` | `#f9e8d8` | `#f57c1f` | `#3a1220` |
+
+## Licence
+
+[MIT](LICENSE). Projet personnel, construit pour deux personnes et leur panda roux.
+</content>
