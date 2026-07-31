@@ -17,6 +17,7 @@
 		291CD5438E6A3A57272E0D3D /* WidgetNivelito.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */; };
 		3823F2CEF73FE2E0AF8B05D6 /* AccessoryWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
+		3BFDE41276406C8417A234F4 /* ExerciseTimerModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */; };
 		3CD389A424895D03BA0D911B /* NivelWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */; };
 		43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */; };
 		44E73F722094C06855E93916 /* SessionPlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */; };
@@ -51,6 +52,7 @@
 		A9598A7C27939AE025FABCB2 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E840C37923218C1DC6C0614D /* Formatting.swift */; };
 		AC058589EEDA0F462DF1730B /* LevelUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */; };
 		AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */; };
+		B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55E620156F52BBF2F9AB3EF1 /* ExerciseTimerModel.swift */; };
 		C4741F7A70E605F1FC308D14 /* WidgetCalorieRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */; };
 		C57910A2F19CC7C8B8FC2E4E /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */; };
 		CA44B39964325597C05E92A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671D6B6E3581A479FFED40C2 /* RootView.swift */; };
@@ -69,6 +71,7 @@
 		F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E840C37923218C1DC6C0614D /* Formatting.swift */; };
 		FB9F1654D2AFF306E24D59CF /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4AF60C635E23219D03138E /* ThemePalette.swift */; };
 		FDCB8202104609DE46003A7A /* GameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A1F6969B88BCA1A9BE77195 /* GameService.swift */; };
+		FE4A11B0B48A1B381C926EC7 /* TimerRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79570BB8A6B99B6D9314323 /* TimerRingView.swift */; };
 		FF12E9FD2218E9B1A09DFA9A /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2749E47DBFD2A5D89042A89E /* HealthKitService.swift */; };
 /* End PBXBuildFile section */
 
@@ -124,6 +127,7 @@
 		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
 		4E4AF60C635E23219D03138E /* ThemePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePalette.swift; sourceTree = "<group>"; };
 		50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerSheet.swift; sourceTree = "<group>"; };
+		55E620156F52BBF2F9AB3EF1 /* ExerciseTimerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseTimerModel.swift; sourceTree = "<group>"; };
 		586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAssetsTests.swift; sourceTree = "<group>"; };
 		5A3D92F71CC93D99201C361E /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
 		660D96E22C32118424F93AC2 /* NivelitoShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoShapes.swift; sourceTree = "<group>"; };
@@ -131,6 +135,7 @@
 		67EB506351740B5EC992E309 /* AppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTests.swift; sourceTree = "<group>"; };
 		6909EF00448EC3D59E1F1401 /* GameService+Sport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameService+Sport.swift"; sourceTree = "<group>"; };
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
+		6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseTimerModelTests.swift; sourceTree = "<group>"; };
 		7900354E6B00D231F84DEFD2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySessionCard.swift; sourceTree = "<group>"; };
 		7FD0D49D1E0B2314767BA85A /* DayCloser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloser.swift; sourceTree = "<group>"; };
@@ -143,6 +148,7 @@
 		A694B98073276CD2FA798820 /* MealsJournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealsJournalView.swift; sourceTree = "<group>"; };
 		A6D09557663FBEA7185F1839 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A79570BB8A6B99B6D9314323 /* TimerRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRingView.swift; sourceTree = "<group>"; };
 		A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportIllustration.swift; sourceTree = "<group>"; };
 		ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechBubble.swift; sourceTree = "<group>"; };
 		AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessoryWidgetViews.swift; sourceTree = "<group>"; };
@@ -195,9 +201,11 @@
 			children = (
 				F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */,
 				7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */,
+				55E620156F52BBF2F9AB3EF1 /* ExerciseTimerModel.swift */,
 				50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */,
 				A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */,
 				4542B7EDA424C2DF0AF4CD23 /* SportView.swift */,
+				A79570BB8A6B99B6D9314323 /* TimerRingView.swift */,
 			);
 			path = Sport;
 			sourceTree = "<group>";
@@ -370,6 +378,7 @@
 				67EB506351740B5EC992E309 /* AppSmokeTests.swift */,
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
+				6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */,
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
 				C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */,
 				E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */,
@@ -546,6 +555,7 @@
 				ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */,
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */,
+				B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */,
 				F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */,
 				5A7B97883F447747C5AC4269 /* GameService+Sport.swift in Sources */,
 				1FF19C44AD93A713440F748D /* GameService+WidgetSync.swift in Sources */,
@@ -574,6 +584,7 @@
 				0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */,
 				1B36CC033AB07BEB581D664D /* Theme.swift in Sources */,
 				FB9F1654D2AFF306E24D59CF /* ThemePalette.swift in Sources */,
+				FE4A11B0B48A1B381C926EC7 /* TimerRingView.swift in Sources */,
 				E9E07644DA5B531E655EFC74 /* WeighInSheet.swift in Sources */,
 				8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */,
 				C57910A2F19CC7C8B8FC2E4E /* WidgetBridge.swift in Sources */,
@@ -605,6 +616,7 @@
 				5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */,
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
+				3BFDE41276406C8417A234F4 /* ExerciseTimerModelTests.swift in Sources */,
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
 				43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */,
 				6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */,

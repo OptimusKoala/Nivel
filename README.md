@@ -6,7 +6,7 @@
 
 **Nivel** est une app iOS de perte de poids **gamifiée et zéro pression** : on logge ses repas en quelques secondes, on suit ses pas et son poids, on valide de petites activités physiques (marche, étirements, gainage… et la « séance du jour », la même sur les deux téléphones), et on gagne de l'XP, des niveaux, des quêtes et des badges — sans jamais de rouge, de culpabilité ni d'échec. Un jour "raté" n'existe pas : Nivel encourage, il ne juge pas.
 
-Chaque sport est **illustré par Nivelito en action**, et la séance du jour se suit en **mode pas-à-pas guidé** : une étape par écran, avec les consignes (« comment faire ») et un rythme suggéré — un guide, pas un chrono.
+Chaque sport est **illustré par Nivelito en action**, et la séance du jour se suit en **mode pas-à-pas guidé** : une étape par écran, avec les consignes (« comment faire »), un rythme suggéré et un **timer optionnel** qu'on lance si on veut (jamais imposé, jamais d'avance automatique) — un guide, pas un chef.
 
 Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes** — les Réglages sont accessibles via le bouton ⚙️ en haut de l'accueil.
 

@@ -80,6 +80,33 @@ final class ActivityCatalogTests: XCTestCase {
         }
     }
 
+    func testSegmentsDecodeWhenPresentAndNilOtherwise() throws {
+        let sessions = try Catalogs.sessions()
+        let wakeUp = try XCTUnwrap(sessions.first { $0.id == "wake_up" })
+        XCTAssertEqual(wakeUp.steps.map(\.segments), [2, 3, 3])           // stretching, squats, plank
+        let freshAir = try XCTUnwrap(sessions.first { $0.id == "fresh_air" })
+        XCTAssertEqual(freshAir.steps.map(\.segments), [nil])             // pas de séries explicites
+        // Cohérence : jamais 0 ou 1 (une graduation n'a de sens qu'à partir de 2).
+        for session in sessions {
+            for step in session.steps {
+                if let segments = step.segments { XCTAssertGreaterThanOrEqual(segments, 2, "\(session.id)/\(step.activityID)") }
+            }
+        }
+        // Pin EXHAUSTIF de la table de la spec §4 : attrape une valeur ajoutée à la
+        // mauvaise étape ou modifiée, ce que les checks ci-dessus ne voient pas.
+        let actual = Dictionary(uniqueKeysWithValues: sessions.flatMap { session in
+            session.steps.compactMap { step in
+                step.segments.map { ("\(session.id)/\(step.activityID)", $0) }
+            }
+        })
+        XCTAssertEqual(actual, [
+            "wake_up/stretching": 2, "wake_up/squats": 3, "wake_up/plank": 3,
+            "quick_tone/squats": 3, "quick_tone/wall_pushups": 3, "quick_tone/plank": 4,
+            "zen_core/plank": 3, "home_cardio/squats": 2, "legs_day/squats": 2,
+            "gentle_cardio/high_knees": 3,
+        ])
+    }
+
     func testNoBundleResourceContainsEmDash() throws {
         // Convention v1.2 : aucun tiret cadratin dans les textes utilisateur.
         let urls = Bundle.module.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
