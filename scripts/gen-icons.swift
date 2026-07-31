@@ -129,27 +129,19 @@ func trophyStem(_ ctx: CGContext) {
 // MARK: - Les 15 glyphes
 
 let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
+    // UNE silhouette canonique pour la paire (retour Michaël : structure toit-chapeau
+    // vs masse pleine lisait comme deux maisons) : le contour est LE tracé du plein.
     ("tab_home", { ctx in
-        let roof = CGMutablePath()
-        roof.move(to: P(4, 13)); roof.addLine(to: P(14, 4.5)); roof.addLine(to: P(24, 13))
-        strokePath(ctx, roof)
-        strokePath(ctx, rr(6, 12.5, 16, 11.5, 3))
+        strokePath(ctx, houseSilhouette())
         strokePath(ctx, doorPath(closed: false), width: 2.2)
     }),
     ("tab_home_fill", { ctx in
-        // MÊMES tracés que tab_home (toit débordant + corps arrondi), remplis sous les
-        // mêmes traits : la silhouette ne change pas quand l'onglet passe en sélectionné.
-        let roof = CGMutablePath()
-        roof.move(to: P(4, 13)); roof.addLine(to: P(14, 4.5)); roof.addLine(to: P(24, 13))
-        roof.closeSubpath()
-        fillPath(ctx, roof); strokePath(ctx, roof)
-        let body = CGMutablePath()
-        body.addPath(rr(6, 12.5, 16, 11.5, 3))
-        // La porte se ferme PILE sur le bord inférieur (y = 24) : le trou even-odd
-        // s'ouvre sur le bord sans déborder dessous (un dépassement crée un îlot rempli).
-        let door = doorPath(closed: true)
-        body.addPath(door)
-        fillPath(ctx, body, evenOdd: true)
+        let p = houseSilhouette()
+        // Porte fermée PILE sur le bord inférieur (y = 24) : le trou even-odd s'ouvre
+        // sur le bord sans déborder dessous (un dépassement crée un îlot rempli).
+        p.addPath(doorPath(closed: true))
+        fillPath(ctx, p, evenOdd: true)
+        strokePath(ctx, houseSilhouette())   // même poids de contour que la version outline
     }),
     ("tab_meals", { ctx in strokePath(ctx, bowlPath()); steam(ctx) }),
     ("tab_meals_fill", { ctx in
