@@ -21,7 +21,7 @@ struct TimerRingView: View {
             Circle()
                 .stroke(Theme.track, lineWidth: lineWidth)
             Circle()
-                .trim(from: 0, to: fraction)
+                .trim(from: 0, to: min(max(0, fraction), 1))
                 .stroke(
                     finished
                         ? AnyShapeStyle(Theme.green)
@@ -30,13 +30,15 @@ struct TimerRingView: View {
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.3), value: fraction)
+                // Calée sur le tick 1 Hz de l'appelant (TimelineView) : un sweep continu
+                // plutôt qu'un effet cliquet à chaque valeur de fraction.
+                .animation(.linear(duration: 1), value: fraction)
             if let segments, segments >= 2 {
                 ForEach(1..<segments, id: \.self) { index in
                     Capsule()
                         .fill(Theme.background)
                         .frame(width: 4, height: lineWidth + 6)
-                        .offset(y: -size / 2 + lineWidth / 2)
+                        .offset(y: -size / 2)
                         .rotationEffect(.degrees(Double(index) / Double(segments) * 360))
                 }
             }
@@ -44,32 +46,44 @@ struct TimerRingView: View {
                               size: size - lineWidth * 2 - 12,
                               cornerRadius: (size - lineWidth * 2 - 12) / 2)
         }
+        .padding(lineWidth / 2) // le trait déborde du cercle géométrique (cf. CalorieRing)
         .frame(width: size, height: size)
         .accessibilityHidden(true)
     }
 }
 
 /// Temps restant + contrôles Lancer/Pause/Reprendre/Recommencer, pilotés par le modèle.
-/// `now` vient du TimelineView de l'appelant (lecture pure, pas de tick interne).
+/// `now` vient du TimelineView de l'appelant (lecture pure, pas de tick interne) : l'appelant
+/// DOIT appeler `timer.syncNow(at:)` sur chaque tick (`.onChange`/`.task`) pour que la
+/// transition vers `.finished` se produise — cette vue ne mute jamais le modèle elle-même.
 struct TimerControls: View {
     let timer: ExerciseTimerModel
     let now: Date
 
+    /// Blindage d'affichage : si l'appelant tarde à appeler `syncNow(at:)` (ou l'a manqué),
+    /// on affiche quand même l'état fini dès que l'échéance est dépassée hors idle.
+    private var showsFinished: Bool {
+        timer.isFinished || (!timer.isIdle && timer.remaining(at: now) <= 0)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             Group {
-                if timer.isFinished {
+                if showsFinished {
                     Text("Bien joué !")
                         .foregroundStyle(Theme.green)
                 } else {
                     Text(Self.format(timer.remaining(at: now)))
                         .foregroundStyle(Theme.text)
                         .contentTransition(.numericText())
+                        .animation(.snappy, value: timer.remaining(at: now))
                 }
             }
-            .font(.system(size: 34, weight: .heavy, design: .rounded))
+            .font(.system(.largeTitle, design: .rounded).weight(.heavy))
+            .minimumScaleFactor(0.7)
             .monospacedDigit()
-            .accessibilityLabel(timer.isFinished ? "Terminé, bien joué" : Self.spokenRemaining(timer.remaining(at: now)))
+            .accessibilityLabel(showsFinished ? "Terminé, bien joué" : Self.spokenRemaining(timer.remaining(at: now)))
+            .accessibilityAddTraits(.updatesFrequently)
 
             if timer.isPaused {
                 Text("En pause, prends ton temps 🧡")
@@ -81,16 +95,22 @@ struct TimerControls: View {
                 if timer.isIdle {
                     Button("Lancer le timer") { timer.start() }
                         .buttonStyle(PrimaryButtonStyle(size: .compact))
+                        .frame(minWidth: 130)
                 } else if timer.isRunning {
                     Button("Pause") { timer.pause() }
                         .buttonStyle(SecondaryButtonStyle())
+                        .frame(minWidth: 130, minHeight: 44)
+                        .contentShape(Rectangle())
                 } else if timer.isPaused {
                     Button("Reprendre") { timer.resume() }
                         .buttonStyle(PrimaryButtonStyle(size: .compact))
+                        .frame(minWidth: 130)
                 }
                 if !timer.isIdle {
                     Button("Recommencer") { timer.reset() }
                         .buttonStyle(SecondaryButtonStyle())
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
             }
         }
@@ -105,8 +125,15 @@ struct TimerControls: View {
     static func spokenRemaining(_ seconds: TimeInterval) -> String {
         let total = Int(seconds.rounded(.up))
         let minutes = total / 60, secs = total % 60
-        if minutes > 0 { return "\(minutes) minutes \(secs) secondes restantes" }
-        return "\(secs) secondes restantes"
+        let minutesPart = minutes > 0 ? "\(minutes) minute\(minutes > 1 ? "s" : "")" : nil
+        let secondsPart = secs > 0 ? "\(secs) seconde\(secs > 1 ? "s" : "")" : nil
+        let parts = [minutesPart, secondsPart].compactMap { $0 }
+        guard !parts.isEmpty else { return "0 seconde restante" }
+        // "restante" ne s'accorde au singulier que si l'unique quantité énoncée vaut 1
+        // (« 1 minute restante », « 1 seconde restante ») ; sinon pluriel, y compris
+        // pour une durée composée (« 1 minute 30 secondes restantes »).
+        let isSingular = parts.count == 1 && (minutes == 1 || secs == 1)
+        return parts.joined(separator: " ") + (isSingular ? " restante" : " restantes")
     }
 }
 
@@ -129,6 +156,20 @@ struct TimerControls: View {
 #Preview("Anneau — terminé (vert)") {
     TimerRingView(illustrationName: "plank", fallbackEmoji: "🧘",
                   fraction: 1, finished: true, segments: 3)
+        .padding()
+        .background(Theme.background)
+}
+
+#Preview("Anneau — sans graduations (activité libre)") {
+    TimerRingView(illustrationName: "walk", fallbackEmoji: "🚶",
+                  fraction: 0.4, finished: false, segments: nil)
+        .padding()
+        .background(Theme.background)
+}
+
+#Preview("Anneau — 180pt (ActivityLogSheet)") {
+    TimerRingView(illustrationName: "walk", fallbackEmoji: "🚶",
+                  fraction: 0.4, finished: false, segments: nil, size: 180)
         .padding()
         .background(Theme.background)
 }
@@ -168,4 +209,14 @@ struct TimerControls: View {
     return TimerControls(timer: timer, now: t0.addingTimeInterval(200))
         .padding()
         .background(Theme.background)
+}
+
+#Preview("Contrôles — Dynamic Type AX3") {
+    let t0 = Date(timeIntervalSince1970: 1_000_000)
+    let timer = ExerciseTimerModel(durationMinutes: 3)
+    timer.start(at: t0)
+    return TimerControls(timer: timer, now: t0.addingTimeInterval(90))
+        .padding()
+        .background(Theme.background)
+        .environment(\.dynamicTypeSize, .accessibility3)
 }
