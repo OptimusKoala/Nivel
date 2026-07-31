@@ -40,20 +40,20 @@ Le nombre de séries affiché en graduations vient des données (pas de parsing 
 | quick_tone / wall_pushups | 3 |
 | quick_tone / plank | 4 |
 | zen_core / plank | 3 |
-| home_cardio / stairs | 3 |
 | home_cardio / squats | 2 |
 | legs_day / squats | 2 |
 | gentle_cardio / high_knees | 3 |
 
-Les activités libres n'ont pas de graduations (pas de champ côté `Activity`).
+Les tempos en fourchette (« 2-3 tenues », « 4-5 allers-retours ») ou sans série explicite n'ont PAS de graduations. Les activités libres non plus (pas de champ côté `Activity`).
 
 ## 5. Architecture
 
 - **`ExerciseTimerModel`** (App, `@Observable`) : machine à états `idle / running(depuis: Date) / paused / finished`, durée totale en secondes, temps restant calculé sur l'horloge murale (`Date`), PAS un compteur accumulé — robuste au passage en arrière-plan (au retour, l'état est recalculé ; si le temps est écoulé pendant l'absence → `finished`, sans notification). La logique « état + date → temps restant/fraction/fini » est **pure et testée** avec des dates injectées (aucun `sleep` dans les tests).
-- **`TimerRingView`** (App, `App/Views/Sport/TimerRingView.swift`) : anneau SVG-like (mêmes techniques que `CalorieRing`), gradient `Theme.accent → Theme.orange`, piste `Theme.track`, graduations optionnelles (traits couleur fond), illustration circulaire au centre (`SportIllustration` adapté ou clip cercle), taille paramétrable (230pt player / 180pt sheet). Vert `Theme.green` à l'état `finished`.
+- **`TimerRingView`** (App, `App/Views/Sport/TimerRingView.swift`) : anneau SVG-like (mêmes techniques que `CalorieRing`), gradient `Theme.accent → Theme.orange`, piste `Theme.track`, graduations optionnelles (traits couleur fond), illustration circulaire au centre (`SportIllustration` existant avec `cornerRadius: size/2` = cercle, aucune adaptation du composant), taille paramétrable (230pt player / 180pt sheet). Vert `Theme.green` à l'état `finished`.
 - **Contrôles** : boutons dans le style maison (`SecondaryButtonStyle` pour Pause/Recommencer, `PrimaryButtonStyle` compact pour Lancer — suivre les conventions v1.2 du fichier).
+- **Refactor requis** : `stepPage(_:number:)` est aujourd'hui une fonction privée retournant `some View` ; l'état local par page (`@State` du timer) impose d'en extraire une vraie struct `StepPageView` (keyée comme le `ForEach(id: \.offset)` existant).
 - Le **tick d'affichage** (rafraîchir `m:ss` chaque seconde) vient d'un `TimelineView(.periodic(...))` ou équivalent — pas de `Timer` manuel à invalider.
-- **Pulse du CTA** : modifier léger (scale/brightness ~1,2 s) appliqué quand le timer de la page est `finished` ; désactivé si Reduce Motion.
+- **Pulse du CTA** : modifier léger (scale/brightness ~1,2 s) appliqué quand le timer de la page est `finished`, UNIQUEMENT si la barre basse affiche un bouton actionnable (`.next` sur une page intermédiaire, `.validate` sur la dernière). Sur une séance déjà faite (`.alreadyDone`, label ✓ non interactif), rien ne pulse : l'anneau vert + l'haptique suffisent — le timer reste utilisable en consultation libre. Pulse désactivé si Reduce Motion.
 - **Haptique + son** : `UINotificationFeedbackGenerator(.success)` + `AudioServicesPlaySystemSound` discret (id système léger) au passage à `finished` — uniquement si le timer était en cours au premier plan.
 
 ## 6. Ce qui ne change PAS
