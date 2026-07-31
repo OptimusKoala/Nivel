@@ -9,7 +9,8 @@ struct NivelWidgetsBundle: WidgetBundle {
     }
 }
 
-/// Rempli en Task 6 — placeholder compilable pour valider la target.
+/// Widget unique des 4 familles ; le kind vient de WidgetBridge (partagé
+/// avec reloadTimelines côté app).
 struct NivelWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: WidgetBridge.widgetKind,

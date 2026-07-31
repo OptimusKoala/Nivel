@@ -4,8 +4,11 @@ import SwiftUI
 import NivelCore
 
 /// Entrée WidgetKit : une entrée planifiée, ou nil = état d'accueil
-/// « Ouvre Nivel pour commencer » (pas de snapshot, spec widgets §9) —
-/// c'est aussi le placeholder de la galerie.
+/// « Ouvre Nivel pour commencer » (spec widgets §9). `planned == nil` veut dire
+/// « pas encore de snapshot » — y compris dans la galerie d'un nouvel
+/// utilisateur, qui passe par getSnapshot(context.isPreview). À ne pas
+/// confondre avec le squelette de chargement de placeholder(in:), traité en
+/// Task 7.
 struct NivelTimelineEntry: TimelineEntry {
     let date: Date
     let planned: WidgetEntry?
@@ -17,7 +20,10 @@ struct NivelWidgetProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NivelTimelineEntry) -> Void) {
-        completion(NivelTimelineEntry(date: .now, planned: plannedEntries().first))
+        // Une seule lecture d'horloge : l'entrée et la planification datent du
+        // même instant.
+        let now = Date.now
+        completion(NivelTimelineEntry(date: now, planned: plannedEntries(now: now).first))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<NivelTimelineEntry>) -> Void) {
@@ -36,10 +42,16 @@ struct NivelWidgetProvider: TimelineProvider {
         completion(Timeline(entries: entries, policy: .after(last.date)))
     }
 
-    private func plannedEntries() -> [WidgetEntry] {
-        guard let snapshot = WidgetBridge.load(from: WidgetBridge.sharedDefaults),
-              let bank = try? MessageBank.load() else { return [] }
-        return WidgetTimelinePlanner.entries(snapshot: snapshot, from: .now,
+    private func plannedEntries(now: Date = .now) -> [WidgetEntry] {
+        // Pas de snapshot : cas bénin et attendu (app jamais ouverte).
+        guard let snapshot = WidgetBridge.load(from: WidgetBridge.sharedDefaults) else { return [] }
+        // Le catalogue, lui, est embarqué dans l'appex : son absence est une
+        // régression de build, pas un état utilisateur.
+        guard let bank = try? MessageBank.load() else {
+            assertionFailure("MessageBank.load() a échoué dans l'extension : NivelCore_NivelCore.bundle absent de l'appex ?")
+            return []
+        }
+        return WidgetTimelinePlanner.entries(snapshot: snapshot, from: now,
                                              bank: bank, calendar: .current)
     }
 }
