@@ -69,7 +69,7 @@ Expected: FAIL (`20 != 12`, `11 != 8`, `legs_day` introuvable).
   {"id": "march_in_place",  "name": "Marche sur place",     "emoji": "🧍",  "location": "home",    "kcalPerMin": 4.0, "durations": [5, 10, 15],
    "instructions": ["Marche sur place d'un pas régulier, les bras balancent", "Devant la télé ou une fenêtre, comme tu préfères", "Monte un peu plus les genoux pour intensifier"]},
   {"id": "shadow_boxing",   "name": "Boxe dans le vide",    "emoji": "🥊",  "location": "home",    "kcalPerMin": 6.0, "durations": [3, 5, 8],
-   "instructions": ["Poings devant le visage, genoux légèrement fléchis", "Enchaîne des coups légers dans le vide, sans verrouiller les coudes", "Reste léger sur tes appuis, bouge un peu", "C'est aussi fait pour évacuer : lâche-toi"]},
+   "instructions": ["Poings devant le visage, genoux légèrement fléchis", "Enchaîne des coups légers dans le vide, sans verrouiller les coudes", "Garde des appuis légers, bouge un peu", "C'est aussi fait pour évacuer : lâche-toi"]},
   {"id": "mobility",        "name": "Réveil articulaire",   "emoji": "🌀",  "location": "home",    "kcalPerMin": 2.5, "durations": [5, 8, 12],
    "instructions": ["Des cercles lents : nuque, épaules, poignets, hanches, chevilles", "Amplitude confortable, jamais forcée", "Quelques respirations profondes entre chaque zone"]},
   {"id": "gardening",       "name": "Jardinage",            "emoji": "🌻",  "location": "outdoor", "kcalPerMin": 4.0, "durations": [15, 30, 45],

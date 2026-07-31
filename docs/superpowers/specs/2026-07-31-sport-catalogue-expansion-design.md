@@ -36,7 +36,7 @@ Diversifier le sport : **8 nouvelles activités** (20 au total) et **3 nouvelles
 | wall_sit | Dos plaqué contre le mur, pieds avancés · Glisse jusqu'à avoir les genoux pliés, comme sur une chaise invisible · Les genoux restent au-dessus des chevilles, pas au-delà · Souffle régulier, remonte dès que les cuisses brûlent trop |
 | high_knees | Sur place, monte un genou après l'autre vers les hanches · Pas besoin de sauter : un pied reste toujours au sol · Les bras accompagnent comme en course · Ralentis quand le souffle monte trop |
 | march_in_place | Marche sur place d'un pas régulier, les bras balancent · Devant la télé ou une fenêtre, comme tu préfères · Monte un peu plus les genoux pour intensifier |
-| shadow_boxing | Poings devant le visage, genoux légèrement fléchis · Enchaîne des coups légers dans le vide, sans verrouiller les coudes · Reste léger sur tes appuis, bouge un peu · C'est aussi fait pour évacuer : lâche-toi |
+| shadow_boxing | Poings devant le visage, genoux légèrement fléchis · Enchaîne des coups légers dans le vide, sans verrouiller les coudes · Garde des appuis légers, bouge un peu · C'est aussi fait pour évacuer : lâche-toi |
 | mobility | Des cercles lents : nuque, épaules, poignets, hanches, chevilles · Amplitude confortable, jamais forcée · Quelques respirations profondes entre chaque zone |
 | gardening | Plie les genoux pour jardiner au sol, pas le dos · Alterne les tâches pour varier les postures · L'arrosoir et la brouette comptent comme de la muscu douce |
 | hike | Choisis un sentier facile et de bonnes chaussures · Petit rythme régulier, surtout en montée · Emporte de l'eau et profite du paysage |
