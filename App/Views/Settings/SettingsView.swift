@@ -2,7 +2,8 @@
 // Réglages (spec §4.5) : profil, objectifs, rappels, santé, à propos.
 // Liste "cozy" custom (cartes sur fond crème) plutôt que Form — le Form UIKit
 // imposerait son propre fond et casserait le thème.
-// Persistance : sauvegarde explicite (saveOrAssert) à chaque modification.
+// Persistance : sauvegarde explicite à chaque modification, via le `save()` local
+// (modelContext.save() + synchronisation du widget), pas via GameService.
 
 import SwiftUI
 import SwiftData
@@ -258,10 +259,10 @@ private struct SettingsContent: View {
                                     isSelected: ThemeStore.shared.palette.id == palette.id) {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             ThemeStore.shared.palette = palette
-                            // Le thème vit dans UserDefaults, hors SwiftData : aucune
-                            // sauvegarde ne déclenche le hook, on synchronise ici.
-                            game.syncWidget()
                         }
+                        // Le thème vit dans UserDefaults, hors SwiftData : aucune
+                        // sauvegarde ne déclenche le hook, on synchronise ici.
+                        game.syncWidget()
                     }
                 }
             }

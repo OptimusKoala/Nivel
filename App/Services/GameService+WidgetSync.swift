@@ -16,7 +16,7 @@ extension GameService {
             dayKey: Self.dayKey(for: now),
             kcalEaten: kcalEaten(on: now),
             kcalTarget: profile.dailyCalorieTarget,
-            totalXP: fetchOrCreateState().totalXP,
+            totalXP: fetchState()?.totalXP ?? 0,
             userName: profile.name,
             themeID: themeID,
             generatedAt: now
@@ -29,7 +29,7 @@ extension GameService {
     /// plan n'est pas soumis au budget de rafraîchissement.
     func syncWidget() {
         guard let snapshot = makeWidgetSnapshot(themeID: ThemeStore.shared.palette.id) else { return }
-        WidgetBridge.save(snapshot, to: WidgetBridge.sharedDefaults)
+        WidgetBridge.save(snapshot, to: widgetDefaults)
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetBridge.widgetKind)
     }
 }

@@ -42,6 +42,10 @@ final class GameService {
     let modelContext: ModelContext
     let stepsService: StepsProviding
 
+    /// Destination du snapshot widget — injectable pour les tests (suite dédiée,
+    /// pas de pollution du vrai App Group), comme ThemeStore(defaults:).
+    var widgetDefaults: UserDefaults? = WidgetBridge.sharedDefaults
+
     /// Catalogues embarqués (chargés une fois ; vides si le bundle est corrompu — jamais de crash).
     let questCatalog: [Quest]
     private let badgeCatalog: [Badge]
@@ -586,6 +590,13 @@ final class GameService {
         let state = GamificationState()
         modelContext.insert(state)
         return state
+    }
+
+    /// Lecture seule (nil avant l'onboarding) : utilisée par le snapshot widget,
+    /// qui ne doit RIEN insérer — `saveOrAssert` doit rester "tout est sauvé"
+    /// quand il rend la main.
+    func fetchState() -> GamificationState? {
+        (try? modelContext.fetch(FetchDescriptor<GamificationState>()))?.first
     }
 
     func fetchProfile() -> UserProfile? {
