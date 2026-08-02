@@ -3,11 +3,6 @@
 // (NavigationStack, pas une sheet par-dessus la sheet). Ligne composée : puces de
 // portion + composants réglables + ajout/retrait d'ingrédient. Ligne simple : juste
 // la quantité, sans les deux premières sections.
-//
-// Note de créé par avance (Task 5, pas Task 6) : le sample code de la Task 5 pousse
-// déjà vers cet écran dans son `navigationDestination`, alors que le plan range sa
-// création en Task 6 — mais l'arbre doit compiler à la fin de la Task 5. Le contenu
-// suit donc directement la spec §5.4 ; la Task 6 n'aura plus qu'à retirer Dish/Extra.
 
 import SwiftUI
 import NivelCore
