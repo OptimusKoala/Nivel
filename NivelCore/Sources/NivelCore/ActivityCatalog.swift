@@ -6,7 +6,6 @@ public struct Activity: Codable, Identifiable, Hashable, Sendable {
 
     public let id: String
     public let name: String
-    public let emoji: String
     public let location: Location
     public let kcalPerMin: Double
     /// Les 3 durées proposées (minutes), croissantes — propres à l'activité
@@ -37,10 +36,11 @@ public struct SessionStep: Codable, Hashable, Sendable {
 }
 
 /// Séance composée toute faite — la « séance du jour » (spec sport §3.2).
+/// Pas de champ d'icône : l'identité visuelle d'une séance est son illustration
+/// `Sport/<id>`, et les 31 ids du catalogue en ont toutes une (spec icônes catalogues §2.3).
 public struct ActivitySession: Codable, Identifiable, Hashable, Sendable {
     public let id: String
     public let title: String
-    public let emoji: String
     public let steps: [SessionStep]
 
     public var totalMinutes: Int { steps.reduce(0) { $0 + $1.minutes } }

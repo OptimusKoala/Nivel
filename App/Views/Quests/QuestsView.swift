@@ -114,8 +114,8 @@ private struct WeeklyQuestCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(status.quest.emoji)
-                .font(.system(size: 28))
+            CatalogGlyph(icon: status.quest.icon, size: 37)
+                .foregroundStyle(Theme.orange)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(status.quest.title)
@@ -187,11 +187,11 @@ private struct BadgeTile: View {
             ZStack {
                 Circle()
                     .fill(isUnlocked ? Theme.accent.opacity(0.22) : Theme.track)
-                Text(badge.emoji)
-                    .font(.system(size: 30))
-                    // Silhouette : emoji désaturé et estompé tant que le badge est verrouillé.
-                    .grayscale(isUnlocked ? 0 : 1)
-                    .opacity(isUnlocked ? 1 : 0.35)
+                // Verrouillé : la TEINTE porte l'estompage d'un glyphe cozy (un PDF
+                // template est déjà monochrome, `grayscale` n'y ferait rien) ; CatalogGlyph
+                // garde la désaturation pour le seul badge resté en emoji.
+                CatalogGlyph(icon: badge.icon, size: 39, locked: !isUnlocked)
+                    .foregroundStyle(isUnlocked ? Theme.orange : Theme.subtext)
             }
             .frame(width: 62, height: 62)
 
@@ -228,8 +228,8 @@ private struct BadgeDetailSheet: View {
             Theme.background.ignoresSafeArea()
 
             VStack(spacing: 14) {
-                Text(badge.emoji)
-                    .font(.system(size: 72))
+                CatalogGlyph(icon: badge.icon, size: 80)
+                    .foregroundStyle(Theme.orange)
                     .padding(.top, 8)
 
                 Text(badge.title)

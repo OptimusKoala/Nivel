@@ -103,7 +103,7 @@ struct ActivityLogSheet: View {
         if let timer {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 VStack(spacing: 10) {
-                    TimerRingView(illustrationName: activity.id, fallbackEmoji: activity.emoji,
+                    TimerRingView(illustrationName: activity.id,
                                   fraction: timer.fraction(at: context.date),
                                   finished: timer.isFinished,
                                   segments: nil, size: 180)
@@ -118,7 +118,7 @@ struct ActivityLogSheet: View {
                 }
             }
         } else {
-            SportIllustration(name: activity.id, fallbackEmoji: activity.emoji,
+            SportIllustration(name: activity.id,
                               size: 140, cornerRadius: 20)
                 .frame(maxWidth: .infinity, alignment: .center)
         }

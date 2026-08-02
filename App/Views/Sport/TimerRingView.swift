@@ -8,7 +8,6 @@ import SwiftUI
 /// Anneau + illustration circulaire. Décoratif pour VoiceOver (le temps est à côté).
 struct TimerRingView: View {
     let illustrationName: String
-    let fallbackEmoji: String
     let fraction: Double          // 0...1
     let finished: Bool
     var segments: Int? = nil      // ≥ 2 → graduations
@@ -44,7 +43,7 @@ struct TimerRingView: View {
                         .rotationEffect(.degrees(Double(index) / Double(segments) * 360))
                 }
             }
-            SportIllustration(name: illustrationName, fallbackEmoji: fallbackEmoji,
+            SportIllustration(name: illustrationName,
                               size: size - lineWidth * 2 - 12,
                               cornerRadius: (size - lineWidth * 2 - 12) / 2)
         }
@@ -156,35 +155,35 @@ struct TimerButtons: View {
 // MARK: - Previews
 
 #Preview("Anneau (idle)") {
-    TimerRingView(illustrationName: "plank", fallbackEmoji: "🧘",
+    TimerRingView(illustrationName: "plank",
                   fraction: 0, finished: false, segments: 3)
         .padding()
         .background(Theme.background)
 }
 
 #Preview("Anneau (en cours, segments 3)") {
-    TimerRingView(illustrationName: "plank", fallbackEmoji: "🧘",
+    TimerRingView(illustrationName: "plank",
                   fraction: 0.6, finished: false, segments: 3)
         .padding()
         .background(Theme.background)
 }
 
 #Preview("Anneau (terminé, vert)") {
-    TimerRingView(illustrationName: "plank", fallbackEmoji: "🧘",
+    TimerRingView(illustrationName: "plank",
                   fraction: 1, finished: true, segments: 3)
         .padding()
         .background(Theme.background)
 }
 
 #Preview("Anneau (sans graduations, activité libre)") {
-    TimerRingView(illustrationName: "walk", fallbackEmoji: "🚶",
+    TimerRingView(illustrationName: "walk",
                   fraction: 0.4, finished: false, segments: nil)
         .padding()
         .background(Theme.background)
 }
 
 #Preview("Anneau (180pt, ActivityLogSheet)") {
-    TimerRingView(illustrationName: "walk", fallbackEmoji: "🚶",
+    TimerRingView(illustrationName: "walk",
                   fraction: 0.4, finished: false, segments: nil, size: 180)
         .padding()
         .background(Theme.background)

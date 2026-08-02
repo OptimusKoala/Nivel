@@ -219,8 +219,8 @@ private struct ProfileChoicePage: View {
             header
             Spacer()
             VStack(spacing: 16) {
-                profileCard(emoji: "🧔🏻‍♂️", name: "Michaël") { onChoose(("Michaël", .male)) }
-                profileCard(emoji: "👩🏻", name: "Marion") { onChoose(("Marion", .female)) }
+                profileCard(avatar: "boy", name: "Michaël") { onChoose(("Michaël", .male)) }
+                profileCard(avatar: "girl", name: "Marion") { onChoose(("Marion", .female)) }
             }
             .padding(.horizontal, 24)
             Spacer()
@@ -241,10 +241,16 @@ private struct ProfileChoicePage: View {
         .padding(.top, 24)
     }
 
-    private func profileCard(emoji: String, name: String, action: @escaping () -> Void) -> some View {
+    // Deux Nivelito illustrés (Avatars/boy, Avatars/girl) et non des glyphes cozy : un
+    // glyphe monochrome de 28 pt ne fait pas un visage, et l'app a déjà un langage
+    // d'illustrations couleur (les 31 vignettes sport). Décoratifs : le nom porte le sens.
+    private func profileCard(avatar: String, name: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 8) {
-                Text(emoji).font(.system(size: 44))
+                Image(decorative: "Avatars/\(avatar)")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 72, height: 72)
                 Text(name).font(.title3.bold())
             }
             .frame(maxWidth: .infinity)
@@ -423,14 +429,14 @@ private struct PermissionsPage: View {
             .padding(.top, 16)
 
             permissionCard(
-                emoji: "👟",
+                icon: "icon_heart",
                 title: "Santé",
                 subtitle: "Pour compter tes pas automatiquement.",
                 asked: healthAsked,
                 action: onHealth
             )
             permissionCard(
-                emoji: "🔔",
+                icon: "icon_bell",
                 title: "Notifications",
                 subtitle: "Des petits rappels bienveillants, jamais de reproche.",
                 asked: notificationsAsked,
@@ -447,11 +453,11 @@ private struct PermissionsPage: View {
     }
 
     private func permissionCard(
-        emoji: String, title: String, subtitle: String,
+        icon: String, title: String, subtitle: String,
         asked: Bool, action: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 14) {
-            Text(emoji).font(.system(size: 34))
+            CozyIcon(name: icon, size: 45).foregroundStyle(Theme.orange)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(.headline)
                 Text(subtitle).font(.caption).foregroundStyle(Theme.subtext)

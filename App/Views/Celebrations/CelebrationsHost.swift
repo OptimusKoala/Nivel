@@ -4,6 +4,7 @@
 // Appliqué au niveau MainTabView pour fonctionner depuis n'importe quel onglet.
 
 import SwiftUI
+import NivelCore
 
 struct CelebrationsHost: ViewModifier {
     /// Toutes les durées de l'orchestration au même endroit.
@@ -34,7 +35,7 @@ struct CelebrationsHost: ViewModifier {
         content
             .overlay(alignment: .top) {
                 if let banner = bannerContent {
-                    CelebrationBanner(emoji: banner.emoji, text: banner.text)
+                    CelebrationBanner(icon: banner.icon, text: banner.text)
                         .transition(.move(edge: .top).combined(with: .opacity))
                         // Un tap ferme tout de suite (3 badges enchaînés ≠ 9 s subies).
                         .onTapGesture { dismiss() }
@@ -62,10 +63,10 @@ struct CelebrationsHost: ViewModifier {
             .onDisappear { advanceTask?.cancel() }
     }
 
-    private var bannerContent: (emoji: String, text: String)? {
+    private var bannerContent: (icon: CatalogIcon, text: String)? {
         switch current {
-        case .badge(let badge): (badge.emoji, "Trophée débloqué : \(badge.title)")
-        case .quest(let quest): (quest.emoji, "Quête accomplie : \(quest.title)")
+        case .badge(let badge): (badge.icon, "Trophée débloqué : \(badge.title)")
+        case .quest(let quest): (quest.icon, "Quête accomplie : \(quest.title)")
         default: nil
         }
     }
@@ -103,13 +104,13 @@ extension View {
 // MARK: - Bannière compacte (badge / quête)
 
 private struct CelebrationBanner: View {
-    let emoji: String
+    let icon: CatalogIcon
     let text: String
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(emoji)
-                .font(.title2)
+            CatalogGlyph(icon: icon, size: 29)
+                .foregroundStyle(Theme.orange)
             Text(text)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.text)
@@ -131,8 +132,8 @@ private struct CelebrationBanner: View {
 
 #Preview("Bannière") {
     VStack {
-        CelebrationBanner(emoji: "🏆", text: "Trophée débloqué : Première pesée")
-        CelebrationBanner(emoji: "🥇", text: "Quête accomplie : Pèse-toi une fois")
+        CelebrationBanner(icon: .cozy("icon_scale"), text: "Trophée débloqué : Première pesée")
+        CelebrationBanner(icon: .cozy("icon_scale"), text: "Quête accomplie : Pèse-toi une fois")
         Spacer()
     }
     .fontDesign(.rounded)

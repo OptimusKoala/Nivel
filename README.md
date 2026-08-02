@@ -12,7 +12,7 @@ Une app iOS gamifiée façon jeu vidéo cozy, en français, entièrement locale.
   <img src="https://img.shields.io/badge/iOS-17%2B-f57c1f?style=flat-square" alt="iOS 17+"/>
   <img src="https://img.shields.io/badge/SwiftUI-SwiftData-f57c1f?style=flat-square" alt="SwiftUI + SwiftData"/>
   <img src="https://img.shields.io/badge/WidgetKit-4%20familles-f57c1f?style=flat-square" alt="WidgetKit"/>
-  <img src="https://img.shields.io/badge/tests-117%20core%20%2B%2068%20app-3a1220?style=flat-square" alt="117 tests NivelCore + 68 tests app"/>
+  <img src="https://img.shields.io/badge/tests-117%20core%20%2B%2071%20app-3a1220?style=flat-square" alt="117 tests NivelCore + 71 tests app"/>
   <img src="https://img.shields.io/badge/version-1.9-3a1220?style=flat-square" alt="version 1.9"/>
   <img src="https://img.shields.io/badge/licence-MIT-3a1220?style=flat-square" alt="licence MIT"/>
 </p>
@@ -56,9 +56,9 @@ Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglag
 
 <div align="center">
 
-| <img src="docs/captures/appicon-256.png" alt="Icône de l'app Nivel" width="190"/> | <img src="docs/captures/splash.png" alt="Écran de démarrage de Nivel" width="215"/> | <img src="design/icons/contact-sheet.png" alt="Les 15 icônes cozy" width="400"/> |
+| <img src="docs/captures/appicon-256.png" alt="Icône de l'app Nivel" width="190"/> | <img src="docs/captures/splash.png" alt="Écran de démarrage de Nivel" width="215"/> | <img src="design/icons/contact-sheet.png" alt="Les 49 icônes cozy" width="400"/> |
 |:---:|:---:|:---:|
-| L'icône de l'app. | L'écran de démarrage. | Les 15 icônes cozy, dessinées à la main en CoreGraphics. |
+| L'icône de l'app. | L'écran de démarrage. | Les 49 icônes cozy, dessinées à la main en CoreGraphics. |
 
 </div>
 
@@ -103,6 +103,9 @@ xcodebuild -project Nivel.xcodeproj -scheme Nivel \
 
 # Régénérer les assets sport (App/Assets.xcassets/Sport) depuis design/sport/*.png
 ./scripts/import-sport-images.sh
+
+# Régénérer les avatars de profil (App/Assets.xcassets/Avatars) depuis design/icons/{boy,girl}.png
+./scripts/import-avatars.sh
 
 # Régénérer les icônes cozy (App/Assets.xcassets/Icons + planche-contact)
 swift scripts/gen-icons.swift
@@ -149,7 +152,7 @@ Nivel/
 ├── Widgets/                 # Extension WidgetKit (provider, vues des 4 familles)
 ├── NivelTests/              # Tests d'intégration de l'app (simulateur)
 ├── design/                  # Sources : SVG (Nivelito, icône), sport/ (PNG 1254 px), icons/
-├── scripts/                 # import-sport-images.sh, gen-icons.swift, gen-sounds.swift (assets régénérables)
+├── scripts/                 # import-sport-images.sh, import-avatars.sh, gen-icons.swift, gen-sounds.swift
 └── docs/                    # Specs, plans d'implémentation, captures
 ```
 

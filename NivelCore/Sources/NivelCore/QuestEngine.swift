@@ -8,7 +8,7 @@ public struct Quest: Codable, Identifiable, Hashable, Sendable {
     }
     public let id: String
     public let title: String
-    public let emoji: String
+    public let icon: CatalogIcon
     public let metric: Metric
     public let target: Int
     public let requiresSteps: Bool

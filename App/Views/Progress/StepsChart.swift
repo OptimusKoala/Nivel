@@ -34,8 +34,8 @@ struct StepsChart: View {
                 .cornerRadius(3)
                 .annotation(position: .top, spacing: 2) {
                     if day.day == recordDay {
-                        Text("🏆")
-                            .font(.caption)
+                        CozyIcon(name: "tab_quests", size: 14)
+                            .foregroundStyle(Theme.orange)
                     }
                 }
             }

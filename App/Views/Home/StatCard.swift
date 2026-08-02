@@ -15,9 +15,12 @@ struct StepsCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("👟 Pas")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(Theme.subtext)
+            HStack(spacing: 4) {
+                CozyIcon(name: "icon_footprint", size: 15)
+                Text("Pas")
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Theme.subtext)
             Text(steps.frFormatted)
                 .font(.system(size: 20, weight: .heavy, design: .rounded))
                 .foregroundStyle(Theme.text)

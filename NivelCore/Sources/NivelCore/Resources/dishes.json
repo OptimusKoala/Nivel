@@ -14,5 +14,5 @@
   {"id": "cereal",       "name": "Céréales",                 "emoji": "🥣", "kcal": 400, "slots": ["breakfast"]},
   {"id": "pastry",       "name": "Viennoiserie",             "emoji": "🥐", "kcal": 300, "slots": ["breakfast", "snack"]},
   {"id": "yogurt_fruit", "name": "Yaourt & fruits",          "emoji": "🍓", "kcal": 200, "slots": ["breakfast", "snack"]},
-  {"id": "other",        "name": "Autre",                    "emoji": "🍽️", "kcal": 600, "slots": ["breakfast", "lunch", "dinner", "snack"]}
+  {"id": "other",        "name": "Autre",                    "emoji": "🥘", "kcal": 600, "slots": ["breakfast", "lunch", "dinner", "snack"]}
 ]

@@ -154,13 +154,18 @@ struct SectionTitle: View {
 /// sport), des Réglages et de l'onboarding.
 struct Overline: View {
     private let text: String
-    init(_ text: String) { self.text = text }
+    /// Glyphe cozy optionnel devant le libellé (en-têtes du catalogue sport).
+    private let icon: String?
+    init(_ text: String, icon: String? = nil) { self.text = text; self.icon = icon }
 
     var body: some View {
-        Text(text)
-            .font(.footnote.weight(.bold))
-            .kerning(0.5)
-            .textCase(.uppercase)
-            .foregroundStyle(Theme.subtext)
+        HStack(spacing: 5) {
+            if let icon { CozyIcon(name: icon, size: 15) }
+            Text(text)
+        }
+        .font(.footnote.weight(.bold))
+        .kerning(0.5)
+        .textCase(.uppercase)
+        .foregroundStyle(Theme.subtext)
     }
 }

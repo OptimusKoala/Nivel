@@ -66,8 +66,11 @@ struct CalorieRingCard: View {
             Text("Objectif dépassé de ~\((eaten - target).frFormatted), ça arrive 😌")
                 .foregroundStyle(Theme.subtext)
         } else {
-            Text("Reste ~\(max(0, target - eaten).frFormatted) kcal 🍽️")
-                .foregroundStyle(Theme.green)
+            HStack(spacing: 4) {
+                Text("Reste ~\(max(0, target - eaten).frFormatted) kcal")
+                CozyIcon(name: "tab_meals", size: 15)
+            }
+            .foregroundStyle(Theme.green)
         }
     }
 }

@@ -8,7 +8,7 @@ public struct Badge: Codable, Identifiable, Hashable, Sendable {
     }
     public let id: String
     public let title: String
-    public let emoji: String
+    public let icon: CatalogIcon
     public let hint: String
     public let metric: Metric
     public let threshold: Int

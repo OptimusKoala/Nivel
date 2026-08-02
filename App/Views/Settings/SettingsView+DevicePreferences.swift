@@ -54,7 +54,7 @@ extension SettingsContent {
 }
 
 /// Carte de sélection d'une palette : pastille d'aperçu (fond du thème +
-/// points primaire/accent), emoji + nom, coche animée sur la sélection.
+/// points primaire/accent), glyphe + nom, coche animée sur la sélection.
 private struct ThemeSwatchCard: View {
     let palette: ThemePalette
     let isSelected: Bool
@@ -65,7 +65,8 @@ private struct ThemeSwatchCard: View {
             VStack(spacing: 8) {
                 swatch
                 HStack(spacing: 5) {
-                    Text(palette.emoji).font(.footnote)
+                    CozyIcon(name: palette.icon, size: 17)
+                        .foregroundStyle(Theme.text)
                     Text(palette.name)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Theme.text)

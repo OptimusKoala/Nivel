@@ -38,8 +38,8 @@ struct SportView: View {
                     }
                 } header: { header }
 
-                activitySection("🏠 À la maison", activities: homeActivities)
-                activitySection("🌳 Dehors", activities: outdoorActivities)
+                activitySection("À la maison", icon: "tab_home", activities: homeActivities)
+                activitySection("Dehors", icon: "icon_tree", activities: outdoorActivities)
 
                 if !todayEntries.isEmpty {
                     Section {
@@ -79,12 +79,12 @@ struct SportView: View {
             .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 10, trailing: 0))
     }
 
-    private func activitySection(_ title: String, activities: [Activity]) -> some View {
+    private func activitySection(_ title: String, icon: String, activities: [Activity]) -> some View {
         Section {
             ForEach(activities) { activity in
                 Button { selectedActivity = activity } label: {
                     HStack(spacing: 12) {
-                        SportIllustration(name: activity.id, fallbackEmoji: activity.emoji)
+                        SportIllustration(name: activity.id)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(activity.name)
                                 .font(.subheadline.weight(.semibold))
@@ -107,23 +107,21 @@ struct SportView: View {
                 .listRowBackground(Theme.card)
             }
         } header: {
-            Overline(title)
+            Overline(title, icon: icon)
         }
     }
 
     private func doneRow(_ entry: ActivityEntry) -> some View {
-        let (emoji, name): (String, String) = {
+        let name: String = {
             switch entry.kind {
             case .activity:
-                let activity = game.activitiesByID[entry.refID]
-                return (activity?.emoji ?? "🏃", activity?.name ?? entry.refID)
+                return game.activitiesByID[entry.refID]?.name ?? entry.refID
             case .dailySession:
-                let session = game.sessionCatalog.first { $0.id == entry.refID }
-                return (session?.emoji ?? "📅", session?.title ?? entry.refID)
+                return game.sessionCatalog.first { $0.id == entry.refID }?.title ?? entry.refID
             }
         }()
         return HStack(spacing: 12) {
-            SportIllustration(name: entry.refID, fallbackEmoji: emoji)
+            SportIllustration(name: entry.refID)
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
                     .font(.subheadline.weight(.semibold))

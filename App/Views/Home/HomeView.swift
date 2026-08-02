@@ -311,8 +311,8 @@ private struct QuestCard: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(status.quest.emoji)
-                .font(.system(size: 28))
+            CatalogGlyph(icon: status.quest.icon, size: 37)
+                .foregroundStyle(Theme.orange)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(status.quest.title)

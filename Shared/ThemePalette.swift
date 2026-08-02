@@ -12,7 +12,11 @@ struct ThemePalette: Identifiable, Equatable {
     let id: String
     /// Nom affiché dans Réglages > Thème.
     let name: String
-    let emoji: String
+    /// Glyphe cozy du dossier `Icons/`, affiché à côté du nom dans Réglages > Thème.
+    /// Un `String` et non un `CatalogIcon` : les 4 thèmes ont tous un glyphe, aucune
+    /// exception emoji à représenter ici. Le widget partage ce type mais n'affiche que
+    /// les couleurs — il n'embarque pas le catalogue d'assets de l'app.
+    let icon: String
     /// Pilote `.preferredColorScheme` : le chrome système (clavier, alertes,
     /// pickers) suit l'ambiance de la palette.
     let isDark: Bool
@@ -46,7 +50,7 @@ extension ThemePalette {
 
     /// Palette v1, inchangée — crème/pêche cozy.
     static let creme = ThemePalette(
-        id: "creme", name: "Crème", emoji: "🍮", isDark: false,
+        id: "creme", name: "Crème", icon: "icon_flan", isDark: false,
         background: Color(hex: 0xFDF6EC),
         card: .white,
         text: Color(hex: 0x5B4A3F),
@@ -61,7 +65,7 @@ extension ThemePalette {
 
     /// Vert d'eau très clair, sauge + menthe.
     static let menthe = ThemePalette(
-        id: "menthe", name: "Menthe", emoji: "🌿", isDark: false,
+        id: "menthe", name: "Menthe", icon: "icon_mint", isDark: false,
         background: Color(hex: 0xEDF7F0),
         card: .white,
         text: Color(hex: 0x3D5248),
@@ -76,7 +80,7 @@ extension ThemePalette {
 
     /// Bleu ciel très clair, bleu profond + turquoise.
     static let ocean = ThemePalette(
-        id: "ocean", name: "Océan", emoji: "🌊", isDark: false,
+        id: "ocean", name: "Océan", icon: "icon_wave", isDark: false,
         background: Color(hex: 0xECF5FB),
         card: .white,
         text: Color(hex: 0x3B5568),
@@ -93,7 +97,7 @@ extension ThemePalette {
     /// Fond ~#261B18 pour que le contour bordeaux de Nivelito (#3A1220) reste lisible ;
     /// cartes nettement plus claires que le fond.
     static let nuitDouce = ThemePalette(
-        id: "nuit-douce", name: "Nuit douce", emoji: "🌙", isDark: true,
+        id: "nuit-douce", name: "Nuit douce", icon: "icon_moon", isDark: true,
         background: Color(hex: 0x261B18),
         card: Color(hex: 0x352822),
         text: Color(hex: 0xF2E4D3),      // crème chaude

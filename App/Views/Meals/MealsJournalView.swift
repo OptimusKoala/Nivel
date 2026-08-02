@@ -163,7 +163,7 @@ struct MealsJournalView: View {
     private func mealRow(_ entry: MealEntry) -> some View {
         let dish = dishesByID[entry.dishID]
         return HStack(spacing: 12) {
-            Text(dish?.emoji ?? "🍽️")
+            Text(dish?.emoji ?? "🥘")
                 .font(.system(size: 28))
             VStack(alignment: .leading, spacing: 2) {
                 Text(dish?.name ?? "Plat")

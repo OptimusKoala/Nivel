@@ -69,7 +69,12 @@ struct CaloriesChart: View {
     }
 
     private var emptyState: some View {
-        Text("Logge tes repas pour voir ton historique ici 🍽️")
+        HStack(spacing: 5) {
+            Text("Logge tes repas pour voir ton historique ici")
+            // 21 et non les 17 des glyphes simples voisins : icon_meal_log porte DEUX
+            // éléments (pomme et crayon), il lui faut de la place pour rester lisible.
+            CozyIcon(name: "icon_meal_log", size: 21)
+        }
             .font(.subheadline)
             .foregroundStyle(Theme.subtext)
             .multilineTextAlignment(.center)

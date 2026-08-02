@@ -105,7 +105,7 @@ struct SessionPlayerSheet: View {
     private var overviewPage: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                SportHeroIllustration(name: session.id, fallbackEmoji: session.emoji)
+                SportHeroIllustration(name: session.id)
                 VStack(alignment: .leading, spacing: 3) {
                     Overline("Séance du jour")
                     Text(session.title)
@@ -128,9 +128,7 @@ struct SessionPlayerSheet: View {
     private func summaryRow(_ step: SessionStep) -> some View {
         let activity = game.activitiesByID[step.activityID]
         return HStack(spacing: 10) {
-            SportIllustration(name: step.activityID,
-                              fallbackEmoji: activity?.emoji ?? "🏃",
-                              size: 40, cornerRadius: 10)
+            SportIllustration(name: step.activityID, size: 40, cornerRadius: 10)
             Text(activity?.name ?? step.activityID)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.text)
@@ -224,7 +222,6 @@ private struct StepPageView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     TimerRingView(illustrationName: step.activityID,
-                                  fallbackEmoji: activity?.emoji ?? "🏃",
                                   fraction: timer.fraction(at: context.date),
                                   finished: timer.isFinished,
                                   segments: step.segments)
