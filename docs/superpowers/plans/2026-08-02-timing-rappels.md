@@ -1213,6 +1213,45 @@ git commit -m "feat: horaires de rappel dans le profil, NotificationService sur 
 
 ---
 
+### Task 8 bis : Scinder `SettingsView` avant qu'il ne grossisse
+
+Ajoutée après la revue qualité de la Task 5. `SettingsView.swift` fait 481 lignes et porte sept sections ; la Task 9 remplace 37 lignes de rappels par environ 130. Scinder maintenant fait atterrir ce gros diff dans un fichier dédié au lieu d'empiler dans un fichier déjà large.
+
+**Files:**
+- Modify: `App/Views/Settings/SettingsView.swift`
+- Create: `App/Views/Settings/SettingsView+Reminders.swift`
+- Create: `App/Views/Settings/SettingsView+DevicePreferences.swift`
+
+- [ ] **Step 1: Déplacer, sans rien réécrire**
+
+Vers `SettingsView+Reminders.swift` : `remindersSection`, `reminderToggle`, `reminderBinding`. C'est exactement ce que la Task 9 réécrit.
+
+Vers `SettingsView+DevicePreferences.swift` : `themeSection`, `soundSection` et la struct `ThemeSwatchCard`. Ces deux sections partagent la même nature (UserDefaults, par appareil, pas de `save()`), et `ThemeSwatchCard` ne dépend déjà de rien d'interne à `SettingsContent`.
+
+Restent dans `SettingsView.swift` : `SettingsView`, l'état de `SettingsContent`, `profileSection`, `goalsSection`, `healthSection`, `aboutSection`, les briques `section`/`row`/`divider`, les actions kcal, `save()`, la preview.
+
+- [ ] **Step 2: Ouvrir la visibilité, au minimum nécessaire**
+
+`private struct SettingsContent` et ses membres partagés (`profile`, `modelContext`, `game`, `section`, `row`, `divider`, `save()`) doivent perdre leur `private` : en Swift, `private` au niveau d'un fichier est visible dans ce seul fichier, et les extensions vivent désormais ailleurs. Passer en `internal` implicite, sans plus. Ne PAS rendre `public` : la cible est une app, pas une bibliothèque.
+
+- [ ] **Step 3: Vérifier que rien n'a changé**
+
+C'est un déplacement pur. Aucune ligne de logique ne doit être modifiée au passage.
+
+Run: `xcodegen generate && xcodebuild -project Nivel.xcodeproj -scheme Nivel -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`
+Expected: 61 tests au vert, inchangés.
+
+Vérifier aussi que la preview de `SettingsView` s'ouvre toujours et affiche les sept sections dans le même ordre.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add App/Views/Settings/ Nivel.xcodeproj/project.pbxproj
+git commit -m "refactor(réglages): scinder SettingsView en rappels et préférences d'appareil"
+```
+
+---
+
 ### Task 9 : Les lignes de rappel réglables dans les Réglages
 
 **Files:**
