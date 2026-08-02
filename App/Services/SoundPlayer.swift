@@ -16,7 +16,7 @@ final class SoundPlayer {
     private var players: [TimerChime: AVAudioPlayer] = [:]
     private var sessionConfigured = false
 
-    static func fileName(for chime: TimerChime) -> String {
+    nonisolated static func fileName(for chime: TimerChime) -> String {
         switch chime {
         case .step: "timer_step"
         case .done: "timer_done"

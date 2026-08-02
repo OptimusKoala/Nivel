@@ -9,9 +9,8 @@ import NivelCore
 @testable import Nivel
 
 final class SoundPlayerTests: XCTestCase {
-    // `fileName(for:)` est isolée @MainActor (elle vit sur `SoundPlayer`, lui-même
-    // @MainActor) : le test doit l'être aussi pour l'appeler de façon synchrone.
-    @MainActor
+    // `fileName(for:)` est `nonisolated` : mapping pur, aucun accès à l'état de
+    // `SoundPlayer`, donc pas besoin de @MainActor pour l'appeler ici.
     func testFileNameCorrespondAuBonChime() {
         XCTAssertEqual(SoundPlayer.fileName(for: .step), "timer_step")
         XCTAssertEqual(SoundPlayer.fileName(for: .done), "timer_done")

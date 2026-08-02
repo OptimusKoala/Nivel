@@ -4,7 +4,6 @@
 import SwiftUI
 import SwiftData
 import UIKit
-import AudioToolbox
 import NivelCore
 
 struct ActivityLogSheet: View {
@@ -100,13 +99,9 @@ struct ActivityLogSheet: View {
                 }
                 .frame(maxWidth: .infinity)
                 .onChange(of: context.date) { _, date in
-                    // Ordre exigé : lire l'overrun AVANT syncNow (spec §5), comme StepPageView.
-                    let overrun = timer.overrun(at: date)
-                    guard timer.syncNow(at: date) else { return }
-                    if (overrun ?? .infinity) < 2 {
-                        UINotificationFeedbackGenerator().notificationOccurred(.success)
-                        AudioServicesPlaySystemSound(1103)
-                    }
+                    // Activité libre : pas de notion de page courante, et le timer va
+                    // toujours jusqu'au bout de l'activité, donc chime « terminé ».
+                    TimerChime.onTick(timer: timer, at: date, isCurrent: true, chime: .done)
                 }
             }
         } else {

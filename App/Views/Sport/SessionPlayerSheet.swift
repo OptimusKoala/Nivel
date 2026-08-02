@@ -7,7 +7,6 @@
 import SwiftUI
 import SwiftData
 import UIKit
-import AudioToolbox
 import NivelCore
 
 extension View {
@@ -265,15 +264,8 @@ private struct StepPageView: View {
                 .padding(20)
             }
             .onChange(of: context.date) { _, date in
-                // Ordre exigé : lire l'overrun AVANT syncNow (une fois `.finished`, overrun redevient nil).
-                let overrun = timer.overrun(at: date)
-                guard timer.syncNow(at: date) else { return }
-                // Son/haptique honnêtes : jamais si la page n'est pas affichée, ni pour une fin
-                // vécue en différé (app en arrière-plan pendant tout ou partie du dépassement).
-                if isCurrent, (overrun ?? .infinity) < 2 {
-                    UINotificationFeedbackGenerator().notificationOccurred(.success)
-                    AudioServicesPlaySystemSound(1103)
-                }
+                TimerChime.onTick(timer: timer, at: date, isCurrent: isCurrent,
+                                  chime: .forStep(number: number, stepCount: stepCount))
             }
         }
         .onChange(of: timer.isFinished) { _, finished in

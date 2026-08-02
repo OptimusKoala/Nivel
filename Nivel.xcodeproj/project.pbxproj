@@ -26,6 +26,7 @@
 		44E73F722094C06855E93916 /* SessionPlayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */; };
 		4CE4E454AA136D82709CEB76 /* ActivityLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */; };
 		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
+		4E7AE9FDA9DA5EBB0BAD876E /* TimerChime+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7115C94A90C02E4FB6B9B24 /* TimerChime+App.swift */; };
 		4E8C2BBA3CC86D6E72F06955 /* NivelWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2385787BD003A25BF9AC5C /* NivelWidgetProvider.swift */; };
 		5250E4B0045E3F3A037708F2 /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4AF60C635E23219D03138E /* ThemePalette.swift */; };
 		53931F6D56ACB48CD78C092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6EDCC1A6BBE5494E9031FF3 /* Assets.xcassets */; };
@@ -177,6 +178,7 @@
 		C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDashboardTests.swift; sourceTree = "<group>"; };
 		C658D5A942C3A751271B8BBD /* NivelWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = NivelWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
+		C7115C94A90C02E4FB6B9B24 /* TimerChime+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimerChime+App.swift"; sourceTree = "<group>"; };
 		C75615282503FC8044658A28 /* DayCloserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloserTests.swift; sourceTree = "<group>"; };
 		C923A46DDC21834AB6E06D1B /* NivelitoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoView.swift; sourceTree = "<group>"; };
 		C9AB33328B42B0A39E65B608 /* NivelTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -223,6 +225,7 @@
 				50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */,
 				A8FFFFAF3CE543D7BDA7BAB9 /* SportIllustration.swift */,
 				4542B7EDA424C2DF0AF4CD23 /* SportView.swift */,
+				C7115C94A90C02E4FB6B9B24 /* TimerChime+App.swift */,
 				A79570BB8A6B99B6D9314323 /* TimerRingView.swift */,
 			);
 			path = Sport;
@@ -632,6 +635,7 @@
 				0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */,
 				1B36CC033AB07BEB581D664D /* Theme.swift in Sources */,
 				FB9F1654D2AFF306E24D59CF /* ThemePalette.swift in Sources */,
+				4E7AE9FDA9DA5EBB0BAD876E /* TimerChime+App.swift in Sources */,
 				FE4A11B0B48A1B381C926EC7 /* TimerRingView.swift in Sources */,
 				E9E07644DA5B531E655EFC74 /* WeighInSheet.swift in Sources */,
 				8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */,
