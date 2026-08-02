@@ -21,7 +21,7 @@ struct MealBasketView: View {
             } else {
                 VStack(spacing: 8) {
                     ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
-                        SwipeToDeleteRow(onDelete: { removeLine(at: index) }) {
+                        SwipeToDeleteRow(resetToken: lines.count, onDelete: { removeLine(at: index) }) {
                             basketRow(line, index: index)
                         }
                     }
@@ -100,6 +100,14 @@ struct MealBasketView: View {
 /// `List` imbriquée dans une `ScrollView`, source de conflits de défilement.
 /// Réutilisé par `MealLineDetailView` pour retirer un composant.
 struct SwipeToDeleteRow<Content: View>: View {
+    /// Change à chaque ajout ou retrait dans la liste parente. Les `ForEach` de cet
+    /// écran identifient leurs lignes par INDEX : après une suppression, l'état de
+    /// swipe d'une ligne resterait collé à son ancien rang et se retrouverait sur la
+    /// ligne voisine, qui afficherait une corbeille que personne n'a fait glisser.
+    /// Refermer tout le monde au moindre changement règle le cas sans avoir à donner
+    /// une identité stable à des lignes qui peuvent légitimement être identiques
+    /// (deux demis de bière, par exemple).
+    let resetToken: Int
     let onDelete: () -> Void
     @ViewBuilder let content: Content
 
@@ -132,5 +140,6 @@ struct SwipeToDeleteRow<Content: View>: View {
                         }
                 )
         }
+        .onChange(of: resetToken) { _, _ in offset = 0 }
     }
 }

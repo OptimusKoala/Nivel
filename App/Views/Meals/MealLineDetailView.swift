@@ -127,7 +127,7 @@ struct MealLineDetailView: View {
         // Une ligne simple a un seul composant, non supprimable (spec §5.4) : rien
         // à décomposer davantage. Une ligne composée garde au moins un composant.
         if line.isComposed && line.components.count > 1 {
-            SwipeToDeleteRow(onDelete: { removeComponent(at: index) }) {
+            SwipeToDeleteRow(resetToken: line.components.count, onDelete: { removeComponent(at: index) }) {
                 componentContent(component)
             }
         } else {

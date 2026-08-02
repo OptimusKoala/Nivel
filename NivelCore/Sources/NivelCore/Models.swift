@@ -31,15 +31,3 @@ public enum MealSlot: String, Codable, CaseIterable, Sendable {
         }
     }
 }
-
-public enum Portion: String, Codable, CaseIterable, Sendable {
-    case light, normal, hearty
-
-    public var multiplier: Double {
-        switch self {
-        case .light: 0.7
-        case .normal: 1.0
-        case .hearty: 1.3
-        }
-    }
-}
