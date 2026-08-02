@@ -30,6 +30,8 @@ public enum CustomDuration {
     /// jamais de 1 minute, qui obligerait à faire défiler toute la roue.
     public static func openingValue(current: Int?, durations: [Int]) -> Int {
         if let current, range.contains(current) { return current }
+        // Liste paire : médiane haute, par simplicité. Arbitraire mais déterministe,
+        // et aucune activité du catalogue n'a un nombre pair de durées aujourd'hui.
         let sorted = durations.sorted()
         if !sorted.isEmpty {
             let median = sorted[sorted.count / 2]
@@ -46,6 +48,10 @@ public enum LoggedDuration {
     ///     choisie côté modèle ; le plafond est répété ici pour que la fonction soit
     ///     juste indépendamment de son appelant.
     ///   - timerUsed: le timer a été lancé au moins une fois.
+    /// - Precondition: `chosenMinutes` strictement positif. NON vérifié ici : les deux
+    ///   appelants passent soit une durée du catalogue, soit une valeur de la roue déjà
+    ///   bornée à `CustomDuration.range`. Valider à nouveau ici blanchirait un bug
+    ///   d'appelant en « 1 minute » plausible au lieu de le rendre visible.
     public static func resolve(chosenMinutes: Int, elapsedSeconds: TimeInterval,
                                timerUsed: Bool) -> Int {
         guard timerUsed else { return chosenMinutes }
