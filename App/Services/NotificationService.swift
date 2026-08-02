@@ -1,6 +1,7 @@
 // App/Services/NotificationService.swift
-// Rappels locaux bienveillants (spec §10) : 4 rappels répétitifs
-// (UNCalendarNotificationTrigger), textes tirés de la banque de messages.
+// Rappels locaux bienveillants (spec v1 §10, horaires réglables spec v1.9 §4.3) :
+// le CALCUL de ce qu'il faut planifier vit dans NivelCore (ReminderPlanner, pur et
+// testé) ; ce fichier ne garde que le dialogue avec UNUserNotificationCenter.
 // Re-planifié à chaque passage au premier plan pour renouveler les textes.
 
 import Foundation
@@ -9,45 +10,30 @@ import NivelCore
 
 @MainActor
 enum NotificationService {
-    /// Un rappel planifiable : identifiant stable (clé de `profile.remindersEnabled`),
-    /// horaire, et contexte de la banque de messages.
-    struct Reminder {
-        let id: String
-        let hour: Int
-        let minute: Int
-        /// Jour de la semaine (1 = dimanche … 7 = samedi) — nil = tous les jours.
-        let weekday: Int?
-        let context: MessageContext
-    }
-
-    /// Les 4 rappels de la v1 (spec §10).
-    static let reminders: [Reminder] = [
-        Reminder(id: "lunch", hour: 12, minute: 30, weekday: nil, context: .midday),
-        Reminder(id: "dinner", hour: 20, minute: 0, weekday: nil, context: .evening),
-        Reminder(id: "weigh", hour: 9, minute: 0, weekday: 7, context: .weighReminder),
-        Reminder(id: "steps", hour: 18, minute: 0, weekday: nil, context: .stepsEncouragement),
-    ]
-
     /// Sérialisation des re-planifications : chaque appel incrémente la génération ;
-    /// une invocation devenue obsolète après son await (retour au premier plan +
-    /// toggle quasi simultanés) est abandonnée — seul le dernier instantané gagne.
+    /// une invocation devenue obsolète après son await (roue d'heure que l'on fait
+    /// tourner, retour au premier plan et toggle quasi simultanés) est abandonnée.
+    /// C'est ce qui absorbe la rafale de changements d'un DatePicker.
     private static var generation = 0
 
     /// Supprime toutes les demandes en attente puis re-planifie chaque rappel ACTIF
-    /// avec un texte frais de la banque (tirage aléatoire — varie à chaque appel).
+    /// avec un texte frais de la banque (tirage aléatoire, varie à chaque appel).
     /// Si les notifications sont refusées : ne fait rien (jamais de crash).
     ///
     /// L'instantané des champs du profil (@Model non-Sendable) est capturé ICI,
-    /// avant tout passage asynchrone.
+    /// avant tout passage asynchrone, et le profil n'est plus jamais relu ensuite.
     static func reschedule(for profile: UserProfile) {
         let name = profile.name
-        let enabled = profile.remindersEnabled
+        let planned = ReminderPlanner.planned(enabled: profile.remindersEnabled,
+                                              times: profile.reminderTimes,
+                                              weekdays: profile.reminderWeekdays)
         generation += 1
         let gen = generation
-        Task { await perform(name: name, enabled: enabled, generation: gen) }
+        Task { await perform(name: name, planned: planned, generation: gen) }
     }
 
-    private static func perform(name: String, enabled: [String: Bool], generation gen: Int) async {
+    private static func perform(name: String, planned: [PlannedReminder],
+                                generation gen: Int) async {
         let center = UNUserNotificationCenter.current()
         let settings = await center.notificationSettings()
 
@@ -60,9 +46,9 @@ enum NotificationService {
         let bank = try? MessageBank.load()
 
         // removeAll + adds SYNCHRONES (aucun await entre les deux) : le bloc est
-        // atomique du point de vue du main actor — aucun entrelacement possible.
+        // atomique du point de vue du main actor, aucun entrelacement possible.
         center.removeAllPendingNotificationRequests()
-        for reminder in reminders where enabled[reminder.id] == true {
+        for reminder in planned {
             let content = UNMutableNotificationContent()
             content.title = "Nivelito 🧡"
             content.body = bank?.pick(

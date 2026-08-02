@@ -14,6 +14,11 @@ final class UserProfile {
     var dailyCalorieTarget: Int          // calculé à l'onboarding, modifiable (spec §6)
     var dailyStepGoal: Int               // défaut 8000
     var remindersEnabled: [String: Bool] // id de rappel → actif
+    // Défauts au niveau de la DÉCLARATION : requis pour la migration légère SwiftData
+    // des stores existants (le défaut de l'init ne suffit pas, leçon de
+    // completedThisWeekQuestIDs en v1). Clé absente = valeur du ReminderCatalog.
+    var reminderTimes: [String: Int] = [:]      // id → minutes depuis minuit (0...1439)
+    var reminderWeekdays: [String: Int] = [:]   // id → jour (1 = dimanche … 7 = samedi)
     var createdAt: Date
     var lastMessageIDs: [String: String] // contexte → dernier id de message (anti-répétition)
 
@@ -27,6 +32,8 @@ final class UserProfile {
         dailyCalorieTarget: Int,
         dailyStepGoal: Int = 8000,
         remindersEnabled: [String: Bool] = [:],
+        reminderTimes: [String: Int] = [:],
+        reminderWeekdays: [String: Int] = [:],
         createdAt: Date = .now,
         lastMessageIDs: [String: String] = [:]
     ) {
@@ -39,6 +46,8 @@ final class UserProfile {
         self.dailyCalorieTarget = dailyCalorieTarget
         self.dailyStepGoal = dailyStepGoal
         self.remindersEnabled = remindersEnabled
+        self.reminderTimes = reminderTimes
+        self.reminderWeekdays = reminderWeekdays
         self.createdAt = createdAt
         self.lastMessageIDs = lastMessageIDs
     }
