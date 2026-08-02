@@ -1295,6 +1295,10 @@ Remplacer `remindersSection`, `reminderToggle` et `reminderBinding` par :
             // gardent chacun leur libellé et restent actionnables séparément.
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(definition.title), \(phrase)")
+            // Mesuré (harnais hébergeant SettingsContent réel, 320 à 402 pt) : sans ça
+            // le sous-titre de fréquence se coupe en deux lignes dès 375 pt. Voir la
+            // note sur le menu de jour ci-dessous : les deux .fixedSize() vont ensemble.
+            .fixedSize(horizontal: true, vertical: false)
 
             Spacer(minLength: 4)
 
@@ -1306,6 +1310,14 @@ Remplacer `remindersSection`, `reminderToggle` et `reminderBinding` par :
                 }
                 .pickerStyle(.menu)
                 .labelsHidden()
+                // Sans .fixedSize() le libellé du menu ("sam.") se coupe en "sam" / "."
+                // de 320 à 402 pt. Les deux .fixedSize() de la ligne (celui-ci et celui
+                // du bloc de texte ci-dessus) doivent être posés ENSEMBLE : poser un
+                // seul des deux ne fait que déplacer la coupure sur l'autre élément.
+                // À 320 pt la ligne déborde alors de la carte au lieu de rentrer ; aucun
+                // iPhone livré ne fait 320 pt, et d'autres lignes de cet écran cassent
+                // déjà seules à cette largeur, indépendamment de ce correctif.
+                .fixedSize()
                 .disabled(!isOn)
                 .accessibilityLabel("Jour du rappel \(definition.title)")
             }
@@ -1327,18 +1339,19 @@ Remplacer `remindersSection`, `reminderToggle` et `reminderBinding` par :
     }
 
     // MARK: Valeurs résolues (surcharge du profil, sinon défaut du catalogue)
+    //
+    // Simples relais vers ReminderSchedule (NivelCore) : la règle « surcharge valide
+    // sinon défaut du catalogue » vit là-bas en un seul endroit, partagée avec
+    // ReminderPlanner.planned. Ne PAS la réimplémenter ici : deux copies de la même
+    // règle finissent tôt ou tard par diverger, et l'écran afficherait alors une heure
+    // différente de celle réellement planifiée.
 
     private func resolvedMinutes(_ definition: ReminderDefinition) -> Int {
-        profile.reminderTimes[definition.id]
-            .flatMap { ReminderSchedule.minutesRange.contains($0) ? $0 : nil }
-            ?? definition.defaultMinutesFromMidnight
+        ReminderSchedule.resolvedMinutes(profile.reminderTimes[definition.id], for: definition)
     }
 
     private func resolvedWeekday(_ definition: ReminderDefinition) -> Int? {
-        guard definition.isWeekdayEditable else { return definition.defaultWeekday }
-        return profile.reminderWeekdays[definition.id]
-            .flatMap { ReminderSchedule.weekdayRange.contains($0) ? $0 : nil }
-            ?? definition.defaultWeekday
+        ReminderSchedule.resolvedWeekday(profile.reminderWeekdays[definition.id], for: definition)
     }
 
     // MARK: Bindings
@@ -1358,6 +1371,13 @@ Remplacer `remindersSection`, `reminderToggle` et `reminderBinding` par :
         )
     }
 
+    /// Calendrier grégorien FIXE, pas Calendar.current : arithmétique heure/minute
+    /// pure sur un jour de référence arbitraire, aucune sémantique calendaire réelle
+    /// nécessaire. Calendar.current suivrait le réglage Région de l'appareil ; sous un
+    /// calendrier non grégorien, date(from:) peut renvoyer nil et faire retomber le
+    /// getter sur .now, affichant l'heure courante au lieu de l'heure enregistrée.
+    private static let gregorian = Calendar(identifier: .gregorian)
+
     private func timeBinding(_ definition: ReminderDefinition) -> Binding<Date> {
         Binding(
             get: {
@@ -1365,10 +1385,10 @@ Remplacer `remindersSection`, `reminderToggle` et `reminderBinding` par :
                 var components = Self.referenceDayComponents
                 components.hour = minutes / 60
                 components.minute = minutes % 60
-                return Calendar.current.date(from: components) ?? .now
+                return Self.gregorian.date(from: components) ?? .now
             },
             set: { newValue in
-                let parts = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                let parts = Self.gregorian.dateComponents([.hour, .minute], from: newValue)
                 var times = profile.reminderTimes
                 times[definition.id] = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
                 profile.reminderTimes = times
