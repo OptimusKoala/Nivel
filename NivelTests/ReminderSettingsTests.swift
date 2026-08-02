@@ -7,10 +7,21 @@ import NivelCore
 @MainActor
 final class ReminderSettingsTests: XCTestCase {
 
-    private func makeProfile() throws -> (ModelContainer, UserProfile) {
+    /// Le container est retenu par le cas de test, pas par une variable locale :
+    /// SwiftData ne le retient PAS depuis son mainContext, et une locale peut être
+    /// libérée dès son dernier usage sous optimisation, ce qui invalide le modèle
+    /// et fait tomber tout le processus de test. `_ = container` ne garantit rien.
+    private var container: ModelContainer!
+
+    override func tearDown() {
+        container = nil
+        super.tearDown()
+    }
+
+    private func makeProfile() throws -> UserProfile {
         let schema = Schema([UserProfile.self, MealEntry.self, WeightEntry.self,
                              DayLog.self, GamificationState.self, ActivityEntry.self])
-        let container = try ModelContainer(
+        container = try ModelContainer(
             for: schema,
             configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
         )
@@ -22,16 +33,13 @@ final class ReminderSettingsTests: XCTestCase {
             remindersEnabled: ["lunch": true, "dinner": true, "weigh": true, "steps": true]
         )
         container.mainContext.insert(profile)
-        return (container, profile)
+        return profile
     }
 
     /// Un profil créé sans horaires (donc tout profil déjà installé) doit produire
     /// exactement la planification de la v1.
     func testProfilSansHorairesGardeLesDefauts() throws {
-        // Le container doit rester en vie tant que `profile` est lu : SwiftData ne
-        // le retient pas via mainContext, un `_` ici invaliderait le modèle (crash).
-        let (container, profile) = try makeProfile()
-        _ = container
+        let profile = try makeProfile()
         XCTAssertTrue(profile.reminderTimes.isEmpty)
         XCTAssertTrue(profile.reminderWeekdays.isEmpty)
 
@@ -45,7 +53,7 @@ final class ReminderSettingsTests: XCTestCase {
     }
 
     func testHoraireModifiePersisteEtEstPlanifie() throws {
-        let (container, profile) = try makeProfile()
+        let profile = try makeProfile()
         profile.reminderTimes = ["dinner": 19 * 60 + 45]
         profile.reminderWeekdays = ["weigh": 1]
         try container.mainContext.save()
@@ -64,10 +72,7 @@ final class ReminderSettingsTests: XCTestCase {
 
     /// Le sous-titre affiché doit suivre l'horaire réel, pas un texte figé.
     func testSousTitreSuitLHoraire() throws {
-        // Idem : conserver le container vivant pour la durée du test (cf. commentaire
-        // ci-dessus dans testProfilSansHorairesGardeLesDefauts).
-        let (container, profile) = try makeProfile()
-        _ = container
+        let profile = try makeProfile()
         profile.reminderTimes = ["dinner": 19 * 60 + 45]
         let planned = ReminderPlanner.planned(enabled: profile.remindersEnabled,
                                               times: profile.reminderTimes,
