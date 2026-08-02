@@ -56,6 +56,7 @@ private struct SettingsContent: View {
 
                     profileSection
                     goalsSection
+                    soundSection
                     remindersSection
                     themeSection
                     healthSection
@@ -202,6 +203,26 @@ private struct SettingsContent: View {
             row("Pas quotidiens") {
                 Stepper(value: $profile.dailyStepGoal, in: 2000...30000, step: 500) {
                     Text("\(profile.dailyStepGoal)").font(.headline)
+                }
+            }
+        }
+    }
+
+    // MARK: - Son
+
+    /// Préférence PAR APPAREIL (comme le thème) : elle vit dans UserDefaults, pas
+    /// dans SwiftData, donc aucun `save()` ici. Elle n'entre pas non plus dans
+    /// l'instantané du widget, donc pas de `syncWidget()` non plus.
+    private var soundSection: some View {
+        section("Son") {
+            Toggle(isOn: Binding(
+                get: { SoundSettings.shared.timerSoundEnabled },
+                set: { SoundSettings.shared.timerSoundEnabled = $0 }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Son du timer").font(.subheadline.weight(.semibold))
+                    Text("sonne même en mode silencieux")
+                        .font(.caption).foregroundStyle(Theme.subtext)
                 }
             }
         }
