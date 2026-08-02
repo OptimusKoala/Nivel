@@ -136,12 +136,14 @@ Les valeurs aux 100 g ont été choisies pour être physiquement plausibles, pas
 | `chips` | Petit paquet de chips | 1 paquet | 28 | 153 | 545 |
 | `nuts` | Oléagineux | 1 poignée | 30 | 180 | 600 |
 | `choco_bar` | Barre chocolatée | 1 | 45 | 230 | 511 |
-| `pastry` | Viennoiserie | 1 | 70 | 301 | 430 |
+| `croissant` | Viennoiserie | 1 | 70 | 301 | 430 |
 | `ice_cream` | Glace | 1 boule | 100 | 200 | 200 |
 
 **Les chips sont au format européen individuel**, 27,5 g, soit environ 150 kcal à 545 kcal aux 100 g. Un paquet familial partagé se règle en tapant les grammes : inutile d'une seconde entrée.
 
-### 4.4 Les accompagnements et ingrédients
+**L'id de la viennoiserie est `croissant`, pas `pastry`** : `pastry` est déjà l'id du plat Viennoiserie hérité de la v1, et réutiliser le même identifiant ferait perdre silencieusement l'une des deux entrées à l'indexation du catalogue.
+
+### 4.4 Les accompagnements et ingrédients (42)
 
 kcal aux 100 g. Ceux qui ont une unité naturelle la portent, les autres se saisissent au gramme.
 
@@ -208,8 +210,8 @@ Chacune doit retomber sur le forfait actuel du plat, **à 10 % près**. C'est un
 | Plat mijoté, 600 | viande 120 g, pommes de terre 200 g, légumes verts 100 g, sauce 40 g | 620 |
 | Fast-food, 950 | pain à burger 80 g, steak haché 120 g, fromage 20 g, frites 120 g | 954 |
 | Tartines, 350 | pain 80 g, beurre 12 g, confiture 20 g | 360 |
-| Céréales, 400 | céréales 70 g, lait 200 g, fruits coupés 80 g | 400 |
-| Viennoiserie, 300 | viennoiserie 70 g | 301 |
+| Céréales, 400 | céréales 70 g, `drink_milk` 200 g, fruits coupés 80 g | 400 |
+| Viennoiserie, 300 | `croissant` 70 g | 301 |
 | Yaourt & fruits, 200 | yaourt nature 125 g, fruits coupés 120 g, miel 15 g | 189 |
 | Autre, 600 | **aucune** | 600 |
 
