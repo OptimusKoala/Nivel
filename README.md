@@ -13,7 +13,7 @@ Une app iOS gamifiée façon jeu vidéo cozy, en français, entièrement locale.
   <img src="https://img.shields.io/badge/SwiftUI-SwiftData-f57c1f?style=flat-square" alt="SwiftUI + SwiftData"/>
   <img src="https://img.shields.io/badge/WidgetKit-4%20familles-f57c1f?style=flat-square" alt="WidgetKit"/>
   <img src="https://img.shields.io/badge/tests-117%20core%20%2B%2071%20app-3a1220?style=flat-square" alt="117 tests NivelCore + 71 tests app"/>
-  <img src="https://img.shields.io/badge/version-1.9-3a1220?style=flat-square" alt="version 1.9"/>
+  <img src="https://img.shields.io/badge/version-1.10-3a1220?style=flat-square" alt="version 1.10"/>
   <img src="https://img.shields.io/badge/licence-MIT-3a1220?style=flat-square" alt="licence MIT"/>
 </p>
 
@@ -70,7 +70,7 @@ Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglag
 ┌─ NivelCore/ ────────────────┐   Package Swift PUR (zéro dépendance UI, zéro SwiftData)
 │  calories · XP · niveaux    │   Calculs, catalogues JSON, banque de messages,
 │  quêtes · badges · tendance │   rotation de la séance du jour, planner de timeline.
-│  messages · planner widget  │  117 tests, `swift test` en 0,03 s.
+│  messages · planner widget  │  143 tests, `swift test` en 0,04 s.
 └─────────────┬───────────────┘
               │
     ┌─────────┴─────────┐
