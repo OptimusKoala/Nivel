@@ -28,7 +28,8 @@ extension SettingsContent {
         let isOn = profile.remindersEnabled[definition.id] ?? false
         let minutes = resolvedMinutes(definition)
         let weekday = resolvedWeekday(definition)
-        let phrase = ReminderSchedule.frLabel(hour: minutes / 60, minute: minutes % 60,
+        let time = ReminderSchedule.hourMinute(fromMinutesFromMidnight: minutes)
+        let phrase = ReminderSchedule.frLabel(hour: time.hour, minute: time.minute,
                                               weekday: weekday)
 
         return HStack(spacing: 8) {
@@ -132,8 +133,9 @@ extension SettingsContent {
             get: {
                 let minutes = resolvedMinutes(definition)
                 var components = Self.referenceDayComponents
-                components.hour = minutes / 60
-                components.minute = minutes % 60
+                let time = ReminderSchedule.hourMinute(fromMinutesFromMidnight: minutes)
+                components.hour = time.hour
+                components.minute = time.minute
                 return Self.gregorian.date(from: components) ?? .now
             },
             set: { newValue in

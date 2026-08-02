@@ -76,10 +76,10 @@ TimerChime.decide(overrun:transitioned:isCurrent:soundEnabled:) -> Feedback?
 **Site d'appel** (App), un seul helper partagé par les deux surfaces :
 
 ```
-TimerChime.onTick(timer:at:isCurrent:chime:) -> Bool
+TimerChime.onTick(timer:at:isCurrent:chime:)
 ```
 
-qui concentre l'ordre imposé « lire `overrun` **avant** `syncNow` », appelle `decide`, puis exécute le retour renvoyé. `ActivityLogSheet` n'a pas de notion de page courante et passe donc `isCurrent: true`. Retourne `true` si la transition a eu lieu, pour que l'appelant garde la main sur le reste.
+qui concentre l'ordre imposé « lire `overrun` **avant** `syncNow` », appelle `decide`, puis exécute le retour renvoyé. `ActivityLogSheet` n'a pas de notion de page courante et passe donc `isCurrent: true`. Ne rend rien : les vues qui ont besoin de savoir que le timer est fini observent `timer.isFinished`, elles n'ont pas à guetter un retour ici.
 
 Le réglage de son est lu au site d'appel et **passé en paramètre** à `decide` : la décision reste pure, les tests n'ont pas à toucher aux `UserDefaults`.
 

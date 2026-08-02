@@ -547,7 +547,7 @@ extension TimerChime {
     @MainActor
     @discardableResult
     static func onTick(timer: ExerciseTimerModel, at date: Date,
-                       isCurrent: Bool, chime: TimerChime) -> Bool {
+                       isCurrent: Bool, chime: TimerChime) {
         let overrun = timer.overrun(at: date)
         guard timer.syncNow(at: date) else { return false }
         guard let feedback = decide(overrun: overrun, transitioned: true,
