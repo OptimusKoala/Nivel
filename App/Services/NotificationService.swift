@@ -57,6 +57,9 @@ enum NotificationService {
                 name: name,
                 value: nil
             ).text ?? "Petit coucou de Nivelito 🧡"
+            // Son SYSTÈME, volontairement : les chimes embarqués de la v1.9 sont ceux
+            // du timer d'exercice. Un son propre aux notifications est hors périmètre
+            // (spec v1.9 §7), ce n'est pas un oubli de câblage.
             content.sound = .default
 
             var components = DateComponents()
