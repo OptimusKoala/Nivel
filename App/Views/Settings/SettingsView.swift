@@ -214,11 +214,12 @@ private struct SettingsContent: View {
     /// dans SwiftData, donc aucun `save()` ici. Elle n'entre pas non plus dans
     /// l'instantané du widget, donc pas de `syncWidget()` non plus.
     private var soundSection: some View {
-        section("Son") {
-            Toggle(isOn: Binding(
-                get: { SoundSettings.shared.timerSoundEnabled },
-                set: { SoundSettings.shared.timerSoundEnabled = $0 }
-            )) {
+        // `@Bindable` local plutôt qu'un Binding get/set à la main : la propriété n'a
+        // aucun effet de bord à l'écriture, contrairement aux rappels qui doivent
+        // réassigner un dictionnaire SwiftData puis re-planifier.
+        @Bindable var sound = SoundSettings.shared
+        return section("Son") {
+            Toggle(isOn: $sound.timerSoundEnabled) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Son du timer").font(.subheadline.weight(.semibold))
                     Text("sonne même en mode silencieux")
