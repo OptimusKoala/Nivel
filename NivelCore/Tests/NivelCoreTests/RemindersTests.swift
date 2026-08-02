@@ -112,4 +112,78 @@ final class RemindersTests: XCTestCase {
         }
         XCTAssertFalse(ReminderSchedule.frLabel(hour: 9, minute: 0, weekday: 7).contains("—"))
     }
+
+    // MARK: - Planificateur
+
+    private let allOn = ["lunch": true, "dinner": true, "weigh": true, "steps": true]
+
+    private func planned(_ enabled: [String: Bool], times: [String: Int] = [:],
+                         weekdays: [String: Int] = [:]) -> [PlannedReminder] {
+        ReminderPlanner.planned(enabled: enabled, times: times, weekdays: weekdays)
+    }
+
+    func testSansSurchargeOnRetrouveLesDefauts() {
+        let result = planned(allOn)
+        XCTAssertEqual(result.count, 4)
+        let lunch = result.first { $0.id == "lunch" }
+        XCTAssertEqual(lunch?.hour, 12)
+        XCTAssertEqual(lunch?.minute, 30)
+        XCTAssertNil(lunch?.weekday)
+        XCTAssertEqual(result.first { $0.id == "weigh" }?.weekday, 7)
+    }
+
+    func testRappelEteintAbsentDuResultat() {
+        let result = planned(["lunch": true, "dinner": false, "weigh": true])
+        XCTAssertEqual(Set(result.map(\.id)), ["lunch", "weigh"])
+    }
+
+    func testSurchargeAppliquee() {
+        let result = planned(allOn, times: ["lunch": 13 * 60 + 15], weekdays: ["weigh": 1])
+        XCTAssertEqual(result.first { $0.id == "lunch" }?.hour, 13)
+        XCTAssertEqual(result.first { $0.id == "lunch" }?.minute, 15)
+        XCTAssertEqual(result.first { $0.id == "weigh" }?.weekday, 1)
+    }
+
+    /// Un réglage corrompu ne doit JAMAIS faire disparaître un rappel actif :
+    /// on retombe sur le défaut du catalogue, on ne saute pas l'entrée.
+    func testValeursAberrantesRetombentSurLeDefaut() {
+        for badMinutes in [-1, 1440, 99_999] {
+            let result = planned(allOn, times: ["lunch": badMinutes])
+            XCTAssertEqual(result.first { $0.id == "lunch" }?.hour, 12)
+            XCTAssertEqual(result.first { $0.id == "lunch" }?.minute, 30)
+        }
+        for badWeekday in [0, 8, -3] {
+            let result = planned(allOn, weekdays: ["weigh": badWeekday])
+            XCTAssertEqual(result.first { $0.id == "weigh" }?.weekday, 7)
+        }
+    }
+
+    /// Poser un jour sur un rappel quotidien ne doit pas le rendre hebdomadaire.
+    func testJourIgnoreSurUnRappelNonModifiable() {
+        let result = planned(allOn, weekdays: ["lunch": 3])
+        XCTAssertNil(result.first { $0.id == "lunch" }?.weekday)
+    }
+
+    /// Résidu d'une version antérieure ou d'un lot futur non installé.
+    func testIdentifiantInconnuIgnore() {
+        let result = planned(allOn.merging(["ghost": true]) { a, _ in a },
+                             times: ["ghost": 60])
+        XCTAssertEqual(result.count, 4)
+        XCTAssertNil(result.first { $0.id == "ghost" })
+    }
+
+    func testMinuitEtDerniereMinuteSontValides() {
+        XCTAssertEqual(planned(allOn, times: ["lunch": 0]).first { $0.id == "lunch" }?.hour, 0)
+        let last = planned(allOn, times: ["lunch": 1439]).first { $0.id == "lunch" }
+        XCTAssertEqual(last?.hour, 23)
+        XCTAssertEqual(last?.minute, 59)
+    }
+
+    /// `hourMinute` doit rester une paire heure/minute valide même hors plage :
+    /// on écrête plutôt que de renvoyer une heure 24 ou une minute négative.
+    func testHeureMinuteEcreteHorsPlage() {
+        XCTAssertTrue(ReminderSchedule.hourMinute(fromMinutesFromMidnight: -30) == (hour: 0, minute: 0))
+        XCTAssertTrue(ReminderSchedule.hourMinute(fromMinutesFromMidnight: 1440) == (hour: 23, minute: 59))
+        XCTAssertTrue(ReminderSchedule.hourMinute(fromMinutesFromMidnight: 99_999) == (hour: 23, minute: 59))
+    }
 }

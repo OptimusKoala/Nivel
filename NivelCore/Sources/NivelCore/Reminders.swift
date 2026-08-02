@@ -60,8 +60,15 @@ public enum ReminderSchedule {
     /// Inverse de `ReminderDefinition.defaultMinutesFromMidnight`. Arithmétique pure
     /// (aucun `Calendar`) : le lot D (réglage utilisateur) y range ses minutes stockées,
     /// le lot E (écran de réglage) en tire l'heure et la minute à afficher.
+    ///
+    /// Écrêtage sur `minutesRange` avant division : `ReminderPlanner` filtre déjà les
+    /// valeurs hors plage en amont, mais cette fonction est publique et un futur appelant
+    /// moins prudent ne doit jamais obtenir une paire incohérente (heure 24, minute
+    /// négative...). Sans écrêtage, -30 donnerait (0, -30) et 1440 donnerait (24, 0) :
+    /// ni l'un ni l'autre n'est une heure valide.
     public static func hourMinute(fromMinutesFromMidnight minutes: Int) -> (hour: Int, minute: Int) {
-        (hour: minutes / 60, minute: minutes % 60)
+        let clamped = min(max(minutes, minutesRange.lowerBound), minutesRange.upperBound)
+        return (hour: clamped / 60, minute: clamped % 60)
     }
 
     private static let longNames = ["dimanche", "lundi", "mardi", "mercredi",
@@ -88,5 +95,40 @@ public enum ReminderSchedule {
     public static func frShortWeekday(_ weekday: Int) -> String {
         guard weekdayRange.contains(weekday) else { return "" }
         return shortNames[weekday - 1]
+    }
+}
+
+/// Ce qu'il faut réellement planifier, une fois les réglages du profil appliqués.
+public struct PlannedReminder: Equatable, Sendable {
+    public let id: String
+    public let hour: Int
+    public let minute: Int
+    public let weekday: Int?
+    public let context: MessageContext
+}
+
+public enum ReminderPlanner {
+    /// Itère sur le CATALOGUE, pas sur les dictionnaires : les identifiants inconnus
+    /// y sont donc naturellement ignorés. Toute valeur aberrante retombe sur le défaut
+    /// du catalogue, jamais sur une disparition du rappel.
+    public static func planned(enabled: [String: Bool],
+                               times: [String: Int],
+                               weekdays: [String: Int]) -> [PlannedReminder] {
+        ReminderCatalog.all.compactMap { definition in
+            guard enabled[definition.id] == true else { return nil }
+
+            let minutes = times[definition.id]
+                .flatMap { ReminderSchedule.minutesRange.contains($0) ? $0 : nil }
+                ?? definition.defaultMinutesFromMidnight
+
+            let weekday = (definition.isWeekdayEditable ? weekdays[definition.id] : nil)
+                .flatMap { ReminderSchedule.weekdayRange.contains($0) ? $0 : nil }
+                ?? definition.defaultWeekday
+
+            let time = ReminderSchedule.hourMinute(fromMinutesFromMidnight: minutes)
+            return PlannedReminder(id: definition.id,
+                                   hour: time.hour, minute: time.minute,
+                                   weekday: weekday, context: definition.context)
+        }
     }
 }
