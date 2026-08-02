@@ -4,6 +4,16 @@ import XCTest
 final class FoodCatalogTests: XCTestCase {
     private var catalog: FoodCatalog!
 
+    /// Les forfaits kcal des plats en v1. Deux gardes s'en servent : la composition
+    /// par défaut et la valeur de repli de l'item. Une seule table, donc pas de
+    /// risque qu'elles divergent.
+    private static let forfaitsV1: [String: Int] = [
+        "pasta": 650, "rice": 550, "salad": 350, "veggies": 450,
+        "red_meat": 700, "fish": 500, "pizza": 900, "soup": 300,
+        "sandwich": 550, "stew": 600, "fast_food": 950, "toast": 350,
+        "cereal": 400, "pastry": 300, "yogurt_fruit": 200,
+    ]
+
     override func setUpWithError() throws {
         catalog = try FoodCatalog.load()
     }
@@ -33,9 +43,15 @@ final class FoodCatalogTests: XCTestCase {
     /// se retrouver à partir de kcalPer100g et du poids d'une unité.
     func testKcalParUniteRetombentSurLaSpec() {
         let expected: [String: Int] = [
-            "beer_half": 108, "beer_pint": 215, "wine": 106, "soda": 139,
-            "coffee_milk": 90, "chips": 153, "candy": 105, "nuts": 180,
-            "choco_bar": 230, "yogurt": 75, "fruit": 80,
+            // Les 15 boissons et les 12 encas de la spec, pas un échantillon : une
+            // erreur de conversion sur une seule ligne du JSON doit tomber ici.
+            "water": 0, "tea": 0, "coffee": 2, "soda_zero": 1, "coffee_milk": 90,
+            "milk": 128, "juice": 110, "soda": 139, "beer_half": 108, "beer_pint": 215,
+            "wine": 106, "spirit": 100, "cocktail": 250, "hot_chocolate": 200,
+            "smoothie": 180,
+            "fruit": 80, "yogurt": 75, "choco_square": 55, "biscuit": 50, "candy": 105,
+            "compote": 90, "cheese_snack": 105, "chips": 153, "nuts": 180,
+            "choco_bar": 230, "croissant": 301, "ice_cream": 200,
         ]
         for (id, kcal) in expected {
             let item = catalog.byID[id]
@@ -67,13 +83,7 @@ final class FoodCatalogTests: XCTestCase {
     /// de plus de 10 % du forfait qu'il avait en v1, c'est qu'un ingrédient est mal
     /// dosé. Mieux vaut l'apprendre ici qu'au dîner.
     func testChaqueCompositionRetombeSurLeForfaitV1() {
-        let forfaits: [String: Int] = [
-            "pasta": 650, "rice": 550, "salad": 350, "veggies": 450,
-            "red_meat": 700, "fish": 500, "pizza": 900, "soup": 300,
-            "sandwich": 550, "stew": 600, "fast_food": 950, "toast": 350,
-            "cereal": 400, "pastry": 300, "yogurt_fruit": 200,
-        ]
-        for (dishID, forfait) in forfaits {
+        for (dishID, forfait) in Self.forfaitsV1 {
             let composition = catalog.compositions[dishID]
             XCTAssertNotNil(composition, "composition manquante : \(dishID)")
             guard let composition else { continue }
@@ -84,6 +94,20 @@ final class FoodCatalogTests: XCTestCase {
             let tolerance = Double(forfait) * 0.10
             XCTAssertEqual(Double(sum), Double(forfait), accuracy: tolerance,
                            "\(dishID) : composition à \(sum) kcal pour un forfait de \(forfait)")
+        }
+    }
+
+    /// Les valeurs par item des plats composés NE SONT PAS mortes : `line(for:)` s'en
+    /// sert en repli quand une composition manque, et la grille du catalogue les
+    /// affiche. Elles méritent donc le même garde-fou que les compositions.
+    func testLeRepliDesPlatsRetombeSurLeForfaitV1() {
+        for (dishID, forfait) in Self.forfaitsV1 {
+            let item = catalog.byID[dishID]
+            XCTAssertNotNil(item, "plat manquant : \(dishID)")
+            guard let item else { continue }
+            let repli = item.kcalPer100g * Double(item.defaultGrams) / 100
+            XCTAssertEqual(repli, Double(forfait), accuracy: Double(forfait) * 0.10,
+                           "\(dishID) : repli à \(Int(repli)) kcal pour un forfait de \(forfait)")
         }
     }
 

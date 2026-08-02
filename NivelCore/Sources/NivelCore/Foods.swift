@@ -42,6 +42,9 @@ public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
         guard let unitLabel, let unitGrams, unitGrams > 0 else { return "\(grams) g" }
         let count = Double(grams) / Double(unitGrams)
         let rounded = (count * 2).rounded() / 2      // au demi près
+        // Sous un demi, l'unité mentirait : « 0 c. à soupe » pour 1 g de vinaigrette
+        // annonce zéro là où il y a quelque chose. On retombe sur les grammes.
+        guard rounded > 0 else { return "\(grams) g" }
         let number = rounded == rounded.rounded()
             ? String(Int(rounded))
             : String(rounded).replacingOccurrences(of: ".", with: ",")
