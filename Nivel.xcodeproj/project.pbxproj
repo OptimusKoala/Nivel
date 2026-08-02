@@ -43,6 +43,7 @@
 		6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */; };
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
 		7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75615282503FC8044658A28 /* DayCloserTests.swift */; };
+		74773DF87BFEED9D9D9908E4 /* ActivityLogSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AB1204E0C482A88E0531BA /* ActivityLogSheetTests.swift */; };
 		75ADB553C3E21774DAF18E6A /* XPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D37C5B43BABA7C97A669DA /* XPBar.swift */; };
 		77B49E3992CE52CA8BD6F01A /* SportAssetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */; };
 		7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */; };
@@ -142,6 +143,7 @@
 		3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNivelito.swift; sourceTree = "<group>"; };
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		46AB1204E0C482A88E0531BA /* ActivityLogSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheetTests.swift; sourceTree = "<group>"; };
 		46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameService+WidgetSync.swift"; sourceTree = "<group>"; };
 		4C4CF000EF99C1C649915C18 /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		4D61F97EB25C7DADAAAED923 /* ThemeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeStoreTests.swift; sourceTree = "<group>"; };
@@ -416,6 +418,7 @@
 		D148F81EC70A7990945C04A7 /* NivelTests */ = {
 			isa = PBXGroup;
 			children = (
+				46AB1204E0C482A88E0531BA /* ActivityLogSheetTests.swift */,
 				67EB506351740B5EC992E309 /* AppSmokeTests.swift */,
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
@@ -676,6 +679,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74773DF87BFEED9D9D9908E4 /* ActivityLogSheetTests.swift in Sources */,
 				5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */,
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,

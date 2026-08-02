@@ -151,9 +151,24 @@ struct ActivityLogSheet: View {
 
     /// Quatrième puce : sous-titre vide tant qu'elle n'a pas servi, valeur courante
     /// ensuite (les trois autres affichent leurs kcal, elle affiche ses minutes).
+    /// Valeur sur laquelle la roue doit s'ouvrir quand on tape « Autre » (contrat PUR,
+    /// testé comme `SessionPlayerSheet.buttonState`). Re-taper « Autre » alors qu'elle
+    /// est déjà choisie garde la valeur ajustée : sinon un tap distrait effacerait le
+    /// réglage de l'utilisateur.
+    static func wheelValueOnCustomTap(current: DurationSelection?, wheelValue: Int,
+                                      durations: [Int]) -> Int {
+        guard current?.isCustom != true else { return wheelValue }
+        return CustomDuration.openingValue(current: current?.minutes, durations: durations)
+    }
+
     private var customButton: some View {
         let isSelected = selection?.isCustom == true
         return Button {
+            // La roue part de la durée déjà sélectionnée (spec §5.1). Sans cette ligne
+            // elle resterait figée sur la valeur calculée à l'ouverture de la feuille.
+            customMinutes = Self.wheelValueOnCustomTap(current: selection,
+                                                       wheelValue: customMinutes,
+                                                       durations: activity.durations)
             selection = .custom(customMinutes)
         } label: {
             VStack(spacing: 3) {
@@ -209,29 +224,47 @@ struct ActivityLogSheet: View {
     }
 
     private var bottomBar: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { context in
-            let logged = loggedMinutes(at: context.date)
-            VStack(spacing: 6) {
-                // Affichée seulement quand l'app s'apprête à noter autre chose que la
-                // durée choisie (arrêt anticipé). Le bouton, lui, ne bouge jamais :
-                // « C'est fait ! (+30 XP) » y tient déjà tout juste.
-                if let logged, let selection, logged != selection.minutes {
-                    Text("noté : \(logged) min")
-                        .font(.caption)
-                        .foregroundStyle(Theme.subtext)
-                }
-                Button(xpReward > 0 ? "C'est fait ! (+\(xpReward) XP)" : "C'est fait !",
-                       action: validate)
-                    .buttonStyle(PrimaryButtonStyle())
-                    .disabled(selection == nil || isSaving)
-                    // Pulse dérivé de `timer?.isFinished` à chaque rendu (pas de latch
-                    // séparé) : « Recommencer » l'éteint du même coup.
-                    .gentlePulse(timer?.isFinished == true, reduceMotion: reduceMotion)
+        VStack(spacing: 6) {
+            notedLine
+            Button(xpReward > 0 ? "C'est fait ! (+\(xpReward) XP)" : "C'est fait !",
+                   action: validate)
+                .buttonStyle(PrimaryButtonStyle())
+                .disabled(selection == nil || isSaving)
+                // Pulse dérivé de `timer?.isFinished` à chaque rendu (pas de latch
+                // séparé) : « Recommencer » l'éteint du même coup.
+                .gentlePulse(timer?.isFinished == true, reduceMotion: reduceMotion)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(Theme.card.ignoresSafeArea(edges: .bottom))
+        .shadow(color: Theme.floatingShadow, radius: 10, y: -4)
+    }
+
+    /// Seul ce libellé dépend de l'horloge, le tic périodique est donc réduit à lui et
+    /// ne tourne QUE pendant que le timer tourne. Deux raisons : ne pas ticker pour rien
+    /// quand rien ne bouge, et surtout garder le bouton hors de la boucle de re-rendu,
+    /// puisqu'il porte une animation `repeatForever` (leçon v1.5). Timer en pause ou
+    /// fini : l'écoulé ne bouge plus, un rendu statique suffit.
+    @ViewBuilder
+    private var notedLine: some View {
+        if timer?.isRunning == true {
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                notedText(at: context.date)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(Theme.card.ignoresSafeArea(edges: .bottom))
-            .shadow(color: Theme.floatingShadow, radius: 10, y: -4)
+        } else {
+            notedText(at: .now)
+        }
+    }
+
+    /// Affiché seulement quand l'app s'apprête à noter autre chose que la durée choisie
+    /// (arrêt anticipé). Le bouton, lui, ne bouge jamais : « C'est fait ! (+30 XP) »
+    /// y tient déjà tout juste.
+    @ViewBuilder
+    private func notedText(at now: Date) -> some View {
+        if let logged = loggedMinutes(at: now), let selection, logged != selection.minutes {
+            Text("noté : \(logged) min")
+                .font(.caption)
+                .foregroundStyle(Theme.subtext)
         }
     }
 
