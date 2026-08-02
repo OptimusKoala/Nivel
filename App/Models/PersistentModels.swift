@@ -67,26 +67,26 @@ final class UserProfile {
 final class MealEntry {
     var date: Date
     var slotRaw: String
-    var dishID: String
-    var portionRaw: String
-    var extras: [String: Int]            // extraID → quantité
+    // Défauts sur la DÉCLARATION : migration légère SwiftData (leçon v1, reconfirmée
+    // en v1.9). La suppression de dishID, portionRaw et extras est elle aussi légère ;
+    // l'unique repas déjà loggé perd son détail et garde ses kcal (spec v1.10 §3.1).
+    var lines: [MealLine] = []
+    var manualKcal: Int?
     var estimatedKcal: Int
     var xpAwarded: Int
 
     init(
         date: Date = .now,
         slot: MealSlot,
-        dishID: String,
-        portion: Portion,
-        extras: [String: Int] = [:],
+        lines: [MealLine] = [],
+        manualKcal: Int? = nil,
         estimatedKcal: Int,
         xpAwarded: Int = 0
     ) {
         self.date = date
         self.slotRaw = slot.rawValue
-        self.dishID = dishID
-        self.portionRaw = portion.rawValue
-        self.extras = extras
+        self.lines = lines
+        self.manualKcal = manualKcal
         self.estimatedKcal = estimatedKcal
         self.xpAwarded = xpAwarded
     }
@@ -94,11 +94,6 @@ final class MealEntry {
     var slot: MealSlot {
         get { MealSlot(rawValue: slotRaw) ?? .snack }
         set { slotRaw = newValue.rawValue }
-    }
-
-    var portion: Portion {
-        get { Portion(rawValue: portionRaw) ?? .normal }
-        set { portionRaw = newValue.rawValue }
     }
 }
 

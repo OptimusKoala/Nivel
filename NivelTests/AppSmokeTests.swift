@@ -27,8 +27,7 @@ final class AppSmokeTests: XCTestCase {
 
         let meal = MealEntry(
             slot: .lunch,
-            dishID: "poulet_riz",
-            portion: .normal,
+            lines: [.simple(MealComponent(itemID: "poulet_riz", grams: 350))],
             estimatedKcal: 650
         )
         context.insert(meal)
@@ -47,7 +46,7 @@ final class AppSmokeTests: XCTestCase {
         XCTAssertEqual(fetchedProfiles.first?.sex, .male)
 
         XCTAssertEqual(fetchedMeals.count, 1)
-        XCTAssertEqual(fetchedMeals.first?.dishID, "poulet_riz")
+        XCTAssertEqual(fetchedMeals.first?.lines, [.simple(MealComponent(itemID: "poulet_riz", grams: 350))])
         XCTAssertEqual(fetchedMeals.first?.slot, .lunch)
 
         let fetchedActivities = try context.fetch(FetchDescriptor<ActivityEntry>())

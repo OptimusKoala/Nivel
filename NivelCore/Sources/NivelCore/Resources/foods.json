@@ -8,6 +8,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -23,6 +24,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -38,6 +40,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -53,6 +56,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -68,6 +72,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -83,6 +88,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -98,6 +104,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -113,6 +120,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -128,6 +136,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "snack"
@@ -143,6 +152,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -158,6 +168,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "lunch",
       "dinner"
@@ -173,6 +184,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "breakfast"
     ],
@@ -187,6 +199,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "breakfast"
     ],
@@ -201,6 +214,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "breakfast",
       "snack"
@@ -216,6 +230,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "dish",
+    "tags": [],
     "slots": [
       "breakfast",
       "snack"
@@ -231,6 +246,7 @@
     "unitLabelPlural": null,
     "unitGrams": 400,
     "category": "dish",
+    "tags": [],
     "slots": [
       "breakfast",
       "lunch",
@@ -248,6 +264,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -260,6 +277,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -272,6 +290,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -284,6 +303,7 @@
     "unitLabelPlural": null,
     "unitGrams": 330,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 330
   },
@@ -296,6 +316,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -308,6 +329,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -320,6 +342,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -332,6 +355,7 @@
     "unitLabelPlural": null,
     "unitGrams": 330,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 330
   },
@@ -344,6 +368,9 @@
     "unitLabelPlural": null,
     "unitGrams": 250,
     "category": "drink",
+    "tags": [
+      "alcohol"
+    ],
     "slots": [],
     "defaultGrams": 250
   },
@@ -356,6 +383,9 @@
     "unitLabelPlural": null,
     "unitGrams": 500,
     "category": "drink",
+    "tags": [
+      "alcohol"
+    ],
     "slots": [],
     "defaultGrams": 500
   },
@@ -368,6 +398,9 @@
     "unitLabelPlural": null,
     "unitGrams": 125,
     "category": "drink",
+    "tags": [
+      "alcohol"
+    ],
     "slots": [],
     "defaultGrams": 125
   },
@@ -380,6 +413,9 @@
     "unitLabelPlural": null,
     "unitGrams": 40,
     "category": "drink",
+    "tags": [
+      "alcohol"
+    ],
     "slots": [],
     "defaultGrams": 40
   },
@@ -392,6 +428,9 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [
+      "alcohol"
+    ],
     "slots": [],
     "defaultGrams": 200
   },
@@ -404,6 +443,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -416,6 +456,7 @@
     "unitLabelPlural": null,
     "unitGrams": 200,
     "category": "drink",
+    "tags": [],
     "slots": [],
     "defaultGrams": 200
   },
@@ -428,6 +469,7 @@
     "unitLabelPlural": null,
     "unitGrams": 150,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 150
   },
@@ -440,6 +482,7 @@
     "unitLabelPlural": null,
     "unitGrams": 125,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 125
   },
@@ -452,6 +495,7 @@
     "unitLabelPlural": null,
     "unitGrams": 10,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 10
   },
@@ -464,6 +508,7 @@
     "unitLabelPlural": null,
     "unitGrams": 10,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 10
   },
@@ -476,6 +521,7 @@
     "unitLabelPlural": null,
     "unitGrams": 30,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 30
   },
@@ -488,6 +534,7 @@
     "unitLabelPlural": null,
     "unitGrams": 90,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 90
   },
@@ -500,6 +547,7 @@
     "unitLabelPlural": null,
     "unitGrams": 30,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 30
   },
@@ -512,6 +560,7 @@
     "unitLabelPlural": null,
     "unitGrams": 28,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 28
   },
@@ -524,6 +573,7 @@
     "unitLabelPlural": null,
     "unitGrams": 30,
     "category": "snack",
+    "tags": [],
     "slots": [],
     "defaultGrams": 30
   },
@@ -536,6 +586,9 @@
     "unitLabelPlural": null,
     "unitGrams": 45,
     "category": "snack",
+    "tags": [
+      "richDessert"
+    ],
     "slots": [],
     "defaultGrams": 45
   },
@@ -548,6 +601,9 @@
     "unitLabelPlural": null,
     "unitGrams": 70,
     "category": "snack",
+    "tags": [
+      "richDessert"
+    ],
     "slots": [],
     "defaultGrams": 70
   },
@@ -560,6 +616,9 @@
     "unitLabelPlural": null,
     "unitGrams": 100,
     "category": "snack",
+    "tags": [
+      "richDessert"
+    ],
     "slots": [],
     "defaultGrams": 100
   },
@@ -572,6 +631,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -584,6 +644,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -596,6 +657,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 150
   },
@@ -608,6 +670,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 120
   },
@@ -620,6 +683,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 150
   },
@@ -632,6 +696,7 @@
     "unitLabelPlural": null,
     "unitGrams": 40,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 40
   },
@@ -644,6 +709,7 @@
     "unitLabelPlural": null,
     "unitGrams": 80,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 80
   },
@@ -656,6 +722,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -668,6 +735,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 40
   },
@@ -680,6 +748,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 50
   },
@@ -692,6 +761,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -704,6 +774,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -716,6 +787,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -728,6 +800,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 50
   },
@@ -740,6 +813,7 @@
     "unitLabelPlural": null,
     "unitGrams": 75,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 75
   },
@@ -752,6 +826,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -764,6 +839,7 @@
     "unitLabelPlural": null,
     "unitGrams": 60,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 60
   },
@@ -776,6 +852,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 120
   },
@@ -788,6 +865,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 120
   },
@@ -800,6 +878,7 @@
     "unitLabelPlural": null,
     "unitGrams": 120,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 120
   },
@@ -812,6 +891,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 120
   },
@@ -824,6 +904,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 80
   },
@@ -836,6 +917,7 @@
     "unitLabelPlural": null,
     "unitGrams": 40,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 40
   },
@@ -848,6 +930,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 30
   },
@@ -860,6 +943,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 30
   },
@@ -872,6 +956,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 25
   },
@@ -884,6 +969,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -896,6 +982,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 20
   },
@@ -908,6 +995,7 @@
     "unitLabelPlural": "c. à soupe",
     "unitGrams": 12,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 12
   },
@@ -920,6 +1008,7 @@
     "unitLabelPlural": "c. à soupe",
     "unitGrams": 12,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 12
   },
@@ -932,6 +1021,7 @@
     "unitLabelPlural": null,
     "unitGrams": 10,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 10
   },
@@ -944,6 +1034,7 @@
     "unitLabelPlural": "c. à soupe",
     "unitGrams": 15,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 15
   },
@@ -956,6 +1047,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 40
   },
@@ -968,6 +1060,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -980,6 +1073,7 @@
     "unitLabelPlural": "c. à soupe",
     "unitGrams": 15,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 15
   },
@@ -992,6 +1086,7 @@
     "unitLabelPlural": "c. à soupe",
     "unitGrams": 15,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 15
   },
@@ -1004,6 +1099,7 @@
     "unitLabelPlural": "c. à café",
     "unitGrams": 10,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 10
   },
@@ -1016,6 +1112,7 @@
     "unitLabelPlural": "c. à café",
     "unitGrams": 10,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 10
   },
@@ -1028,6 +1125,7 @@
     "unitLabelPlural": "morceaux",
     "unitGrams": 5,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 5
   },
@@ -1040,6 +1138,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 100
   },
@@ -1052,6 +1151,7 @@
     "unitLabelPlural": null,
     "unitGrams": 125,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 125
   },
@@ -1064,6 +1164,7 @@
     "unitLabelPlural": null,
     "unitGrams": null,
     "category": "side",
+    "tags": [],
     "slots": [],
     "defaultGrams": 150
   }

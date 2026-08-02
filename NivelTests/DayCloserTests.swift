@@ -68,8 +68,7 @@ final class DayCloserTests: XCTestCase {
         context.insert(MealEntry(
             date: day.addingTimeInterval(12 * 3600),
             slot: slot,
-            dishID: "pasta",
-            portion: .normal,
+            lines: [.simple(MealComponent(itemID: "pasta", grams: 500))],
             estimatedKcal: kcal
         ))
     }

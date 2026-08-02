@@ -19,16 +19,16 @@ struct MealsJournalView: View {
     @State private var editingEntry: MealEntry?
     @State private var showNewMeal = false
 
-    private let dishesByID: [String: Dish]
-    private let extrasByID: [String: Extra]
+    /// Rendu MINIMUM le temps de la Task 8 (résumé complet des lignes, règle du
+    /// tilde) : nom et emoji de la PREMIÈRE ligne depuis le catalogue, et les kcal.
+    /// Volontairement honnête plutôt que complet — aucune règle sur le nombre de
+    /// lignes ou les extras n'est inventée ici.
+    private let catalog: FoodCatalog
 
     private static let slotOrder: [MealSlot] = [.breakfast, .lunch, .dinner, .snack]
 
     init() {
-        let dishes = (try? Catalogs.dishes()) ?? []
-        let extras = (try? Catalogs.extras()) ?? []
-        dishesByID = Dictionary(uniqueKeysWithValues: dishes.map { ($0.id, $0) })
-        extrasByID = Dictionary(uniqueKeysWithValues: extras.map { ($0.id, $0) })
+        catalog = (try? FoodCatalog.load()) ?? .empty
     }
 
     // MARK: Données dérivées
@@ -160,19 +160,21 @@ struct MealsJournalView: View {
         .scrollContentBackground(.hidden)
     }
 
+    /// Item de la première ligne du repas, nil si le repas n'a aucune ligne (l'unique
+    /// entrée d'avant la migration v1.10, spec §3.1 : elle perd son détail).
+    private func firstItem(of entry: MealEntry) -> FoodItem? {
+        entry.lines.first.flatMap { catalog.byID[$0.itemID] }
+    }
+
     private func mealRow(_ entry: MealEntry) -> some View {
-        let dish = dishesByID[entry.dishID]
+        let item = firstItem(of: entry)
         return HStack(spacing: 12) {
-            Text(dish?.emoji ?? "🥘")
+            Text(item?.emoji ?? "🥘")
                 .font(.system(size: 28))
             VStack(alignment: .leading, spacing: 2) {
-                Text(dish?.name ?? "Plat")
+                Text(item?.name ?? "Repas")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Theme.text)
-                Text(subtitle(for: entry))
-                    .font(.caption)
-                    .foregroundStyle(Theme.subtext)
-                    .lineLimit(1)
             }
             Spacer()
             Text("~\(entry.estimatedKcal.frFormatted) kcal")
@@ -201,16 +203,6 @@ struct MealsJournalView: View {
                 .tint(Theme.accent)
             }
         }
-    }
-
-    /// "Copieux · 🍰 · 🍺×2" — portion puis extras compacts.
-    private func subtitle(for entry: MealEntry) -> String {
-        var parts = [entry.portion.frLabel]
-        for (id, quantity) in entry.extras.sorted(by: { $0.key < $1.key }) where quantity > 0 {
-            guard let extra = extrasByID[id] else { continue }
-            parts.append(quantity > 1 ? "\(extra.emoji)×\(quantity)" : extra.emoji)
-        }
-        return parts.joined(separator: " · ")
     }
 
     // MARK: État vide
@@ -259,13 +251,25 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
         heightCm: 165, initialWeightKg: 70, activity: .light,
         dailyCalorieTarget: 1800
     ))
-    context.insert(MealEntry(slot: .breakfast, dishID: "toast", portion: .normal,
+    let catalog = try! FoodCatalog.load()
+    context.insert(MealEntry(slot: .breakfast, lines: [catalog.line(for: catalog.byID["toast"]!)],
                              estimatedKcal: 350, xpAwarded: 20))
-    context.insert(MealEntry(slot: .lunch, dishID: "salad", portion: .normal,
-                             extras: ["water": 1], estimatedKcal: 350, xpAwarded: 20))
-    context.insert(MealEntry(slot: .dinner, dishID: "pasta", portion: .hearty,
-                             extras: ["beer": 2, "dessert_rich": 1],
-                             estimatedKcal: 1445, xpAwarded: 20))
+    context.insert(MealEntry(
+        slot: .lunch,
+        lines: [catalog.line(for: catalog.byID["salad"]!), .simple(MealComponent(itemID: "water", grams: 200))],
+        estimatedKcal: 350, xpAwarded: 20
+    ))
+    context.insert(MealEntry(
+        slot: .dinner,
+        lines: [
+            catalog.line(for: catalog.byID["pasta"]!),
+            .simple(MealComponent(itemID: "beer_half", grams: 500)),
+            .simple(MealComponent(itemID: "choco_bar", grams: 45)),
+        ],
+        estimatedKcal: 1445, xpAwarded: 20
+    ))
+    // Le repas d'avant la migration : aucune ligne, kcal et XP intacts (spec §3.1).
+    context.insert(MealEntry(slot: .snack, estimatedKcal: 180, xpAwarded: 20))
     try? context.save()
 
     return (container, GameService(modelContext: context, stepsService: FakeStepsService(),

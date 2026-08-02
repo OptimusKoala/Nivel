@@ -54,6 +54,10 @@ final class GameService {
     let sessionCatalog: [ActivitySession]
     /// Index id → Activity (kcal des séances, libellés des vues).
     let activitiesByID: [String: Activity]
+    /// Catalogue d'aliments (spec v1.10 §4.1) : barème du calcul de kcal des repas
+    /// ET tags "alcohol"/"richDessert" des deux quêtes qui lisent le contenu d'un
+    /// repas. Vide si le bundle est corrompu, jamais de crash.
+    let foodCatalog: FoodCatalog
 
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
@@ -116,9 +120,6 @@ final class GameService {
         calendar.startOfDay(for: date)
     }
 
-    /// Extras alcoolisés du catalogue (spec §7.3 : "jours sans alcool" = pas de bière/vin).
-    private static let alcoholExtraIDs: Set<String> = ["beer", "wine"]
-
     init(modelContext: ModelContext, stepsService: StepsProviding,
          widgetDefaults: UserDefaults? = WidgetBridge.sharedDefaults) {
         self.modelContext = modelContext
@@ -129,6 +130,7 @@ final class GameService {
         self.messageBank = Self.loadOrAssert({ try MessageBank.load() }, fallback: nil)
         self.activityCatalog = Self.loadOrAssert({ try Catalogs.activities() }, fallback: [])
         self.sessionCatalog = Self.loadOrAssert({ try Catalogs.sessions() }, fallback: [])
+        self.foodCatalog = Self.loadOrAssert({ try FoodCatalog.load() }, fallback: .empty)
         // uniquingKeysWith (et non uniqueKeysWithValues) : un id dupliqué dans un
         // bundle corrompu ne doit jamais crasher — on garde la première occurrence.
         self.activitiesByID = Dictionary(activityCatalog.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -160,20 +162,23 @@ final class GameService {
 
     // MARK: - Actions
 
-    /// Crée un MealEntry (kcal via MealEstimator), attribue l'XP plafonné (4 repas/jour),
-    /// met à jour le DayLog du jour, recalcule les quêtes, évalue les badges et détecte le level-up.
+    /// Crée un MealEntry (kcal via MealEstimator sauf surcharge manuelle), attribue
+    /// l'XP plafonné (4 repas/jour), met à jour le DayLog du jour, recalcule les
+    /// quêtes, évalue les badges et détecte le level-up.
     @discardableResult
     func logMeal(
         slot: MealSlot,
-        dish: Dish,
-        portion: Portion,
-        extras: [(Extra, Int)] = [],
+        lines: [MealLine],
+        manualKcal: Int? = nil,
         date: Date = .now
     ) async -> MealEntry {
         let state = fetchOrCreateState()
         let levelBefore = LevelSystem.level(forXP: state.totalXP)
 
-        let kcal = MealEstimator.estimate(dish: dish, portion: portion, extras: extras)
+        // manualKcal COURT-CIRCUITE le calcul (spec §3.3) : c'est cette valeur qui
+        // doit atterrir dans estimatedKcal, sinon le total du jour et le widget
+        // afficheraient l'estimation que l'utilisateur vient de corriger.
+        let kcal = manualKcal ?? MealEstimator.kcal(lines: lines, kcalPer100g: foodCatalog.kcalPer100g)
         // Plafond robuste aux relances : le "déjà récompensé aujourd'hui" est dérivé
         // des MealEntry persistés (xpAwarded > 0), pas d'un compteur en mémoire.
         let xp = XPEngine.award(.mealLogged, todayCount: mealsAwardedXPCount(on: date))
@@ -181,9 +186,8 @@ final class GameService {
         let entry = MealEntry(
             date: date,
             slot: slot,
-            dishID: dish.id,
-            portion: portion,
-            extras: Dictionary(extras.map { ($0.0.id, $0.1) }, uniquingKeysWith: +),
+            lines: lines,
+            manualKcal: manualKcal,
             estimatedKcal: kcal,
             xpAwarded: xp
         )
@@ -225,21 +229,19 @@ final class GameService {
     func updateMeal(
         entry: MealEntry,
         slot: MealSlot,
-        dish: Dish,
-        portion: Portion,
-        extras: [(Extra, Int)] = []
+        lines: [MealLine],
+        manualKcal: Int? = nil
     ) async {
         assert(Self.calendar.isDateInToday(entry.date), "update/delete réservés au jour même")
         let state = fetchOrCreateState()
         let levelBefore = LevelSystem.level(forXP: state.totalXP)
 
         let previousKcal = entry.estimatedKcal
-        let kcal = MealEstimator.estimate(dish: dish, portion: portion, extras: extras)
+        let kcal = manualKcal ?? MealEstimator.kcal(lines: lines, kcalPer100g: foodCatalog.kcalPer100g)
         entry.slot = slot
-        entry.dishID = dish.id
-        entry.portion = portion
         // Réassignation complète (règle SwiftData : pas de mutation en place des collections).
-        entry.extras = Dictionary(extras.map { ($0.0.id, $0.1) }, uniquingKeysWith: +)
+        entry.lines = lines
+        entry.manualKcal = manualKcal
         entry.estimatedKcal = kcal
         updateDayLog(for: entry.date, addingKcal: kcal - previousKcal, xp: 0)
 
@@ -343,16 +345,25 @@ final class GameService {
             // le lendemain par le DayCloser, spec §7.1).
             return closedDayLogs(from: week.start, to: week.end).count(where: \.withinTarget)
         case .daysWithoutAlcohol:
-            // Jour qualifiant = au moins un repas loggé ET aucun extra bière/vin.
+            // Jour qualifiant = au moins un repas loggé ET aucun composant tagué
+            // "alcohol" (spec §7.1 : bière demi/pinte, vin, alcool fort, cocktail —
+            // couvre désormais aussi les deux derniers, qui n'existaient pas en v1).
             return mealsByDay.values.count { meals in
                 meals.allSatisfy { meal in
-                    Self.alcoholExtraIDs.allSatisfy { (meal.extras[$0] ?? 0) == 0 }
+                    meal.lines.flatMap(\.components).allSatisfy {
+                        !foodCatalog.hasTag("alcohol", itemID: $0.itemID)
+                    }
                 }
             }
         case .lightDessertDays:
-            // Jour qualifiant = au moins un repas loggé ET aucun dessert gourmand.
+            // Jour qualifiant = au moins un repas loggé ET aucun composant tagué
+            // "richDessert" (spec §7.1 : barre chocolatée, glace, viennoiserie).
             return mealsByDay.values.count { meals in
-                meals.allSatisfy { ($0.extras["dessert_rich"] ?? 0) == 0 }
+                meals.allSatisfy { meal in
+                    meal.lines.flatMap(\.components).allSatisfy {
+                        !foodCatalog.hasTag("richDessert", itemID: $0.itemID)
+                    }
+                }
             }
         case .weeklySteps:
             return stepsByDay.values.reduce(0, +)

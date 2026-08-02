@@ -4,15 +4,6 @@
 import Foundation
 
 public enum MealEstimator {
-    /// kcal = plat × portion (arrondi) + somme des extras × quantité (spec §6).
-    /// Conservée pour la durée des Tasks 1 à 3 (v1.10) : encore appelée par GameService
-    /// et MealLogSheet côté app, retirée seulement à la Task 4 qui bascule l'app d'un bloc.
-    public static func estimate(dish: Dish, portion: Portion, extras: [(Extra, Int)]) -> Int {
-        let dishKcal = Int((Double(dish.kcal) * portion.multiplier).rounded())
-        let extrasKcal = extras.reduce(0) { $0 + $1.0.kcal * $1.1 }
-        return dishKcal + extrasKcal
-    }
-
     /// Un seul arrondi, à la fin : arrondir composant par composant ferait dériver
     /// une composition à six ingrédients de plusieurs kcal pour rien.
     public static func kcal(lines: [MealLine],

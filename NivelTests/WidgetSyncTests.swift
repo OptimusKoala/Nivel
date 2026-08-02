@@ -89,8 +89,8 @@ final class WidgetSnapshotBuildingTests: XCTestCase {
         let day = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 14)))
         let noon = try XCTUnwrap(GameService.calendar.date(bySettingHour: 12, minute: 0, second: 0, of: day))
         let evening = try XCTUnwrap(GameService.calendar.date(bySettingHour: 23, minute: 30, second: 0, of: day))
-        let pasta = try pastaDish()
-        await service.logMeal(slot: .lunch, dish: pasta, portion: .normal, extras: [], date: noon)
+        let lines = try pastaLines()
+        await service.logMeal(slot: .lunch, lines: lines, date: noon)
 
         let snapshot = try XCTUnwrap(service.makeWidgetSnapshot(themeID: "nuit-douce", now: evening))
         // 23 h 30 normalisé en minuit local : c'est la clé du jour, pas l'instant.
@@ -111,8 +111,7 @@ final class WidgetSnapshotBuildingTests: XCTestCase {
         try insertProfileAndState()
         XCTAssertNil(WidgetBridge.load(from: defaults))
 
-        let pasta = try pastaDish()
-        await service.logMeal(slot: .lunch, dish: pasta, portion: .normal, extras: [])
+        await service.logMeal(slot: .lunch, lines: try pastaLines())
 
         let written = try XCTUnwrap(WidgetBridge.load(from: defaults))
         XCTAssertEqual(written.dayKey, GameService.dayKey(for: .now))
@@ -133,8 +132,12 @@ final class WidgetSnapshotBuildingTests: XCTestCase {
         try context.save()
     }
 
-    private func pastaDish() throws -> Dish {
-        let dishes = try Catalogs.dishes()
-        return try XCTUnwrap(dishes.first { $0.id == "pasta" })
+    /// Pâtes à la composition par défaut du catalogue — seul le fait qu'un repas
+    /// non vide produise des kcal > 0 importe ici (`kcalEaten` testé avec
+    /// `XCTAssertGreaterThan`), pas une valeur précise.
+    private func pastaLines() throws -> [MealLine] {
+        let catalog = try FoodCatalog.load()
+        let pasta = try XCTUnwrap(catalog.byID["pasta"])
+        return [catalog.line(for: pasta)]
     }
 }

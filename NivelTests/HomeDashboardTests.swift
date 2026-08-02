@@ -72,15 +72,17 @@ final class HomeDashboardTests: XCTestCase {
     func testHomeMessageContextComebackAfterThreeDaysWithoutMeal() throws {
         // Dernier repas il y a 4 jours → comeback, quelle que soit l'heure.
         let fourDaysAgo = try XCTUnwrap(GameService.calendar.date(byAdding: .day, value: -4, to: .now))
-        context.insert(MealEntry(date: fourDaysAgo, slot: .lunch, dishID: "pasta",
-                                 portion: .normal, estimatedKcal: 650))
+        context.insert(MealEntry(date: fourDaysAgo, slot: .lunch,
+                                 lines: [.simple(MealComponent(itemID: "pasta", grams: 500))],
+                                 estimatedKcal: 650))
         try context.save()
         XCTAssertEqual(try service.homeMessageContext(now: date(hour: 9)).context, .comeback)
         XCTAssertEqual(try service.homeMessageContext(now: date(hour: 20)).context, .comeback)
 
         // Un repas AUJOURD'HUI → retour à la salutation horaire.
-        context.insert(MealEntry(date: try date(hour: 8), slot: .breakfast, dishID: "cereal",
-                                 portion: .normal, estimatedKcal: 300))
+        context.insert(MealEntry(date: try date(hour: 8), slot: .breakfast,
+                                 lines: [.simple(MealComponent(itemID: "cereal", grams: 400))],
+                                 estimatedKcal: 300))
         try context.save()
         XCTAssertEqual(try service.homeMessageContext(now: date(hour: 9)).context, .morning)
     }
@@ -92,8 +94,9 @@ final class HomeDashboardTests: XCTestCase {
             heightCm: 180, initialWeightKg: 90, activity: .moderate,
             dailyCalorieTarget: 2000
         ))
-        context.insert(MealEntry(date: try date(hour: 13), slot: .lunch, dishID: "pasta",
-                                 portion: .hearty, estimatedKcal: 2500))
+        context.insert(MealEntry(date: try date(hour: 13), slot: .lunch,
+                                 lines: [.simple(MealComponent(itemID: "pasta", grams: 650))],
+                                 estimatedKcal: 2500))
         try context.save()
 
         // Dépassé + soirée → overTarget ; en journée, salutation horaire normale.
@@ -111,14 +114,16 @@ final class HomeDashboardTests: XCTestCase {
     // MARK: - Bulle après log de repas
 
     func testLogMealPublishesAwardedXPForTheBubble() async throws {
-        let dish = try XCTUnwrap(try Catalogs.dishes().first)
-        await service.logMeal(slot: .lunch, dish: dish, portion: .normal)
+        let catalog = try FoodCatalog.load()
+        let item = try XCTUnwrap(catalog.items(category: .dish, slot: nil).first)
+        let lines = [catalog.line(for: item)]
+        await service.logMeal(slot: .lunch, lines: lines)
         // 1er repas du jour → 20 XP, publiés pour la bulle "+{value} XP" de l'accueil.
         XCTAssertEqual(service.lastMealXPAwarded, 20)
 
         // 5ᵉ repas : XP plafonné → 0 publié (l'accueil n'affiche pas de bulle de récompense).
         for _ in 1...4 {
-            await service.logMeal(slot: .snack, dish: dish, portion: .normal)
+            await service.logMeal(slot: .snack, lines: lines)
         }
         XCTAssertEqual(service.lastMealXPAwarded, 0)
     }

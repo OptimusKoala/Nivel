@@ -124,4 +124,18 @@ final class FoodCatalogTests: XCTestCase {
             }
         }
     }
+
+    // MARK: Tags des quêtes (spec §7.1)
+
+    /// Épingle EXACTEMENT les deux listes de tags que lisent les quêtes "jours sans
+    /// alcool" et "jours en dessert léger" (GameService). Un item ajouté un jour sans
+    /// son tag ne doit pas passer inaperçu : c'est le bug qui aurait rendu les deux
+    /// quêtes toujours satisfaites en portant les vieux ids `beer`/`dessert_rich`.
+    func testTagsAlcoolEtDessertGourmandSontExactementCesItems() {
+        let alcohol = Set(catalog.items.filter { $0.tags.contains("alcohol") }.map(\.id))
+        XCTAssertEqual(alcohol, ["beer_half", "beer_pint", "wine", "spirit", "cocktail"])
+
+        let richDessert = Set(catalog.items.filter { $0.tags.contains("richDessert") }.map(\.id))
+        XCTAssertEqual(richDessert, ["choco_bar", "ice_cream", "croissant"])
+    }
 }

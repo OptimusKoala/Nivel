@@ -356,8 +356,9 @@ private func homePreviewFixture(
         heightCm: 180, initialWeightKg: 90, activity: .moderate,
         dailyCalorieTarget: 2000
     ))
-    context.insert(MealEntry(slot: .lunch, dishID: "pasta", portion: .normal,
-                             estimatedKcal: kcalEaten))
+    // Seuls `slot` et `estimatedKcal` comptent pour ce fixture (anneau, total du
+    // jour) : pas besoin de lignes réelles, comme un repas d'avant la migration.
+    context.insert(MealEntry(slot: .lunch, estimatedKcal: kcalEaten))
 
     // Même session que la rotation du jour, spec sport §3.3 (mirroir de SportView).
     if sessionDone {

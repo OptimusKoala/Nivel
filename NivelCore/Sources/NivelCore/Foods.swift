@@ -29,6 +29,11 @@ public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
     /// Poids d'une unité. Non nil si et seulement si `unitLabel` l'est.
     public let unitGrams: Int?
     public let category: Category
+    /// Étiquettes libres consultées par les quêtes (spec v1.10 §7.1) : "alcohol",
+    /// "richDessert". Vide si l'item n'a rien à dire à une quête. Les ids d'items
+    /// changent (v1 → v1.10, ex. beer → beer_half/beer_pint) ; les quêtes lisent
+    /// des tags stables plutôt que des ids en dur, qui se seraient tus en silence.
+    public let tags: [String]
     /// Créneaux pertinents pour les plats. Vide = proposé partout.
     public let slots: [MealSlot]
     /// Quantité posée au tap dans le catalogue.
@@ -59,6 +64,17 @@ public struct FoodCatalog: Sendable {
     public let byID: [String: FoodItem]
     public let compositions: [String: [MealComponent]]
 
+    public init(items: [FoodItem], byID: [String: FoodItem], compositions: [String: [MealComponent]]) {
+        self.items = items
+        self.byID = byID
+        self.compositions = compositions
+    }
+
+    /// Repli si le bundle est corrompu (jamais de crash, comme les autres catalogues
+    /// de `GameService`). Un catalogue vide ne matche aucun tag : voir la note sur
+    /// `hasTag` avant de s'en servir pour une quête.
+    public static let empty = FoodCatalog(items: [], byID: [:], compositions: [:])
+
     public static func load() throws -> FoodCatalog {
         let items = try Catalogs.foods()
         return FoodCatalog(
@@ -69,6 +85,12 @@ public struct FoodCatalog: Sendable {
     }
 
     public func kcalPer100g(_ itemID: String) -> Double? { byID[itemID]?.kcalPer100g }
+
+    /// Un item du catalogue porte-t-il ce tag (spec §7.1) ? Item inconnu = false,
+    /// même repli que `kcalPer100g` : un JSON corrompu ne doit pas planter une quête.
+    public func hasTag(_ tag: String, itemID: String) -> Bool {
+        byID[itemID]?.tags.contains(tag) ?? false
+    }
 
     public func items(category: FoodItem.Category, slot: MealSlot?) -> [FoodItem] {
         items.filter { item in
