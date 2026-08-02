@@ -87,6 +87,7 @@ public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
     public let unitLabel: String?     // « œuf », « c. à soupe », « verre »... nil = au gramme
     public let unitGrams: Int?        // poids d'une unité ; nil si unitLabel est nil
     public let category: Category     // dish, side, drink, snack
+    public let tags: [String]         // « alcohol », « richDessert »... voir §7.1
     public let slots: [MealSlot]      // pertinent pour les plats ; vide = tous
     public let defaultGrams: Int      // quantité posée au tap dans le catalogue
 }
@@ -94,7 +95,7 @@ public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
 
 Chargé depuis `foods.json` via `Catalogs`, comme les plats et les activités. Les compositions par défaut vivent dans `compositions.json` : `dishID → [(itemID, grams)]`.
 
-**Une seule valeur énergétique est stockée : `kcalPer100g`.** Les tables ci-dessous donnent aussi les kcal par unité, parce que c'est ainsi qu'on raisonne en les relisant, mais c'est une **valeur dérivée** : `kcalPer100g = kcalParUnité × 100 / unitGrams`. C'est cette colonne dérivée qui va dans le JSON, et un test la revérifie contre la table (§9). Pour les boissons, `unitGrams` est le volume en millilitres, un liquide pesant à peu près son volume ; pour un cocktail ou un café, ce poids est nominal et ne sert qu'à porter le calcul.
+**Une seule valeur énergétique est stockée : `kcalPer100g`.** Les tables ci-dessous donnent aussi les kcal par unité, parce que c'est ainsi qu'on raisonne en les relisant, mais c'est une **valeur dérivée** : `kcalPer100g = kcalParUnité × 100 / unitGrams`. C'est cette colonne dérivée qui va dans le JSON, et un test la revérifie contre la table (§10). Pour les boissons, `unitGrams` est le volume en millilitres, un liquide pesant à peu près son volume ; pour un cocktail ou un café, ce poids est nominal et ne sert qu'à porter le calcul.
 
 ### 4.2 Les boissons (15)
 
@@ -262,14 +263,38 @@ La ligne d'un repas affiche le résumé de ses lignes au lieu de « portion · e
 
 Un repas sans lignes (l'unique entrée d'avant la migration) s'affiche « Repas » avec ses kcal.
 
-## 7. Ce qui ne change pas
+## 7. Les quêtes qui lisent le contenu d'un repas
 
-- Les quêtes et badges comptent des repas, pas leur contenu : `mealsLogged` est inchangé.
+**Correction apportée pendant l'implémentation.** Ce document affirmait d'abord que les quêtes et badges ne regardent jamais le contenu d'un repas. C'est faux pour deux métriques, trouvées en traçant ce que la bascule casse :
+
+- `daysWithoutAlcohol` cherchait les extras d'id `beer` et `wine` ;
+- `lightDessertDays` cherchait l'extra `dessert_rich`.
+
+Or `beer` est scindé en `beer_half` et `beer_pint`, et `dessert_rich` disparaît. Sans rien faire, ces deux quêtes seraient devenues **silencieusement toujours réussies** : aucune ligne ne portant plus les anciens ids, la condition « aucun alcool » aurait été vraie tous les jours. Un bug qu'aucun test n'aurait signalé et qui aurait donné de l'XP pour rien.
+
+### 7.1 Le classement vit dans les données
+
+Plutôt qu'une liste d'ids en dur dans `GameService`, `FoodItem` porte un champ `tags`. Deux tags aujourd'hui :
+
+| tag | Items |
+|---|---|
+| `alcohol` | `beer_half`, `beer_pint`, `wine`, `spirit`, `cocktail` |
+| `richDessert` | `choco_bar`, `ice_cream`, `croissant` |
+
+Les métriques interrogent le catalogue : un jour compte comme sans alcool si aucun composant d'aucune de ses lignes ne porte le tag `alcohol`. Ainsi le lot C, ou n'importe quel ajout futur au catalogue, classe son item là où il le déclare, et non dans un fichier de service qu'il faudrait penser à ouvrir.
+
+**Un changement de comportement à assumer** : la quête sans alcool attrape désormais aussi les spiritueux et les cocktails. En v1 elle ne voyait que la bière et le vin, parce que le catalogue n'avait rien d'autre. C'est ce que la quête a toujours voulu dire.
+
+Un test épingle les deux listes ci-dessus, pour qu'un item ajouté sans tag ne passe pas inaperçu.
+
+## 8. Ce qui ne change pas
+
+- Le nombre de repas loggés : `mealsLogged`, et tous les badges qui en dépendent.
 - L'objectif kcal, le total du jour, l'anneau de l'accueil et l'instantané du widget lisent `estimatedKcal`, figé à l'écriture. Aucune des sept clés du widget ne bouge.
 - L'XP par repas, ses plafonds, la banque de messages.
 - La navigation par jour du journal, et la règle « modifiable le jour même uniquement ».
 
-## 8. Hors périmètre, explicitement
+## 9. Hors périmètre, explicitement
 
 - Recherche textuelle dans le catalogue. Quatre onglets suffisent à cette taille.
 - Repas favoris, ou dupliqués depuis un jour précédent.
@@ -279,7 +304,7 @@ Un repas sans lignes (l'unique entrée d'avant la migration) s'affiche « Repas 
 - Réglage des compositions par défaut depuis l'app.
 - Profondeur de composition supérieure à un niveau.
 
-## 9. Tests
+## 10. Tests
 
 **NivelCore**
 
@@ -290,6 +315,8 @@ Un repas sans lignes (l'unique entrée d'avant la migration) s'affiche « Repas 
 - **La colonne dérivée** : pour chaque item à unité, `unitGrams × kcalPer100g / 100` retombe sur la valeur « kcal / unité » des tables §4.2 et §4.3, à une unité près. C'est le garde-fou contre une erreur de conversion recopiée dans le JSON.
 - Le raccourci de portion : ×0,7 / ×1 / ×1,3 appliqués à une composition donnent les grammes attendus, arrondis à l'entier.
 - Aucun tiret cadratin dans `foods.json` ni `compositions.json` (le test existant couvre déjà toutes les ressources du bundle).
+- **Les tags de §7.1 épinglés** : exactement les cinq items alcoolisés, exactement les trois desserts gourmands. Un item ajouté sans tag ne doit pas passer inaperçu.
+- Les deux métriques de quête sur une journée avec et sans alcool, et avec et sans dessert gourmand, en construisant les repas depuis des lignes.
 
 **App**
 
@@ -298,7 +325,7 @@ Un repas sans lignes (l'unique entrée d'avant la migration) s'affiche « Repas 
 - Le résumé de ligne du journal sur un repas à une, deux et quatre lignes.
 - Un repas sans lignes s'affiche sans planter.
 
-## 10. Livraison
+## 11. Livraison
 
 Version **1.10 (build 11)** dans `project.yml`, sur les **deux** cibles.
 
