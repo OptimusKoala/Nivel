@@ -1,1 +1,85 @@
-{}
+{
+  "pasta": [
+    { "itemID": "pasta_cooked", "grams": 250 },
+    { "itemID": "tomato_sauce", "grams": 120 },
+    { "itemID": "grated_cheese", "grams": 25 },
+    { "itemID": "olive_oil", "grams": 12 }
+  ],
+  "rice": [
+    { "itemID": "rice_cooked", "grams": 250 },
+    { "itemID": "chicken", "grams": 100 },
+    { "itemID": "green_veg", "grams": 150 }
+  ],
+  "salad": [
+    { "itemID": "lettuce", "grams": 80 },
+    { "itemID": "tomato", "grams": 100 },
+    { "itemID": "egg", "grams": 60 },
+    { "itemID": "tuna", "grams": 80 },
+    { "itemID": "corn", "grams": 50 },
+    { "itemID": "vinaigrette", "grams": 12 },
+    { "itemID": "croutons", "grams": 10 }
+  ],
+  "veggies": [
+    { "itemID": "green_veg", "grams": 250 },
+    { "itemID": "chicken", "grams": 150 },
+    { "itemID": "olive_oil", "grams": 12 }
+  ],
+  "red_meat": [
+    { "itemID": "beef", "grams": 150 },
+    { "itemID": "fries", "grams": 100 },
+    { "itemID": "green_veg", "grams": 80 }
+  ],
+  "fish": [
+    { "itemID": "fish_fillet", "grams": 150 },
+    { "itemID": "rice_cooked", "grams": 150 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "butter", "grams": 10 }
+  ],
+  "pizza": [
+    { "itemID": "pizza_dough", "grams": 200 },
+    { "itemID": "tomato_sauce", "grams": 80 },
+    { "itemID": "mozzarella", "grams": 100 },
+    { "itemID": "ham", "grams": 40 }
+  ],
+  "soup": [
+    { "itemID": "soup_veg", "grams": 350 },
+    { "itemID": "cream", "grams": 30 },
+    { "itemID": "bread", "grams": 40 }
+  ],
+  "sandwich": [
+    { "itemID": "bread", "grams": 120 },
+    { "itemID": "ham", "grams": 50 },
+    { "itemID": "cheese", "grams": 30 },
+    { "itemID": "butter", "grams": 8 }
+  ],
+  "stew": [
+    { "itemID": "beef", "grams": 120 },
+    { "itemID": "potato", "grams": 200 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "sauce", "grams": 40 }
+  ],
+  "fast_food": [
+    { "itemID": "burger_bun", "grams": 80 },
+    { "itemID": "beef_patty", "grams": 120 },
+    { "itemID": "cheese", "grams": 20 },
+    { "itemID": "fries", "grams": 120 }
+  ],
+  "toast": [
+    { "itemID": "bread", "grams": 80 },
+    { "itemID": "butter", "grams": 12 },
+    { "itemID": "jam", "grams": 20 }
+  ],
+  "cereal": [
+    { "itemID": "cereal_flakes", "grams": 70 },
+    { "itemID": "drink_milk", "grams": 200 },
+    { "itemID": "fruit_pieces", "grams": 80 }
+  ],
+  "pastry": [
+    { "itemID": "croissant", "grams": 70 }
+  ],
+  "yogurt_fruit": [
+    { "itemID": "plain_yogurt", "grams": 125 },
+    { "itemID": "fruit_pieces", "grams": 120 },
+    { "itemID": "honey", "grams": 15 }
+  ]
+}

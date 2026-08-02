@@ -62,4 +62,42 @@ final class FoodCatalogTests: XCTestCase {
                            "\(item.id) : pluriel explicite attendu")
         }
     }
+
+    /// LE test de contenu de ce lot. Si la composition par défaut d'un plat s'éloigne
+    /// de plus de 10 % du forfait qu'il avait en v1, c'est qu'un ingrédient est mal
+    /// dosé. Mieux vaut l'apprendre ici qu'au dîner.
+    func testChaqueCompositionRetombeSurLeForfaitV1() {
+        let forfaits: [String: Int] = [
+            "pasta": 650, "rice": 550, "salad": 350, "veggies": 450,
+            "red_meat": 700, "fish": 500, "pizza": 900, "soup": 300,
+            "sandwich": 550, "stew": 600, "fast_food": 950, "toast": 350,
+            "cereal": 400, "pastry": 300, "yogurt_fruit": 200,
+        ]
+        for (dishID, forfait) in forfaits {
+            let composition = catalog.compositions[dishID]
+            XCTAssertNotNil(composition, "composition manquante : \(dishID)")
+            guard let composition else { continue }
+            let sum = MealEstimator.kcal(
+                lines: [.composed(itemID: dishID, components: composition)],
+                kcalPer100g: catalog.kcalPer100g
+            )
+            let tolerance = Double(forfait) * 0.10
+            XCTAssertEqual(Double(sum), Double(forfait), accuracy: tolerance,
+                           "\(dishID) : composition à \(sum) kcal pour un forfait de \(forfait)")
+        }
+    }
+
+    func testAutreNAPasDeComposition() {
+        XCTAssertNil(catalog.compositions["other"])
+    }
+
+    func testToutIngredientCiteExiste() {
+        for (dishID, composition) in catalog.compositions {
+            for component in composition {
+                XCTAssertNotNil(catalog.byID[component.itemID],
+                                "\(dishID) cite un item inconnu : \(component.itemID)")
+                XCTAssertGreaterThan(component.grams, 0, "\(dishID)/\(component.itemID)")
+            }
+        }
+    }
 }
