@@ -4,8 +4,10 @@
 // avec un MealEntry existant → lignes pré-remplies, la validation met à jour
 // l'entrée SANS ré-attribuer d'XP.
 //
-// La saisie manuelle des kcal et la règle du tilde (spec §5.5) arrivent à la
-// Task 7 : cette feuille n'affiche pour l'instant que l'estimation calculée.
+// Kcal manuelles et règle du tilde (spec §5.5) : un tap sur le montant de la barre
+// basse ouvre une saisie numérique, qui court-circuite l'estimation calculée. La
+// même règle d'affichage (MealFormatting.frKcal) est reprise par le journal, pour
+// qu'elle ne puisse pas diverger entre les deux écrans.
 
 import SwiftUI
 import SwiftData
@@ -46,6 +48,12 @@ struct MealLogSheet: View {
 
     @State private var slot: MealSlot
     @State private var lines: [MealLine]
+    /// nil = kcal calculées ; rempli = l'utilisateur a saisi un chiffre qui
+    /// court-circuite le calcul (spec §3.3, §5.5). Jamais persisté tant que la
+    /// feuille n'est pas validée.
+    @State private var manualKcal: Int?
+    @State private var isEditingManualKcal = false
+    @State private var manualKcalText = ""
     @State private var isSaving = false
     /// Chemin de navigation : l'index de la ligne dont le détail est poussé.
     @State private var path: [Int] = []
@@ -59,6 +67,7 @@ struct MealLogSheet: View {
         let hour = GameService.calendar.component(.hour, from: .now)
         _slot = State(initialValue: entry?.slot ?? MealSlot.suggested(forHour: hour))
         _lines = State(initialValue: entry?.lines ?? [])
+        _manualKcal = State(initialValue: entry?.manualKcal)
     }
 
     // MARK: Données dérivées
@@ -69,6 +78,10 @@ struct MealLogSheet: View {
     private var estimatedKcal: Int {
         MealEstimator.kcal(lines: lines, kcalPer100g: catalog.kcalPer100g)
     }
+
+    /// Ce que la barre basse affiche : la saisie manuelle si elle existe, sinon
+    /// l'estimation calculée. C'est aussi ce qui est enregistré (spec §3.3).
+    private var displayedKcal: Int { manualKcal ?? estimatedKcal }
 
     // MARK: Corps
 
@@ -129,16 +142,40 @@ struct MealLogSheet: View {
 
     private var bottomBar: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Estimation")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Theme.subtext)
-                // "~" : estimation honnête, jamais présentée comme exacte (spec §13).
-                Text("~ \(estimatedKcal.frFormatted) kcal")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.text)
-                    .contentTransition(.numericText())
-                    .animation(.snappy, value: estimatedKcal)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(manualKcal != nil ? "Saisi" : "Estimation")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Theme.subtext)
+                    // Le bouton n'apparaît que si une saisie manuelle est active :
+                    // le cas courant (aucune saisie) ne doit pas s'encombrer d'un
+                    // contrôle qui ne servirait à rien (spec §5.5).
+                    if manualKcal != nil {
+                        Button("Revenir à l'estimation") { manualKcal = nil }
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Theme.orange)
+                    }
+                }
+                Button {
+                    manualKcalText = "\(displayedKcal)"
+                    isEditingManualKcal = true
+                } label: {
+                    HStack(spacing: 6) {
+                        // Règle du tilde (spec §5.5) : partagée avec le journal via
+                        // MealFormatting, pour qu'elle ne puisse jamais diverger.
+                        Text(MealFormatting.frKcal(displayedKcal, isManual: manualKcal != nil))
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.text)
+                            .contentTransition(.numericText())
+                            .animation(.snappy, value: displayedKcal)
+                        // Affordance visible : sans elle, rien ne dit que ce montant
+                        // se tape (spec §5.5, retour de Michaël sur la maquette).
+                        Image(systemName: "pencil")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Theme.subtext)
+                    }
+                }
+                .buttonStyle(.plain)
             }
             Spacer()
             Button(isEditing ? "Enregistrer" : "Valider (+20 XP)", action: validate)
@@ -149,6 +186,21 @@ struct MealLogSheet: View {
         .padding(.vertical, 12)
         .background(Theme.card.ignoresSafeArea(edges: .bottom))
         .shadow(color: Theme.floatingShadow, radius: 10, y: -4)
+        .alert("Kcal du repas", isPresented: $isEditingManualKcal) {
+            TextField("kcal", text: $manualKcalText)
+                .keyboardType(.numberPad)
+            Button("Valider", action: commitManualKcal)
+            Button("Annuler", role: .cancel) {}
+        } message: {
+            Text("Remplace l'estimation par un chiffre que tu as toi-même mesuré ou lu.")
+        }
+    }
+
+    /// Valide la saisie manuelle : un entier positif remplace l'estimation, tout le
+    /// reste (vide, texte, zéro ou négatif) est ignoré et referme simplement l'alerte.
+    private func commitManualKcal() {
+        guard let value = Int(manualKcalText), value > 0 else { return }
+        manualKcal = value
     }
 
     private func validate() {
@@ -160,11 +212,11 @@ struct MealLogSheet: View {
         Task {
             if let entry = editedEntry {
                 // Édition : recalcul kcal + ajustement DayLog, PAS de nouvel XP.
-                await game.updateMeal(entry: entry, slot: slot, lines: lines)
+                await game.updateMeal(entry: entry, slot: slot, lines: lines, manualKcal: manualKcal)
             } else {
                 // logMeal publie `lastMealXPAwarded` — l'accueil affichera la bulle
                 // afterMealLog (+XP), que le log vienne d'ici ou du journal.
-                await game.logMeal(slot: slot, lines: lines)
+                await game.logMeal(slot: slot, lines: lines, manualKcal: manualKcal)
             }
             dismiss()
         }
