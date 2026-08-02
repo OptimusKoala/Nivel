@@ -12,7 +12,7 @@ Une app iOS gamifiée façon jeu vidéo cozy, en français, entièrement locale.
   <img src="https://img.shields.io/badge/iOS-17%2B-f57c1f?style=flat-square" alt="iOS 17+"/>
   <img src="https://img.shields.io/badge/SwiftUI-SwiftData-f57c1f?style=flat-square" alt="SwiftUI + SwiftData"/>
   <img src="https://img.shields.io/badge/WidgetKit-4%20familles-f57c1f?style=flat-square" alt="WidgetKit"/>
-  <img src="https://img.shields.io/badge/tests-117%20core%20%2B%2071%20app-3a1220?style=flat-square" alt="117 tests NivelCore + 71 tests app"/>
+  <img src="https://img.shields.io/badge/tests-143%20core%20%2B%2076%20app-3a1220?style=flat-square" alt="143 tests NivelCore + 76 tests app"/>
   <img src="https://img.shields.io/badge/version-1.10-3a1220?style=flat-square" alt="version 1.10"/>
   <img src="https://img.shields.io/badge/licence-MIT-3a1220?style=flat-square" alt="licence MIT"/>
 </p>
@@ -40,7 +40,7 @@ On logge ses repas en quelques secondes, on suit ses pas et son poids, on valide
 
 | | |
 |---|---|
-| 🍲 **Repas en 3 gestes** | 16 plats + 6 extras taggables, estimation kcal immédiate, objectif calculé (Mifflin-St Jeor moins 350). |
+| 🍲 **Repas en 3 gestes** | Catalogue de 85 aliments (plats composés, accompagnements, boissons, encas), estimation kcal immédiate, détail à l'ingrédient et au gramme si on le veut, kcal saisies à la main sinon. Objectif calculé (Mifflin-St Jeor moins 350). |
 | 🏃 **Sport tout doux** | 20 activités et 11 séances composées, chacune illustrée par Nivelito, avec consignes « comment faire » et rythme suggéré. |
 | ⏱️ **Séance du jour guidée** | Une étape par écran, un timer en anneau **optionnel** qu'on lance si on veut. Jamais d'avance automatique : un guide, pas un chef. |
 | 🏆 **XP, niveaux, quêtes, badges** | 18 quêtes hebdo tirées le lundi, 24 badges, progression visible sans jamais de score négatif. |
@@ -140,7 +140,7 @@ Nivel/
 ├── project.yml              # Définition XcodeGen (Nivel + NivelWidgets + NivelTests)
 ├── NivelCore/               # Package Swift : logique métier pure + tests unitaires
 │   ├── Sources/NivelCore/   #   Calories, XP, niveaux, quêtes, badges, tendance de poids,
-│   │                        #   catalogues JSON (plats, extras, activités, séances, messages)
+│   │                        #   catalogues JSON (aliments, compositions, activités, séances, messages)
 │   └── Tests/               #   `swift test`
 ├── App/                     # App SwiftUI + SwiftData
 │   ├── Models/              #   Modèles persistés (profil, repas, pesées, journal)
