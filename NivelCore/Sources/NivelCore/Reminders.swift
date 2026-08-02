@@ -105,9 +105,28 @@ public struct PlannedReminder: Equatable, Sendable {
     public let minute: Int
     public let weekday: Int?
     public let context: MessageContext
+
+    // Init public explicite, comme les autres structs publiques du module : sans lui
+    // le memberwise init reste internal et la cible app ne peut pas en construire un
+    // (fixture de test, preview).
+    public init(id: String, hour: Int, minute: Int, weekday: Int?, context: MessageContext) {
+        self.id = id
+        self.hour = hour
+        self.minute = minute
+        self.weekday = weekday
+        self.context = context
+    }
 }
 
 public enum ReminderPlanner {
+    /// Une surcharge hors bornes est ÉCARTÉE, pas conservée : l'appelant retombe alors
+    /// sur le défaut du catalogue. Nommée une fois plutôt qu'inlinée à chaque champ,
+    /// parce que c'est la propriété de sûreté centrale du fichier : un réglage corrompu
+    /// ne doit jamais faire disparaître un rappel actif.
+    private static func sanitized(_ value: Int?, in range: ClosedRange<Int>) -> Int? {
+        value.flatMap { range.contains($0) ? $0 : nil }
+    }
+
     /// Itère sur le CATALOGUE, pas sur les dictionnaires : les identifiants inconnus
     /// y sont donc naturellement ignorés. Toute valeur aberrante retombe sur le défaut
     /// du catalogue, jamais sur une disparition du rappel.
@@ -117,12 +136,13 @@ public enum ReminderPlanner {
         ReminderCatalog.all.compactMap { definition in
             guard enabled[definition.id] == true else { return nil }
 
-            let minutes = times[definition.id]
-                .flatMap { ReminderSchedule.minutesRange.contains($0) ? $0 : nil }
+            let minutes = sanitized(times[definition.id], in: ReminderSchedule.minutesRange)
                 ?? definition.defaultMinutesFromMidnight
 
-            let weekday = (definition.isWeekdayEditable ? weekdays[definition.id] : nil)
-                .flatMap { ReminderSchedule.weekdayRange.contains($0) ? $0 : nil }
+            // Le jour n'est même pas lu sur un rappel quotidien : le poser ne doit pas
+            // le rendre hebdomadaire.
+            let requestedWeekday = definition.isWeekdayEditable ? weekdays[definition.id] : nil
+            let weekday = sanitized(requestedWeekday, in: ReminderSchedule.weekdayRange)
                 ?? definition.defaultWeekday
 
             let time = ReminderSchedule.hourMinute(fromMinutesFromMidnight: minutes)
