@@ -113,6 +113,8 @@ Sonner par-dessus l'interrupteur silencieux est un choix fort pour une app par a
 
 Le lot C ajoutera une cinquième entrée et rien d'autre.
 
+**Piège identifié pendant l'implémentation, à l'attention du lot C.** Un rappel est considéré actif seulement si `remindersEnabled[id] == true` ; une clé absente vaut donc éteint. Les quatre clés actuelles sont toutes posées par l'onboarding, mais une cinquième entrée ajoutée au catalogue naîtra **éteinte** sur les deux téléphones déjà installés. C'est le bon défaut pour une option que l'on propose, pas pour un rappel que l'on ajoute à la demande de quelqu'un. Le lot C devra donc poser explicitement la clé à `true` pour le profil concerné, et ce doit être une décision consciente plutôt qu'une surprise.
+
 ### 4.2 Le stockage (UserProfile)
 
 Deux nouvelles propriétés sur `UserProfile` :
