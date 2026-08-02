@@ -26,12 +26,20 @@ final class SoundPlayer {
     func play(_ chime: TimerChime) {
         configureSessionIfNeeded()
         guard let player = player(for: chime) else { return }
+        // Rejoue depuis le début plutôt que de superposer une deuxième instance : un
+        // déclenchement rapproché coupe donc le précédent. Sans risque ici, `decide`
+        // (TimerFeedback) ne fait jouer que la surface `isCurrent`, et une étape
+        // d'exercice dure des dizaines de secondes, jamais deux fins en une frappe.
         player.currentTime = 0
         player.play()
     }
 
     private func configureSessionIfNeeded() {
         guard !sessionConfigured else { return }
+        // Le flag est levé AVANT les `try?`, pas après : c'est ce qui rend un échec
+        // définitif plutôt que retenté à chaque chime. Le déplacer après ressemblerait
+        // à une correction d'ordre mais réintroduirait un martèlement de la session sur
+        // chaque son si la configuration échoue une première fois. Voulu.
         sessionConfigured = true
         // Erreurs avalées : un son qui ne part pas ne casse jamais une séance.
         let session = AVAudioSession.sharedInstance()
