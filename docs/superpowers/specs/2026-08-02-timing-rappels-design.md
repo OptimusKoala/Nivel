@@ -63,13 +63,25 @@ Les deux règles d'honnêteté existantes sont conservées telles quelles : rien
 
 ### 3.4 Dette payée : un seul bloc tick
 
-La v1.5 avait noté un bloc tick → son dupliqué à l'identique entre `ActivityLogSheet` (lignes 102-110) et `StepPageView` (lignes 265-277). Les deux doivent changer de toute façon pour choisir leur chime. Ils appellent désormais :
+La v1.5 avait noté un bloc tick → son dupliqué à l'identique entre `ActivityLogSheet` (lignes 102-110) et `StepPageView` (lignes 265-277). Les deux doivent changer de toute façon pour choisir leur chime. La logique part en deux morceaux, pour que la décision soit testable sans jouer un son.
+
+**Décision pure** (NivelCore, testable) :
+
+```
+TimerChime.decide(overrun:transitioned:isCurrent:soundEnabled:) -> Feedback?
+```
+
+`Feedback` porte le retour haptique et, optionnellement, le chime à jouer. Retourne `nil` quand il ne s'est rien passé. C'est ici que vivent le seuil des 2 s, le filtre `isCurrent` et le réglage de son.
+
+**Site d'appel** (App), un seul helper partagé par les deux surfaces :
 
 ```
 TimerChime.onTick(timer:at:isCurrent:chime:) -> Bool
 ```
 
-qui concentre en un seul endroit l'ordre imposé « lire `overrun` **avant** `syncNow` », le seuil des 2 s, le filtre `isCurrent`, l'haptique et le son. Retourne `true` si la transition a eu lieu, pour que l'appelant garde la main sur le reste.
+qui concentre l'ordre imposé « lire `overrun` **avant** `syncNow` », appelle `decide`, puis exécute le retour renvoyé. `ActivityLogSheet` n'a pas de notion de page courante et passe donc `isCurrent: true`. Retourne `true` si la transition a eu lieu, pour que l'appelant garde la main sur le reste.
+
+Le réglage de son est lu au site d'appel et **passé en paramètre** à `decide` : la décision reste pure, les tests n'ont pas à toucher aux `UserDefaults`.
 
 ### 3.5 Le réglage
 
@@ -133,6 +145,8 @@ ReminderPlanner.planned(enabled:times:weekdays:) -> [PlannedReminder]
 
 `NotificationService` garde ce qui lui est propre : la vérification d'autorisation, le compteur de génération, le tirage du texte dans la banque, et le bloc `removeAllPendingNotificationRequests` + `add` **synchrone** (aucun `await` entre les deux, l'atomicité actuelle est préservée).
 
+Contrainte de concurrence à respecter : `UserProfile` est un `@Model`, donc non `Sendable`. `reschedule(for:)` capture aujourd'hui `profile.name` et `profile.remindersEnabled` **avant** tout passage asynchrone ; il doit désormais capturer aussi `reminderTimes` et `reminderWeekdays` au même endroit, et ne plus jamais toucher au profil après le premier `await`.
+
 Faire tourner une roue d'heure émet des dizaines de changements, donc autant de re-planifications. Le compteur de génération déjà en place les absorbe : chaque appel devenu obsolète pendant son `await` est abandonné, seul le dernier écrit réellement. Aucun anti-rebond supplémentaire n'est nécessaire.
 
 ### 4.4 L'écran (maquette A, « tout sur une ligne »)
@@ -169,7 +183,7 @@ Une quatrième puce « Autre » rejoint les trois durées du catalogue dans `Act
 - La sélectionner déplie une roue de minutes **sur place**, sous la rangée de puces, avec l'estimation kcal en dessous. Pas de feuille au-dessus de la feuille : `ActivityLogSheet` est déjà en détent `.large`, la place existe.
 - Plage : **1 à 240 minutes**, pas de 1 minute.
 - Valeur d'ouverture : la durée déjà sélectionnée si une puce l'était, sinon la durée médiane du catalogue de l'activité. On part toujours d'une valeur plausible.
-- La puce affiche la valeur courante en sous-titre (« Autre / 25 min »).
+- État de la puce : tant qu'elle n'a pas été choisie, elle affiche « Autre » sans sous-titre, là où les trois puces du catalogue affichent leurs kcal. Une fois choisie, son sous-titre devient la valeur courante (« 25 min »), et l'estimation kcal correspondante s'affiche sous la roue.
 - Ensuite tout se comporte comme une puce classique : `Activity.estimatedKcal(minutes:)` inchangé, timer créé sur la durée, XP inchangée (30, plafond de 2 par jour).
 - La séance du jour n'est pas concernée : ses étapes restent composées.
 
@@ -195,7 +209,7 @@ Les kcal sont recalculées sur la durée réellement enregistrée.
 
 ### 5.3 L'affichage de la durée enregistrée
 
-Quand la durée enregistrée diffère de la durée choisie, une ligne discrète apparaît **au-dessus** du bouton de validation : « noté : 14 min ». Le libellé du bouton ne change pas.
+Dans `ActivityLogSheet` uniquement (la séance du jour enregistre toujours le total de ses étapes), quand la durée enregistrée diffère de la durée choisie, une ligne discrète apparaît **au-dessus** du bouton de validation : « noté : 14 min ». Le libellé du bouton ne change pas.
 
 Raison : le bouton porte déjà « C'est fait ! (+30 XP) ». Y insérer la durée le rend trop long pour un iPhone compact, et l'XP affichée compte (elle tombe à zéro une fois le plafond du jour atteint). La ligne séparée dit la vérité sans encombrer le bouton.
 
@@ -227,7 +241,8 @@ Raison : le bouton porte déjà « C'est fait ! (+30 XP) ». Y insérer la duré
 
 **App**
 
-- `TimerChime` : choix du chime selon (numéro d'étape, nombre d'étapes) ; silence quand `isCurrent` est faux, quand le dépassement atteint 2 s, quand le réglage est coupé. Logique pure, aucun son réellement joué.
+- `TimerChime.decide` (NivelCore) : silence quand `isCurrent` est faux, quand le dépassement atteint 2 s, quand `soundEnabled` est faux, et quand il n'y a pas eu de transition. Haptique présente même sans son. Logique pure, aucun son réellement joué.
+- Choix du chime selon (numéro d'étape, nombre d'étapes) : `step` pour une étape intermédiaire, `done` pour la dernière et pour l'activité libre.
 - Présence des deux `.caf` dans le bundle, non vides, durée épinglée, dans l'esprit de `SportAssetsTests`.
 - `ActivityLogSheet` : la puce « Autre » crée le timer sur la valeur de la roue.
 - Persistance : modifier une heure dans les Réglages l'écrit dans le profil et produit le bon sous-titre.
