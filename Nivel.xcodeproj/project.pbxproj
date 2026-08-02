@@ -17,6 +17,7 @@
 		1FF19C44AD93A713440F748D /* GameService+WidgetSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */; };
 		229BF4CEFB8B9929D59ED697 /* WidgetSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B501D130466BA533B52476E1 /* WidgetSyncTests.swift */; };
 		291CD5438E6A3A57272E0D3D /* WidgetNivelito.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */; };
+		2E84FFC862B46AF4F65B9EC0 /* SettingsView+DevicePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D6B63A9C04FD9C8F04CD75 /* SettingsView+DevicePreferences.swift */; };
 		3823F2CEF73FE2E0AF8B05D6 /* AccessoryWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */; };
 		391EAD8EC7FF0C0A74A634D5 /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = B88CBBE48B3261367C1BD66E /* NivelCore */; };
 		3BFDE41276406C8417A234F4 /* ExerciseTimerModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */; };
@@ -64,6 +65,7 @@
 		B7F10BCE3A130F18F93DBC46 /* SoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEF1380E0A63B78349E2FE6D /* SoundPlayer.swift */; };
 		C4741F7A70E605F1FC308D14 /* WidgetCalorieRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */; };
 		C57910A2F19CC7C8B8FC2E4E /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */; };
+		C5F456A98B8DC00057306084 /* SettingsView+Reminders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2876B0755FAF9E69C37EECFF /* SettingsView+Reminders.swift */; };
 		CA44B39964325597C05E92A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671D6B6E3581A479FFED40C2 /* RootView.swift */; };
 		CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9245CF3C47048DB9D88C2E5 /* StatCard.swift */; };
 		D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC47BA19967A4B2085299D7 /* ProgressScreen.swift */; };
@@ -130,6 +132,8 @@
 		2333A9029C3BCBFBBF4FB976 /* CelebrationsHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationsHost.swift; sourceTree = "<group>"; };
 		252E585F67D7801561AA6A8A /* NivelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelApp.swift; sourceTree = "<group>"; };
 		2749E47DBFD2A5D89042A89E /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		27D6B63A9C04FD9C8F04CD75 /* SettingsView+DevicePreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DevicePreferences.swift"; sourceTree = "<group>"; };
+		2876B0755FAF9E69C37EECFF /* SettingsView+Reminders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Reminders.swift"; sourceTree = "<group>"; };
 		2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportServiceTests.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		2F5C481B082D4CC3692BC8FB /* SoundSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettings.swift; sourceTree = "<group>"; };
@@ -293,6 +297,8 @@
 			isa = PBXGroup;
 			children = (
 				848BA4571516E35FCEA2402D /* SettingsView.swift */,
+				27D6B63A9C04FD9C8F04CD75 /* SettingsView+DevicePreferences.swift */,
+				2876B0755FAF9E69C37EECFF /* SettingsView+Reminders.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -627,6 +633,8 @@
 				7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */,
 				CA44B39964325597C05E92A6 /* RootView.swift in Sources */,
 				44E73F722094C06855E93916 /* SessionPlayerSheet.swift in Sources */,
+				2E84FFC862B46AF4F65B9EC0 /* SettingsView+DevicePreferences.swift in Sources */,
+				C5F456A98B8DC00057306084 /* SettingsView+Reminders.swift in Sources */,
 				4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */,
 				B7F10BCE3A130F18F93DBC46 /* SoundPlayer.swift in Sources */,
 				9E40875FA751C9A4CEDC7FDC /* SoundSettings.swift in Sources */,

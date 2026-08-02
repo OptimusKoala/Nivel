@@ -26,11 +26,11 @@ struct SettingsView: View {
     }
 }
 
-private struct SettingsContent: View {
+struct SettingsContent: View {
     @Bindable var profile: UserProfile
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
-    @Environment(GameService.self) private var game
+    @Environment(GameService.self) var game
     @Query(sort: \WeightEntry.date) private var weights: [WeightEntry]
 
     @State private var kcalText = ""
@@ -208,89 +208,6 @@ private struct SettingsContent: View {
         }
     }
 
-    // MARK: - Son
-
-    /// Préférence PAR APPAREIL (comme le thème) : elle vit dans UserDefaults, pas
-    /// dans SwiftData, donc aucun `save()` ici. Elle n'entre pas non plus dans
-    /// l'instantané du widget, donc pas de `syncWidget()` non plus.
-    private var soundSection: some View {
-        // `@Bindable` local plutôt qu'un Binding get/set à la main : la propriété n'a
-        // aucun effet de bord à l'écriture, contrairement aux rappels qui doivent
-        // réassigner un dictionnaire SwiftData puis re-planifier.
-        @Bindable var sound = SoundSettings.shared
-        return section("Son") {
-            Toggle(isOn: $sound.timerSoundEnabled) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Son du timer").font(.subheadline.weight(.semibold))
-                    Text("sonne même en mode silencieux")
-                        .font(.caption).foregroundStyle(Theme.subtext)
-                }
-            }
-        }
-    }
-
-    // MARK: - Rappels
-
-    private var remindersSection: some View {
-        section("Rappels") {
-            reminderToggle("lunch", "Déjeuner", "tous les jours à 12 h 30")
-            divider
-            reminderToggle("dinner", "Dîner", "tous les jours à 20 h")
-            divider
-            reminderToggle("weigh", "Pesée", "le samedi à 9 h")
-            divider
-            reminderToggle("steps", "Pas", "tous les jours à 18 h")
-        }
-    }
-
-    private func reminderToggle(_ id: String, _ title: String, _ subtitle: String) -> some View {
-        Toggle(isOn: reminderBinding(id)) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.subheadline.weight(.semibold))
-                Text(subtitle).font(.caption).foregroundStyle(Theme.subtext)
-            }
-        }
-    }
-
-    /// Binding d'un rappel — réassignation COMPLÈTE du dictionnaire (règle SwiftData :
-    /// pas de mutation en place des collections d'un @Model), puis re-planification.
-    private func reminderBinding(_ id: String) -> Binding<Bool> {
-        Binding(
-            get: { profile.remindersEnabled[id] ?? false },
-            set: { newValue in
-                var enabled = profile.remindersEnabled
-                enabled[id] = newValue
-                profile.remindersEnabled = enabled
-                save()
-                NotificationService.reschedule(for: profile)
-            }
-        )
-    }
-
-    // MARK: - Thème
-
-    /// Choix de la palette (v1.1) — PAR APPAREIL : persisté dans UserDefaults
-    /// par ThemeStore, indépendant du profil SwiftData. Le changement re-rend
-    /// toute l'app instantanément (façade Theme + @Observable).
-    private var themeSection: some View {
-        section("Thème") {
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible())],
-                      spacing: 10) {
-                ForEach(ThemePalette.all) { palette in
-                    ThemeSwatchCard(palette: palette,
-                                    isSelected: ThemeStore.shared.palette.id == palette.id) {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                            ThemeStore.shared.palette = palette
-                        }
-                        // Le thème vit dans UserDefaults, hors SwiftData : aucune
-                        // sauvegarde ne déclenche le hook, on synchronise ici.
-                        game.syncWidget()
-                    }
-                }
-            }
-        }
-    }
-
     // MARK: - Santé
 
     // iOS ne révèle jamais si une autorisation de LECTURE Santé a été accordée ou
@@ -340,7 +257,7 @@ private struct SettingsContent: View {
 
     // MARK: - Briques de mise en page
 
-    private func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+    func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Overline(title)
             content()
@@ -357,7 +274,7 @@ private struct SettingsContent: View {
         }
     }
 
-    private var divider: some View {
+    var divider: some View {
         Rectangle().fill(Theme.track).frame(height: 1)
     }
 
@@ -383,7 +300,7 @@ private struct SettingsContent: View {
     }
 
     /// Sauvegarde explicite : silencieuse en release, assert en debug (échec = bug).
-    private func save() {
+    func save() {
         do {
             try modelContext.save()
             // Ce chemin ne passe pas par GameService.saveOrAssert : prénom et
@@ -392,69 +309,6 @@ private struct SettingsContent: View {
         } catch {
             assertionFailure("SwiftData save failed in SettingsView: \(error)")
         }
-    }
-}
-
-/// Carte de sélection d'une palette : pastille d'aperçu (fond du thème +
-/// points primaire/accent), emoji + nom, coche animée sur la sélection.
-private struct ThemeSwatchCard: View {
-    let palette: ThemePalette
-    let isSelected: Bool
-    let select: () -> Void
-
-    var body: some View {
-        Button(action: select) {
-            VStack(spacing: 8) {
-                swatch
-                HStack(spacing: 5) {
-                    Text(palette.emoji).font(.footnote)
-                    Text(palette.name)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.text)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Theme.background.opacity(0.6))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Theme.orange : Theme.track,
-                            lineWidth: isSelected ? 2 : 1)
-            )
-            .overlay(alignment: .topTrailing) {
-                if isSelected {
-                    CozyIcon(name: "icon_check", size: 21)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Theme.orange)
-                        .background(Circle().fill(Theme.card))
-                        .padding(6)
-                        .transition(.scale.combined(with: .opacity))
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Thème \(palette.name)")
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-    }
-
-    /// Cercle d'aperçu construit sur `palette.previewSwatches`.
-    private var swatch: some View {
-        let preview = palette.previewSwatches
-        return ZStack {
-            Circle().fill(preview.background)
-            Circle().stroke(palette.subtext.opacity(0.45), lineWidth: 1)
-            HStack(spacing: 3) {
-                ForEach(Array(preview.dots.enumerated()), id: \.offset) { _, dot in
-                    Circle().fill(dot).frame(width: 12, height: 12)
-                }
-            }
-        }
-        .frame(width: 42, height: 42)
     }
 }
 
