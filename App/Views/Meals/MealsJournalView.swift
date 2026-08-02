@@ -19,10 +19,10 @@ struct MealsJournalView: View {
     @State private var editingEntry: MealEntry?
     @State private var showNewMeal = false
 
-    /// Rendu MINIMUM le temps de la Task 8 (résumé complet des lignes, règle du
-    /// tilde) : nom et emoji de la PREMIÈRE ligne depuis le catalogue, et les kcal.
-    /// Volontairement honnête plutôt que complet — aucune règle sur le nombre de
-    /// lignes ou les extras n'est inventée ici.
+    /// Résumé des lignes (spec §6) : nom de la première + le nombre des autres, via
+    /// MealFormatting.frSummary, et emoji de cette même première ligne. Partagée
+    /// avec la feuille de log pour que la règle ne puisse pas diverger entre les
+    /// deux écrans.
     private let catalog: FoodCatalog
 
     private static let slotOrder: [MealSlot] = [.breakfast, .lunch, .dinner, .snack]
@@ -43,6 +43,15 @@ struct MealsJournalView: View {
 
     private var totalKcal: Int { dayMeals.reduce(0) { $0 + $1.estimatedKcal } }
     private var targetKcal: Int { profiles.first?.dailyCalorieTarget ?? 0 }
+
+    /// Le total du jour garde le tilde tant qu'AU MOINS UN repas est estimé : la
+    /// somme hérite de l'incertitude de sa partie la moins sûre. Il ne disparaît que
+    /// si chaque repas loggé ce jour-là a des kcal saisies à la main, seul cas où le
+    /// total est vraiment un chiffre connu de bout en bout (spec §6, pas couvert
+    /// explicitement, décision prise ici).
+    private var isTotalManual: Bool {
+        !dayMeals.isEmpty && dayMeals.allSatisfy { $0.manualKcal != nil }
+    }
 
     /// "Aujourd'hui" / "Hier" / "Mardi 28 juillet".
     private var dayTitle: String {
@@ -131,8 +140,9 @@ struct MealsJournalView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Theme.subtext)
             Spacer()
-            // Dépassement en ACCENT, jamais en rouge (spec §7.4).
-            Text("~ \(totalKcal.frFormatted) / \(targetKcal.frFormatted) kcal")
+            // Dépassement en ACCENT, jamais en rouge (spec §7.4). Tilde conditionnel :
+            // voir isTotalManual.
+            Text("\(isTotalManual ? "" : "~ ")\(totalKcal.frFormatted) / \(targetKcal.frFormatted) kcal")
                 .font(.system(size: 17, weight: .bold, design: .rounded))
                 .foregroundStyle(targetKcal > 0 && totalKcal > targetKcal ? Theme.accent : Theme.text)
         }
@@ -172,12 +182,14 @@ struct MealsJournalView: View {
             Text(item?.emoji ?? "🥘")
                 .font(.system(size: 28))
             VStack(alignment: .leading, spacing: 2) {
-                Text(item?.name ?? "Repas")
+                Text(MealFormatting.frSummary(lines: entry.lines, catalog: catalog))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Theme.text)
             }
             Spacer()
-            Text("~\(entry.estimatedKcal.frFormatted) kcal")
+            // Même règle du tilde que la barre basse de la feuille (spec §6) :
+            // un repas aux kcal saisies à la main ne l'affiche pas non plus ici.
+            Text(MealFormatting.frKcal(entry.estimatedKcal, isManual: entry.manualKcal != nil))
                 .font(.footnote.weight(.bold))
                 .foregroundStyle(Theme.orange)
         }
