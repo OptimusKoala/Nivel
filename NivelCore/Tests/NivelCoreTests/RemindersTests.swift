@@ -13,17 +13,32 @@ final class RemindersTests: XCTestCase {
         XCTAssertEqual(byID["lunch"]?.defaultMinute, 30)
         XCTAssertNil(byID["lunch"]?.defaultWeekday)
         XCTAssertEqual(byID["lunch"]?.context, .midday)
+        XCTAssertEqual(byID["lunch"]?.title, "Déjeuner")
 
         XCTAssertEqual(byID["dinner"]?.defaultHour, 20)
         XCTAssertEqual(byID["dinner"]?.defaultMinute, 0)
         XCTAssertEqual(byID["dinner"]?.context, .evening)
+        XCTAssertEqual(byID["dinner"]?.title, "Dîner")
 
         XCTAssertEqual(byID["weigh"]?.defaultHour, 9)
         XCTAssertEqual(byID["weigh"]?.defaultWeekday, 7)   // samedi
         XCTAssertEqual(byID["weigh"]?.context, .weighReminder)
+        XCTAssertEqual(byID["weigh"]?.title, "Pesée")
 
         XCTAssertEqual(byID["steps"]?.defaultHour, 18)
         XCTAssertEqual(byID["steps"]?.context, .stepsEncouragement)
+        XCTAssertEqual(byID["steps"]?.title, "Pas")
+    }
+
+    /// Ces minutes sont la source de vérité pour toute installation qui n'a jamais
+    /// touché les réglages (spec §4.2, repli sur le catalogue) : un renversement
+    /// heure/minute ici décalerait une vraie notification sans qu'un test échoue.
+    func testMinutesDepuisMinuitEtRecherche() {
+        XCTAssertEqual(ReminderCatalog.definition(id: "lunch")?.defaultMinutesFromMidnight, 750)
+        XCTAssertEqual(ReminderCatalog.definition(id: "dinner")?.defaultMinutesFromMidnight, 1200)
+        XCTAssertEqual(ReminderCatalog.definition(id: "weigh")?.defaultMinutesFromMidnight, 540)
+        XCTAssertEqual(ReminderCatalog.definition(id: "steps")?.defaultMinutesFromMidnight, 1080)
+        XCTAssertNil(ReminderCatalog.definition(id: "inconnu"))
     }
 
     /// La pesée est le seul rappel hebdomadaire, donc le seul dont le jour se choisit.
@@ -51,10 +66,37 @@ final class RemindersTests: XCTestCase {
 
     func testLesSeptJours() {
         let expected = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"]
+        let expectedShort = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."]
         for (index, name) in expected.enumerated() {
             XCTAssertEqual(ReminderSchedule.frLabel(hour: 7, minute: 0, weekday: index + 1),
                            "le \(name) à 7 h")
-            XCTAssertFalse(ReminderSchedule.frShortWeekday(index + 1).isEmpty)
+            XCTAssertEqual(ReminderSchedule.frShortWeekday(index + 1), expectedShort[index])
+        }
+    }
+
+    /// Un jour hors plage (bug amont) ne doit jamais planter ni afficher n'importe quoi :
+    /// repli silencieux sur « tous les jours » / chaîne vide.
+    func testJourHorsPlage() {
+        XCTAssertEqual(ReminderSchedule.frLabel(hour: 9, minute: 0, weekday: 0),
+                       "tous les jours à 9 h")
+        XCTAssertEqual(ReminderSchedule.frLabel(hour: 9, minute: 0, weekday: 8),
+                       "tous les jours à 9 h")
+        XCTAssertEqual(ReminderSchedule.frShortWeekday(0), "")
+        XCTAssertEqual(ReminderSchedule.frShortWeekday(8), "")
+    }
+
+    /// Arithmétique pure, sans `Calendar` : les minutes stockées par le lot D doivent
+    /// redonner l'heure et la minute à afficher par le lot E, et faire l'aller-retour
+    /// avec `defaultMinutesFromMidnight` pour les quatre rappels du catalogue.
+    func testHeureMinuteDepuisMinutes() {
+        XCTAssertTrue(ReminderSchedule.hourMinute(fromMinutesFromMidnight: 0) == (hour: 0, minute: 0))
+        XCTAssertTrue(ReminderSchedule.hourMinute(fromMinutesFromMidnight: 750) == (hour: 12, minute: 30))
+        XCTAssertTrue(ReminderSchedule.hourMinute(fromMinutesFromMidnight: 1439) == (hour: 23, minute: 59))
+
+        for definition in ReminderCatalog.all {
+            let roundTrip = ReminderSchedule.hourMinute(fromMinutesFromMidnight: definition.defaultMinutesFromMidnight)
+            XCTAssertEqual(roundTrip.hour, definition.defaultHour, "heure pour \(definition.id)")
+            XCTAssertEqual(roundTrip.minute, definition.defaultMinute, "minute pour \(definition.id)")
         }
     }
 

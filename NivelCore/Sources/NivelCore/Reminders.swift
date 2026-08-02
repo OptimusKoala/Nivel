@@ -2,6 +2,12 @@
 // Catalogue et formatage des rappels (spec v1.9 §4). Remplace les quatre cas en dur
 // de NotificationService : le lot C (programme de Marion) ajoutera une entrée ici,
 // et rien d'autre.
+//
+// Catalogue en dur (Swift), contrairement à `dishes`/`activities`/`sessions`/`quests`/
+// `badges` qui viennent de JSON via `Catalogs` : un `MessageContext` en JSON troquerait
+// une erreur de compilation contre un identifiant en chaîne qui échoue silencieusement
+// en release, et ces quatre valeurs sont épinglées par design, pas du contenu éditorial
+// à ajuster sans recompiler.
 
 import Foundation
 
@@ -50,6 +56,13 @@ public enum ReminderCatalog {
 public enum ReminderSchedule {
     public static let minutesRange = 0...1439
     public static let weekdayRange = 1...7
+
+    /// Inverse de `ReminderDefinition.defaultMinutesFromMidnight`. Arithmétique pure
+    /// (aucun `Calendar`) : le lot D (réglage utilisateur) y range ses minutes stockées,
+    /// le lot E (écran de réglage) en tire l'heure et la minute à afficher.
+    public static func hourMinute(fromMinutesFromMidnight minutes: Int) -> (hour: Int, minute: Int) {
+        (hour: minutes / 60, minute: minutes % 60)
+    }
 
     private static let longNames = ["dimanche", "lundi", "mardi", "mercredi",
                                     "jeudi", "vendredi", "samedi"]
