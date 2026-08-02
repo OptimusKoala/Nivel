@@ -157,7 +157,7 @@ Les deux sélecteurs sont **natifs et déjà employés dans ce fichier** : `Date
 
 - **Rappel éteint** : les deux sélecteurs passent en `.disabled(true)` et iOS les grise de lui-même. Un rappel coupé n'affiche donc pas une heure d'apparence active.
 - **Sous-titres calculés**, plus de texte en dur : « tous les jours » ou « chaque semaine ».
-- **Accessibilité** : la ligne est un élément combiné dont le libellé porte la phrase entière, par exemple « Pesée, le samedi à 9 h ». Sans cela VoiceOver énoncerait trois contrôles décousus.
+- **Accessibilité** : le bloc de texte à gauche est combiné et porte la phrase entière, par exemple « Pesée, le samedi à 9 h ». Les trois contrôles gardent leur propre libellé (« Heure du rappel Pesée », « Jour du rappel Pesée », « Rappel Pesée ») et restent actionnables séparément. Combiner la ligne entière donnerait une belle phrase mais rendrait les contrôles inatteignables à VoiceOver.
 - Le binding d'heure convertit minutes ↔ `Date` via `DateComponents` dans le calendrier courant, sur un jour de référence arbitraire. Seuls l'heure et la minute sont lus en retour.
 - Chaque modification (interrupteur, heure, jour) déclenche le `save()` local de `SettingsView` puis `NotificationService.reschedule`.
 
