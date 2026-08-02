@@ -41,6 +41,11 @@ extension SettingsContent {
             // gardent chacun leur libellé et restent actionnables séparément.
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(definition.title), \(phrase)")
+            // Sans ça, le HStack traite ce bloc comme compressible et le sous-titre de
+            // fréquence ("chaque semaine") se retrouve coupé en "chaque" / "semaine" à
+            // 375 pt et en dessous, alors que la ligne a la place. Mesuré sur la ligne
+            // "Pesée" (menu jour + heure + interrupteur) de 320 à 402 pt.
+            .fixedSize(horizontal: true, vertical: false)
 
             Spacer(minLength: 4)
 
@@ -52,6 +57,16 @@ extension SettingsContent {
                 }
                 .pickerStyle(.menu)
                 .labelsHidden()
+                // Même raison que le bloc de texte ci-dessus : sans .fixedSize() le
+                // libellé du menu ("sam.") se coupe en "sam" / "." à toutes les largeurs
+                // mesurées (320 à 402 pt). Les deux .fixedSize() ensemble n'entrent en
+                // compression ni l'un ni l'autre ; poser un seul des deux ne fait que
+                // déplacer la coupure sur l'élément resté sans protection.
+                // Honnêteté : à 320 pt la ligne "Pesée" déborde alors de la carte plutôt
+                // que de rentrer proprement. Aucun iPhone livré ne fait 320 pt de large,
+                // et plusieurs autres lignes de cet écran cassent déjà seules à cette
+                // largeur, indépendamment de ce correctif.
+                .fixedSize()
                 .disabled(!isOn)
                 .accessibilityLabel("Jour du rappel \(definition.title)")
             }
@@ -73,18 +88,17 @@ extension SettingsContent {
     }
 
     // MARK: Valeurs résolues (surcharge du profil, sinon défaut du catalogue)
+    //
+    // Simples relais vers ReminderSchedule (NivelCore) : la règle elle-même vit là-bas,
+    // partagée avec ReminderPlanner.planned, pour que l'écran affiche exactement ce que
+    // le téléphone va planifier.
 
     private func resolvedMinutes(_ definition: ReminderDefinition) -> Int {
-        profile.reminderTimes[definition.id]
-            .flatMap { ReminderSchedule.minutesRange.contains($0) ? $0 : nil }
-            ?? definition.defaultMinutesFromMidnight
+        ReminderSchedule.resolvedMinutes(profile.reminderTimes[definition.id], for: definition)
     }
 
     private func resolvedWeekday(_ definition: ReminderDefinition) -> Int? {
-        guard definition.isWeekdayEditable else { return definition.defaultWeekday }
-        return profile.reminderWeekdays[definition.id]
-            .flatMap { ReminderSchedule.weekdayRange.contains($0) ? $0 : nil }
-            ?? definition.defaultWeekday
+        ReminderSchedule.resolvedWeekday(profile.reminderWeekdays[definition.id], for: definition)
     }
 
     // MARK: Bindings
@@ -104,6 +118,15 @@ extension SettingsContent {
         )
     }
 
+    /// Calendrier grégorien FIXE, pas `Calendar.current` : ce binding ne fait que de
+    /// l'arithmétique heure/minute sur un jour de référence arbitraire, aucune
+    /// sémantique calendaire réelle n'est nécessaire. Avec `Calendar.current`, un
+    /// appareil réglé sur un calendrier non grégorien (Région > Calendrier) peut
+    /// interpréter différemment le 1er janvier 2000, voire échouer à construire la
+    /// date : `date(from:)` renvoie alors nil et le getter retombe silencieusement
+    /// sur `.now`, affichant l'heure courante au lieu de l'heure enregistrée.
+    private static let gregorian = Calendar(identifier: .gregorian)
+
     private func timeBinding(_ definition: ReminderDefinition) -> Binding<Date> {
         Binding(
             get: {
@@ -111,10 +134,10 @@ extension SettingsContent {
                 var components = Self.referenceDayComponents
                 components.hour = minutes / 60
                 components.minute = minutes % 60
-                return Calendar.current.date(from: components) ?? .now
+                return Self.gregorian.date(from: components) ?? .now
             },
             set: { newValue in
-                let parts = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                let parts = Self.gregorian.dateComponents([.hour, .minute], from: newValue)
                 var times = profile.reminderTimes
                 times[definition.id] = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
                 profile.reminderTimes = times

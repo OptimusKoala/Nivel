@@ -113,6 +113,53 @@ final class RemindersTests: XCTestCase {
         XCTAssertFalse(ReminderSchedule.frLabel(hour: 9, minute: 0, weekday: 7).contains("—"))
     }
 
+    // MARK: - Résolution surcharge / défaut (source unique, spec §4.3)
+
+    /// Absence de surcharge : on retombe sur le défaut du catalogue.
+    func testResolvedMinutesSansSurchargeDonneLeDefaut() {
+        let lunch = ReminderCatalog.definition(id: "lunch")!
+        XCTAssertEqual(ReminderSchedule.resolvedMinutes(nil, for: lunch), 750)
+    }
+
+    /// Surcharge valide : elle l'emporte sur le défaut.
+    func testResolvedMinutesSurchargeValideEstAppliquee() {
+        let lunch = ReminderCatalog.definition(id: "lunch")!
+        XCTAssertEqual(ReminderSchedule.resolvedMinutes(13 * 60 + 15, for: lunch), 13 * 60 + 15)
+    }
+
+    /// Surcharge hors bornes : écartée, on retombe sur le défaut du catalogue.
+    func testResolvedMinutesSurchargeHorsPlageDonneLeDefaut() {
+        let lunch = ReminderCatalog.definition(id: "lunch")!
+        for bad in [-1, 1440, 99_999] {
+            XCTAssertEqual(ReminderSchedule.resolvedMinutes(bad, for: lunch), 750)
+        }
+    }
+
+    func testResolvedWeekdaySansSurchargeDonneLeDefaut() {
+        let weigh = ReminderCatalog.definition(id: "weigh")!
+        XCTAssertEqual(ReminderSchedule.resolvedWeekday(nil, for: weigh), 7)
+    }
+
+    func testResolvedWeekdaySurchargeValideEstAppliquee() {
+        let weigh = ReminderCatalog.definition(id: "weigh")!
+        XCTAssertEqual(ReminderSchedule.resolvedWeekday(1, for: weigh), 1)
+    }
+
+    func testResolvedWeekdaySurchargeHorsPlageDonneLeDefaut() {
+        let weigh = ReminderCatalog.definition(id: "weigh")!
+        for bad in [0, 8, -3] {
+            XCTAssertEqual(ReminderSchedule.resolvedWeekday(bad, for: weigh), 7)
+        }
+    }
+
+    /// Court-circuit : un rappel dont le jour n'est pas modifiable ignore la
+    /// surcharge, même valide, et ne consulte jamais la valeur stockée.
+    func testResolvedWeekdaySurchargeIgnoreeSurRappelNonModifiable() {
+        let lunch = ReminderCatalog.definition(id: "lunch")!
+        XCTAssertNil(ReminderSchedule.resolvedWeekday(3, for: lunch))
+        XCTAssertNil(ReminderSchedule.resolvedWeekday(nil, for: lunch))
+    }
+
     // MARK: - Planificateur
 
     private let allOn = ["lunch": true, "dinner": true, "weigh": true, "steps": true]

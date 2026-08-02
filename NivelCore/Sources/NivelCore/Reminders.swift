@@ -96,6 +96,31 @@ public enum ReminderSchedule {
         guard weekdayRange.contains(weekday) else { return "" }
         return shortNames[weekday - 1]
     }
+
+    // MARK: Résolution surcharge / défaut
+    //
+    // Règle UNIQUE (spec v1.9 §4.3) utilisée à la fois par `ReminderPlanner.planned`
+    // (ce qui sera réellement notifié) et par l'écran de réglage (ce qui est affiché).
+    // Avant, les deux la réimplémentaient chacun de leur côté ; un divergence entre
+    // les deux aurait affiché une heure et sonné à une autre.
+
+    /// Surcharge du profil si elle est dans les bornes, défaut du catalogue sinon.
+    /// Une surcharge hors bornes est ÉCARTÉE, pas conservée : un réglage corrompu ne
+    /// doit jamais faire disparaître un rappel actif ni afficher une heure absurde.
+    public static func resolvedMinutes(_ stored: Int?, for definition: ReminderDefinition) -> Int {
+        stored.flatMap { minutesRange.contains($0) ? $0 : nil }
+            ?? definition.defaultMinutesFromMidnight
+    }
+
+    /// Court-circuit sur `isWeekdayEditable` : un rappel quotidien ne consulte JAMAIS
+    /// la surcharge de jour, même si une clé traîne dans le dictionnaire (résidu d'un
+    /// ancien réglage, bug amont...). Sans ce court-circuit une clé périmée pourrait
+    /// rendre hebdomadaire un rappel qui doit rester quotidien.
+    public static func resolvedWeekday(_ stored: Int?, for definition: ReminderDefinition) -> Int? {
+        guard definition.isWeekdayEditable else { return definition.defaultWeekday }
+        return stored.flatMap { weekdayRange.contains($0) ? $0 : nil }
+            ?? definition.defaultWeekday
+    }
 }
 
 /// Ce qu'il faut réellement planifier, une fois les réglages du profil appliqués.
@@ -119,31 +144,19 @@ public struct PlannedReminder: Equatable, Sendable {
 }
 
 public enum ReminderPlanner {
-    /// Une surcharge hors bornes est ÉCARTÉE, pas conservée : l'appelant retombe alors
-    /// sur le défaut du catalogue. Nommée une fois plutôt qu'inlinée à chaque champ,
-    /// parce que c'est la propriété de sûreté centrale du fichier : un réglage corrompu
-    /// ne doit jamais faire disparaître un rappel actif.
-    private static func sanitized(_ value: Int?, in range: ClosedRange<Int>) -> Int? {
-        value.flatMap { range.contains($0) ? $0 : nil }
-    }
-
     /// Itère sur le CATALOGUE, pas sur les dictionnaires : les identifiants inconnus
     /// y sont donc naturellement ignorés. Toute valeur aberrante retombe sur le défaut
-    /// du catalogue, jamais sur une disparition du rappel.
+    /// du catalogue, jamais sur une disparition du rappel. La résolution surcharge /
+    /// défaut vit dans `ReminderSchedule.resolvedMinutes`/`resolvedWeekday`, partagée
+    /// avec l'écran de réglage : une seule règle, jamais deux qui pourraient diverger.
     public static func planned(enabled: [String: Bool],
                                times: [String: Int],
                                weekdays: [String: Int]) -> [PlannedReminder] {
         ReminderCatalog.all.compactMap { definition in
             guard enabled[definition.id] == true else { return nil }
 
-            let minutes = sanitized(times[definition.id], in: ReminderSchedule.minutesRange)
-                ?? definition.defaultMinutesFromMidnight
-
-            // Le jour n'est même pas lu sur un rappel quotidien : le poser ne doit pas
-            // le rendre hebdomadaire.
-            let requestedWeekday = definition.isWeekdayEditable ? weekdays[definition.id] : nil
-            let weekday = sanitized(requestedWeekday, in: ReminderSchedule.weekdayRange)
-                ?? definition.defaultWeekday
+            let minutes = ReminderSchedule.resolvedMinutes(times[definition.id], for: definition)
+            let weekday = ReminderSchedule.resolvedWeekday(weekdays[definition.id], for: definition)
 
             let time = ReminderSchedule.hourMinute(fromMinutesFromMidnight: minutes)
             return PlannedReminder(id: definition.id,
