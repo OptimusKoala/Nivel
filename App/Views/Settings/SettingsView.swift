@@ -324,7 +324,9 @@ struct SettingsContent: View {
         birthDate: Calendar.current.date(from: DateComponents(year: 1990, month: 5, day: 12))!,
         heightCm: 180, initialWeightKg: 90, activity: .light,
         dailyCalorieTarget: 2100,
-        remindersEnabled: ["lunch": true, "dinner": true, "weigh": true, "steps": false]
+        remindersEnabled: ["lunch": true, "dinner": true, "weigh": true, "steps": false],
+        reminderTimes: ["dinner": 19 * 60 + 45],
+        reminderWeekdays: ["weigh": 1]
     )
     container.mainContext.insert(profile)
     container.mainContext.insert(WeightEntry(date: .now, weightKg: 88.4))
