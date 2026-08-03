@@ -48,6 +48,15 @@ enum NotificationService {
 
         // removeAll + adds SYNCHRONES (aucun await entre les deux) : le bloc est
         // atomique du point de vue du main actor, aucun entrelacement possible.
+        schedule(planned: planned, name: name, bank: bank, center: center)
+    }
+
+    /// Bloc SYNCHRONE de re-planification. Isolé dans sa propre fonction (non-async)
+    /// pour deux raisons : garantir qu'aucun point de suspension ne s'y glisse, et
+    /// laisser `center.add(_:withCompletionHandler:)` s'utiliser sans que le
+    /// compilateur ne réclame son overload async (que l'on évite VOLONTAIREMENT ici).
+    private static func schedule(planned: [PlannedReminder], name: String,
+                                 bank: MessageBank?, center: UNUserNotificationCenter) {
         center.removeAllPendingNotificationRequests()
         for reminder in planned {
             let content = UNMutableNotificationContent()
