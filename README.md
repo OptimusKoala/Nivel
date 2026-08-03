@@ -141,7 +141,18 @@ export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 # 5. Remplir la fiche : version, textes, URLs, build rattachée, captures téléversées
 python3 scripts/asc-fiche.py
+
+# 6. Aperçus vidéo : deux visites guidées filmées sur simulateur, puis téléversées
+./scripts/preview.sh
+python3 scripts/asc-preview.py
 ```
+
+Les aperçus vidéo sont tournés par la cible **NivelUITests** (schéma `NivelPreview`, hors du
+schéma `Nivel` pour ne pas ralentir les tests de tous les jours) : elle promène l'app
+pendant que `simctl` filme l'écran. Deux visites plutôt qu'une, parce qu'un aperçu Apple
+dure 30 s au maximum et qu'un geste XCUITest coûte ~2,5 s. Le journal du tournage nomme
+chaque geste manqué, et l'encodage (`scripts/encode-preview.swift`, AVFoundation, sans
+dépendance) refuse de produire une vidéo hors des contraintes d'Apple.
 
 `asc-fiche.py` lit ses textes dans `docs/appstore/fiche-app-store.md` — un texte ne se
 recopie donc jamais à deux endroits. Il ne touche pas au questionnaire de confidentialité,

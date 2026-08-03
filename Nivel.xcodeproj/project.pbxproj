@@ -57,6 +57,7 @@
 		7C0FE31A8625D00828C0C868 /* PostureSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB2E2BB7C09EE5FBA96D57C /* PostureSection.swift */; };
 		83A569C9282E797637B0C790 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D09557663FBEA7185F1839 /* HomeView.swift */; };
 		846FB76C89B63E0E8EA18B9F /* SportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */; };
+		8A961A5E51AADE69A6472F3E /* PreviewTour.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B761F597D77ACFC3EB2A43F /* PreviewTour.swift */; };
 		8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4CF000EF99C1C649915C18 /* DeepLink.swift */; };
 		8EF6D46C5AB6BC94B4B0610E /* ScreenshotSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F84F79AE6532FA5B518716 /* ScreenshotSupport.swift */; };
 		8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */; };
@@ -109,6 +110,13 @@
 			remoteGlobalIDString = 11AE6BF7C657676797D2A148;
 			remoteInfo = NivelWidgets;
 		};
+		534038DADC5684B9DF721AEC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 04E8B4E936966D5E7CBCE2A4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 75F9E279A12A830E33238A0B;
+			remoteInfo = Nivel;
+		};
 		CB5119286F40B24428A37ADF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 04E8B4E936966D5E7CBCE2A4 /* Project object */;
@@ -152,6 +160,7 @@
 		2749E47DBFD2A5D89042A89E /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		27D6B63A9C04FD9C8F04CD75 /* SettingsView+DevicePreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+DevicePreferences.swift"; sourceTree = "<group>"; };
 		2876B0755FAF9E69C37EECFF /* SettingsView+Reminders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+Reminders.swift"; sourceTree = "<group>"; };
+		2B761F597D77ACFC3EB2A43F /* PreviewTour.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewTour.swift; sourceTree = "<group>"; };
 		2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportServiceTests.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		2F5C481B082D4CC3692BC8FB /* SoundSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettings.swift; sourceTree = "<group>"; };
@@ -219,6 +228,7 @@
 		DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkTests.swift; sourceTree = "<group>"; };
 		DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesChart.swift; sourceTree = "<group>"; };
 		DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestsView.swift; sourceTree = "<group>"; };
+		E09E879085373214B880F1CB /* NivelUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E59866C500AE8AE430E9AE18 /* StepsChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsChart.swift; sourceTree = "<group>"; };
 		E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerTests.swift; sourceTree = "<group>"; };
 		E840C37923218C1DC6C0614D /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
@@ -429,6 +439,7 @@
 			children = (
 				6C7D7F98C985D3F16E437E6C /* App */,
 				D148F81EC70A7990945C04A7 /* NivelTests */,
+				F531915AE68BB3058A561BAA /* NivelUITests */,
 				3086EF3E7FB64FB4B497C1C6 /* Packages */,
 				0E9C852211D6211B94431778 /* Shared */,
 				9C16FE7DAAB4E790B8D3E256 /* Widgets */,
@@ -496,6 +507,7 @@
 			children = (
 				458C2EFDE5A8833EB80D2F5C /* Nivel.app */,
 				C9AB33328B42B0A39E65B608 /* NivelTests.xctest */,
+				E09E879085373214B880F1CB /* NivelUITests.xctest */,
 				C658D5A942C3A751271B8BBD /* NivelWidgets.appex */,
 			);
 			name = Products;
@@ -522,6 +534,14 @@
 			path = Meals;
 			sourceTree = "<group>";
 		};
+		F531915AE68BB3058A561BAA /* NivelUITests */ = {
+			isa = PBXGroup;
+			children = (
+				2B761F597D77ACFC3EB2A43F /* PreviewTour.swift */,
+			);
+			path = NivelUITests;
+			sourceTree = "<group>";
+		};
 		F69825F0205D2F6823977A1F /* Nivelito */ = {
 			isa = PBXGroup;
 			children = (
@@ -534,6 +554,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		09695F076F39A7E9B9202E73 /* NivelUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D753B824792C7F7F8171006A /* Build configuration list for PBXNativeTarget "NivelUITests" */;
+			buildPhases = (
+				3BCA5FFD74E52AD688D8B330 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				92834F8014628964F1711B6A /* PBXTargetDependency */,
+			);
+			name = NivelUITests;
+			packageProductDependencies = (
+			);
+			productName = NivelUITests;
+			productReference = E09E879085373214B880F1CB /* NivelUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		11AE6BF7C657676797D2A148 /* NivelWidgets */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = EB3BF924C955C8251F2082AD /* Build configuration list for PBXNativeTarget "NivelWidgets" */;
@@ -603,6 +641,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					09695F076F39A7E9B9202E73 = {
+						TestTargetID = 75F9E279A12A830E33238A0B;
+					};
 					11AE6BF7C657676797D2A148 = {
 						DevelopmentTeam = AXVF69V3LL;
 					};
@@ -631,6 +672,7 @@
 				75F9E279A12A830E33238A0B /* Nivel */,
 				11AE6BF7C657676797D2A148 /* NivelWidgets */,
 				8FDBDF29CEF0DF64A2106A52 /* NivelTests */,
+				09695F076F39A7E9B9202E73 /* NivelUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -718,6 +760,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3BCA5FFD74E52AD688D8B330 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8A961A5E51AADE69A6472F3E /* PreviewTour.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6AE2EA4C84B20487B0D5B619 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -771,6 +821,11 @@
 			target = 75F9E279A12A830E33238A0B /* Nivel */;
 			targetProxy = CB5119286F40B24428A37ADF /* PBXContainerItemProxy */;
 		};
+		92834F8014628964F1711B6A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 75F9E279A12A830E33238A0B /* Nivel */;
+			targetProxy = 534038DADC5684B9DF721AEC /* PBXContainerItemProxy */;
+		};
 		A2311267ED7C01EFA54C9C0A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 11AE6BF7C657676797D2A148 /* NivelWidgets */;
@@ -779,6 +834,23 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		432A69B941119C7CECF998F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.elitedangereuse.NivelUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Nivel;
+			};
+			name = Release;
+		};
 		57D9D36D439461EC8FA85191 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -850,6 +922,23 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.elitedangereuse.Nivel;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		6EDCE7A4A042C9654A6BC26F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.elitedangereuse.NivelUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Nivel;
 			};
 			name = Debug;
 		};
@@ -1025,6 +1114,15 @@
 			buildConfigurations = (
 				B7FA16B7B1905B2626FF0FDD /* Debug */,
 				57D9D36D439461EC8FA85191 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D753B824792C7F7F8171006A /* Build configuration list for PBXNativeTarget "NivelUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6EDCE7A4A042C9654A6BC26F /* Debug */,
+				432A69B941119C7CECF998F0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

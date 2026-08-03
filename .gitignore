@@ -5,3 +5,6 @@
 xcuserdata/
 .worktrees/
 __pycache__/
+# Aperçus vidéo App Store : 30 à 80 Mo par tournage, et entièrement regénérables
+# par ./scripts/preview.sh. La copie qui compte est celle d'App Store Connect.
+docs/appstore/previews/

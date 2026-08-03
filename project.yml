@@ -99,7 +99,22 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: Nivel
+  # Sert UNIQUEMENT à filmer l'aperçu App Store (scripts/preview.sh) : il faut piloter
+  # l'app pendant que simctl enregistre l'écran, ce qu'aucun test unitaire ne peut faire.
+  # Volontairement hors du schéma Nivel, pour ne pas ralentir les tests de tous les jours.
+  NivelUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [NivelUITests]
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      TEST_TARGET_NAME: Nivel
+    dependencies:
+      - target: Nivel
 schemes:
   Nivel:
     build: { targets: { Nivel: all, NivelTests: [test] } }
     test: { targets: [NivelTests] }
+  NivelPreview:
+    build: { targets: { Nivel: all, NivelUITests: [test] } }
+    test: { targets: [NivelUITests] }
