@@ -35,9 +35,9 @@ final class MessageBankTests: XCTestCase {
         }
     }
 
-    /// Huit textes exactement (spec v1.11 §10), aucun {value} : le rappel posture n'a
+    /// Douze textes exactement (spec v1.11 §10), aucun {value} : le rappel posture n'a
     /// pas de nombre à substituer, contrairement à afterActivity/afterMealLog.
-    func testPostureReminderALesHuitMessages() throws {
+    func testPostureReminderALesDouzeMessages() throws {
         let bank = try MessageBank.load()
         let messages = bank.messages(for: .postureReminder)
         XCTAssertEqual(messages.count, 12)

@@ -58,6 +58,9 @@ final class GameService {
     /// ET tags "alcohol"/"richDessert" des deux quêtes qui lisent le contenu d'un
     /// repas. Vide si le bundle est corrompu, jamais de crash.
     let foodCatalog: FoodCatalog
+    /// Catalogues posture, CLOISONNÉS des catalogues sport globaux : les verser dedans
+    /// ferait passer la rotation de la séance du jour de 11 à 16 entrées (spec v1.11 §6).
+    let postureCatalog: PostureCatalog
 
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
@@ -131,9 +134,14 @@ final class GameService {
         self.activityCatalog = Self.loadOrAssert({ try Catalogs.activities() }, fallback: [])
         self.sessionCatalog = Self.loadOrAssert({ try Catalogs.sessions() }, fallback: [])
         self.foodCatalog = Self.loadOrAssert({ try FoodCatalog.load() }, fallback: .empty)
+        self.postureCatalog = Self.loadOrAssert({ try PostureCatalog.load() }, fallback: .empty)
         // uniquingKeysWith (et non uniqueKeysWithValues) : un id dupliqué dans un
         // bundle corrompu ne doit jamais crasher — on garde la première occurrence.
-        self.activitiesByID = Dictionary(activityCatalog.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        // Table FUSIONNÉE : les listes affichées et les deux rotations restent cloisonnées,
+        // mais un exercice posture doit pouvoir être nommé partout où un id est résolu
+        // (liste du jour, récapitulatifs), sinon il s'affiche en id brut.
+        self.activitiesByID = Dictionary((activityCatalog + postureCatalog.activities).map { ($0.id, $0) },
+                                        uniquingKeysWith: { first, _ in first })
     }
 
     /// Fallback silencieux en release (jamais de crash), mais signal en debug :

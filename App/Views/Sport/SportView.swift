@@ -119,9 +119,13 @@ struct SportView: View {
             case .dailySession:
                 return game.sessionCatalog.first { $0.id == entry.refID }?.title ?? entry.refID
             case .posture:
-                // Pas encore de caller (`logPostureSession` arrive en Task 6, qui fusionne
-                // les ids posture dans `activitiesByID`) : repli sans crash sur l'id brut.
-                return game.activitiesByID[entry.refID]?.name ?? entry.refID
+                // Une entrée posture porte un id de SÉANCE, comme .dailySession, et non
+                // un id d'exercice : `logPostureSession` est le miroir de
+                // `logDailySession`. Chercher dans le catalogue d'exercices retomberait
+                // silencieusement sur l'id brut (« posture_evening ») dans la liste du jour.
+                return game.postureCatalog.sessions.first { $0.id == entry.refID }?.title
+                    ?? game.activitiesByID[entry.refID]?.name
+                    ?? entry.refID
             }
         }()
         return HStack(spacing: 12) {
