@@ -57,4 +57,7 @@ public struct ActivitySession: Codable, Identifiable, Hashable, Sendable {
 /// Nature d'une validation sport — persistée côté app dans `ActivityEntry.kindRaw`.
 public enum ActivityKind: String, Codable, Sendable {
     case activity, dailySession
+    /// Séance ou exercice du programme posture (spec v1.11 §8) — catalogue cloisonné
+    /// (`PostureCatalog`), mais même mécanique de validation que `dailySession`.
+    case posture
 }

@@ -30,4 +30,13 @@ final class XPEngineTests: XCTestCase {
         XCTAssertEqual(XPEngine.award(.dailySessionDone, todayCount: 0), 40)
         XCTAssertEqual(XPEngine.award(.dailySessionDone, todayCount: 1), 0)
     }
+
+    /// Plafonds INDÉPENDANTS : faire la séance du jour et la séance posture le même
+    /// soir doit payer les deux, sinon on punit exactement ce qu'on veut encourager.
+    func testPostureEtSeanceDuJourSontIndependantes() {
+        XCTAssertEqual(XPEngine.award(.postureSessionDone, todayCount: 0), 40)
+        XCTAssertEqual(XPEngine.award(.postureSessionDone, todayCount: 1), 0)
+        // Le compteur de l'une n'affecte pas l'autre : les deux sont interrogées à 0.
+        XCTAssertEqual(XPEngine.award(.dailySessionDone, todayCount: 0), 40)
+    }
 }

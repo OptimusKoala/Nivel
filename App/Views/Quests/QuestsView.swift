@@ -295,7 +295,7 @@ private func questsPreviewFixture(unlockedBadges: Bool) -> (ModelContainer, Game
 
     let quests = (try? Catalogs.quests()) ?? []
     let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
-    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: true)
+    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: true, postureAvailable: false)
     let unlocks: [String: Date] = unlockedBadges
         ? ["first_meal": .now, "first_weigh": .now.addingTimeInterval(-4 * 86_400),
            "journal_7": .now.addingTimeInterval(-86_400)]

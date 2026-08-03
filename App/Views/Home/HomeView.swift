@@ -373,7 +373,7 @@ private func homePreviewFixture(
 
     let quests = (try? Catalogs.quests()) ?? []
     let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
-    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: stepsAuthorized)
+    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: stepsAuthorized, postureAvailable: false)
     context.insert(GamificationState(
         totalXP: totalXP,
         activeQuestIDs: active.map(\.id),

@@ -83,7 +83,11 @@ extension GameService {
             state.activeQuestIDs = QuestEngine.weeklyDraw(
                 pool: questCatalog,
                 weekID: weekID,
-                stepsAvailable: stepsService.isAvailable
+                stepsAvailable: stepsService.isAvailable,
+                // TODO(lot C, Task 5) : PosturePlanSettings.shared.isEnabled. En dur à faux
+                // pour l'instant : l'interrupteur par appareil n'existe pas encore, et une
+                // quête posture ne doit jamais être tirée avant qu'il existe.
+                postureAvailable: false
             ).map(\.id)
             state.questWeekID = weekID
         }
