@@ -223,7 +223,7 @@ Cinquième entrée de `ReminderCatalog` :
 
 21 h et non 20 h 30 : le rappel « Dîner » sonne à 20 h, et deux notifications collées se font ignorer toutes les deux. Heure modifiable au sélecteur depuis la v1.9.
 
-**Son propre contexte de messages**, `postureReminder`, avec huit textes dans `messages.json`, plutôt que de réutiliser `.evening` qui parlerait de dîner. Même approche que `weighReminder` en v1. Ton du reste de la banque : jamais d'injonction, jamais de reproche. Par exemple « Cinq minutes pour ta nuque, ça se fait bien avant le canapé 🧡 », jamais « tu n'as pas fait ta séance ».
+**Son propre contexte de messages**, `postureReminder`, avec **douze** textes dans `messages.json`, plutôt que de réutiliser `.evening` qui parlerait de dîner. Même approche que `weighReminder` en v1. Ton du reste de la banque : jamais d'injonction, jamais de reproche. Par exemple « Cinq minutes pour ta nuque, ça se fait bien avant le canapé 🧡 », jamais « tu n'as pas fait ta séance ».
 
 **La clé `remindersEnabled["posture"]` est posée explicitement** quand l'interrupteur s'allume. C'est ce qui neutralise le piège documenté en v1.9 : une entrée ajoutée au catalogue naît éteinte, puisqu'une clé absente vaut désactivé.
 
@@ -293,6 +293,7 @@ Et les cinq héros de séance, Nivelito en situation comme les onze existants :
 - `QuestEngine.weeklyDraw` : une quête `requiresPosture` n'est jamais tirée quand le programme est éteint, et l'est quand il est allumé. Ce test doit échouer si le drapeau est ignoré.
 - `XPEngine` : `postureSessionDone` à 40, plafonnée à une par jour, et **indépendante de `dailySessionDone`** — le test fait les deux le même jour et vérifie que les deux paient.
 - Le cinquième rappel dans `ReminderCatalog`, valeurs épinglées, et son libellé français « tous les jours à 21 h ».
+- **Douze messages et non huit.** `MessageBankTests` exige déjà au moins douze textes par contexte, pour la variété. La première version de ce document en demandait huit, ce qui aurait obligé à assouplir ce test générique : c'est le contenu qu'il fallait compléter, pas la garde qu'il fallait affaiblir.
 - Aucun tiret cadratin dans les nouvelles ressources (le test existant couvre tout le bundle).
 
 **App**

@@ -5,10 +5,7 @@ final class MessageBankTests: XCTestCase {
     func testBankHasAllContextsWithEnoughVariety() throws {
         let bank = try MessageBank.load()
         for context in MessageContext.allCases {
-            // `postureReminder` (spec v1.11 §10) est délibérément plus étroit : le plan
-            // demande exactement huit textes, pas douze, pour ce cinquième rappel.
-            let minimum = context == .postureReminder ? 8 : 12
-            XCTAssertGreaterThanOrEqual(bank.messages(for: context).count, minimum, "\(context) trop pauvre")
+            XCTAssertGreaterThanOrEqual(bank.messages(for: context).count, 12, "\(context) trop pauvre")
         }
     }
 
@@ -43,7 +40,7 @@ final class MessageBankTests: XCTestCase {
     func testPostureReminderALesHuitMessages() throws {
         let bank = try MessageBank.load()
         let messages = bank.messages(for: .postureReminder)
-        XCTAssertEqual(messages.count, 8)
+        XCTAssertEqual(messages.count, 12)
         for msg in messages {
             XCTAssertFalse(msg.text.contains("{value}"), msg.id)
         }
