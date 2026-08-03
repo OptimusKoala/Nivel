@@ -69,10 +69,17 @@ struct SportView: View {
             .scrollContentBackground(.hidden)
         }
         // reload() est synchrone : onAppear suffit (couvre 1ᵉʳ affichage ET retours d'onglet).
-        .onAppear(perform: reload)
+        .onAppear {
+            reload()
+            #if DEBUG
+            // Capture « séance guidée » (scripts/screenshots.sh) : absent en release.
+            if ScreenshotMode.autoOpensDailySession { showSessionPlayer = true }
+            #endif
+        }
         .sheet(isPresented: $showSessionPlayer, onDismiss: reload) {
             if let status = sessionStatus {
-                SessionPlayerSheet(session: status.session, done: status.done, kind: .dailySession)
+                SessionPlayerSheet(session: status.session, done: status.done, kind: .dailySession,
+                                   initialPage: Self.playerInitialPage)
             }
         }
         .sheet(isPresented: $showPostureSessionPlayer, onDismiss: reload) {
@@ -83,6 +90,16 @@ struct SportView: View {
         .sheet(item: $selectedActivity, onDismiss: reload) { activity in
             ActivityLogSheet(activity: activity)
         }
+    }
+
+    /// Page du lecteur à l'ouverture : l'aperçu, sauf en mode captures (DEBUG) où le
+    /// script peut demander directement la première étape guidée.
+    private static var playerInitialPage: Int {
+        #if DEBUG
+        return ScreenshotMode.isEnabled ? ScreenshotMode.sessionInitialPage : 0
+        #else
+        return 0
+        #endif
     }
 
     private func reload() {

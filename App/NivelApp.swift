@@ -9,6 +9,22 @@ struct NivelApp: App {
     @State private var gameService: GameService
 
     init() {
+        #if DEBUG
+        // Captures App Store (scripts/screenshots.sh) : store en mémoire garni d'un
+        // profil de démo et pas simulés. Absent du binaire de release.
+        if ScreenshotMode.isEnabled {
+            let container = ScreenshotMode.makeContainer()
+            ScreenshotMode.seed(into: container.mainContext)
+            self.container = container
+            _gameService = State(initialValue: GameService(
+                modelContext: container.mainContext,
+                stepsService: ScreenshotMode.makeStepsService(),
+                widgetDefaults: nil
+            ))
+            return
+        }
+        #endif
+
         let container = try! ModelContainer(for: UserProfile.self, MealEntry.self, WeightEntry.self,
                                             DayLog.self, GamificationState.self, ActivityEntry.self)
         self.container = container

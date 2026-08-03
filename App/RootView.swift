@@ -8,7 +8,7 @@ struct RootView: View {
     /// Splash à chaque lancement à froid (spec §5) — AVANT l'onboarding aussi :
     /// c'est l'ouverture de l'app. Chorégraphie "scène vivante" ~2,4 s
     /// (~1,2 s en Reduce Motion : simple fondu), skippable d'un tap à tout moment.
-    @State private var showSplash = true
+    @State private var showSplash = Self.splashAtLaunch
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -36,6 +36,15 @@ struct RootView: View {
         .preferredColorScheme(ThemeStore.shared.palette.isDark ? .dark : .light)
     }
 
+    /// Splash affiché au lancement — sauté seulement en mode captures (DEBUG).
+    private static var splashAtLaunch: Bool {
+        #if DEBUG
+        return !ScreenshotMode.skipsSplash
+        #else
+        return true
+        #endif
+    }
+
     private func dismissSplash() {
         withAnimation(.easeOut(duration: 0.4)) {
             showSplash = false
@@ -48,7 +57,26 @@ private struct MainTabView: View {
     /// explicite, un re-rendu du parent (déclenché ici par le `save()` SwiftData du
     /// `.task` d'un onglet, ex. `refreshQuestProgress`) fait retomber la sélection
     /// implicite sur le premier onglet : on tapait "Quêtes" et on revenait à l'accueil.
-    private enum Tab: Hashable { case home, meals, sport, progress, quests }
+    private enum Tab: Hashable {
+        case home, meals, sport, progress, quests
+
+        /// Onglet au lancement : l'accueil, sauf en mode captures (DEBUG) où le
+        /// script demande l'écran à photographier.
+        static var atLaunch: Tab {
+            #if DEBUG
+            guard ScreenshotMode.isEnabled else { return .home }
+            switch ScreenshotMode.screen {
+            case .home, .meallog: return .home
+            case .meals: return .meals
+            case .sport, .session, .step: return .sport
+            case .progress: return .progress
+            case .quests: return .quests
+            }
+            #else
+            return .home
+            #endif
+        }
+    }
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(GameService.self) private var gameService
@@ -56,7 +84,7 @@ private struct MainTabView: View {
 
     /// Onglet sélectionné — persiste à travers les re-rendus (contrairement à la
     /// sélection implicite d'un TabView sans binding).
-    @State private var selectedTab: Tab = .home
+    @State private var selectedTab: Tab = .atLaunch
 
     /// Jour courant (minuit local). HomeView fige ses bornes "aujourd'hui" à sa création :
     /// `.id(dayKey)` la recrée quand le jour change — rafraîchi au retour au premier plan.

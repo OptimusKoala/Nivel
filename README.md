@@ -13,7 +13,7 @@ Une app iOS gamifiée façon jeu vidéo cozy, en français, entièrement locale.
   <img src="https://img.shields.io/badge/SwiftUI-SwiftData-f57c1f?style=flat-square" alt="SwiftUI + SwiftData"/>
   <img src="https://img.shields.io/badge/WidgetKit-4%20familles-f57c1f?style=flat-square" alt="WidgetKit"/>
   <img src="https://img.shields.io/badge/tests-166%20core%20%2B%2094%20app-3a1220?style=flat-square" alt="166 tests NivelCore + 94 tests app"/>
-  <img src="https://img.shields.io/badge/version-1.11-3a1220?style=flat-square" alt="version 1.11"/>
+  <img src="https://img.shields.io/badge/version-1.12-3a1220?style=flat-square" alt="version 1.12"/>
   <img src="https://img.shields.io/badge/licence-MIT-3a1220?style=flat-square" alt="licence MIT"/>
 </p>
 
@@ -56,13 +56,17 @@ Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglag
 
 <div align="center">
 
+| <img src="docs/appstore/raw/01-home.png" alt="L'accueil de Nivel" width="200"/> | <img src="docs/appstore/raw/02-meallog.png" alt="Le catalogue d'aliments" width="200"/> | <img src="docs/appstore/raw/05-step.png" alt="Une étape guidée de la séance du jour" width="200"/> | <img src="docs/appstore/raw/07-quests.png" alt="Quêtes et badges" width="200"/> |
+|:---:|:---:|:---:|:---:|
+| L'accueil. | Les repas. | La séance guidée. | Quêtes et badges. |
+
 | <img src="docs/captures/appicon-256.png" alt="Icône de l'app Nivel" width="190"/> | <img src="docs/captures/splash.png" alt="Écran de démarrage de Nivel" width="215"/> | <img src="design/icons/contact-sheet.png" alt="Les 49 icônes cozy" width="400"/> |
 |:---:|:---:|:---:|
 | L'icône de l'app. | L'écran de démarrage. | Les 49 icônes cozy, dessinées à la main en CoreGraphics. |
 
 </div>
 
-<sub>Davantage de captures après installation sur iPhone.</sub>
+<sub>Captures reproductibles avec <code>./scripts/screenshots.sh</code> (profil de démonstration, mode DEBUG).</sub>
 
 ## Architecture
 
@@ -82,7 +86,7 @@ Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglag
     └────────┬──────────┘
         ┌────▼────┐
         │ Shared/ │   Compilé dans les DEUX targets : palettes, formes de
-        └─────────┘   Nivelito, pont App Group (`group.fr.mbernard.nivel`).
+        └─────────┘   Nivelito, pont App Group (`group.com.elitedangereuse.nivel.data`).
 ```
 
 - **Aucune synchronisation.** Deux installations indépendantes (un iPhone chacun), tout en local. La « séance du jour » est identique sur les deux téléphones parce qu'elle est calculée de façon déterministe à partir de la date, pas partagée par un serveur.
@@ -113,6 +117,43 @@ swift scripts/gen-icons.swift
 # Régénérer les chimes du timer (App/Resources/Sounds)
 swift scripts/gen-sounds.swift
 ```
+
+## Publier sur l'App Store
+
+L'app est signée par l'association **L'Élite Dangereuse** (team `AXVF69V3LL`, bundle id
+`com.elitedangereuse.Nivel`, App Group `group.com.elitedangereuse.nivel.data`). Fiche,
+captures et pages web vivent dans `docs/`.
+
+```sh
+# 1. Captures d'écran 6,9" habillées (docs/appstore/framed/) — à refaire quand l'UI bouge
+./scripts/screenshots.sh
+
+# 2. Clé API App Store Connect (une fois) : rôle « App Manager », clé d'équipe
+#    ~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8
+export ASC_KEY_ID=XXXXXXXXXX
+export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+# 3. Archive + IPA signée + vérifications, sans envoi
+./scripts/release.sh
+
+# 4. Idem puis envoi à App Store Connect
+./scripts/release.sh --upload
+```
+
+`release.sh` crée au besoin les deux profils App Store via l'API
+(`scripts/asc-profiles.py`), puis **vérifie le binaire signé** : entitlements HealthKit et
+App Group présents, certificat de distribution, manifestes de confidentialité embarqués. Il
+refuse d'envoyer une IPA incomplète — un export mal fait perd les entitlements en silence.
+
+Deux réglages de cette machine sont contournés dans les scripts et ne doivent pas être
+« simplifiés » : la signature **manuelle** en Release (la team n'a aucun appareil
+enregistré, donc aucun profil de développement possible) et le **PATH système** à l'export
+(le rsync de Homebrew masque celui d'Apple et casse la fabrication de l'IPA).
+
+Le texte de la fiche, les réponses au questionnaire de confidentialité et l'ordre des
+captures sont dans [`docs/appstore/fiche-app-store.md`](docs/appstore/fiche-app-store.md).
+Les pages publiques (accueil, confidentialité, assistance) sont servies par GitHub Pages
+depuis le dossier `docs/`.
 
 ## Installer sur ton iPhone (compte Apple gratuit)
 

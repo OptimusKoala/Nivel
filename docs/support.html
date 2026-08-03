@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nivel — Assistance</title>
+<style>
+  :root { --bg:#FDF6EC; --card:#fff; --text:#5B4A3F; --sub:#9C8474; --orange:#F57C1F; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#261B18; --card:#352822; --text:#F2E4D3; --sub:#BDA391; --orange:#FF9142; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:48px 20px 80px; background:var(--bg); color:var(--text);
+         font:17px/1.65 ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; }
+  main { max-width:720px; margin:0 auto; }
+  header { text-align:center; margin-bottom:40px; }
+  header img { width:96px; height:96px; border-radius:22px; }
+  h1 { font-size:32px; margin:20px 0 6px; }
+  h2 { font-size:20px; margin:0 0 10px; }
+  .sub { color:var(--sub); margin:0; }
+  section { background:var(--card); border-radius:22px; padding:24px 28px; margin-top:18px;
+            box-shadow:0 2px 14px rgba(0,0,0,.05); }
+  a { color:var(--orange); }
+  .mail { display:inline-block; margin-top:8px; padding:12px 22px; border-radius:22px;
+          background:var(--orange); color:#fff; text-decoration:none; font-weight:600; }
+  dl { margin:0; }
+  dt { font-weight:600; margin-top:16px; }
+  dd { margin:4px 0 0; color:var(--text); }
+  footer { text-align:center; color:var(--sub); font-size:15px; margin-top:44px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="logo.png" alt="Nivelito, la mascotte de Nivel">
+    <h1>Assistance</h1>
+    <p class="sub">Nivel — perdre du poids en douceur</p>
+  </header>
+
+  <section>
+    <h2>Nous écrire</h2>
+    <p>Une question, un bug, une idée ? Réponse sous quelques jours, par une vraie personne.</p>
+    <a class="mail" href="mailto:contact@elitedangereuse.fr">contact@elitedangereuse.fr</a>
+  </section>
+
+  <section>
+    <h2>Questions fréquentes</h2>
+    <dl>
+      <dt>Faut-il créer un compte ?</dt>
+      <dd>Non. Nivel fonctionne sans compte et sans connexion : tes données restent sur ton
+      iPhone. Voir la <a href="privacy.html">politique de confidentialité</a>.</dd>
+
+      <dt>Les calories affichées sont-elles exactes ?</dt>
+      <dd>Ce sont des estimations, signalées par un tilde (~). Nivel privilégie la rapidité
+      de saisie sur la précision au gramme ; tu peux corriger le détail d'un plat ingrédient
+      par ingrédient, ou saisir directement le nombre de calories si tu le connais.</dd>
+
+      <dt>Mes pas ne s'affichent pas.</dt>
+      <dd>Nivel lit les pas depuis l'app Santé d'Apple. Vérifie l'autorisation dans
+      <em>Réglages › Santé › Accès aux données › Nivel</em>. Sans elle, l'app fonctionne
+      normalement, simplement sans compteur de pas.</dd>
+
+      <dt>Comment changer de thème ou régler les rappels ?</dt>
+      <dd>Par la roue crantée en haut de l'écran d'accueil. Le thème est propre à chaque
+      téléphone, comme les rappels et les sons du minuteur.</dd>
+
+      <dt>Comment supprimer un repas ou une activité ?</dt>
+      <dd>D'un balayage vers la gauche sur la ligne concernée, le jour même.</dd>
+
+      <dt>Comment tout effacer ?</dt>
+      <dd>En désinstallant l'app : sa base de données locale part avec elle. Il n'y a rien
+      à effacer ailleurs, puisque rien n'est stocké en ligne.</dd>
+
+      <dt>Mes données sont-elles synchronisées entre deux iPhone ?</dt>
+      <dd>Non, c'est volontaire : chaque téléphone a sa propre progression, sans compte ni
+      serveur. La « séance du jour » est en revanche la même partout, parce qu'elle est
+      calculée à partir de la date.</dd>
+    </dl>
+  </section>
+
+  <footer>
+    Édité par l'association L'Élite Dangereuse ·
+    <a href="index.html">Nivel</a> · <a href="privacy.html">Confidentialité</a>
+  </footer>
+</main>
+</body>
+</html>

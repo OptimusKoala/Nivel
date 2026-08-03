@@ -127,6 +127,10 @@ struct HomeView: View {
             sessionStatus = game.dailySessionStatus()
             updateBubble()
             consumeDeepLink()
+            #if DEBUG
+            // Capture « catalogue d'aliments » (scripts/screenshots.sh) : absent en release.
+            if ScreenshotMode.autoOpensMealLog { showMealLog = true }
+            #endif
         }
         .task { await refresh() }
         .onChange(of: game.pendingMealLogDeepLink) { _, pending in

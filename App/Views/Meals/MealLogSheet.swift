@@ -68,6 +68,15 @@ struct MealLogSheet: View {
         _slot = State(initialValue: entry?.slot ?? MealSlot.suggested(forHour: hour))
         _lines = State(initialValue: entry?.lines ?? [])
         _manualKcal = State(initialValue: entry?.manualKcal)
+
+        #if DEBUG
+        // Capture « catalogue d'aliments » (scripts/screenshots.sh) : créneau déjeuner
+        // (le catalogue le plus riche) et panier déjà garni. Absent en release.
+        if entry == nil, ScreenshotMode.autoOpensMealLog {
+            _slot = State(initialValue: .lunch)
+            _lines = State(initialValue: ScreenshotMode.demoMealLines(catalog: catalog))
+        }
+        #endif
     }
 
     // MARK: Données dérivées

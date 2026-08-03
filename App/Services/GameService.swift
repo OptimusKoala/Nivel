@@ -101,6 +101,11 @@ final class GameService {
     /// obsolète (ex. logMeal pendant que closeOpenDays s'achève) ne doivent pas
     /// empiler deux fois la MÊME célébration tant qu'elle n'a pas été affichée.
     private func raise(_ celebration: Celebration) {
+        #if DEBUG
+        // Mode captures : une bannière de badge par-dessus l'écran à photographier
+        // ruinerait la capture. Absent du binaire de release.
+        if ScreenshotMode.isEnabled { return }
+        #endif
         guard !pendingCelebrations.contains(celebration) else { return }
         pendingCelebrations.append(celebration)
         celebrationsRaised += 1
@@ -293,6 +298,11 @@ final class GameService {
     // (logMeal/logWeight/updateMeal/deleteMeal et closeOpenDays le font).
     /// `now` est injectable pour les tests (DayCloser) — défaut : l'instant courant.
     func refreshQuestProgress(now: Date = .now) async {
+        #if DEBUG
+        // Mode captures : la progression des quêtes est figée par le jeu de démo
+        // (ScreenshotSupport.swift). Absent du binaire de release.
+        if ScreenshotMode.isEnabled { return }
+        #endif
         let state = fetchOrCreateState()
         guard state.questWeekID == QuestEngine.weekID(for: now, calendar: Self.calendar),
               !state.activeQuestIDs.isEmpty,
