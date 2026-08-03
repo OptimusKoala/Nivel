@@ -47,9 +47,8 @@ extension GameService {
         switch kind {
         case .dailySession: action = .dailySessionDone
         case .activity: action = .activityDone
-        // Pas encore de caller : `logPostureSession` arrive en Task 5/6 (interrupteur +
-        // catalogue posture chargés dans GameService). Le mapping est déjà correct pour
-        // ce jour-là — plafond XP indépendant de dailySessionDone (spec §8).
+        // Plafond INDÉPENDANT de dailySessionDone (spec §8) : faire la séance
+        // posture ET la séance du jour le même soir paie les deux XP.
         case .posture: action = .postureSessionDone
         }
         let xp = XPEngine.award(action, todayCount: sportAwardedCount(kind: kind, on: date))
@@ -137,9 +136,8 @@ extension GameService {
     /// Miroir exact de `dailySessionDayCount`, pour la métrique de quête
     /// `postureSessionsDone` (spec v1.11 §7.2) : comptée en jours DISTINCTS, comme la
     /// séance du jour, sinon la quête récompenserait le bachotage plutôt que la
-    /// régularité. Pas encore de caller qui insère des `ActivityEntry(kind: .posture)`
-    /// (`logPostureSession` arrive en Task 6) : ce compteur reste correct dès
-    /// aujourd'hui, il attend juste des données.
+    /// régularité. Alimenté par `logPostureSession`, et par le compteur mensuel
+    /// de la carte du soir (`postureSessionsThisMonth`) qui compte pareil.
     func postureSessionDayCount(from start: Date, to end: Date) -> Int {
         let kindRaw = ActivityKind.posture.rawValue
         let predicate = #Predicate<ActivityEntry> {
