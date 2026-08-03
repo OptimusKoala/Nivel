@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.fr.mbernard.nivel</string>
+		<string>group.com.elitedangereuse.nivel.data</string>
 	</array>
 </dict>
 </plist>

@@ -22,7 +22,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>fr.mbernard.Nivel</string>
+			<string>com.elitedangereuse.Nivel</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>nivel</string>
@@ -31,6 +31,10 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>13</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.healthcare-fitness</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Nivel lit tes pas pour suivre ton activité quotidienne.</string>
 	<key>UILaunchScreen</key>

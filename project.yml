@@ -1,6 +1,6 @@
 name: Nivel
 options:
-  bundleIdPrefix: fr.mbernard
+  bundleIdPrefix: com.elitedangereuse
   deploymentTarget:
     iOS: "17.0"
 packages:
@@ -13,8 +13,17 @@ targets:
     sources: [App, Shared]
     settings:
       base:
-        DEVELOPMENT_TEAM: 5V52773QN3
-        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
+        DEVELOPMENT_TEAM: AXVF69V3LL
+      configs:
+        # Signature MANUELLE en Release, appareil uniquement (scripts/release.sh) : la
+        # signature automatique choisit un profil de DÉVELOPPEMENT à l'archivage, et la
+        # team n'a aucun appareil enregistré — donc aucun profil de dev possible. Archiver
+        # sans signature marche, mais l'export perd alors les entitlements HealthKit et
+        # App Group (ils viennent du binaire signé, pas du profil).
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY[sdk=iphoneos*]: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]: Nivel App Store
     dependencies:
       - package: NivelCore
       - target: NivelWidgets
@@ -22,21 +31,26 @@ targets:
       path: App/Nivel.entitlements
       properties:
         com.apple.developer.healthkit: true
-        com.apple.security.application-groups: [group.fr.mbernard.nivel]
+        com.apple.security.application-groups: [group.com.elitedangereuse.nivel.data]
     info:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Nivel
         CFBundleDevelopmentRegion: fr
+        # Catégorie App Store. Dans un Info.plist fourni à la main, les réglages
+        # INFOPLIST_KEY_* ne sont PAS repris : la clé doit être écrite ici.
+        LSApplicationCategoryType: public.app-category.healthcare-fitness
         # Version affichée dans Réglages > À propos — à incrémenter à chaque jalon.
         CFBundleShortVersionString: "1.12"
         CFBundleVersion: "13"
         NSHealthShareUsageDescription: "Nivel lit tes pas pour suivre ton activité quotidienne."
+        # Aucun chiffrement au-delà d'HTTPS système : évite le questionnaire export à chaque build.
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         # Deep link des widgets : nivel://log-meal (spec widgets §7).
         CFBundleURLTypes:
-          - CFBundleURLName: fr.mbernard.Nivel
+          - CFBundleURLName: com.elitedangereuse.Nivel
             CFBundleURLSchemes: [nivel]
   NivelWidgets:
     type: app-extension
@@ -44,15 +58,21 @@ targets:
     sources: [Widgets, Shared]
     settings:
       base:
-        DEVELOPMENT_TEAM: 5V52773QN3
+        DEVELOPMENT_TEAM: AXVF69V3LL
         # Une extension DOIT être préfixée par le bundle id de l'app.
-        PRODUCT_BUNDLE_IDENTIFIER: fr.mbernard.Nivel.Widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.elitedangereuse.Nivel.Widgets
+      configs:
+        # Même signature manuelle que l'app, avec le profil de l'extension.
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY[sdk=iphoneos*]: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]: Nivel Widgets App Store
     dependencies:
       - package: NivelCore
     entitlements:
       path: Widgets/NivelWidgets.entitlements
       properties:
-        com.apple.security.application-groups: [group.fr.mbernard.nivel]
+        com.apple.security.application-groups: [group.com.elitedangereuse.nivel.data]
     info:
       path: Widgets/Info.plist
       properties:

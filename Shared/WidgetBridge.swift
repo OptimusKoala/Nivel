@@ -7,7 +7,7 @@ import NivelCore
 
 enum WidgetBridge {
     // Doit correspondre aux entitlements des 2 targets (project.yml).
-    static let appGroupID = "group.fr.mbernard.nivel"
+    static let appGroupID = "group.com.elitedangereuse.nivel.data"
     static let snapshotKey = "nivel.widget.snapshot"
     /// Kind unique du widget (les 4 familles) — cible de reloadTimelines(ofKind:).
     static let widgetKind = "NivelWidget"
