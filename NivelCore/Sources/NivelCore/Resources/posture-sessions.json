@@ -1,0 +1,125 @@
+[
+  {
+    "id": "posture_evening",
+    "title": "Nuque & haut du dos",
+    "emoji": "🧍",
+    "steps": [
+      {
+        "activityID": "chin_tucks",
+        "minutes": 2,
+        "tempo": "8 rentrés, 5 secondes chacun",
+        "segments": 8
+      },
+      {
+        "activityID": "wall_angels",
+        "minutes": 3,
+        "tempo": "10 montées lentes",
+        "segments": 10
+      },
+      {
+        "activityID": "neck_stretch",
+        "minutes": 3,
+        "tempo": "2 tenues de 30 s de chaque côté",
+        "segments": 4
+      }
+    ]
+  },
+  {
+    "id": "posture_open",
+    "title": "Ouverture",
+    "emoji": "🕊️",
+    "steps": [
+      {
+        "activityID": "doorway_stretch",
+        "minutes": 2,
+        "tempo": "2 tenues de 30 s de chaque côté",
+        "segments": 4
+      },
+      {
+        "activityID": "wall_thoracic",
+        "minutes": 3,
+        "tempo": "5 respirations, 3 fois",
+        "segments": 3
+      },
+      {
+        "activityID": "open_book",
+        "minutes": 3,
+        "tempo": "8 ouvertures de chaque côté"
+      }
+    ]
+  },
+  {
+    "id": "posture_strength",
+    "title": "Réveil des omoplates",
+    "emoji": "💪",
+    "steps": [
+      {
+        "activityID": "scapular_squeeze",
+        "minutes": 2,
+        "tempo": "10 pincements, 5 secondes chacun",
+        "segments": 10
+      },
+      {
+        "activityID": "prone_y_raise",
+        "minutes": 3,
+        "tempo": "3 séries de 8",
+        "segments": 3
+      },
+      {
+        "activityID": "chin_tucks",
+        "minutes": 2,
+        "tempo": "8 rentrés, 5 secondes chacun",
+        "segments": 8
+      }
+    ]
+  },
+  {
+    "id": "posture_gentle",
+    "title": "Tout en douceur",
+    "emoji": "🌙",
+    "steps": [
+      {
+        "activityID": "supine_chin_tuck",
+        "minutes": 3,
+        "tempo": "8 allongements tranquilles",
+        "segments": 8
+      },
+      {
+        "activityID": "open_book",
+        "minutes": 3,
+        "tempo": "8 ouvertures de chaque côté"
+      }
+    ]
+  },
+  {
+    "id": "posture_full",
+    "title": "Le tour complet",
+    "emoji": "✨",
+    "steps": [
+      {
+        "activityID": "chin_tucks",
+        "minutes": 2,
+        "tempo": "8 rentrés, 5 secondes chacun",
+        "segments": 8
+      },
+      {
+        "activityID": "wall_angels",
+        "minutes": 3,
+        "tempo": "10 montées lentes",
+        "segments": 10
+      },
+      {
+        "activityID": "doorway_stretch",
+        "minutes": 2,
+        "tempo": "1 tenue de 45 s de chaque côté",
+        "segments": 2
+      },
+      {
+        "activityID": "scapular_squeeze",
+        "minutes": 2,
+        "tempo": "10 pincements",
+        "segments": 10
+      }
+    ]
+  }
+]

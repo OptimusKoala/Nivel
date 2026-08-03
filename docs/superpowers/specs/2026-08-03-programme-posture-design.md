@@ -233,7 +233,14 @@ Cinquième entrée de `ReminderCatalog` :
 
 `SportAssetsTests` exige que chaque entrée des catalogues sport ait son illustration embarquée. Les catalogues posture doivent donc atterrir **après** les images, sinon la suite est rouge. Le plan en tient compte : les entrées de catalogue sont la dernière tâche.
 
-Neuf images à générer, à déposer dans `design/sport/` puis à importer avec `scripts/import-sport-images.sh`, qui redimensionne en 750 px et refuse une désynchronisation avec les ids des catalogues.
+**Quatorze images**, pas neuf : les séances ont elles aussi leur illustration, affichée en grand sur la page d'aperçu du player via `SportHeroIllustration(name: session.id)`. Omission de la première version de ce document, corrigée après l'échec du script.
+
+Deux corrections d'outillage étaient nécessaires et sont **déjà faites** :
+
+- `scripts/import-sport-images.sh` compare les sources de `design/sport/` aux ids des catalogues, mais ne lisait que `activities.json` et `sessions.json`. Il lit désormais aussi les deux catalogues posture, sinon il refuse à jamais des images dont l'id ne lui est pas connu.
+- Les deux catalogues posture ont donc dû être écrits AVANT l'import, et non en dernier comme annoncé plus haut dans la première version. Cela ne crée aucune fenêtre rouge : `SportAssetsTests` ne parcourt encore que les catalogues globaux, et il ne s'étendra aux catalogues posture qu'une fois les images en place.
+
+Les quatorze sont générées et importées (750 px, JPEG q80) au 03/08/2026.
 
 Ce que chaque dessin doit montrer, Nivelito de profil ou de trois quarts selon le cas :
 
@@ -248,6 +255,16 @@ Ce que chaque dessin doit montrer, Nivelito de profil ou de trois quarts selon l
 | `doorway_stretch` | De profil dans l'encadrement d'une porte, avant-bras contre le montant, coude à hauteur d'épaule |
 | `neck_stretch` | Assis, tête inclinée sur le côté, oreille vers l'épaule, une main sous la cuisse |
 | `open_book` | Allongé sur le côté, genoux remontés, bras du dessus ouvert vers l'arrière, regard qui suit la main |
+
+Et les cinq héros de séance, Nivelito en situation comme les onze existants :
+
+| id | Le dessin |
+|---|---|
+| `posture_evening` | Debout de trois quarts, dos long, menton légèrement reculé, épaules basses et ouvertes. L'image de référence du programme. |
+| `posture_open` | Bras écartés en grand, poitrine ouverte, tête légèrement en arrière, l'air de respirer un grand coup |
+| `posture_strength` | Vu de trois quarts arrière, coudes fléchis tirés vers l'arrière, omoplates serrées |
+| `posture_gentle` | Allongé sur le dos sur un tapis, genoux pliés, très détendu, presque du repos. Doit se lire comme le soir sans énergie. |
+| `posture_full` | Debout bien droit, une main sur la nuque, l'autre ouvrant l'épaule, un petit air satisfait |
 
 ## 12. Ce qui ne change pas
 

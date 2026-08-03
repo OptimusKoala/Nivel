@@ -1,0 +1,164 @@
+[
+  {
+    "id": "chin_tucks",
+    "name": "Rentrés de menton",
+    "emoji": "🙂",
+    "location": "home",
+    "kcalPerMin": 2.0,
+    "durations": [
+      1,
+      2,
+      3
+    ],
+    "instructions": [
+      "Assise ou debout, regard droit devant, épaules relâchées",
+      "Recule le menton à l'horizontale, comme pour faire un double menton, sans baisser la tête",
+      "Tiens 5 secondes, relâche, recommence tranquillement",
+      "Tu dois sentir un étirement à l'arrière du cou, jamais une douleur"
+    ]
+  },
+  {
+    "id": "supine_chin_tuck",
+    "name": "Nuque allongée",
+    "emoji": "🛏️",
+    "location": "home",
+    "kcalPerMin": 2.0,
+    "durations": [
+      2,
+      3,
+      5
+    ],
+    "instructions": [
+      "Allongée sur le dos, genoux pliés, sans coussin sous la tête",
+      "Recule doucement le menton et allonge la nuque vers le haut du tapis",
+      "Garde 5 secondes en respirant, puis relâche",
+      "La tête reste posée : ce n'est pas un relevé, juste un allongement"
+    ]
+  },
+  {
+    "id": "wall_angels",
+    "name": "Anges au mur",
+    "emoji": "🙌",
+    "location": "home",
+    "kcalPerMin": 2.5,
+    "durations": [
+      2,
+      3,
+      5
+    ],
+    "instructions": [
+      "Dos au mur, talons à quelques centimètres, bas du dos aussi plat que possible",
+      "Bras en chandelier contre le mur, coudes et poignets au contact",
+      "Fais glisser les bras vers le haut puis vers le bas, en gardant le contact",
+      "Si les poignets décollent, réduis l'amplitude : mieux vaut petit et propre"
+    ]
+  },
+  {
+    "id": "wall_thoracic",
+    "name": "Ouverture du dos au mur",
+    "emoji": "🧱",
+    "location": "home",
+    "kcalPerMin": 2.0,
+    "durations": [
+      2,
+      3,
+      5
+    ],
+    "instructions": [
+      "Face au mur, mains à plat au-dessus de la tête, coudes légèrement fléchis",
+      "Recule les pieds et laisse la poitrine descendre entre les bras",
+      "Respire dans le haut du dos, laisse-le s'ouvrir à chaque expiration",
+      "Ne creuse pas le bas du dos : l'ouverture vient du haut"
+    ]
+  },
+  {
+    "id": "scapular_squeeze",
+    "name": "Rétractions d'omoplates",
+    "emoji": "🤲",
+    "location": "home",
+    "kcalPerMin": 2.5,
+    "durations": [
+      1,
+      2,
+      3
+    ],
+    "instructions": [
+      "Assise ou debout, bras le long du corps, épaules basses",
+      "Rapproche les omoplates l'une de l'autre, comme pour pincer une feuille entre elles",
+      "Tiens 5 secondes sans monter les épaules vers les oreilles",
+      "Relâche complètement entre chaque, c'est le relâchement qui fait le travail"
+    ]
+  },
+  {
+    "id": "prone_y_raise",
+    "name": "Relevés en Y au sol",
+    "emoji": "🔰",
+    "location": "home",
+    "kcalPerMin": 2.5,
+    "durations": [
+      2,
+      3,
+      4
+    ],
+    "instructions": [
+      "À plat ventre, front posé, bras tendus devant en Y, pouces vers le plafond",
+      "Décolle les bras de quelques centimètres en rapprochant les omoplates",
+      "Tiens 3 secondes, redescends en contrôlant",
+      "Le front reste posé : la tête ne participe pas"
+    ]
+  },
+  {
+    "id": "doorway_stretch",
+    "name": "Ouverture des pectoraux",
+    "emoji": "🚪",
+    "location": "home",
+    "kcalPerMin": 2.0,
+    "durations": [
+      1,
+      2,
+      3
+    ],
+    "instructions": [
+      "Debout dans l'encadrement d'une porte, avant-bras contre le montant, coude à hauteur d'épaule",
+      "Avance doucement d'un pas jusqu'à sentir l'avant de l'épaule s'ouvrir",
+      "Respire, tiens 20 à 30 secondes, change de côté",
+      "Un étirement confortable, jamais un pincement à l'avant de l'épaule"
+    ]
+  },
+  {
+    "id": "neck_stretch",
+    "name": "Étirement de la nuque",
+    "emoji": "🧣",
+    "location": "home",
+    "kcalPerMin": 2.0,
+    "durations": [
+      2,
+      3,
+      4
+    ],
+    "instructions": [
+      "Assise, dos droit, une main posée sous la cuisse pour garder l'épaule basse",
+      "Incline la tête de l'autre côté, oreille vers l'épaule, sans tourner",
+      "Respire, tiens 20 à 30 secondes, change de côté",
+      "Aucun à-coup, aucune traction avec la main : le poids de la tête suffit"
+    ]
+  },
+  {
+    "id": "open_book",
+    "name": "Rotation du buste au sol",
+    "emoji": "📖",
+    "location": "home",
+    "kcalPerMin": 2.0,
+    "durations": [
+      2,
+      3,
+      5
+    ],
+    "instructions": [
+      "Allongée sur le côté, genoux pliés remontés, bras tendus l'un sur l'autre devant toi",
+      "Ouvre le bras du dessus en grand vers l'arrière, en suivant la main du regard",
+      "Laisse les genoux posés, ce sont les épaules qui tournent",
+      "Va où ça vient sans forcer, et respire une fois arrivée"
+    ]
+  }
+]
