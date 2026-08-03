@@ -13,6 +13,10 @@ struct SportView: View {
     @State private var todayEntries: [ActivityEntry] = []
     @State private var selectedActivity: Activity?
     @State private var showSessionPlayer = false
+    // Section Posture (spec v1.11 §9) : état séparé de la séance du jour, la
+    // sheet du player doit savoir laquelle des deux logger (isPosture).
+    @State private var postureSessionStatus: (session: ActivitySession, done: Bool)?
+    @State private var showPostureSessionPlayer = false
 
     private var homeActivities: [Activity] {
         game.activityCatalog.filter { $0.location != .outdoor }
@@ -25,6 +29,16 @@ struct SportView: View {
         ZStack {
             Theme.background.ignoresSafeArea()
             List {
+                // En tête, avant la séance du jour (spec v1.11 §9) : auto-cloisonnée,
+                // invisible sur le téléphone où l'interrupteur est éteint.
+                PostureSection(
+                    sessionStatus: postureSessionStatus,
+                    monthCount: game.postureSessionsThisMonth(),
+                    activities: game.postureCatalog.activities,
+                    onOpenSession: { showPostureSessionPlayer = true },
+                    onSelectActivity: { selectedActivity = $0 }
+                )
+
                 Section {
                     if let status = sessionStatus {
                         Button { showSessionPlayer = true } label: {
@@ -61,6 +75,11 @@ struct SportView: View {
                 SessionPlayerSheet(session: status.session, done: status.done)
             }
         }
+        .sheet(isPresented: $showPostureSessionPlayer, onDismiss: reload) {
+            if let status = postureSessionStatus {
+                SessionPlayerSheet(session: status.session, done: status.done, isPosture: true)
+            }
+        }
         .sheet(item: $selectedActivity, onDismiss: reload) { activity in
             ActivityLogSheet(activity: activity)
         }
@@ -68,6 +87,7 @@ struct SportView: View {
 
     private func reload() {
         sessionStatus = game.dailySessionStatus()
+        postureSessionStatus = game.postureSessionStatus()
         todayEntries = game.todayActivities()
     }
 

@@ -92,6 +92,14 @@ extension GameService {
         return (session, sportCount(kind: .dailySession, on: now) > 0)
     }
 
+    /// Séance posture du soir + état « déjà faite » (spec v1.11 §6, §9) : miroir
+    /// exact de `dailySessionStatus`, sur le catalogue posture CLOISONNÉ — même
+    /// rotation générique, même référence fixe, appliquée à un pool distinct.
+    func postureSessionStatus(now: Date = .now) -> (session: ActivitySession, done: Bool)? {
+        guard let session = postureCatalog.session(for: now, calendar: Self.calendar) else { return nil }
+        return (session, sportCount(kind: .posture, on: now) > 0)
+    }
+
     /// Kcal estimées d'une séance (catalogue chargé une fois à l'init).
     func sessionKcal(_ session: ActivitySession) -> Int {
         session.estimatedKcal(activitiesByID: activitiesByID)

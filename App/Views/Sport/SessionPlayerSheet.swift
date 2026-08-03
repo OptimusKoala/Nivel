@@ -30,6 +30,12 @@ struct SessionPlayerSheet: View {
 
     let session: ActivitySession
     let done: Bool
+    /// Séance posture (catalogue cloisonné, spec v1.11 §9) plutôt que séance du
+    /// jour : ne change QUE le texte d'aperçu et l'action de validation
+    /// (`logPostureSession`, plafond XP indépendant). Timer, consignes et chimes
+    /// sont inchangés : `StepPageView` ne connaît que `SessionStep`/`Activity`,
+    /// jamais la provenance de la séance.
+    var isPosture = false
     @State private var page: Int
     @State private var isSaving = false
     /// Fait pulser le CTA bas quand un timer d'étape se termine sur la page courante
@@ -38,9 +44,10 @@ struct SessionPlayerSheet: View {
 
     /// `initialPage` permet aux previews de s'ouvrir directement sur une étape
     /// (états à risque : puces longues, tempo, AX3) sans naviguer manuellement.
-    init(session: ActivitySession, done: Bool, initialPage: Int = 0) {
+    init(session: ActivitySession, done: Bool, isPosture: Bool = false, initialPage: Int = 0) {
         self.session = session
         self.done = done
+        self.isPosture = isPosture
         _page = State(initialValue: initialPage)
     }
 
@@ -107,7 +114,7 @@ struct SessionPlayerSheet: View {
             VStack(alignment: .leading, spacing: 16) {
                 SportHeroIllustration(name: session.id)
                 VStack(alignment: .leading, spacing: 3) {
-                    Overline("Séance du jour")
+                    Overline(isPosture ? "Séance du soir" : "Séance du jour")
                     Text(session.title)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.text)
@@ -158,7 +165,7 @@ struct SessionPlayerSheet: View {
                     .gentlePulse(pulsingCTA, reduceMotion: reduceMotion)
             case .validate:
                 // Montant depuis XPEngine : le libellé ne peut pas mentir si la règle change.
-                Button("C'est fait ! (+\(XPEngine.award(.dailySessionDone, todayCount: 0)) XP)", action: validate)
+                Button("C'est fait ! (+\(XPEngine.award(isPosture ? .postureSessionDone : .dailySessionDone, todayCount: 0)) XP)", action: validate)
                     .buttonStyle(PrimaryButtonStyle())
                     .disabled(isSaving)
                     .gentlePulse(pulsingCTA, reduceMotion: reduceMotion)
@@ -181,7 +188,11 @@ struct SessionPlayerSheet: View {
         isSaving = true
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         Task {
-            await game.logDailySession(session: session)
+            if isPosture {
+                await game.logPostureSession(session: session)
+            } else {
+                await game.logDailySession(session: session)
+            }
             dismiss()
         }
     }
@@ -318,6 +329,16 @@ private func sessionPlayerPreviewFixture() -> (container: ModelContainer, game: 
 #Preview("Étape") {
     let (container, game, session) = sessionPlayerPreviewFixture()
     SessionPlayerSheet(session: session, done: false, initialPage: 1)
+        .fontDesign(.rounded)
+        .modelContainer(container)
+        .environment(game)
+}
+
+// isPosture: le player reste le même composant (spec v1.11 §9) — seul l'aperçu
+// ("Séance du soir") et le CTA de validation changent (logPostureSession).
+#Preview("Posture, à faire") {
+    let (container, game, _) = sessionPlayerPreviewFixture()
+    SessionPlayerSheet(session: game.postureCatalog.sessions.first!, done: false, isPosture: true)
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
