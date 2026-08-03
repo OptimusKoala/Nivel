@@ -127,6 +127,38 @@ final class RemindersTests: XCTestCase {
         )
     }
 
+    // MARK: - Visibilité conditionnée au programme posture (spec v1.11 §3, §10)
+
+    /// Seul "posture" porte le drapeau : les quatre rappels historiques ne
+    /// doivent JAMAIS se retrouver masqués par erreur si le drapeau change de
+    /// nom ou de sens un jour.
+    func testSeulLeRappelPostureRequiertLeProgramme() {
+        for definition in ReminderCatalog.all {
+            XCTAssertEqual(definition.requiresPosturePlan, definition.id == "posture",
+                           "drapeau requiresPosturePlan inattendu sur \(definition.id)")
+        }
+    }
+
+    /// LE test du trou critique : programme éteint, la ligne "Posture" ne doit
+    /// JAMAIS apparaître dans les Réglages, sinon (a) la promesse "rien ne change
+    /// chez toi" est rompue par une ligne visible en plus, et (b) n'importe qui
+    /// peut allumer le rappel de 21 h sans jamais avoir vu le programme ni son
+    /// interrupteur, et le laisser sonner en silence pour un programme invisible.
+    func testProgrammeEteintMasqueLaLignePosture() {
+        let visible = ReminderCatalog.visibleReminders(planEnabled: false)
+        XCTAssertFalse(visible.contains { $0.id == "posture" })
+        XCTAssertEqual(visible.count, 4)
+    }
+
+    /// Programme allumé : la ligne réapparaît, sans qu'aucun des quatre rappels
+    /// historiques ait bougé.
+    func testProgrammeAllumeMontreLaLignePosture() {
+        let visible = ReminderCatalog.visibleReminders(planEnabled: true)
+        XCTAssertTrue(visible.contains { $0.id == "posture" })
+        XCTAssertEqual(visible.count, 5)
+        XCTAssertEqual(Set(visible.map(\.id)), Set(ReminderCatalog.all.map(\.id)))
+    }
+
     /// Aucun tiret cadratin dans les textes destinés à l'écran (règle v1.2).
     func testAucunTiretCadratin() {
         for definition in ReminderCatalog.all {

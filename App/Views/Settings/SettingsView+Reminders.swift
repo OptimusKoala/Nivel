@@ -16,8 +16,15 @@ extension SettingsContent {
     private static let referenceDayComponents = DateComponents(year: 2000, month: 1, day: 1)
 
     var remindersSection: some View {
-        section("Rappels") {
-            ForEach(Array(ReminderCatalog.all.enumerated()), id: \.element.id) { index, definition in
+        // Filtré par PosturePlanSettings (spec v1.11 §3, §10) : un rappel
+        // `requiresPosturePlan` (aujourd'hui, seulement "posture") ne doit
+        // apparaître QUE si le programme est allumé, sinon la ligne casse la
+        // promesse "rien ne change chez toi" et laisse allumer un rappel pour un
+        // programme jamais vu. La garde vit dans `ReminderCatalog.visibleReminders`
+        // (pure, testée), pas ici.
+        let visible = ReminderCatalog.visibleReminders(planEnabled: PosturePlanSettings.shared.isEnabled)
+        return section("Rappels") {
+            ForEach(Array(visible.enumerated()), id: \.element.id) { index, definition in
                 if index > 0 { divider }
                 reminderRow(definition)
             }

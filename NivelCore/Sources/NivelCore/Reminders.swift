@@ -21,9 +21,17 @@ public struct ReminderDefinition: Identifiable, Hashable, Sendable {
     /// Seuls les rappels hebdomadaires laissent choisir leur jour.
     public let isWeekdayEditable: Bool
     public let context: MessageContext
+    /// Vrai UNIQUEMENT pour "posture" (spec v1.11 §3, §10) : ce rappel n'existe
+    /// que parce que l'interrupteur du programme l'allume. Un rappel qui porte ce
+    /// drapeau ne doit jamais apparaître dans les Réglages tant que le programme
+    /// est éteint, sinon (a) une ligne visible en plus casse la promesse "rien ne
+    /// change chez toi", et (b) n'importe qui peut l'allumer sans jamais avoir vu
+    /// le programme ni son interrupteur, et le laisser sonner en silence.
+    public let requiresPosturePlan: Bool
 
     public init(id: String, title: String, defaultHour: Int, defaultMinute: Int,
-                defaultWeekday: Int?, isWeekdayEditable: Bool, context: MessageContext) {
+                defaultWeekday: Int?, isWeekdayEditable: Bool, context: MessageContext,
+                requiresPosturePlan: Bool) {
         self.id = id
         self.title = title
         self.defaultHour = defaultHour
@@ -31,6 +39,7 @@ public struct ReminderDefinition: Identifiable, Hashable, Sendable {
         self.defaultWeekday = defaultWeekday
         self.isWeekdayEditable = isWeekdayEditable
         self.context = context
+        self.requiresPosturePlan = requiresPosturePlan
     }
 
     public var defaultMinutesFromMidnight: Int { defaultHour * 60 + defaultMinute }
@@ -39,24 +48,40 @@ public struct ReminderDefinition: Identifiable, Hashable, Sendable {
 public enum ReminderCatalog {
     public static let all: [ReminderDefinition] = [
         ReminderDefinition(id: "lunch", title: "Déjeuner", defaultHour: 12, defaultMinute: 30,
-                           defaultWeekday: nil, isWeekdayEditable: false, context: .midday),
+                           defaultWeekday: nil, isWeekdayEditable: false, context: .midday,
+                           requiresPosturePlan: false),
         ReminderDefinition(id: "dinner", title: "Dîner", defaultHour: 20, defaultMinute: 0,
-                           defaultWeekday: nil, isWeekdayEditable: false, context: .evening),
+                           defaultWeekday: nil, isWeekdayEditable: false, context: .evening,
+                           requiresPosturePlan: false),
         ReminderDefinition(id: "weigh", title: "Pesée", defaultHour: 9, defaultMinute: 0,
-                           defaultWeekday: 7, isWeekdayEditable: true, context: .weighReminder),
+                           defaultWeekday: 7, isWeekdayEditable: true, context: .weighReminder,
+                           requiresPosturePlan: false),
         ReminderDefinition(id: "steps", title: "Pas", defaultHour: 18, defaultMinute: 0,
-                           defaultWeekday: nil, isWeekdayEditable: false, context: .stepsEncouragement),
+                           defaultWeekday: nil, isWeekdayEditable: false, context: .stepsEncouragement,
+                           requiresPosturePlan: false),
         // Programme posture (spec v1.11 §10) : 21 h et non 20 h 30, pour ne pas se coller
         // au rappel "Dîner" (20 h) — deux notifications collées se font ignorer toutes les
         // deux. Quotidien, jour non modifiable, comme "Pas". Naît éteint (clé absente de
-        // `remindersEnabled`) tant que l'interrupteur du programme (Task 5) ne l'allume pas
-        // explicitement.
+        // `remindersEnabled`) tant que l'interrupteur du programme ne l'allume pas
+        // explicitement. `requiresPosturePlan: true` : sans lui la ligne apparaîtrait
+        // dans les Réglages des DEUX téléphones, y compris celui où le programme est
+        // resté éteint (voir `visibleReminders`).
         ReminderDefinition(id: "posture", title: "Posture", defaultHour: 21, defaultMinute: 0,
-                           defaultWeekday: nil, isWeekdayEditable: false, context: .postureReminder),
+                           defaultWeekday: nil, isWeekdayEditable: false, context: .postureReminder,
+                           requiresPosturePlan: true),
     ]
 
     public static func definition(id: String) -> ReminderDefinition? {
         all.first { $0.id == id }
+    }
+
+    /// Rappels à AFFICHER dans les Réglages (spec v1.11 §3, §10), filtrés du
+    /// catalogue complet : un rappel `requiresPosturePlan` ne doit apparaître QUE
+    /// si le programme est allumé, exactement comme `QuestEngine.weeklyDraw`
+    /// filtre les quêtes `requiresPosture` sur `postureAvailable`. Pur et
+    /// testable sans vue : la garde vit ici, pas dans `SettingsView+Reminders`.
+    public static func visibleReminders(planEnabled: Bool) -> [ReminderDefinition] {
+        all.filter { planEnabled || !$0.requiresPosturePlan }
     }
 }
 
