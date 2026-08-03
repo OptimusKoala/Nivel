@@ -29,8 +29,8 @@ targets:
         CFBundleDisplayName: Nivel
         CFBundleDevelopmentRegion: fr
         # Version affichée dans Réglages > À propos — à incrémenter à chaque jalon.
-        CFBundleShortVersionString: "1.11"
-        CFBundleVersion: "12"
+        CFBundleShortVersionString: "1.12"
+        CFBundleVersion: "13"
         NSHealthShareUsageDescription: "Nivel lit tes pas pour suivre ton activité quotidienne."
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
@@ -59,8 +59,8 @@ targets:
         CFBundleDisplayName: Nivel
         CFBundleDevelopmentRegion: fr
         # Alignées sur l'app (sinon XcodeGen retombe sur 1.0/1).
-        CFBundleShortVersionString: "1.11"
-        CFBundleVersion: "12"
+        CFBundleShortVersionString: "1.12"
+        CFBundleVersion: "13"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
   NivelTests:
