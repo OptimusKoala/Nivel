@@ -103,6 +103,20 @@ final class RemindersTests: XCTestCase {
         }
     }
 
+    /// Ceinture et bretelles : même si la clé est restée à true (extinction du
+    /// programme, ancienne surface de réglage, bug amont), le rappel posture ne doit
+    /// pas être planifié. La garantie ne doit pas dépendre d'un écran qui masque
+    /// correctement sa ligne.
+    func testLeRappelPostureNestJamaisPlanifieProgrammeEteint() {
+        let avecPosture = allOn.merging(["posture": true]) { a, _ in a }
+        let eteint = planned(avecPosture, planEnabled: false)
+        XCTAssertNil(eteint.first { $0.id == "posture" })
+        XCTAssertEqual(eteint.count, 4, "les quatre autres rappels doivent rester")
+
+        let allume = planned(avecPosture, planEnabled: true)
+        XCTAssertEqual(allume.first { $0.id == "posture" }?.hour, 21)
+    }
+
     func testFrequence() {
         XCTAssertEqual(ReminderSchedule.frFrequency(weekday: nil), "tous les jours")
         XCTAssertEqual(ReminderSchedule.frFrequency(weekday: 7), "chaque semaine")
@@ -219,8 +233,10 @@ final class RemindersTests: XCTestCase {
     private let allOn = ["lunch": true, "dinner": true, "weigh": true, "steps": true]
 
     private func planned(_ enabled: [String: Bool], times: [String: Int] = [:],
-                         weekdays: [String: Int] = [:]) -> [PlannedReminder] {
-        ReminderPlanner.planned(enabled: enabled, times: times, weekdays: weekdays)
+                         weekdays: [String: Int] = [:],
+                         planEnabled: Bool = true) -> [PlannedReminder] {
+        ReminderPlanner.planned(enabled: enabled, times: times, weekdays: weekdays,
+                                planEnabled: planEnabled)
     }
 
     func testSansSurchargeOnRetrouveLesDefauts() {

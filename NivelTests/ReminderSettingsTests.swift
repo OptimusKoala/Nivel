@@ -45,7 +45,8 @@ final class ReminderSettingsTests: XCTestCase {
 
         let planned = ReminderPlanner.planned(enabled: profile.remindersEnabled,
                                               times: profile.reminderTimes,
-                                              weekdays: profile.reminderWeekdays)
+                                              weekdays: profile.reminderWeekdays,
+                                              planEnabled: true)
         let lunch = planned.first { $0.id == "lunch" }
         XCTAssertEqual(lunch?.hour, 12)
         XCTAssertEqual(lunch?.minute, 30)
@@ -63,7 +64,8 @@ final class ReminderSettingsTests: XCTestCase {
         )
         let planned = ReminderPlanner.planned(enabled: reloaded.remindersEnabled,
                                               times: reloaded.reminderTimes,
-                                              weekdays: reloaded.reminderWeekdays)
+                                              weekdays: reloaded.reminderWeekdays,
+                                              planEnabled: true)
         let dinner = planned.first { $0.id == "dinner" }
         XCTAssertEqual(dinner?.hour, 19)
         XCTAssertEqual(dinner?.minute, 45)
@@ -76,7 +78,8 @@ final class ReminderSettingsTests: XCTestCase {
         profile.reminderTimes = ["dinner": 19 * 60 + 45]
         let planned = ReminderPlanner.planned(enabled: profile.remindersEnabled,
                                               times: profile.reminderTimes,
-                                              weekdays: profile.reminderWeekdays)
+                                              weekdays: profile.reminderWeekdays,
+                                              planEnabled: true)
         let dinner = try XCTUnwrap(planned.first { $0.id == "dinner" })
         XCTAssertEqual(
             ReminderSchedule.frLabel(hour: dinner.hour, minute: dinner.minute,

@@ -181,11 +181,19 @@ public enum ReminderPlanner {
     /// du catalogue, jamais sur une disparition du rappel. La résolution surcharge /
     /// défaut vit dans `ReminderSchedule.resolvedMinutes`/`resolvedWeekday`, partagée
     /// avec l'écran de réglage : une seule règle, jamais deux qui pourraient diverger.
+    /// - Parameter planEnabled: état du programme posture. Un rappel qui l'exige n'est
+    ///   JAMAIS planifié quand il est éteint, quoi que dise `enabled`. Ceinture et
+    ///   bretelles voulues : masquer la ligne dans les Réglages suffit aujourd'hui, mais
+    ///   cela ferait dépendre d'un écran la garantie qu'un rappel ne sonne pas pour un
+    ///   programme invisible. Une clé restée à true, ou une future surface de réglage
+    ///   qui écrirait le dictionnaire, ne doit pas pouvoir réveiller ce rappel.
     public static func planned(enabled: [String: Bool],
                                times: [String: Int],
-                               weekdays: [String: Int]) -> [PlannedReminder] {
-        ReminderCatalog.all.compactMap { definition in
+                               weekdays: [String: Int],
+                               planEnabled: Bool) -> [PlannedReminder] {
+        ReminderCatalog.all.compactMap { definition -> PlannedReminder? in
             guard enabled[definition.id] == true else { return nil }
+            guard planEnabled || !definition.requiresPosturePlan else { return nil }
 
             let minutes = ReminderSchedule.resolvedMinutes(times[definition.id], for: definition)
             let weekday = ReminderSchedule.resolvedWeekday(weekdays[definition.id], for: definition)
