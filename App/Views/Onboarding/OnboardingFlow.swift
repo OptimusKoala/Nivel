@@ -15,7 +15,10 @@ struct OnboardingFlow: View {
 
     // Saisies
     @State private var name = ""
-    @State private var sex: Sex = .male
+    // Optionnel volontairement : « pas encore choisi » doit être représentable,
+    // sinon la carte Homme paraîtrait pré-sélectionnée sur un écran qui demande
+    // de choisir, et l'objectif kcal serait calculé sur un sexe non confirmé.
+    @State private var sex: Sex?
     @State private var birthDate = Calendar.current.date(from: DateComponents(year: 1990, month: 1, day: 1)) ?? .now
     @State private var heightCm = 175.0
     @State private var weightText = ""
@@ -39,12 +42,17 @@ struct OnboardingFlow: View {
                 ZStack {
                     switch page {
                     case 0: WelcomePage(onContinue: advance)
-                    case 1: ProfileChoicePage(onChoose: choose(profile:))
+                    case 1: IdentityPage(
+                        name: $name,
+                        sex: $sex,
+                        canContinue: Self.canLeaveIdentity(name: name, sex: sex),
+                        onContinue: advance
+                    )
                     case 2: InfosPage(
                         heightCm: $heightCm,
                         birthDate: $birthDate,
                         weightText: $weightText,
-                        sex: $sex,
+                        sex: sexBinding,
                         activity: $activity,
                         canContinue: weightKg != nil,
                         onContinue: advance
@@ -87,6 +95,18 @@ struct OnboardingFlow: View {
 
     // MARK: - Valeurs dérivées
 
+    /// Le picker de la page Infos travaille sur un `Sex` non optionnel. Le repli
+    /// est inatteignable : on ne quitte pas la page Identité sans avoir choisi.
+    private var sexBinding: Binding<Sex> {
+        Binding(get: { sex ?? .male }, set: { sex = $0 })
+    }
+
+    /// Décision de la page Identité : les deux entrées doivent être renseignées.
+    /// Extraite en fonction pure pour être testable sans piloter SwiftUI.
+    static func canLeaveIdentity(name: String, sex: Sex?) -> Bool {
+        sex != nil && ProfileName.isAcceptable(name)
+    }
+
     /// Poids saisi — accepte la virgule française.
     private var weightKg: Double? {
         let value = Double(weightText.replacingOccurrences(of: ",", with: "."))
@@ -100,7 +120,7 @@ struct OnboardingFlow: View {
 
     private var computedTarget: Int {
         CalorieCalculator.dailyTarget(
-            sex: sex,
+            sex: sex ?? .male,
             weightKg: weightKg ?? 80,
             heightCm: heightCm,
             ageYears: ageYears,
@@ -113,12 +133,6 @@ struct OnboardingFlow: View {
     private func advance() {
         guard page < pageCount - 1 else { return }
         page += 1
-    }
-
-    private func choose(profile chosen: (name: String, sex: Sex)) {
-        name = chosen.name
-        sex = chosen.sex
-        advance()
     }
 
     // MARK: - Autorisations
@@ -150,8 +164,9 @@ struct OnboardingFlow: View {
 
         let weight = weightKg ?? 80
         let profile = UserProfile(
-            name: name.isEmpty ? "Michaël" : name,
-            sex: sex,
+            // Pas de repli : la page Identité garantit un prénom non vide.
+            name: ProfileName.sanitized(name),
+            sex: sex ?? .male,
             birthDate: birthDate,
             heightCm: heightCm,
             initialWeightKg: weight,
@@ -213,55 +228,106 @@ private struct WelcomePage: View {
     }
 }
 
-// MARK: - Page 2 : Choix du profil
+// MARK: - Page 2 : Identité
 
-private struct ProfileChoicePage: View {
-    let onChoose: ((name: String, sex: Sex)) -> Void
+private struct IdentityPage: View {
+    @Binding var name: String
+    @Binding var sex: Sex?
+    let canContinue: Bool
+    let onContinue: () -> Void
+
+    @FocusState private var nameFocused: Bool
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 0) {
             header
-            Spacer()
-            VStack(spacing: 16) {
-                profileCard(avatar: "boy", name: "Michaël") { onChoose(("Michaël", .male)) }
-                profileCard(avatar: "girl", name: "Marion") { onChoose(("Marion", .female)) }
+
+            ScrollView {
+                VStack(spacing: 14) {
+                    field("Je suis") {
+                        HStack(spacing: 12) {
+                            sexCard(.male, avatar: "boy", label: "Homme")
+                            sexCard(.female, avatar: "girl", label: "Femme")
+                        }
+                    }
+                    field("Mon prénom") {
+                        TextField("Ton prénom", text: $name)
+                            .font(.headline)
+                            .focused($nameFocused)
+                            .textInputAutocapitalization(.words)
+                            .autocorrectionDisabled()
+                            .submitLabel(.done)
+                            .onSubmit { if canContinue { onContinue() } }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
             }
-            .padding(.horizontal, 24)
-            Spacer()
-            Spacer()
+            .scrollDismissesKeyboard(.interactively)
+
+            Button("Continuer", action: onContinue)
+                .buttonStyle(PrimaryButtonStyle())
+                .disabled(!canContinue)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
         }
     }
 
     private var header: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .top, spacing: 10) {
-                NivelitoView(expression: .happy, size: 72)
-                SpeechBubble(text: "Et toi, tu es qui ?")
-                    .padding(.top, 6)
-            }
-            Text("Choisis ton profil")
-                .font(.title3.bold())
+        HStack(alignment: .top, spacing: 10) {
+            NivelitoView(expression: .happy, size: 60)
+            SpeechBubble(text: "Et toi, tu es qui ?")
+                .padding(.top, 4)
+            Spacer(minLength: 0)
         }
-        .padding(.top, 24)
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
     }
 
-    // Deux Nivelito illustrés (Avatars/boy, Avatars/girl) et non des glyphes cozy : un
-    // glyphe monochrome de 28 pt ne fait pas un visage, et l'app a déjà un langage
-    // d'illustrations couleur (les 31 vignettes sport). Décoratifs : le nom porte le sens.
-    private func profileCard(avatar: String, name: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    /// Même gabarit que l'`infoCard` de la page Infos : les deux pages se suivent,
+    /// elles doivent se ressembler.
+    private func field(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Overline(title)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card()
+    }
+
+    // Les deux Nivelito illustrés (Avatars/boy, Avatars/girl) et non des glyphes
+    // cozy : un glyphe monochrome de 28 pt ne fait pas un visage, et l'app a déjà
+    // un langage d'illustrations couleur (les 31 vignettes sport). Décoratifs : le
+    // label porte le sens. L'état retenu reprend le vocabulaire d'`activityRow`
+    // (bordure + fond orange clair) : cet écran n'a pas de coche, il doit dire
+    // « sélectionné » autrement.
+    private func sexCard(_ value: Sex, avatar: String, label: String) -> some View {
+        let isSelected = sex == value
+        return Button {
+            sex = value
+            nameFocused = true
+        } label: {
             VStack(spacing: 8) {
                 Image(decorative: "Avatars/\(avatar)")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 72, height: 72)
-                Text(name).font(.title3.bold())
+                    .frame(width: 64, height: 64)
+                Text(label).font(.headline)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? Theme.orange.opacity(0.10) : Theme.background)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(isSelected ? Theme.orange : Color.clear, lineWidth: 1.5)
+            )
         }
         .buttonStyle(.plain)
-        .card()
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : [.isButton])
     }
 }
 
