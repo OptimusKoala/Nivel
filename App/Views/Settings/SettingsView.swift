@@ -37,6 +37,10 @@ struct SettingsContent: View {
     /// Nouvel objectif proposé par "Recalculer" — non nil = alerte de confirmation visible.
     @State private var recalcProposal: Int?
     @FocusState private var kcalFocused: Bool
+    /// Tampon du prénom, comme `kcalText` : une frappe invalide ne doit jamais
+    /// atteindre le profil persisté.
+    @State private var nameText = ""
+    @FocusState private var nameFocused: Bool
 
     /// Bornes de vraisemblance de l'objectif kcal saisi à la main.
     private static let kcalRange = 800...6000
@@ -71,12 +75,21 @@ struct SettingsContent: View {
         }
         .foregroundStyle(Theme.text)
         .tint(Theme.orange)
-        .onAppear { kcalText = String(profile.dailyCalorieTarget) }
+        .onAppear {
+            kcalText = String(profile.dailyCalorieTarget)
+            nameText = profile.name
+        }
         .onChange(of: kcalText) { _, text in commitKcal(text) }
         .onChange(of: kcalFocused) { _, focused in
             // Sortie de champ : on réaffiche la valeur réellement persistée
             // (une saisie invalide n'est jamais appliquée).
             if !focused { kcalText = String(profile.dailyCalorieTarget) }
+        }
+        .onChange(of: nameText) { _, text in commitName(text) }
+        .onChange(of: nameFocused) { _, focused in
+            // Sortie de champ : on réaffiche le prénom réellement persisté, donc
+            // un champ vidé puis abandonné retrouve l'ancien prénom.
+            if !focused { nameText = profile.name }
         }
         .onChange(of: profile.heightCm) { save() }
         .onChange(of: profile.birthDate) { save() }
@@ -133,9 +146,19 @@ struct SettingsContent: View {
     private var profileSection: some View {
         section("Profil") {
             row("Prénom") {
-                Text(profile.name)
+                TextField("Ton prénom", text: $nameText)
                     .font(.headline)
-                    .foregroundStyle(Theme.subtext)
+                    .focused($nameFocused)
+                    .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled()
+                    .submitLabel(.done)
+                    .multilineTextAlignment(.trailing)
+                    // Le helper `row` place un Spacer avant son contenu. Un
+                    // DatePicker a une taille intrinsèque et s'en accommode ; un
+                    // TextField non, il se battrait avec le Spacer pour la place.
+                    // On réclame donc le reste de la ligne — la zone tapable
+                    // couvre alors toute la droite de la rangée.
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
             divider
             row("Taille") {
@@ -288,6 +311,20 @@ struct SettingsContent: View {
               Self.kcalRange.contains(value),
               value != profile.dailyCalorieTarget else { return }
         profile.dailyCalorieTarget = value
+        save()
+    }
+
+    /// Prénom à persister, ou nil si cette frappe ne doit rien changer. `static`
+    /// et pure pour être testable sans profil SwiftData ni SwiftUI.
+    static func nameToCommit(_ text: String, current: String) -> String? {
+        guard ProfileName.isAcceptable(text) else { return nil }
+        let cleaned = ProfileName.sanitized(text)
+        return cleaned == current ? nil : cleaned
+    }
+
+    private func commitName(_ text: String) {
+        guard let name = Self.nameToCommit(text, current: profile.name) else { return }
+        profile.name = name
         save()
     }
 
