@@ -1,7 +1,9 @@
 // App/Views/Settings/SettingsView+DevicePreferences.swift
-// Sections "Son" et "Thème" des réglages (spec §4.5) : deux préférences PAR
-// APPAREIL qui vivent dans UserDefaults (SoundSettings, ThemeStore), pas dans
-// SwiftData — ni l'une ni l'autre n'appelle donc le `save()` local.
+// Sections "Son", "Programme posture" et "Thème" des réglages (spec §4.5, §4.11) :
+// préférences PAR APPAREIL qui vivent dans UserDefaults (SoundSettings, ThemeStore,
+// PosturePlanSettings). Son et thème n'appellent donc pas le `save()` local ; le
+// programme posture fait exception (voir postureSection) puisqu'allumer le
+// programme doit AUSSI poser une clé sur le profil SwiftData (spec v1.11 §3).
 
 import SwiftUI
 import NivelCore
@@ -26,6 +28,35 @@ extension SettingsContent {
                 }
             }
         }
+    }
+
+    // MARK: - Programme posture
+
+    /// Interrupteur PAR APPAREIL (spec v1.11 §3), éteint par défaut. Contrairement
+    /// au son ou au thème, l'allumer a un effet SwiftData : `PosturePlanSettings
+    /// .setEnabled` pose `profile.remindersEnabled["posture"]` puis replanifie —
+    /// sans quoi le rappel de 21 h naîtrait éteint (piège documenté v1.9). D'où le
+    /// `Binding` fait à la main plutôt qu'un `@Bindable` direct sur `isEnabled`.
+    ///
+    /// Sous-titre honnête (spec §1.1) : décrit la zone travaillée, ne promet aucun
+    /// résultat, et n'écrit jamais "bosse de bison".
+    var postureSection: some View {
+        section("Programme posture") {
+            Toggle(isOn: postureBinding) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Programme posture").font(.subheadline.weight(.semibold))
+                    Text("Exercices doux pour la nuque et le haut du dos, avec un rappel chaque soir à 21 h.")
+                        .font(.caption).foregroundStyle(Theme.subtext)
+                }
+            }
+        }
+    }
+
+    private var postureBinding: Binding<Bool> {
+        Binding(
+            get: { PosturePlanSettings.shared.isEnabled },
+            set: { PosturePlanSettings.shared.setEnabled($0, on: profile) }
+        )
     }
 
     // MARK: - Thème

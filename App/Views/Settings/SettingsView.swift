@@ -57,6 +57,7 @@ struct SettingsContent: View {
                     profileSection
                     goalsSection
                     soundSection
+                    postureSection
                     remindersSection
                     themeSection
                     healthSection
