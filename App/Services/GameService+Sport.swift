@@ -36,6 +36,10 @@ extension GameService {
         switch kind {
         case .dailySession: action = .dailySessionDone
         case .activity: action = .activityDone
+        // Pas encore de caller : `logPostureSession` arrive en Task 5/6 (interrupteur +
+        // catalogue posture chargés dans GameService). Le mapping est déjà correct pour
+        // ce jour-là — plafond XP indépendant de dailySessionDone (spec §8).
+        case .posture: action = .postureSessionDone
         }
         let xp = XPEngine.award(action, todayCount: sportAwardedCount(kind: kind, on: date))
 
@@ -104,6 +108,21 @@ extension GameService {
     /// validation le même jour ne compte qu'une fois (quêtes et badge "Rituel du jour").
     func dailySessionDayCount(from start: Date, to end: Date) -> Int {
         let kindRaw = ActivityKind.dailySession.rawValue
+        let predicate = #Predicate<ActivityEntry> {
+            $0.date >= start && $0.date < end && $0.kindRaw == kindRaw
+        }
+        let entries = (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
+        return Set(entries.map { Self.calendar.startOfDay(for: $0.date) }).count
+    }
+
+    /// Miroir exact de `dailySessionDayCount`, pour la métrique de quête
+    /// `postureSessionsDone` (spec v1.11 §7.2) : comptée en jours DISTINCTS, comme la
+    /// séance du jour, sinon la quête récompenserait le bachotage plutôt que la
+    /// régularité. Pas encore de caller qui insère des `ActivityEntry(kind: .posture)`
+    /// (`logPostureSession` arrive en Task 6) : ce compteur reste correct dès
+    /// aujourd'hui, il attend juste des données.
+    func postureSessionDayCount(from start: Date, to end: Date) -> Int {
+        let kindRaw = ActivityKind.posture.rawValue
         let predicate = #Predicate<ActivityEntry> {
             $0.date >= start && $0.date < end && $0.kindRaw == kindRaw
         }

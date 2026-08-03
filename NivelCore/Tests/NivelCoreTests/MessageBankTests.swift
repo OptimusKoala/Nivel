@@ -5,7 +5,10 @@ final class MessageBankTests: XCTestCase {
     func testBankHasAllContextsWithEnoughVariety() throws {
         let bank = try MessageBank.load()
         for context in MessageContext.allCases {
-            XCTAssertGreaterThanOrEqual(bank.messages(for: context).count, 12, "\(context) trop pauvre")
+            // `postureReminder` (spec v1.11 §10) est délibérément plus étroit : le plan
+            // demande exactement huit textes, pas douze, pour ce cinquième rappel.
+            let minimum = context == .postureReminder ? 8 : 12
+            XCTAssertGreaterThanOrEqual(bank.messages(for: context).count, minimum, "\(context) trop pauvre")
         }
     }
 
@@ -32,6 +35,40 @@ final class MessageBankTests: XCTestCase {
             let msg = bank.pick(context: .afterActivity, excluding: nil, name: "Marion", value: 30)
             XCTAssertFalse(msg.text.contains("{name}"))
             XCTAssertFalse(msg.text.contains("{value}"))
+        }
+    }
+
+    /// Huit textes exactement (spec v1.11 §10), aucun {value} : le rappel posture n'a
+    /// pas de nombre à substituer, contrairement à afterActivity/afterMealLog.
+    func testPostureReminderALesHuitMessages() throws {
+        let bank = try MessageBank.load()
+        let messages = bank.messages(for: .postureReminder)
+        XCTAssertEqual(messages.count, 8)
+        for msg in messages {
+            XCTAssertFalse(msg.text.contains("{value}"), msg.id)
+        }
+    }
+
+    /// Ton de la banque (spec §1.1, §7.4) : jamais d'injonction, jamais de reproche.
+    /// Le repli sur "tu n'as pas" / "tu dois" / "il faut" attrape la formulation qui
+    /// culpabiliserait, symétrique de ce que l'app refuse partout ailleurs.
+    func testAucunReprocheNiInjonctionDansLesMessagesPosture() throws {
+        let bank = try MessageBank.load()
+        let banned = ["tu n'as pas", "tu dois", "il faut", "tu n'as rien fait", "oublié"]
+        for msg in bank.messages(for: .postureReminder) {
+            let lowered = msg.text.lowercased()
+            for phrase in banned {
+                XCTAssertFalse(lowered.contains(phrase), "\(msg.id) : « \(phrase) » ressemble à un reproche")
+            }
+        }
+    }
+
+    /// Règle de langage explicite (spec §1.1) : l'app ne nomme jamais la zone par le
+    /// terme familier, seulement "Posture" / "Nuque et haut du dos".
+    func testAucunMessageNeDitLeMotBanni() throws {
+        let bank = try MessageBank.load()
+        for msg in bank.messages(for: .postureReminder) {
+            XCTAssertFalse(msg.text.lowercased().contains("bison"), msg.id)
         }
     }
 }

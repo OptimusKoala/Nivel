@@ -46,7 +46,9 @@ final class IconAssetsTests: XCTestCase {
             XCTAssertNotNil(UIImage(named: "Icons/\(name)"), "catalogue : Icons/\(name) introuvable")
             cozyCount += 1
         }
-        XCTAssertEqual(cozyCount, 40, "les 24 badges + 16 quêtes en cozy (2 quêtes restent en emoji)")
+        // 24 badges + 19 quêtes en cozy (16 + les 3 quêtes posture v1.11, icônes
+        // réutilisées : icon_wave, icon_repeat, icon_heart) ; 2 quêtes restent en emoji.
+        XCTAssertEqual(cozyCount, 43, "les 24 badges + 19 quêtes en cozy (2 quêtes restent en emoji)")
 
         for palette in ThemePalette.all {
             XCTAssertNotNil(UIImage(named: "Icons/\(palette.icon)"),

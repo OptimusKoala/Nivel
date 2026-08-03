@@ -374,6 +374,8 @@ final class GameService {
             return activityCount(from: week.start, to: week.end)
         case .dailySessionsDone:
             return dailySessionDayCount(from: week.start, to: week.end)
+        case .postureSessionsDone:
+            return postureSessionDayCount(from: week.start, to: week.end)
         }
     }
 

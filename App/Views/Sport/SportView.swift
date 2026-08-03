@@ -118,6 +118,10 @@ struct SportView: View {
                 return game.activitiesByID[entry.refID]?.name ?? entry.refID
             case .dailySession:
                 return game.sessionCatalog.first { $0.id == entry.refID }?.title ?? entry.refID
+            case .posture:
+                // Pas encore de caller (`logPostureSession` arrive en Task 6, qui fusionne
+                // les ids posture dans `activitiesByID`) : repli sans crash sur l'id brut.
+                return game.activitiesByID[entry.refID]?.name ?? entry.refID
             }
         }()
         return HStack(spacing: 12) {

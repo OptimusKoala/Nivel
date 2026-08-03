@@ -46,6 +46,13 @@ public enum ReminderCatalog {
                            defaultWeekday: 7, isWeekdayEditable: true, context: .weighReminder),
         ReminderDefinition(id: "steps", title: "Pas", defaultHour: 18, defaultMinute: 0,
                            defaultWeekday: nil, isWeekdayEditable: false, context: .stepsEncouragement),
+        // Programme posture (spec v1.11 §10) : 21 h et non 20 h 30, pour ne pas se coller
+        // au rappel "Dîner" (20 h) — deux notifications collées se font ignorer toutes les
+        // deux. Quotidien, jour non modifiable, comme "Pas". Naît éteint (clé absente de
+        // `remindersEnabled`) tant que l'interrupteur du programme (Task 5) ne l'allume pas
+        // explicitement.
+        ReminderDefinition(id: "posture", title: "Posture", defaultHour: 21, defaultMinute: 0,
+                           defaultWeekday: nil, isWeekdayEditable: false, context: .postureReminder),
     ]
 
     public static func definition(id: String) -> ReminderDefinition? {

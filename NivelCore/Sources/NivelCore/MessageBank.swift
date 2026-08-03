@@ -3,6 +3,11 @@ import Foundation
 public enum MessageContext: String, Codable, CaseIterable, Sendable {
     case morning, midday, evening, afterMealLog, afterActivity, afterWeighIn, weighReminder,
          levelUp, badge, questCompleted, stepsEncouragement, overTarget, comeback, fun
+    /// Rappel de 21 h du programme posture (spec v1.11 §10). Contexte séparé de `.evening`,
+    /// qui parle du dîner : mêmes principes que `.weighReminder` en v1. La clé JSON
+    /// correspondante DOIT exister dans messages.json, sinon `MessageBank.load` déclenche
+    /// `assertionFailure` en debug (silencieux en release) — les deux s'ajoutent ensemble.
+    case postureReminder
 }
 
 public struct NivelitoMessage: Codable, Identifiable, Sendable {

@@ -7,7 +7,10 @@ final class RemindersTests: XCTestCase {
     /// rappels des installations existantes sans que personne ne l'ait demandé.
     func testLesQuatreDefautsSontCeuxDeLaV1() {
         let byID = Dictionary(uniqueKeysWithValues: ReminderCatalog.all.map { ($0.id, $0) })
-        XCTAssertEqual(ReminderCatalog.all.count, 4)
+        // 4 + le rappel posture de la v1.11 (épinglé séparément par
+        // testLaCinquiemeEntreeEstLeRappelPosture) : seule ligne touchée ici, aucune des
+        // valeurs pinnées des quatre rappels historiques ci-dessous n'a changé.
+        XCTAssertEqual(ReminderCatalog.all.count, 5)
 
         XCTAssertEqual(byID["lunch"]?.defaultHour, 12)
         XCTAssertEqual(byID["lunch"]?.defaultMinute, 30)
@@ -103,6 +106,25 @@ final class RemindersTests: XCTestCase {
     func testFrequence() {
         XCTAssertEqual(ReminderSchedule.frFrequency(weekday: nil), "tous les jours")
         XCTAssertEqual(ReminderSchedule.frFrequency(weekday: 7), "chaque semaine")
+    }
+
+    /// Cinquième entrée du catalogue (spec v1.11 §10) : le rappel posture, 21 h,
+    /// tous les jours, jour non modifiable. Valeurs ÉPINGLÉES comme les quatre autres.
+    func testLaCinquiemeEntreeEstLeRappelPosture() {
+        XCTAssertEqual(ReminderCatalog.all.count, 5, "le catalogue gagne le rappel posture")
+        let posture = ReminderCatalog.definition(id: "posture")
+        XCTAssertEqual(posture?.title, "Posture")
+        XCTAssertEqual(posture?.defaultHour, 21)
+        XCTAssertEqual(posture?.defaultMinute, 0)
+        XCTAssertNil(posture?.defaultWeekday, "tous les jours, pas de jour fixe")
+        XCTAssertEqual(posture?.isWeekdayEditable, false, "jour non modifiable (spec §10)")
+        XCTAssertEqual(posture?.context, .postureReminder)
+
+        XCTAssertEqual(
+            ReminderSchedule.frLabel(hour: posture!.defaultHour, minute: posture!.defaultMinute,
+                                     weekday: posture!.defaultWeekday),
+            "tous les jours à 21 h"
+        )
     }
 
     /// Aucun tiret cadratin dans les textes destinés à l'écran (règle v1.2).

@@ -198,5 +198,15 @@
     {"id": "f11", "text": "Astuce de panda : tout paraît plus simple après un bon étirement."},
     {"id": "f12", "text": "Entre nous, {name}, de tous les humains, c'est toi que je préfère."},
     {"id": "f13", "text": "Tu savais ça ? En chinois, on m'appelle « petit renard de feu ». La classe."}
+  ],
+  "postureReminder": [
+    {"id": "pr1", "text": "Cinq minutes pour ta nuque, ça se fait bien avant le canapé 🧡"},
+    {"id": "pr2", "text": "Un petit programme posture t'attend, {name}. Nuque et épaules disent merci d'avance."},
+    {"id": "pr3", "text": "Quelques minutes pour dégager la nuque et ouvrir la poitrine, si tu as le temps ce soir."},
+    {"id": "pr4", "text": "Ta séance posture est prête, courte et pensée pour réveiller les omoplates."},
+    {"id": "pr5", "text": "Le soir, c'est un bon moment pour la nuque et le haut du dos. Juste quelques minutes, à ton rythme."},
+    {"id": "pr6", "text": "Une pause posture avant de t'installer, {name} ? Ça fait du bien aux épaules."},
+    {"id": "pr7", "text": "Même les pandas se dégourdissent la nuque avant de se poser. Deux minutes, ça te dit ?"},
+    {"id": "pr8", "text": "Ce soir, deux ou trois minutes pour le haut du dos, si l'envie est là."}
   ]
 }
