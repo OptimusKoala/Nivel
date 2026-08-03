@@ -122,4 +122,86 @@ final class PosturePlanTests: XCTestCase {
         XCTAssertEqual(state.activeQuestIDs, ["posture_sessions_3"])
         XCTAssertEqual(state.questProgress["posture_sessions_3"], 2)
     }
+
+    // MARK: - Enregistrement d'une séance posture (Task 6, spec §6/§7.3/§8)
+
+    private func makeService() throws -> GameService {
+        _ = try makeProfile()
+        container.mainContext.insert(GamificationState())
+        try container.mainContext.save()
+        return GameService(modelContext: container.mainContext,
+                           stepsService: FakeStepsService(authorized: false), widgetDefaults: nil)
+    }
+
+    /// Plafonds INDÉPENDANTS au niveau du SERVICE (pas seulement de XPEngine) :
+    /// faire la séance posture ET la séance du jour le même soir doit payer les
+    /// deux, sinon on punit exactement le comportement qu'on veut installer.
+    func testLogPostureSessionEtSeanceDuJourPaientLesDeuxLeMemeSoir() async throws {
+        let service = try makeService()
+        let posture = try XCTUnwrap(service.postureCatalog.sessions.first)
+        let daily = try XCTUnwrap(service.sessionCatalog.first)
+
+        let postureEntry = await service.logPostureSession(session: posture)
+        let dailyEntry = await service.logDailySession(session: daily)
+
+        XCTAssertEqual(postureEntry.xpAwarded, 40)
+        XCTAssertEqual(dailyEntry.xpAwarded, 40)
+    }
+
+    /// Miroir exact de `dailySessionDayCount` : deux séances posture le même soir
+    /// valent UN jour, sinon la quête et le compteur récompenseraient le
+    /// bachotage plutôt que la régularité (spec §7.2, §7.3).
+    func testDoublePostureSessionSameDayCountsOnce() async throws {
+        let service = try makeService()
+        let posture = try XCTUnwrap(service.postureCatalog.sessions.first)
+
+        _ = await service.logPostureSession(session: posture)
+        _ = await service.logPostureSession(session: posture)
+
+        let (start, end) = try XCTUnwrap(service.dayBounds(for: .now))
+        XCTAssertEqual(service.postureSessionDayCount(from: start, to: end), 1)
+    }
+
+    /// Le compteur mensuel de la carte (spec §7.3) : zéro, une, puis plusieurs
+    /// séances sur des jours DISTINCTS du mois courant.
+    func testCompteurMensuelAZeroUneEtPlusieursJours() async throws {
+        let service = try makeService()
+        let posture = try XCTUnwrap(service.postureCatalog.sessions.first)
+        let now = Date(timeIntervalSince1970: 1_785_000_000) // date fixe, sans dépendre du jour du run
+
+        XCTAssertEqual(service.postureSessionsThisMonth(now: now), 0)
+
+        _ = await service.logPostureSession(session: posture, date: now)
+        XCTAssertEqual(service.postureSessionsThisMonth(now: now), 1)
+
+        let calendar = GameService.calendar
+        let dayLater = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: now))
+        let twoDaysLater = try XCTUnwrap(calendar.date(byAdding: .day, value: 2, to: now))
+        _ = await service.logPostureSession(session: posture, date: dayLater)
+        _ = await service.logPostureSession(session: posture, date: twoDaysLater)
+        XCTAssertEqual(service.postureSessionsThisMonth(now: now), 3)
+    }
+
+    /// Une entrée posture dans "Fait aujourd'hui" porte un id de SÉANCE (comme
+    /// `.dailySession`), résoluble via le catalogue posture ; et un exercice
+    /// posture pris isolément se résout via la table `activitiesByID` FUSIONNÉE
+    /// (spec §6) — sinon l'un ou l'autre s'affiche en id brut dans la liste.
+    func testEntreePostureResolubleParSonTitre() async throws {
+        let service = try makeService()
+        let posture = try XCTUnwrap(service.postureCatalog.sessions.first)
+        let firstExercise = try XCTUnwrap(service.postureCatalog.activities.first)
+
+        let entry = await service.logPostureSession(session: posture)
+        let today = service.todayActivities()
+        XCTAssertTrue(today.contains { $0.id == entry.id })
+        XCTAssertEqual(entry.refID, posture.id)
+        XCTAssertEqual(
+            service.postureCatalog.sessions.first { $0.id == entry.refID }?.title,
+            posture.title
+        )
+        // La table fusionnée porte aussi les EXERCICES posture (pas seulement les
+        // séances), sinon un exercice loggé à l'unité (ActivityKind.activity)
+        // perdrait son nom dans la même liste.
+        XCTAssertEqual(service.activitiesByID[firstExercise.id]?.name, firstExercise.name)
+    }
 }

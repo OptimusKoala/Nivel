@@ -165,9 +165,11 @@ struct OnboardingFlow: View {
 
         let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
         let pool = (try? Catalogs.quests()) ?? []
-        // postureAvailable: false — l'interrupteur du programme posture (Task 5) n'existe
-        // pas encore ; personne ne peut donc tirer de quête posture à l'onboarding.
-        let quests = QuestEngine.weeklyDraw(pool: pool, weekID: weekID, stepsAvailable: healthGranted, postureAvailable: false)
+        // Lu comme au renouvellement hebdo (DayCloser) : l'interrupteur est éteint
+        // par défaut, donc personne ne tire de quête posture à l'onboarding tant
+        // qu'il n'a pas été allumé dans les Réglages (spec v1.11 §3).
+        let quests = QuestEngine.weeklyDraw(pool: pool, weekID: weekID, stepsAvailable: healthGranted,
+                                            postureAvailable: PosturePlanSettings.shared.isEnabled)
         modelContext.insert(GamificationState(
             totalXP: 0,
             activeQuestIDs: quests.map(\.id),

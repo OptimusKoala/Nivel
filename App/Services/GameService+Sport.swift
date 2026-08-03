@@ -26,6 +26,17 @@ extension GameService {
                               kcal: session.estimatedKcal(activitiesByID: activitiesByID), date: date)
     }
 
+    /// Valide la séance posture du soir : +40 XP (max 1/jour, INDÉPENDANT du
+    /// plafond de la séance du jour, spec v1.11 §8) — faire les deux le même
+    /// soir paie les deux, c'est exactement le comportement qu'on veut installer.
+    /// Miroir exact de `logDailySession` ; seul le `kind` change.
+    @discardableResult
+    func logPostureSession(session: ActivitySession, date: Date = .now) async -> ActivityEntry {
+        assert(session.totalMinutes > 0, "séance posture sans étapes")
+        return await logSport(kind: .posture, refID: session.id, minutes: session.totalMinutes,
+                              kcal: session.estimatedKcal(activitiesByID: activitiesByID), date: date)
+    }
+
     private func logSport(kind: ActivityKind, refID: String, minutes: Int,
                           kcal: Int, date: Date) async -> ActivityEntry {
         let state = fetchOrCreateState()
@@ -128,6 +139,15 @@ extension GameService {
         }
         let entries = (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
         return Set(entries.map { Self.calendar.startOfDay(for: $0.date) }).count
+    }
+
+    /// Compteur mensuel de la carte du soir (spec v1.11 §7.3) : jours DISTINCTS du
+    /// mois contenant `now`, comme la quête `postureSessionsDone` — les deux doivent
+    /// compter pareil, sinon la carte et la quête afficheraient des nombres
+    /// différents pour la même semaine sans que personne ne puisse deviner pourquoi.
+    func postureSessionsThisMonth(now: Date = .now) -> Int {
+        guard let month = Self.calendar.dateInterval(of: .month, for: now) else { return 0 }
+        return postureSessionDayCount(from: month.start, to: month.end)
     }
 
     /// Validations sur [start, end[, optionnellement filtrées par kind (quêtes hebdo).

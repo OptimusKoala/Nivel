@@ -295,6 +295,8 @@ private func questsPreviewFixture(unlockedBadges: Bool) -> (ModelContainer, Game
 
     let quests = (try? Catalogs.quests()) ?? []
     let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
+    // postureAvailable: false — fixture de preview Xcode, sans effet en dehors du
+    // canvas ; ce n'est pas un des deux appelants réels (DayCloser, OnboardingFlow).
     let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: true, postureAvailable: false)
     let unlocks: [String: Date] = unlockedBadges
         ? ["first_meal": .now, "first_weigh": .now.addingTimeInterval(-4 * 86_400),
