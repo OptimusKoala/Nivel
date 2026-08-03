@@ -37,6 +37,8 @@
 	<string>public.app-category.healthcare-fitness</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Nivel lit tes pas pour suivre ton activité quotidienne.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Nivel n'écrit rien dans Santé : il se contente de lire tes pas.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

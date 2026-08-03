@@ -90,19 +90,35 @@ rm -rf "$OUT/check" && mkdir -p "$OUT/check"
 APP="$OUT/check/Payload/Nivel.app"
 
 # Les quatre invariants qu'un export raté casse en silence.
+# Sorties capturées AVANT d'être filtrées : `codesign … | grep -q` renverrait 141
+# sous `set -o pipefail` (grep -q sort au premier match et casse le tuyau), et la
+# vérification échouerait sur un binaire parfaitement signé.
 ENTITLEMENTS=$(codesign -d --entitlements - --xml "$APP" 2>/dev/null | plutil -convert xml1 -o - -)
-fail=false
-check() {
-  if grep -q "$2" <<< "$ENTITLEMENTS"; then echo "   ✓ $1"; else echo "   ✗ $1 MANQUANT"; fail=true; fi
-}
-check "entitlement HealthKit"      "com.apple.developer.healthkit"
-check "entitlement App Group"      "com.apple.security.application-groups"
-check "identifiant d'application"  "$TEAM_ID.$BUNDLE_ID"
+SIGNATURE=$(codesign -dv --verbose=2 "$APP" 2>&1)
 
-if codesign -dv --verbose=2 "$APP" 2>&1 | grep -q "Apple Distribution: L'ELITE DANGEREUSE"; then
-  echo "   ✓ signature Apple Distribution"
+fail=false
+# check <libellé> <motif> <texte à fouiller>
+check() {
+  if grep -q "$2" <<< "$3"; then echo "   ✓ $1"; else echo "   ✗ $1 MANQUANT"; fail=true; fi
+}
+check "entitlement HealthKit"        "com.apple.developer.healthkit"           "$ENTITLEMENTS"
+check "entitlement App Group"        "com.apple.security.application-groups"   "$ENTITLEMENTS"
+check "identifiant d'application"    "$TEAM_ID.$BUNDLE_ID"                     "$ENTITLEMENTS"
+check "signature Apple Distribution" "Apple Distribution: L'ELITE DANGEREUSE"  "$SIGNATURE"
+
+# Les DEUX chaînes HealthKit : la validation Apple (erreur 90683) réclame aussi celle
+# d'écriture dès que HealthKit est lié, alors que Nivel ne demande que la lecture.
+PLIST=$(plutil -convert xml1 -o - "$APP/Info.plist")
+check "NSHealthShareUsageDescription"  "NSHealthShareUsageDescription"  "$PLIST"
+check "NSHealthUpdateUsageDescription" "NSHealthUpdateUsageDescription" "$PLIST"
+
+# iPhone uniquement : une app universelle en portrait strict fait râler l'archive et
+# obligerait à fournir en plus des captures iPad 13 pouces.
+FAMILY=$(plutil -extract UIDeviceFamily raw "$APP/Info.plist" | tr -d '[:space:]')
+if [[ "$FAMILY" == "1" ]]; then
+  echo "   ✓ iPhone uniquement"
 else
-  echo "   ✗ signature Apple Distribution MANQUANTE"; fail=true
+  echo "   ✗ UIDeviceFamily = $FAMILY, attendu 1 (iPhone seul)"; fail=true
 fi
 for manifest in "$APP/PrivacyInfo.xcprivacy" "$APP/PlugIns/NivelWidgets.appex/PrivacyInfo.xcprivacy"; do
   if [[ -f "$manifest" ]]; then echo "   ✓ $(basename "$(dirname "$manifest")")/PrivacyInfo.xcprivacy";

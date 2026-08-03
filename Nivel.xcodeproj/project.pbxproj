@@ -849,7 +849,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.elitedangereuse.Nivel;
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -887,7 +887,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.elitedangereuse.Nivel;
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Nivel App Store";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

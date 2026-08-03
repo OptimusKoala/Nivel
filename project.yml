@@ -14,6 +14,10 @@ targets:
     settings:
       base:
         DEVELOPMENT_TEAM: AXVF69V3LL
+        # iPhone SEUL. En universel (défaut), l'archive avertit qu'une app portrait
+        # strict doit supporter toutes les orientations, et l'App Store réclamerait
+        # en plus des captures iPad 13 pouces.
+        TARGETED_DEVICE_FAMILY: "1"
       configs:
         # Signature MANUELLE en Release, appareil uniquement (scripts/release.sh) : la
         # signature automatique choisit un profil de DÉVELOPPEMENT à l'archivage, et la
@@ -44,6 +48,10 @@ targets:
         CFBundleShortVersionString: "1.12"
         CFBundleVersion: "13"
         NSHealthShareUsageDescription: "Nivel lit tes pas pour suivre ton activité quotidienne."
+        # Exigée par la validation Apple (erreur 90683) dès que HealthKit est lié, même
+        # sans le moindre accès en écriture — et Nivel n'en demande aucun. Cette phrase
+        # ne sera donc jamais affichée : autant qu'elle dise la vérité.
+        NSHealthUpdateUsageDescription: "Nivel n'écrit rien dans Santé : il se contente de lire tes pas."
         # Aucun chiffrement au-delà d'HTTPS système : évite le questionnaire export à chaque build.
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
