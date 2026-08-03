@@ -34,12 +34,13 @@ extension SettingsContent {
 
     /// Interrupteur PAR APPAREIL (spec v1.11 §3), éteint par défaut. Contrairement
     /// au son ou au thème, l'allumer a un effet SwiftData : `PosturePlanSettings
-    /// .setEnabled` pose `profile.remindersEnabled["posture"]` puis replanifie —
+    /// .setEnabled` pose `profile.remindersEnabled["posture"]` puis replanifie,
     /// sans quoi le rappel de 21 h naîtrait éteint (piège documenté v1.9). D'où le
     /// `Binding` fait à la main plutôt qu'un `@Bindable` direct sur `isEnabled`.
     ///
-    /// Sous-titre honnête (spec §1.1) : décrit la zone travaillée, ne promet aucun
-    /// résultat, et n'écrit jamais "bosse de bison".
+    /// Sous-titre honnête (spec §1.1) : décrit la zone travaillée ("nuque et haut
+    /// du dos"), ne promet aucun résultat, et n'écrit jamais le nom familier de la
+    /// posture qu'elle corrige.
     var postureSection: some View {
         section("Programme posture") {
             Toggle(isOn: postureBinding) {
