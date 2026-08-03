@@ -14,7 +14,7 @@ struct SportView: View {
     @State private var selectedActivity: Activity?
     @State private var showSessionPlayer = false
     // Section Posture (spec v1.11 §9) : état séparé de la séance du jour, la
-    // sheet du player doit savoir laquelle des deux logger (isPosture).
+    // sheet du player reçoit `kind: .posture` pour savoir laquelle des deux logger.
     @State private var postureSessionStatus: (session: ActivitySession, done: Bool)?
     @State private var showPostureSessionPlayer = false
 
@@ -72,12 +72,12 @@ struct SportView: View {
         .onAppear(perform: reload)
         .sheet(isPresented: $showSessionPlayer, onDismiss: reload) {
             if let status = sessionStatus {
-                SessionPlayerSheet(session: status.session, done: status.done)
+                SessionPlayerSheet(session: status.session, done: status.done, kind: .dailySession)
             }
         }
         .sheet(isPresented: $showPostureSessionPlayer, onDismiss: reload) {
             if let status = postureSessionStatus {
-                SessionPlayerSheet(session: status.session, done: status.done, isPosture: true)
+                SessionPlayerSheet(session: status.session, done: status.done, kind: .posture)
             }
         }
         .sheet(item: $selectedActivity, onDismiss: reload) { activity in

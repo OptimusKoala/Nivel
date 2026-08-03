@@ -140,7 +140,7 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showSessionPlayer, onDismiss: refreshSessionStatus) {
             if let status = sessionStatus {
-                SessionPlayerSheet(session: status.session, done: status.done)
+                SessionPlayerSheet(session: status.session, done: status.done, kind: .dailySession)
             }
         }
     }
