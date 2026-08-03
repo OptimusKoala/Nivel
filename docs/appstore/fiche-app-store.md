@@ -1,6 +1,10 @@
 # Fiche App Store — Nivel
 
 Tout ce qui doit être saisi dans App Store Connect, prêt à copier-coller.
+
+⚠️ **Ce fichier est lu par `scripts/asc-fiche.py`**, qui écrit ces champs directement dans
+App Store Connect : chaque valeur est le bloc de code qui suit son libellé en gras. Modifier
+un texte ici puis relancer le script suffit ; ne pas renommer les libellés en gras.
 App : `6797520298` · Bundle id : `com.elitedangereuse.Nivel` · Team : `AXVF69V3LL`
 Langue de la fiche : **français (France)** · Diffusion : **France uniquement**
 

@@ -138,7 +138,15 @@ export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 # 4. Idem puis envoi à App Store Connect
 ./scripts/release.sh --upload
+
+# 5. Remplir la fiche : version, textes, URLs, build rattachée, captures téléversées
+python3 scripts/asc-fiche.py
 ```
+
+`asc-fiche.py` lit ses textes dans `docs/appstore/fiche-app-store.md` — un texte ne se
+recopie donc jamais à deux endroits. Il ne touche pas au questionnaire de confidentialité,
+à la classification par âge, au prix ni aux territoires : ces quatre points se cochent dans
+l'interface.
 
 `release.sh` crée au besoin les deux profils App Store via l'API
 (`scripts/asc-profiles.py`), puis **vérifie le binaire signé** : entitlements HealthKit et
