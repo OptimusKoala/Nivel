@@ -453,6 +453,8 @@ private struct GoalPage: View {
     let target: Int
     let onContinue: () -> Void
 
+    @State private var showSources = false
+
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
@@ -465,10 +467,15 @@ private struct GoalPage: View {
                     .font(.body)
                     .foregroundStyle(Theme.subtext)
                     .multilineTextAlignment(.center)
+                // Citation exigée par App Review (1.4.1) : la recommandation kcal
+                // doit pointer vers ses sources là où elle est faite.
+                Button("D'où vient ce calcul ?") { showSources = true }
+                    .buttonStyle(SecondaryButtonStyle())
             }
             .frame(maxWidth: .infinity)
             .card()
             .padding(.horizontal, 24)
+            .sheet(isPresented: $showSources) { SourcesView() }
             Spacer()
             Button("C'est parti !", action: onContinue)
                 .buttonStyle(PrimaryButtonStyle())
@@ -538,7 +545,10 @@ private struct PermissionsPage: View {
                     .font(.title2)
                     .foregroundStyle(Theme.green)
             } else {
-                Button("Autoriser", action: action)
+                // « Continuer », pas « Autoriser » : App Review (5.1.1) refuse un
+                // pré-écran dont le bouton préjuge la réponse — c'est la boîte de
+                // dialogue système qui autorise, pas celui-ci.
+                Button("Continuer", action: action)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 14)

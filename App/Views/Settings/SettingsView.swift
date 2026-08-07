@@ -41,6 +41,8 @@ struct SettingsContent: View {
     /// atteindre le profil persisté.
     @State private var nameText = ""
     @FocusState private var nameFocused: Bool
+    /// Sheet des citations scientifiques (À propos > Sources scientifiques).
+    @State private var showSources = false
 
     /// Bornes de vraisemblance de l'objectif kcal saisi à la main.
     private static let kcalRange = 800...6000
@@ -270,6 +272,23 @@ struct SettingsContent: View {
                     .font(.headline)
                     .foregroundStyle(Theme.subtext)
             }
+            divider
+            // Citations des recommandations santé (App Review, 1.4.1) — doivent
+            // rester faciles à trouver.
+            Button {
+                showSources = true
+            } label: {
+                HStack {
+                    Text("Sources scientifiques").font(.subheadline)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Theme.subtext)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .sheet(isPresented: $showSources) { SourcesView() }
             divider
             Text("Fait avec 🧡 pour Michaël & Marion")
                 .font(.footnote)

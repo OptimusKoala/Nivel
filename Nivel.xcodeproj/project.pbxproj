@@ -48,6 +48,7 @@
 		6BB5B3818639E1B3256D9368 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0BB4765E6D2A577C375E88A8 /* PrivacyInfo.xcprivacy */; };
 		6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */; };
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
+		6F3C3DC2FE9892204DEA09CF /* SourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDF577602FF64CA42D65A8F /* SourcesView.swift */; };
 		702598BDC0DD4C224F4D4313 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B37125EC31AFA6210CB0108D /* PrivacyInfo.xcprivacy */; };
 		7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C75615282503FC8044658A28 /* DayCloserTests.swift */; };
 		74773DF87BFEED9D9D9908E4 /* ActivityLogSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AB1204E0C482A88E0531BA /* ActivityLogSheetTests.swift */; };
@@ -233,6 +234,7 @@
 		E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerTests.swift; sourceTree = "<group>"; };
 		E840C37923218C1DC6C0614D /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServiceTests.swift; sourceTree = "<group>"; };
+		EEDF577602FF64CA42D65A8F /* SourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourcesView.swift; sourceTree = "<group>"; };
 		EEF1380E0A63B78349E2FE6D /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
 		F61A0C215E7AF8D8BAB3D8A4 /* SystemWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemWidgetViews.swift; sourceTree = "<group>"; };
 		F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheet.swift; sourceTree = "<group>"; };
@@ -336,6 +338,7 @@
 				848BA4571516E35FCEA2402D /* SettingsView.swift */,
 				27D6B63A9C04FD9C8F04CD75 /* SettingsView+DevicePreferences.swift */,
 				2876B0755FAF9E69C37EECFF /* SettingsView+Reminders.swift */,
+				EEDF577602FF64CA42D65A8F /* SourcesView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -743,6 +746,7 @@
 				4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */,
 				B7F10BCE3A130F18F93DBC46 /* SoundPlayer.swift in Sources */,
 				9E40875FA751C9A4CEDC7FDC /* SoundSettings.swift in Sources */,
+				6F3C3DC2FE9892204DEA09CF /* SourcesView.swift in Sources */,
 				8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */,
 				61E2605647D0942C07D4ED9D /* SplashView.swift in Sources */,
 				A8F3FF34B7D7CB7770F78CDF /* SportIllustration.swift in Sources */,
