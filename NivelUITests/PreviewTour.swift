@@ -34,7 +34,10 @@ final class PreviewTour: XCTestCase {
         let app = launch()
         pause(3.0)                                   // l'accueil, posément
 
-        tap(app.buttons["+ Logger un repas"], "bouton logger un repas")
+        // Correspondance PARTIELLE et non exacte : depuis la v1.13 le bouton est une
+        // carte dont le libellé d'accessibilité combine titre et sous-titre
+        // (« Noter un repas, ce que tu viens de manger »).
+        tap(app.buttons.matching(labelContains("Noter un repas")).firstMatch, "bouton noter un repas")
         pause(0.8)
         // Le créneau est pré-rempli d'après l'heure ; « Déjeuner » a le catalogue de
         // plats le plus parlant (les encas n'ont que quatre entrées).

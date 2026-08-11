@@ -12,6 +12,15 @@ struct ActivityLogSheet: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let activity: Activity
+    /// Fermeture à appeler après une validation, `nil` par défaut (spec v1.13 §6.3).
+    ///
+    /// `nil` → `dismiss()`, le cas de `SportView` où la feuille est présentée seule.
+    /// Fourni → `ActivityPickerSheet`, qui présente cette vue POUSSÉE dans sa pile de
+    /// navigation et doit refermer toute la feuille d'un coup. Explicite à dessein :
+    /// la sémantique de `@Environment(\.dismiss)` dans une vue poussée à l'intérieur
+    /// d'une feuille est ambiguë (pop ou dismiss selon le contexte), et la validation
+    /// d'une activité ne doit pas en dépendre.
+    var onLogged: (() -> Void)?
     /// Durée choisie : une puce du catalogue ou la valeur de la roue (spec v1.9 §5.1).
     @State private var selection: DurationSelection?
     /// Valeur courante de la roue, indépendante du fait qu'elle soit sélectionnée.
@@ -25,8 +34,9 @@ struct ActivityLogSheet: View {
     @State private var timer: ExerciseTimerModel?
     /// `initialMinutes` permet aux previews de s'ouvrir directement avec une durée choisie
     /// (anneau du timer visible) sans simuler un tap, sur le modèle d'`initialPage` du player.
-    init(activity: Activity, initialMinutes: Int? = nil) {
+    init(activity: Activity, initialMinutes: Int? = nil, onLogged: (() -> Void)? = nil) {
         self.activity = activity
+        self.onLogged = onLogged
         _selection = State(initialValue: initialMinutes.map { DurationSelection.preset($0) })
         _timer = State(initialValue: initialMinutes.map { ExerciseTimerModel(durationMinutes: $0) })
         _customMinutes = State(initialValue: CustomDuration.openingValue(
@@ -274,7 +284,7 @@ struct ActivityLogSheet: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
         Task {
             await game.logActivity(activity: activity, durationMinutes: minutes)
-            dismiss()
+            if let onLogged { onLogged() } else { dismiss() }
         }
     }
 }

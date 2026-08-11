@@ -66,7 +66,8 @@ private struct MainTabView: View {
             #if DEBUG
             guard ScreenshotMode.isEnabled else { return .home }
             switch ScreenshotMode.screen {
-            case .home, .meallog: return .home
+            // Les deux feuilles d'action se présentent depuis l'accueil.
+            case .home, .meallog, .activitylog: return .home
             case .meals: return .meals
             case .sport, .session, .step: return .sport
             case .progress: return .progress

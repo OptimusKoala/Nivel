@@ -99,6 +99,13 @@ struct MealBasketView: View {
 /// reproduit le geste (seuil à mi-largeur, retour élastique) sans dépendre d'une
 /// `List` imbriquée dans une `ScrollView`, source de conflits de défilement.
 /// Réutilisé par `MealLineDetailView` pour retirer un composant.
+///
+/// v1.13 — le geste ne fonctionnait PAS depuis son introduction en v1.10 : il était
+/// attaché avec `.gesture(...)`, donc en priorité NORMALE, et en SwiftUI les gestes
+/// d'une sous-vue l'emportent alors sur ceux du parent. Le contenu passé par
+/// `MealBasketView` étant un `Button` (le chevron ouvre le détail de la ligne), le
+/// bouton gagnait et le `DragGesture` ne recevait jamais rien : un glissement vers la
+/// gauche POUSSAIT la page de détail. Voir `highPriorityGesture` plus bas.
 struct SwipeToDeleteRow<Content: View>: View {
     /// Change à chaque ajout ou retrait dans la liste parente. Les `ForEach` de cet
     /// écran identifient leurs lignes par INDEX : après une suppression, l'état de
@@ -125,10 +132,22 @@ struct SwipeToDeleteRow<Content: View>: View {
             }
             .buttonStyle(.plain)
             .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
+            // Sans libellé explicite, VoiceOver (et le test d'interface) annoncent le
+            // nom du symbole SF, « trash ».
+            .accessibilityLabel("Retirer")
 
             content
                 .offset(x: offset)
-                .gesture(
+                // `highPriorityGesture` et non `gesture` : c'est LA correction de la
+                // v1.13. Le parent doit l'emporter sur le `Button` du contenu, sinon
+                // le drag ne reçoit rien.
+                //
+                // `minimumDistance: 12` est ce qui rend l'inversion de priorité sans
+                // danger : un tap sans mouvement n'active jamais le drag et atteint
+                // donc toujours le bouton — ouvrir le détail d'une ligne continue de
+                // marcher. Les deux comportements sont couverts par
+                // NivelUITests/BasketSwipeTests.
+                .highPriorityGesture(
                     DragGesture(minimumDistance: 12)
                         .onChanged { value in
                             offset = min(0, max(-deleteWidth, value.translation.width))

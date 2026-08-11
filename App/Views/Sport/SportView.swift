@@ -118,30 +118,10 @@ struct SportView: View {
 
     private func activitySection(_ title: String, icon: String, activities: [Activity]) -> some View {
         Section {
+            // Ligne partagée avec ActivityPickerSheet (v1.13) : les deux listes des
+            // mêmes activités ne doivent pas pouvoir diverger.
             ForEach(activities) { activity in
-                Button { selectedActivity = activity } label: {
-                    HStack(spacing: 12) {
-                        SportIllustration(name: activity.id)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(activity.name)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(Theme.text)
-                            // Fourchette kcal indicative (spec sport §8.3) sur les durées min/max.
-                            Text(activity.durations.map(String.init).joined(separator: " / ")
-                                 + " min · ~\(activity.estimatedKcal(minutes: activity.durations.first ?? 0).frFormatted)"
-                                 + " à \(activity.estimatedKcal(minutes: activity.durations.last ?? 0).frFormatted) kcal")
-                                .font(.caption)
-                                .foregroundStyle(Theme.subtext)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(Theme.subtext)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .listRowBackground(Theme.card)
+                ActivityRow(activity: activity) { selectedActivity = activity }
             }
         } header: {
             Overline(title, icon: icon)

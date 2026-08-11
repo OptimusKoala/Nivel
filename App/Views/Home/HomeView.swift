@@ -1,7 +1,8 @@
 // App/Views/Home/HomeView.swift
 // Accueil (spec §4.1, maquette design-home.html) : en-tête (date, salut, niveau),
 // Nivelito + bulle contextuelle, anneau calories + colonne pas/XP, quête la plus
-// avancée, bouton "+ Logger un repas", carte « Séance du jour » (spec sport §8.2).
+// avancée, les deux boutons illustrés « Noter un repas » / « Noter une activité »
+// (spec v1.13 §6), carte « Séance du jour » (spec sport §8.2).
 
 import SwiftUI
 import SwiftData
@@ -22,6 +23,7 @@ struct HomeView: View {
     /// contre le `refresh()` asynchrone de la MÊME apparition qui l'écraserait sinon.
     @State private var rewardBubbleActive = false
     @State private var showMealLog = false
+    @State private var showActivityPicker = false
     @State private var showSettings = false
     @State private var sessionStatus: (session: ActivitySession, done: Bool)?
     @State private var showSessionPlayer = false
@@ -101,7 +103,7 @@ struct HomeView: View {
                     if let featured = Self.featuredQuest(from: game.activeQuestStatuses()) {
                         QuestCard(status: featured)
                     }
-                    logMealButton
+                    actionButtons
                     if let status = sessionStatus {
                         Button {
                             showSessionPlayer = true
@@ -128,8 +130,9 @@ struct HomeView: View {
             updateBubble()
             consumeDeepLink()
             #if DEBUG
-            // Capture « catalogue d'aliments » (scripts/screenshots.sh) : absent en release.
+            // Captures (scripts/screenshots.sh) : absentes en release.
             if ScreenshotMode.autoOpensMealLog { showMealLog = true }
+            if ScreenshotMode.autoOpensActivityPicker { showActivityPicker = true }
             #endif
         }
         .task { await refresh() }
@@ -138,6 +141,11 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showMealLog, onDismiss: updateBubble) {
             MealLogSheet()
+        }
+        // `updateBubble` à la fermeture, comme pour le repas : `logActivity` publie
+        // `lastActivityXPAwarded`, et c'est ce signal qui fait féliciter Nivelito.
+        .sheet(isPresented: $showActivityPicker, onDismiss: updateBubble) {
+            ActivityPickerSheet()
         }
         .sheet(isPresented: $showSettings, onDismiss: updateBubble) {
             SettingsView()
@@ -300,11 +308,14 @@ struct HomeView: View {
 
     // MARK: - CTA
 
-    private var logMealButton: some View {
-        Button("+ Logger un repas") {
-            showMealLog = true
+    /// Les deux appels à l'action (spec v1.13 §6.1) : noter ce qu'on vient de manger,
+    /// noter ce qu'on vient de faire. Même poids visuel — ce sont les deux gestes
+    /// quotidiens de l'app.
+    private var actionButtons: some View {
+        VStack(spacing: 12) {
+            ActionCardButton.meal { showMealLog = true }
+            ActionCardButton.activity { showActivityPicker = true }
         }
-        .buttonStyle(PrimaryButtonStyle())
     }
 }
 

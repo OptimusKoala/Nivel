@@ -1,7 +1,8 @@
 // App/Views/Meals/MealsJournalView.swift
 // Onglet Repas (spec §4.2) : journal du jour groupé par créneau, total vs objectif
 // (neutre si dépassé — jamais de rouge), navigation ← → vers les jours précédents
-// en lecture seule. Aujourd'hui uniquement : tap = éditer, swipe = supprimer.
+// en lecture seule. Aujourd'hui uniquement : tap = éditer, swipe = supprimer, et
+// bandeau bas « Noter un repas » (spec v1.13 §6.4).
 
 import SwiftUI
 import SwiftData
@@ -79,6 +80,16 @@ struct MealsJournalView: View {
                 }
             }
             .padding(.top, 8)
+        }
+        // Bandeau bas : toujours atteignable sans scroller (spec v1.13 §6.4). Réservé
+        // à AUJOURD'HUI — les jours passés sont en lecture seule depuis la v1 (§4.2),
+        // un bouton d'ajout y serait un mensonge.
+        .safeAreaInset(edge: .bottom) {
+            if isToday {
+                ActionCardButton.meal(size: .compact) { showNewMeal = true }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+            }
         }
         // Recharge au premier affichage ET à chaque changement de jour.
         .task(id: selectedDay) { reloadDayMeals() }
@@ -224,15 +235,13 @@ struct MealsJournalView: View {
             Spacer()
             NivelitoView(expression: .happy, size: 84)
             if isToday {
-                Text("Rien de loggé aujourd'hui pour l'instant.")
+                // Pas de bouton ici depuis la v1.13 : le bandeau bas est toujours
+                // visible sur aujourd'hui, celui-ci n'était plus qu'un doublon.
+                Text("Rien de noté aujourd'hui pour l'instant.")
                     .font(.subheadline)
                     .foregroundStyle(Theme.subtext)
-                Button("+ Logger un repas") {
-                    showNewMeal = true
-                }
-                .buttonStyle(PrimaryButtonStyle(size: .compact))
             } else {
-                Text("Rien de loggé ce jour-là, et c'est OK 😌")
+                Text("Rien de noté ce jour-là, et c'est OK 😌")
                     .font(.subheadline)
                     .foregroundStyle(Theme.subtext)
                     .multilineTextAlignment(.center)

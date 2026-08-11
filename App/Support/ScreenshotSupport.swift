@@ -24,7 +24,7 @@ import NivelCore
 enum ScreenshotMode {
     /// Écran demandé pour cette exécution.
     enum Screen: String {
-        case home, meallog, meals, sport, session, step, progress, quests
+        case home, meallog, activitylog, meals, sport, session, step, progress, quests
     }
 
     static let isEnabled = ProcessInfo.processInfo.arguments.contains("--nivel-screenshots")
@@ -44,6 +44,11 @@ enum ScreenshotMode {
 
     /// Ouvre d'office la feuille de log de repas (capture « catalogue d'aliments »).
     static var autoOpensMealLog: Bool { isEnabled && screen == .meallog }
+
+    /// Ouvre d'office la page « Tu viens de faire quoi ? » (spec v1.13 §6.3) — miroir
+    /// exact d'`autoOpensMealLog`, pour pouvoir capturer et relire le second bouton
+    /// d'action sans avoir à simuler un tap.
+    static var autoOpensActivityPicker: Bool { isEnabled && screen == .activitylog }
 
     // MARK: - Environnement d'exécution
 

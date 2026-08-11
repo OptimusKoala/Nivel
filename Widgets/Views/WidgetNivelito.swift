@@ -1,6 +1,11 @@
 // Widgets/Views/WidgetNivelito.swift
 // Nivelito STATIQUE pour le widget : mêmes formes que NivelitoView (Shared),
 // aucune animation (un widget est un rendu figé), deux expressions seulement.
+//
+// v1.13 — les couleurs de la mascotte passent par une `NivelitoInk` au lieu d'être
+// lues directement dans `NivelitoColors`. C'est ce qui permet au mode teinté (spec
+// §3.3) de réécrire le dessin en alpha sans dupliquer ce corps de vue : une variante
+// séparée divergerait au premier changement de dessin.
 
 import SwiftUI
 
@@ -8,6 +13,8 @@ struct WidgetNivelito: View {
     let sleepy: Bool
     let palette: ThemePalette
     let size: CGFloat
+    /// Encres du dessin — `.full` par défaut, `.tinted` en mode accentué.
+    var ink: NivelitoInk = .full
 
     private var scale: CGFloat { size / 200 }
     private var outlineStyle: StrokeStyle {
@@ -22,29 +29,29 @@ struct WidgetNivelito: View {
 
     var body: some View {
         ZStack {
-            NivelitoEarLeft().fill(NivelitoColors.cream)
+            NivelitoEarLeft().fill(ink.cream)
             NivelitoEarLeft().stroke(palette.outline, style: outlineStyle)
-            NivelitoEarInnerLeft().fill(NivelitoColors.earBrown)
-            NivelitoEarRight().fill(NivelitoColors.cream)
+            NivelitoEarInnerLeft().fill(ink.earBrown)
+            NivelitoEarRight().fill(ink.cream)
             NivelitoEarRight().stroke(palette.outline, style: outlineStyle)
-            NivelitoEarInnerRight().fill(NivelitoColors.earBrown)
+            NivelitoEarInnerRight().fill(ink.earBrown)
 
-            NivelitoHead().fill(NivelitoColors.fur)
+            NivelitoHead().fill(ink.fur)
             NivelitoHead().stroke(palette.outline, style: outlineStyle)
 
-            NivelitoEllipse(center: .init(x: 45, y: 134), rx: 19, ry: 16).fill(NivelitoColors.cheekBrown)
-            NivelitoEllipse(center: .init(x: 155, y: 134), rx: 19, ry: 16).fill(NivelitoColors.cheekBrown)
-            NivelitoMuzzle().fill(NivelitoColors.cream)
+            NivelitoEllipse(center: .init(x: 45, y: 134), rx: 19, ry: 16).fill(ink.cheekBrown)
+            NivelitoEllipse(center: .init(x: 155, y: 134), rx: 19, ry: 16).fill(ink.cheekBrown)
+            NivelitoMuzzle().fill(ink.cream)
 
-            NivelitoBrowLeft().fill(NivelitoColors.cream)
-            NivelitoBrowLeft().stroke(NivelitoColors.cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
-            NivelitoBrowRight().fill(NivelitoColors.cream)
-            NivelitoBrowRight().stroke(NivelitoColors.cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
+            NivelitoBrowLeft().fill(ink.cream)
+            NivelitoBrowLeft().stroke(ink.cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
+            NivelitoBrowRight().fill(ink.cream)
+            NivelitoBrowRight().stroke(ink.cream, style: StrokeStyle(lineWidth: 4 * scale, lineJoin: .round))
 
             NivelitoEllipse(center: .init(x: 62, y: 122), rx: 8, ry: 5)
-                .fill(NivelitoColors.blushPink.opacity(0.85))
+                .fill(ink.blushPink.opacity(0.85))
             NivelitoEllipse(center: .init(x: 138, y: 122), rx: 8, ry: 5)
-                .fill(NivelitoColors.blushPink.opacity(0.85))
+                .fill(ink.blushPink.opacity(0.85))
 
             if sleepy {
                 NivelitoSleepyEye(center: .init(x: 70, y: 104))
@@ -53,9 +60,9 @@ struct WidgetNivelito: View {
                     .stroke(palette.outline, style: closedEyeStyle)
             } else {
                 NivelitoEllipse(center: .init(x: 70, y: 104), r: 12).fill(palette.outline)
-                NivelitoEllipse(center: .init(x: 74, y: 99), r: 4.2).fill(.white)
+                NivelitoEllipse(center: .init(x: 74, y: 99), r: 4.2).fill(ink.eyeHighlight)
                 NivelitoEllipse(center: .init(x: 130, y: 104), r: 12).fill(palette.outline)
-                NivelitoEllipse(center: .init(x: 134, y: 99), r: 4.2).fill(.white)
+                NivelitoEllipse(center: .init(x: 134, y: 99), r: 4.2).fill(ink.eyeHighlight)
             }
 
             NivelitoNose().fill(palette.outline)

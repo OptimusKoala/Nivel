@@ -110,7 +110,37 @@ extension ThemePalette {
         outline: nivelitoOutline
     )
 
-    /// Les 4 palettes, dans l'ordre d'affichage des Réglages.
+    /// Palette du WIDGET EN MODE TEINTÉ (spec v1.13 §3.3) — absente des Réglages et
+    /// donc absente de `all` : on ne la choisit pas, le système l'impose.
+    ///
+    /// Quand l'écran d'accueil est teinté, WidgetKit passe la vue en
+    /// `widgetRenderingMode == .accented`, découpe la hiérarchie en deux groupes et
+    /// **remplace la couleur** de chaque groupe par une teinte système. **Seul l'alpha
+    /// survit.** Les 4 palettes ci-dessus ont des cartes, des pistes et des textes tous
+    /// opaques : après remplacement, tout devient le même aplat et le widget se réduit
+    /// à des formes blanches.
+    ///
+    /// D'où l'unique règle de cette palette : **l'information est portée par l'alpha,
+    /// jamais par la teinte.** Le blanc est arbitraire — il sera remplacé ; ce sont les
+    /// écarts d'opacité entre les rôles qui doivent survivre, et c'est ce que les tests
+    /// (`ThemePaletteTests`) vérifient.
+    static let accented = ThemePalette(
+        id: "accented", name: "Teinté", icon: "icon_moon", isDark: true,
+        // Le système fournit lui-même le fond translucide de la tuile.
+        background: .clear,
+        card: .white.opacity(0.20),      // détache une pastille sans faire un bloc
+        text: .white,
+        subtext: .white.opacity(0.65),   // la hiérarchie de texte est conservée
+        primary: .white,
+        accent: .white.opacity(0.90),    // la progression, à peine sous l'encre pleine
+        success: .white.opacity(0.90),
+        info: .white.opacity(0.90),
+        track: .white.opacity(0.16),     // la piste de l'anneau, juste SOUS la carte
+        outline: .white
+    )
+
+    /// Les 4 palettes, dans l'ordre d'affichage des Réglages. `accented` en est exclue
+    /// à dessein : `byID` ne doit jamais la retourner pour un snapshot.
     static let all: [ThemePalette] = [.creme, .menthe, .ocean, .nuitDouce]
 
     /// Palette par id — id inconnu ou nil : Crème (utilisée par le widget, dont

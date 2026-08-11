@@ -105,11 +105,20 @@ cd NivelCore && swift test
 xcodebuild -project Nivel.xcodeproj -scheme Nivel \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 
+# Tests d'INTERFACE du panier de repas — hors du schéma quotidien (~2,5 s par geste),
+# à lancer à la main après avoir touché MealBasketView ou SwipeToDeleteRow (v1.13 §7.3)
+xcodebuild -project Nivel.xcodeproj -scheme NivelPreview \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -only-testing:NivelUITests/BasketSwipeTests test
+
 # Régénérer les assets sport (App/Assets.xcassets/Sport) depuis design/sport/*.png
 ./scripts/import-sport-images.sh
 
 # Régénérer les avatars de profil (App/Assets.xcassets/Avatars) depuis design/icons/{boy,girl}.png
 ./scripts/import-avatars.sh
+
+# Régénérer les illustrations des boutons d'action (App/Assets.xcassets/Buttons)
+./scripts/import-button-icons.sh
 
 # Régénérer les icônes cozy (App/Assets.xcassets/Icons + planche-contact)
 swift scripts/gen-icons.swift

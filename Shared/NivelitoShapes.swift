@@ -17,6 +17,52 @@ enum NivelitoColors {
     static let blushPink = Color(hex: 0xFFB09B)
 }
 
+/// Les encres du dessin de la mascotte (spec v1.13 §3.3), pour que le Nivelito du
+/// widget garde UN SEUL corps de vue entre le rendu normal et le rendu teinté.
+///
+/// En mode teinté, WidgetKit remplace les couleurs et ne conserve que l'alpha : deux
+/// aplats opaques différents deviennent le même aplat, et la mascotte se réduit à une
+/// silhouette. La variante `.tinted` réécrit donc chaque encre en blanc à une opacité
+/// calibrée, en gardant l'ORDRE de clarté du dessin d'origine — c'est cet ordre, et
+/// non les couleurs, qui rend la mascotte reconnaissable (testé dans NivelitoInkTests).
+struct NivelitoInk {
+    let fur: Color
+    let cream: Color
+    let earBrown: Color
+    let cheekBrown: Color
+    let blushPink: Color
+    /// Le reflet dans l'œil, posé PAR-DESSUS la pupille.
+    ///
+    /// En mode teinté il ne peut pas survivre, et c'est mathématique : la composition
+    /// alpha ne sait qu'ajouter de la couverture. Un blanc à 0,3 posé sur une pupille
+    /// déjà à 1,0 laisse 1,0 — impossible de creuser un point clair sans passer par un
+    /// blend mode. On le laisse donc à 1,0 en teinté (il se fond dans la pupille) : la
+    /// pupille pleine sur une fourrure à 0,30 suffit largement à faire un œil.
+    let eyeHighlight: Color
+
+    /// Les couleurs réelles de la mascotte.
+    static let full = NivelitoInk(
+        fur: NivelitoColors.fur,
+        cream: NivelitoColors.cream,
+        earBrown: NivelitoColors.earBrown,
+        cheekBrown: NivelitoColors.cheekBrown,
+        blushPink: NivelitoColors.blushPink,
+        eyeHighlight: .white
+    )
+
+    /// Mode teinté : tout en alpha. La fourrure reste un FOND (0,30) pour que le museau
+    /// et les oreilles crème (0,55) s'en détachent ; creux d'oreille et joues passent
+    /// SOUS la fourrure (0,18 / 0,16) puisqu'ils sont plus sombres qu'elle à l'origine.
+    static let tinted = NivelitoInk(
+        fur: .white.opacity(0.30),
+        cream: .white.opacity(0.55),
+        earBrown: .white.opacity(0.18),
+        cheekBrown: .white.opacity(0.16),
+        blushPink: .white.opacity(0.30),
+        eyeHighlight: .white          // se fond dans la pupille, voir `eyeHighlight`
+    )
+}
+
 // MARK: - Mise à l'échelle
 
 extension Path {
