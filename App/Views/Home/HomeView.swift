@@ -96,7 +96,12 @@ struct HomeView: View {
             Theme.background.ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 16) {
+                // 14 et non 16, et 16 de marge basse et non 24 (v1.13) : ces 18 pt sont
+                // ce qui permet à l'accueil de tenir sans défilement même quand la bulle
+                // de Nivelito prend ses TROIS lignes (SpeechBubble les plafonne là).
+                // Sans eux ça tient au cas courant de deux lignes et déborde au premier
+                // message long — c'est-à-dire que ça ne tient pas.
+                VStack(spacing: 14) {
                     header
                     nivelitoRow
                     statsRow
@@ -118,7 +123,7 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                .padding(.bottom, 24)
+                .padding(.bottom, 16)
             }
             .refreshable { await refresh() }
         }

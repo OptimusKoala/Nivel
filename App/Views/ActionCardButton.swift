@@ -16,13 +16,14 @@ import UIKit
 
 struct ActionCardButton: View {
     enum Size {
-        /// Accueil : illustration 46 pt et sous-titre, soit 64 pt de haut.
+        /// Accueil : illustration 42 pt et sous-titre, soit 58 pt de haut.
         ///
-        /// L'illustration a été ramenée de 56 à 46 pt (retour de Michaël : trop hauts).
-        /// C'est bien elle qui fixe la hauteur — le bloc de texte n'en fait que ~38 —
-        /// donc descendre plus bas que 42 pt ne gagnerait plus rien.
+        /// L'illustration est passée de 56 à 46 puis à 42 pt (deux retours de Michaël).
+        /// **42 pt est le plancher utile** : le bloc titre + sous-titre fait ~38 pt, donc
+        /// en dessous c'est le TEXTE qui fixe la hauteur et rapetisser le dessin ne gagne
+        /// plus un pixel — ça ne fait que l'écraser.
         case regular
-        /// Bandeau bas de l'onglet Repas : illustration 40 pt, sans sous-titre — la
+        /// Bandeau bas de l'onglet Repas : illustration 38 pt, sans sous-titre — la
         /// place manque au-dessus de la barre d'onglets, et le titre suffit là où
         /// l'écran dit déjà de quoi il parle.
         case compact
@@ -39,7 +40,7 @@ struct ActionCardButton: View {
     var size: Size = .regular
     let action: () -> Void
 
-    private var illustrationSize: CGFloat { size == .regular ? 46 : 40 }
+    private var illustrationSize: CGFloat { size == .regular ? 42 : 38 }
     private var showsSubtitle: Bool { size == .regular && subtitle != nil }
 
     var body: some View {
@@ -67,7 +68,7 @@ struct ActionCardButton: View {
                     .foregroundStyle(tint)
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, size == .regular ? 9 : 8)
+            .padding(.vertical, size == .regular ? 8 : 7)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
