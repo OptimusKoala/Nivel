@@ -69,10 +69,16 @@ Nivel est en français, conçu et développé en France, et son code est ouvert 
 Nivel n'est pas un dispositif médical et ne remplace pas l'avis d'un professionnel de santé.
 ```
 
-**Nouveautés de cette version** (4 000 max — première mise en vente)
+**Nouveautés de cette version** (4 000 max — version 1.13)
 
 ```
-Première version publique de Nivel. Bonne route, et sois doux avec toi-même.
+Six retours d'usage de la première semaine, dont deux corrections.
+
+• Le widget reste lisible quand l'écran d'accueil est en mode transparent ou teinté : Nivelito ne se réduit plus à une silhouette blanche.
+• Nouveau bouton « Noter une activité » sur l'accueil, pour déclarer ce que tu viens de faire sans passer par l'onglet Sport.
+• « Logger un repas » devient « Noter un repas », et le bouton est maintenant aussi dans l'onglet Repas.
+• Dans un repas en cours, un élément se retire d'un glissement vers la gauche.
+• Les annonces de trophée s'écartent d'un glissement vers le haut, quand tu n'as pas envie de les lire.
 ```
 
 **Mots-clés** (100 max — 94 utilisés, séparés par des virgules sans espace)
