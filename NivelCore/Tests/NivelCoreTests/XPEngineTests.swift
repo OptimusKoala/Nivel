@@ -39,4 +39,16 @@ final class XPEngineTests: XCTestCase {
         // Le compteur de l'une n'affecte pas l'autre : les deux sont interrogées à 0.
         XCTAssertEqual(XPEngine.award(.dailySessionDone, todayCount: 0), 40)
     }
+
+    /// Troisième plafond indépendant (spec v1.14 §5.7), au même barème que les deux
+    /// autres séances : 40 XP, une fois par jour.
+    func testLaSeanceMuscuAUnPlafondQuotidienIndependant() {
+        XCTAssertEqual(XPEngine.award(.muscuSessionDone, todayCount: 0), 40)
+        XCTAssertEqual(XPEngine.award(.muscuSessionDone, todayCount: 1), 0)
+        // Trois séances de nature différente le même soir paient TROIS fois : les
+        // plafonds sont indépendants, sinon le lot punit ce qu'il veut installer.
+        XCTAssertEqual(XPEngine.award(.dailySessionDone, todayCount: 0)
+                       + XPEngine.award(.postureSessionDone, todayCount: 0)
+                       + XPEngine.award(.muscuSessionDone, todayCount: 0), 120)
+    }
 }

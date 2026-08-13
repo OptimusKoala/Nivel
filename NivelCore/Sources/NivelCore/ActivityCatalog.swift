@@ -70,6 +70,15 @@ public enum ActivityKind: String, Codable, Sendable {
     /// Séance ou exercice du programme posture (spec v1.11 §8) — catalogue cloisonné
     /// (`PostureCatalog`), mais même mécanique de validation que `dailySession`.
     case posture
+    /// Séance du programme muscu maison (spec v1.14 §4.4) — catalogue de séances à part
+    /// (`MuscuCatalog`), mais dont les étapes pointent vers le catalogue commun :
+    /// surtout des activités « Ça pousse », et aussi des douces comme les squats ou la
+    /// chaise au mur. Plafond XP INDÉPENDANT (§5.7) : `XPAction.muscuSessionDone`.
+    ///
+    /// Comme pour `.posture`, `SportView.doneRow` doit chercher le titre dans
+    /// `MuscuCatalog` : passer par le catalogue d'activités retomberait en silence sur
+    /// l'identifiant brut, sans qu'aucun test ne s'en plaigne.
+    case muscu
 }
 
 /// Le découpage de l'onglet Sport (spec v1.14 §4.3), en un seul endroit : deux vues

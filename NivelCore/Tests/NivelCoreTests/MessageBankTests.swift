@@ -35,27 +35,45 @@ final class MessageBankTests: XCTestCase {
         }
     }
 
-    /// Douze textes exactement (spec v1.11 §10), aucun {value} : le rappel posture n'a
-    /// pas de nombre à substituer, contrairement à afterActivity/afterMealLog.
-    func testPostureReminderALesDouzeMessages() throws {
+    /// Douze textes exactement pour CHAQUE rappel de programme (spec v1.11 §10,
+    /// v1.14 §4.4), et aucun {value} : ces rappels n'ont pas de nombre à substituer,
+    /// contrairement à afterActivity/afterMealLog.
+    ///
+    /// L'absence de {value} n'est pas cosmétique : le chemin notification appelle
+    /// `pick(..., value: nil)` (`NotificationService.schedule`), donc un {value} glissé
+    /// un jour dans un de ces textes partirait TEL QUEL dans la notification, avec un
+    /// assert en debug seulement. Épinglé sur les deux contextes ensemble : la posture
+    /// l'avait, les douze textes muscu seraient passés à côté d'un test resté sur
+    /// `.postureReminder`.
+    func testLesRappelsDeProgrammeOntDouzeMessagesSansValeur() throws {
         let bank = try MessageBank.load()
-        let messages = bank.messages(for: .postureReminder)
-        XCTAssertEqual(messages.count, 12)
-        for msg in messages {
-            XCTAssertFalse(msg.text.contains("{value}"), msg.id)
+        for context in [MessageContext.postureReminder, .muscuReminder] {
+            let messages = bank.messages(for: context)
+            XCTAssertEqual(messages.count, 12, "\(context)")
+            for msg in messages {
+                XCTAssertFalse(msg.text.contains("{value}"), "\(context).\(msg.id)")
+            }
         }
     }
 
     /// Ton de la banque (spec §1.1, §7.4) : jamais d'injonction, jamais de reproche.
     /// Le repli sur "tu n'as pas" / "tu dois" / "il faut" attrape la formulation qui
     /// culpabiliserait, symétrique de ce que l'app refuse partout ailleurs.
-    func testAucunReprocheNiInjonctionDansLesMessagesPosture() throws {
+    ///
+    /// Les DEUX contextes de programme, et non le seul rappel posture : ce sont les
+    /// rappels d'un engagement qu'on a pris, donc ceux où la formulation glisse le plus
+    /// facilement vers le reproche. La v1.14 y a ajouté douze textes muscu, qui seraient
+    /// passés à côté d'un test resté sur `.postureReminder`.
+    func testAucunReprocheNiInjonctionDansLesRappelsDeProgramme() throws {
         let bank = try MessageBank.load()
         let banned = ["tu n'as pas", "tu dois", "il faut", "tu n'as rien fait", "oublié"]
-        for msg in bank.messages(for: .postureReminder) {
-            let lowered = msg.text.lowercased()
-            for phrase in banned {
-                XCTAssertFalse(lowered.contains(phrase), "\(msg.id) : « \(phrase) » ressemble à un reproche")
+        for context in [MessageContext.postureReminder, .muscuReminder] {
+            for msg in bank.messages(for: context) {
+                let lowered = msg.text.lowercased()
+                for phrase in banned {
+                    XCTAssertFalse(lowered.contains(phrase),
+                                   "\(context).\(msg.id) : « \(phrase) » ressemble à un reproche")
+                }
             }
         }
     }

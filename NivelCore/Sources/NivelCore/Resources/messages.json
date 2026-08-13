@@ -764,5 +764,55 @@
       "id": "pr12",
       "text": "Un petit temps pour la nuque avant la nuit, si le moment s'y prête."
     }
+  ],
+  "muscuReminder": [
+    {
+      "id": "mr1",
+      "text": "Cinq minutes de pompes, ça te dit ? 🧡"
+    },
+    {
+      "id": "mr2",
+      "text": "Ta séance muscu est prête, {name}. Courte, au poids du corps, dans le salon."
+    },
+    {
+      "id": "mr3",
+      "text": "Quelques squats avant le dîner, si l'envie est là."
+    },
+    {
+      "id": "mr4",
+      "text": "Un bout de tapis et une chaise suffisent pour la séance du jour."
+    },
+    {
+      "id": "mr5",
+      "text": "Une série de pompes et deux de squats, et c'est déjà une belle séance."
+    },
+    {
+      "id": "mr6",
+      "text": "Envie de pousser un peu ce soir, {name} ? La séance t'attend, sans matériel."
+    },
+    {
+      "id": "mr7",
+      "text": "Même les pandas font leurs squats avant le repas. Enfin, presque 🧡"
+    },
+    {
+      "id": "mr8",
+      "text": "Trois minutes de gainage, ça se glisse bien avant de passer à table."
+    },
+    {
+      "id": "mr9",
+      "text": "Ça pousse un peu, mais ça ne dure pas longtemps. À toi de voir si c'est le bon soir."
+    },
+    {
+      "id": "mr10",
+      "text": "Rien à décider, {name} : la séance du soir est déjà choisie. Elle attendra bien demain, sinon."
+    },
+    {
+      "id": "mr11",
+      "text": "Des burpees, ou juste des squats : la séance s'adapte à ce que tu as en réserve."
+    },
+    {
+      "id": "mr12",
+      "text": "Quelques minutes de muscu ce soir, si le moment s'y prête ?"
+    }
   ]
 }
