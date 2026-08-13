@@ -15,7 +15,9 @@
       "Recule le menton à l'horizontale, comme pour faire un double menton, sans baisser la tête",
       "Tiens 5 secondes, relâche, recommence tranquillement",
       "Tu dois sentir un étirement à l'arrière du cou, jamais une douleur"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "supine_chin_tuck",
@@ -33,7 +35,9 @@
       "Recule doucement le menton et allonge la nuque vers le haut du tapis",
       "Garde 5 secondes en respirant, puis relâche",
       "La tête reste posée : ce n'est pas un relevé, juste un allongement"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "wall_angels",
@@ -51,7 +55,9 @@
       "Bras en chandelier contre le mur, coudes et poignets au contact",
       "Fais glisser les bras vers le haut puis vers le bas, en gardant le contact",
       "Si les poignets décollent, réduis l'amplitude : mieux vaut petit et propre"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "wall_thoracic",
@@ -69,7 +75,9 @@
       "Recule les pieds et laisse la poitrine descendre entre les bras",
       "Respire dans le haut du dos, laisse-le s'ouvrir à chaque expiration",
       "Ne creuse pas le bas du dos : l'ouverture vient du haut"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "scapular_squeeze",
@@ -87,7 +95,9 @@
       "Rapproche les omoplates l'une de l'autre, comme pour pincer une feuille entre elles",
       "Tiens 5 secondes sans monter les épaules vers les oreilles",
       "Relâche complètement entre chaque, c'est le relâchement qui fait le travail"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "prone_y_raise",
@@ -105,7 +115,9 @@
       "Décolle les bras de quelques centimètres en rapprochant les omoplates",
       "Tiens 3 secondes, redescends en contrôlant",
       "Le front reste posé : la tête ne participe pas"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "doorway_stretch",
@@ -123,7 +135,9 @@
       "Avance doucement d'un pas jusqu'à sentir l'avant de l'épaule s'ouvrir",
       "Respire, tiens 20 à 30 secondes, change de côté",
       "Un étirement confortable, jamais un pincement à l'avant de l'épaule"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "neck_stretch",
@@ -141,7 +155,9 @@
       "Incline la tête de l'autre côté, oreille vers l'épaule, sans tourner",
       "Respire, tiens 20 à 30 secondes, change de côté",
       "Aucun à-coup, aucune traction avec la main : le poids de la tête suffit"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   },
   {
     "id": "open_book",
@@ -159,6 +175,8 @@
       "Ouvre le bras du dessus en grand vers l'arrière, en suivant la main du regard",
       "Laisse les genoux posés, ce sont les épaules qui tournent",
       "Va où ça vient sans forcer, et respire une fois arrivée"
-    ]
+    ],
+    "intensity": "gentle",
+    "stepsBased": false
   }
 ]

@@ -107,6 +107,34 @@ final class ActivityCatalogTests: XCTestCase {
         ])
     }
 
+    /// Les six activités qui produisent des pas déjà comptés par HealthKit.
+    /// `running` s'y ajoutera à la spec §4.2 — le jeu est écrit ici SANS lui, pour
+    /// que cette tâche finisse verte.
+    func testStepsBasedSontExactementLesActivitesMarchees() throws {
+        let expected: Set<String> = ["walk", "brisk_walk", "digestive_walk", "hike",
+                                     "stairs", "march_in_place"]
+        XCTAssertEqual(Set(try Catalogs.activities().filter(\.stepsBased).map(\.id)), expected)
+    }
+
+    /// Un exercice posture n'est ni intense ni marché : il ne doit jamais entrer
+    /// dans la section « Ça pousse » ni dans l'anneau de dépense par les pas.
+    func testExercicesPostureSontDouxEtSansPas() throws {
+        for activity in try Catalogs.postureActivities() {
+            XCTAssertEqual(activity.intensity, .gentle, activity.id)
+            XCTAssertFalse(activity.stepsBased, activity.id)
+        }
+    }
+
+    /// L'ensemble exact des activités intenses : vide pour l'instant, les dix de
+    /// la section « Ça pousse » (spec §4.2) viendront le remplir. C'est
+    /// l'exactitude — pas une poignée d'ids en dur — qui attrape un `bike` ou un
+    /// `yoga` marqué `strong` par erreur de frappe, alors que rien ne lit encore
+    /// `intensity` pour le signaler autrement.
+    func testActivitesIntensesSontExactementCetEnsemble() throws {
+        let expected: Set<String> = []
+        XCTAssertEqual(Set(try Catalogs.activities().filter { $0.intensity == .strong }.map(\.id)), expected)
+    }
+
     func testNoBundleResourceContainsEmDash() throws {
         // Convention v1.2 : aucun tiret cadratin dans les textes utilisateur.
         let urls = Bundle.module.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []

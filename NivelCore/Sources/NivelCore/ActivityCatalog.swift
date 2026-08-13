@@ -4,6 +4,10 @@ import Foundation
 public struct Activity: Codable, Identifiable, Hashable, Sendable {
     public enum Location: String, Codable, Sendable { case home, outdoor, both }
 
+    /// Rangement de l'onglet Sport (spec v1.14 §4.1) : le catalogue doux garde sa
+    /// place et son rang, l'intense va dans sa propre section, en dernier.
+    public enum Intensity: String, Codable, Sendable { case gentle, strong }
+
     public let id: String
     public let name: String
     public let location: Location
@@ -14,6 +18,11 @@ public struct Activity: Codable, Identifiable, Hashable, Sendable {
     /// Consignes « comment faire » : 3-4 puces courtes (position, mouvement,
     /// repère sécurité/respiration), ton bienveillant (spec illustrations §4.1).
     public let instructions: [String]
+    public let intensity: Intensity
+    /// Vrai si l'activité produit des PAS déjà comptés par HealthKit. Lu par
+    /// `BurnCalculator` (spec v1.14 §5.4) : sans ce drapeau, une marche de 40 min
+    /// validée serait comptée deux fois dans l'anneau de dépense.
+    public let stepsBased: Bool
 
     /// Estimation "~ kcal" arrondie à la dizaine — indicative, jamais créditée au budget.
     public func estimatedKcal(minutes: Int) -> Int {
