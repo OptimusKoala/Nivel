@@ -100,7 +100,10 @@ final class FoodCatalogTests: XCTestCase {
         XCTAssertEqual(catalog.items(category: .drink, slot: nil).count, 15)
         XCTAssertEqual(catalog.items(category: .snack, slot: nil).count, 9)     // 12 − 3 déménagés
         XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 30)
-        XCTAssertGreaterThanOrEqual(catalog.items(category: .side, slot: nil).count, 40)
+        // Épinglé et non borné par un `>=` : la borne à 40 datait d'un onglet à 42 items
+        // et ne gardait plus rien une fois passé à 58. C'est le dernier compte de
+        // catégorie du fichier qui n'était pas exact.
+        XCTAssertEqual(catalog.items(category: .side, slot: nil).count, 58)
         XCTAssertEqual(catalog.items(category: .dessert, slot: nil).count, 10)
     }
 
