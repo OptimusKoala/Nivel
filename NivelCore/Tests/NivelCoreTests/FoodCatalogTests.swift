@@ -88,8 +88,8 @@ final class FoodCatalogTests: XCTestCase {
 
     /// 122 est une donnée, pas une règle de calcul : un ajout légitime au catalogue
     /// doit faire bouger cette valeur, en même temps que le compte par catégorie
-    /// concerné. Elle verrouille aussi, indirectement, les 58 ingrédients que
-    /// `testLeCatalogueSeChargeEtEstComplet` n'épingle qu'en `>= 40`.
+    /// concerné dans `testLeCatalogueSeChargeEtEstComplet`. Les deux tests se tiennent :
+    /// la somme des cinq comptes par catégorie doit faire ce total.
     func testLaTailleDuCatalogue() {
         XCTAssertEqual(catalog.items.count, 122, "le catalogue ne compte plus 122 aliments")
     }
@@ -362,6 +362,28 @@ final class FoodCatalogTests: XCTestCase {
             let item = catalog.byID[id]
             XCTAssertNotNil(item, "dessert manquant : \(id)")
             XCTAssertEqual(item?.kcalPer100g, Double(kcal), "\(id) : kcal/100 g incohérent avec la spec")
+        }
+    }
+
+    /// Garde-fou de transcription : les cinq unités ajoutées après le premier jet, quand
+    /// les dix desserts se saisissaient tous au gramme et que l'onglet était le seul du
+    /// catalogue à présentation mixte. Pas un échantillon : une erreur de recopie sur une
+    /// seule ligne du JSON doit tomber ici. `testUniteEtPoidsVontEnsemble` épingle déjà
+    /// l'invariant libellé/grammage par paire ; celui-ci épingle les valeurs, pas la règle.
+    func testLesUnitesDesCinqDessertsRetombentSurLaSpec() {
+        let expected: [String: (label: String, grams: Int)] = [
+            "skyr": ("pot", 150),
+            "greek_yogurt": ("pot", 150),
+            "cake": ("part", 100),
+            "fruit_tart": ("part", 120),
+            "crepe_sugar": ("crêpe", 90),
+        ]
+        for (id, unite) in expected {
+            let item = catalog.byID[id]
+            XCTAssertNotNil(item, "dessert manquant : \(id)")
+            guard let item else { continue }
+            XCTAssertEqual(item.unitLabel, unite.label, "\(id) : unité incohérente avec la spec")
+            XCTAssertEqual(item.unitGrams, unite.grams, "\(id) : grammage d'unité incohérent avec la spec")
         }
     }
 
