@@ -1,5 +1,6 @@
-// Catalogue unique des aliments (spec v1.10 §4.1). Remplace Dish et Extra : plats,
-// accompagnements, boissons et encas ne diffèrent plus que par leur catégorie.
+// Catalogue unique des aliments (spec v1.10 §4.1, cinquième catégorie en v1.14 §3.4).
+// Remplace Dish et Extra : plats, ingrédients, boissons, encas et desserts ne
+// diffèrent plus que par leur catégorie.
 
 import Foundation
 
@@ -19,9 +20,10 @@ public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
             }
         }
 
-        /// Ordre d'affichage (spec §3.4) : les desserts en dernier, après les encas.
-        /// Différent de l'ordre de déclaration, et couvert par un test qui vérifie
-        /// qu'aucune catégorie ne manque.
+        /// Ordre d'affichage (spec v1.14 §3.4) : les desserts en dernier, après les encas.
+        /// Explicite et non déduit de `allCases` : un cas inséré au milieu de l'enum
+        /// déplacerait les onglets sans que personne ne le demande. Un test vérifie
+        /// qu'aucune catégorie n'y manque.
         public static let tabOrder: [Category] = [.dish, .side, .drink, .snack, .dessert]
     }
 

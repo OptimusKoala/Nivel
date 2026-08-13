@@ -127,14 +127,27 @@ final class FoodCatalogTests: XCTestCase {
 
     // MARK: Catégories (spec v1.14 §3.4)
 
-    func testDessertCategoryExists() {
+    func testLaCategorieDessertExiste() {
         XCTAssertEqual(FoodItem.Category.dessert.frLabel, "Desserts")
+    }
+
+    /// « Accompagnements » est devenu « Ingrédients » (spec v1.14 §3.5). Le libellé est
+    /// épinglé parce qu'un renommage, contrairement à une chaîne neuve, se défait sans
+    /// bruit à la première relecture qui croit corriger une étourderie.
+    func testLeLibelleDesIngredients() {
+        XCTAssertEqual(FoodItem.Category.side.frLabel, "Ingrédients")
     }
 
     /// Garde-fou : une catégorie ajoutée à l'enum sans être rangée dans `tabOrder`
     /// disparaîtrait de l'écran en silence.
-    func testEveryCategoryIsInTabOrder() {
+    func testChaqueCategorieEstDansLOrdreDAffichage() {
         XCTAssertEqual(Set(FoodItem.Category.tabOrder), Set(FoodItem.Category.allCases))
+        XCTAssertEqual(FoodItem.Category.tabOrder.count, FoodItem.Category.allCases.count,
+                       "pas de doublon")
+        // La position, elle, est prescrite ; le reste de l'ordre ne l'est pas, donc on
+        // n'épingle pas le tableau entier : un réagencement voulu doit rester libre.
+        XCTAssertEqual(FoodItem.Category.tabOrder.last, .dessert,
+                       "spec §3.4 : les desserts en dernier")
     }
 
     // MARK: Tags des quêtes (spec §7.1)
