@@ -199,4 +199,16 @@ final class LevelMigrationTests: XCTestCase {
         XCTAssertEqual(state.totalXP, LevelSystem.xpRequired(forLevel: 13))
         XCTAssertEqual(state.levelCurveVersion, 2)
     }
+
+    /// Le garde est `< 2` et non `== 1`, et la nuance n'est pas cosmétique : si
+    /// SwiftData remplissait un jour la colonne absente avec 0 plutôt qu'avec le
+    /// défaut déclaré, `== 1` sauterait la migration en silence et ferait tomber le
+    /// joueur de sept niveaux. Vérifié par mutation : sans ce test, remplacer `< 2`
+    /// par `== 1` ne fait rougir aucune des 132 assertions de la cible.
+    func testUneVersionInferieureAUnEstMigreeAussi() {
+        let (service, state) = makeService(totalXP: 3000, curveVersion: 0)
+        service.migrateLevelCurveIfNeeded()
+        XCTAssertEqual(state.totalXP, LevelSystem.xpRequired(forLevel: 13))
+        XCTAssertEqual(state.levelCurveVersion, 2)
+    }
 }

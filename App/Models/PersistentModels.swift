@@ -183,6 +183,15 @@ final class GamificationState {
     // des stores existants (le défaut de l'init ne suffit pas — leçon de
     // completedThisWeekQuestIDs en v1, reconfirmée par reminderTimes en v1.9).
     // 1 = courbe d'avant la 1.14, 2 = courbe durcie avec recharge appliquée.
+    //
+    // ⚠️ CE 1 N'EST PROTÉGÉ PAR AUCUN TEST, et c'est démontré : le passer à 2 laisse
+    // les 132 tests de la cible verts. Ce serait pourtant le bug catastrophique du
+    // lot — chaque joueur d'avant la 1.14 sauterait la migration et tomberait du
+    // niveau 13 au niveau 6, sans moyen de le retrouver. Aucune suite ne peut
+    // l'attraper : toutes montent des stores `isStoredInMemoryOnly` et fixent la
+    // version à la main, alors que ce défaut ne sert QUE lorsque SwiftData lit une
+    // colonne absente d'un store créé avant la 1.14. La seule vérification possible
+    // est manuelle : installer la 1.13, gagner de l'XP, puis mettre à jour.
     var levelCurveVersion: Int = 1
     var lastClosedDay: Date?
 
