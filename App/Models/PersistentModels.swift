@@ -179,6 +179,11 @@ final class GamificationState {
     // Défaut au niveau de la déclaration : requis pour la migration légère SwiftData
     // des stores existants (le défaut de l'init ne suffit pas).
     var completedThisWeekQuestIDs: [String] = [] // garde anti re-récompense de la semaine courante
+    // Défaut au niveau de la DÉCLARATION : requis pour la migration légère SwiftData
+    // des stores existants (le défaut de l'init ne suffit pas — leçon de
+    // completedThisWeekQuestIDs en v1, reconfirmée par reminderTimes en v1.9).
+    // 1 = courbe d'avant la 1.14, 2 = courbe durcie avec recharge appliquée.
+    var levelCurveVersion: Int = 1
     var lastClosedDay: Date?
 
     init(
@@ -189,6 +194,12 @@ final class GamificationState {
         questProgress: [String: Int] = [:],
         completedQuestIDs: [String] = [],
         completedThisWeekQuestIDs: [String] = [],
+        // 2 et NON 1 : le défaut de déclaration ci-dessus sert aux stores d'avant la
+        // 1.14, qui n'ont pas la clé. Un état créé PAR le code de la 1.14 (onboarding)
+        // naît, lui, sur la nouvelle courbe. Sans cette asymétrie, une installation
+        // neuve se ferait « recharger » au lancement suivant une XP déjà gagnée sous la
+        // nouvelle courbe : sept niveaux offerts à 3 000 XP.
+        levelCurveVersion: Int = 2,
         lastClosedDay: Date? = nil
     ) {
         self.totalXP = totalXP
@@ -198,6 +209,7 @@ final class GamificationState {
         self.questProgress = questProgress
         self.completedQuestIDs = completedQuestIDs
         self.completedThisWeekQuestIDs = completedThisWeekQuestIDs
+        self.levelCurveVersion = levelCurveVersion
         self.lastClosedDay = lastClosedDay
     }
 }

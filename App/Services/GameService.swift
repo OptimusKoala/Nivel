@@ -154,6 +154,40 @@ final class GameService {
         // d'exercices à lui, ses étapes pointent déjà vers `activityCatalog`.
         self.activitiesByID = Dictionary((activityCatalog + postureCatalog.activities).map { ($0.id, $0) },
                                         uniquingKeysWith: { first, _ in first })
+        // En DERNIER, une fois toutes les propriétés initialisées : la migration lit
+        // l'état SwiftData, donc elle a besoin d'un `self` complet, et elle doit tourner
+        // avant tout affichage — personne ne doit voir un niveau faux, fût-ce une
+        // fraction de seconde. Elle ne dépend d'aucun catalogue, seulement de `totalXP`.
+        migrateLevelCurveIfNeeded()
+    }
+
+    /// Recharge d'XP unique au passage à la courbe durcie (spec §5.2).
+    ///
+    /// La nouvelle courbe exige ~4 fois plus d'XP au niveau 10 : appliquée brute, elle
+    /// ferait DESCENDRE tous les joueurs existants — la seule régression que l'app se
+    /// serait jamais autorisée, contre sa règle « zéro pression, jamais de score
+    /// négatif ». On porte donc l'XP au seuil que le niveau déjà atteint exige sous la
+    /// nouvelle courbe : personne ne descend, et le niveau suivant se mérite au
+    /// nouveau rythme. Le total affiché fait un bond visible ; c'est le prix, et il
+    /// vaut mieux qu'un plateau de plusieurs semaines.
+    ///
+    /// `max` et non affectation sèche : aux niveaux 2 et 3 la nouvelle courbe est plus
+    /// GÉNÉREUSE, et une affectation retirerait de l'XP.
+    ///
+    /// `fetchState()` et JAMAIS `fetchOrCreateState()` : le second insère un état s'il
+    /// n'en trouve pas, et l'init du service tourne aussi en preview, en
+    /// `ScreenshotMode` et dans toutes les suites de tests. Une installation neuve n'a
+    /// pas encore d'état (l'onboarding le crée) : la migration ne fait alors rien.
+    ///
+    /// Ne touche ni `badgeUnlocks` (un journal, jamais recalculé : les badges
+    /// Niveau 5/10/20 déjà obtenus le restent), ni l'historique `DayLog.xpEarned`, ni
+    /// les quêtes en cours.
+    func migrateLevelCurveIfNeeded() {
+        guard let state = fetchState(), state.levelCurveVersion < 2 else { return }
+        let reached = LevelSystem.legacyLevel(forXP: state.totalXP)
+        state.totalXP = max(state.totalXP, LevelSystem.xpRequired(forLevel: reached))
+        state.levelCurveVersion = 2
+        try? modelContext.save()
     }
 
     /// Fallback silencieux en release (jamais de crash), mais signal en debug :

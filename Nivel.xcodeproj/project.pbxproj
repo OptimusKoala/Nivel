@@ -67,6 +67,7 @@
 		846FB76C89B63E0E8EA18B9F /* SportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */; };
 		87868313AF7C859EC284C4F4 /* PlanSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88FEA7C46036F1ADDA99FDAE /* PlanSessionCard.swift */; };
 		8A961A5E51AADE69A6472F3E /* PreviewTour.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B761F597D77ACFC3EB2A43F /* PreviewTour.swift */; };
+		8B1D9B408439C188297C21CD /* LevelMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21802DEC6553C0882ADE3CF /* LevelMigrationTests.swift */; };
 		8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4CF000EF99C1C649915C18 /* DeepLink.swift */; };
 		8D32D61C0DC43192D46A1110 /* BasketSwipeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0B698498EEAB91FB65AE03 /* BasketSwipeTests.swift */; };
 		8EF6D46C5AB6BC94B4B0610E /* ScreenshotSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F84F79AE6532FA5B518716 /* ScreenshotSupport.swift */; };
@@ -262,6 +263,7 @@
 		EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameServiceTests.swift; sourceTree = "<group>"; };
 		EEDF577602FF64CA42D65A8F /* SourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourcesView.swift; sourceTree = "<group>"; };
 		EEF1380E0A63B78349E2FE6D /* SoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayer.swift; sourceTree = "<group>"; };
+		F21802DEC6553C0882ADE3CF /* LevelMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelMigrationTests.swift; sourceTree = "<group>"; };
 		F61A0C215E7AF8D8BAB3D8A4 /* SystemWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemWidgetViews.swift; sourceTree = "<group>"; };
 		F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -512,6 +514,7 @@
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
 				C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */,
 				9D23EC46E843C0AB08C1D436 /* IconAssetsTests.swift */,
+				F21802DEC6553C0882ADE3CF /* LevelMigrationTests.swift */,
 				88DF803E54753D174CB0E654 /* MealLoggingTests.swift */,
 				AFC2D67F033E3B820DEE3AAC /* MealLogSheetDismissTests.swift */,
 				D009F36F650CE2DC1B51ADCD /* MuscuPlanSettingsTests.swift */,
@@ -850,6 +853,7 @@
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
 				43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */,
 				0185ED5CBF4E4F62BDFFDD64 /* IconAssetsTests.swift in Sources */,
+				8B1D9B408439C188297C21CD /* LevelMigrationTests.swift in Sources */,
 				C10EAB401C8D872A4C2BCAD0 /* MealLogSheetDismissTests.swift in Sources */,
 				E3B6801717F7DF059E2DD29C /* MealLoggingTests.swift in Sources */,
 				75616CCA8FCACCB5A94F5D99 /* MuscuPlanSettingsTests.swift in Sources */,
