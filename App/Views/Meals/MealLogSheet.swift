@@ -156,10 +156,12 @@ struct MealLogSheet: View {
                     } label: {
                         // PAS de `.frame(minWidth: 44, minHeight: 44)` ici, contrairement
                         // à CircleIconButtonStyle et à FoodCatalogView : mesuré sur une
-                        // capture @3x, le fond que le chrome de barre d'outils dessine
-                        // déjà fait 61 × 60 pt, donc au-dessus des 44 pt sur les deux
-                        // axes. L'imposer quand même élargirait ce fond à 73 pt sans
-                        // toucher la hauteur — le cercle deviendrait une capsule.
+                        // capture @3x (iPhone 17 Pro Max, iOS 26.5), le fond que le chrome
+                        // de barre d'outils dessine déjà fait 61 × 60 pt, donc au-dessus
+                        // des 44 pt sur les deux axes. L'imposer quand même élargirait ce
+                        // fond à 73 pt sans toucher la hauteur — le cercle deviendrait une
+                        // capsule. Le chiffre vaut pour ces métriques-là : le refaire avant
+                        // de conclure qu'il a changé.
                         Image(systemName: "xmark")
                     }
                     .tint(Theme.subtext)
