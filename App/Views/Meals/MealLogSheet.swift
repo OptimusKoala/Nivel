@@ -100,6 +100,10 @@ struct MealLogSheet: View {
     ///   ne serait de toute façon pas enregistrable.
     static func guardsDismissal(lines: [MealLine]) -> Bool { !lines.isEmpty }
 
+    /// La même décision, appliquée au panier courant. La statique existe pour le test,
+    /// celle-ci pour la vue, qui l'interroge à trois endroits.
+    private var guardsDismissal: Bool { Self.guardsDismissal(lines: lines) }
+
     /// Estimation en direct (spec §5.5) — calculée depuis les lignes du panier.
     private var estimatedKcal: Int {
         MealEstimator.kcal(lines: lines, kcalPer100g: catalog.kcalPer100g)
@@ -144,7 +148,7 @@ struct MealLogSheet: View {
                 // Sortie VISIBLE : dès qu'on empêche le glissement, il faut en offrir une.
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        if Self.guardsDismissal(lines: lines) {
+                        if guardsDismissal {
                             showAbandonDialog = true
                         } else {
                             dismiss()
@@ -191,10 +195,13 @@ struct MealLogSheet: View {
         // catalogue à onglets passerait sous le pli.
         .presentationDetents([.large])
         .presentationCornerRadius(28)
-        .presentationDragIndicator(.visible)
+        // Masqué dès que le garde est armé : l'indicateur invite à un glissement qui
+        // ne fait alors plus rien, et une invitation sans effet n'est qu'une autre
+        // façon de mentir. Panier vide, il reste, puisque le geste marche encore.
+        .presentationDragIndicator(guardsDismissal ? .hidden : .visible)
         // Posé sur la feuille ENTIÈRE (hors NavigationStack) : le garde vaut aussi
         // depuis le détail d'une ligne, qui est poussé dans la même feuille.
-        .interactiveDismissDisabled(Self.guardsDismissal(lines: lines))
+        .interactiveDismissDisabled(guardsDismissal)
     }
 
     // MARK: Créneau
