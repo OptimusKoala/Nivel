@@ -1,24 +1,18 @@
 // App/Views/Meals/FoodCatalogView.swift
-// Le catalogue à onglets (spec v1.10 §5.3) : Plats · Accompagnements · Boissons ·
-// Encas. Un tap ajoute la ligne avec son `defaultGrams` et rien d'autre, le chemin
-// de quinze secondes. Pas de sélection persistante : la puce ne reste pas allumée,
-// c'est le panier qui matérialise le choix.
+// Le catalogue à onglets (spec v1.10 §5.3) : Plats · Ingrédients · Boissons ·
+// Encas · Desserts. Un tap ajoute la ligne avec son `defaultGrams` et rien
+// d'autre, le chemin de quinze secondes. Pas de sélection persistante : la puce
+// ne reste pas allumée, c'est le panier qui matérialise le choix.
 
 import SwiftUI
 import NivelCore
 
-extension FoodItem.Category {
-    /// Ordre d'affichage des onglets (spec §5.3) : Plats · Accompagnements ·
-    /// Boissons · Encas, différent de l'ordre de déclaration de l'enum.
-    static let tabOrder: [FoodItem.Category] = [.dish, .side, .drink, .snack]
-}
-
 struct FoodCatalogView: View {
     let catalog: FoodCatalog
-    /// Créneau courant, pour filtrer l'onglet Plats. Sans effet sur les trois autres.
+    /// Créneau courant, pour filtrer l'onglet Plats. Sans effet sur les quatre autres.
     var slot: MealSlot?
     /// Verrouille l'onglet, sans Picker visible : utilisé par l'écran de détail pour
-    /// n'ouvrir que les accompagnements (spec §5.4, « Ajouter un ingrédient »).
+    /// n'ouvrir que les ingrédients (spec §5.4, « Ajouter un ingrédient »).
     var lockedCategory: FoodItem.Category?
     let onPick: (FoodItem) -> Void
 

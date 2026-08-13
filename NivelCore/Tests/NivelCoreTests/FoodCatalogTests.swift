@@ -125,6 +125,18 @@ final class FoodCatalogTests: XCTestCase {
         }
     }
 
+    // MARK: Catégories (spec v1.14 §3.4)
+
+    func testDessertCategoryExists() {
+        XCTAssertEqual(FoodItem.Category.dessert.frLabel, "Desserts")
+    }
+
+    /// Garde-fou : une catégorie ajoutée à l'enum sans être rangée dans `tabOrder`
+    /// disparaîtrait de l'écran en silence.
+    func testEveryCategoryIsInTabOrder() {
+        XCTAssertEqual(Set(FoodItem.Category.tabOrder), Set(FoodItem.Category.allCases))
+    }
+
     // MARK: Tags des quêtes (spec §7.1)
 
     /// Épingle EXACTEMENT les deux listes de tags que lisent les quêtes "jours sans

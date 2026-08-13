@@ -5,16 +5,24 @@ import Foundation
 
 public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
     public enum Category: String, Codable, CaseIterable, Sendable {
-        case dish, side, drink, snack
+        case dish, side, drink, snack, dessert
 
         public var frLabel: String {
             switch self {
             case .dish: "Plats"
-            case .side: "Accompagnements"
+            // « Accompagnements » ne tient pas dans cinq pastilles, et la catégorie
+            // contient des ingrédients depuis la 1.10 : le libellé rattrape le contenu.
+            case .side: "Ingrédients"
             case .drink: "Boissons"
             case .snack: "Encas"
+            case .dessert: "Desserts"
             }
         }
+
+        /// Ordre d'affichage (spec §3.4) : les desserts en dernier, après les encas.
+        /// Différent de l'ordre de déclaration, et couvert par un test qui vérifie
+        /// qu'aucune catégorie ne manque.
+        public static let tabOrder: [Category] = [.dish, .side, .drink, .snack, .dessert]
     }
 
     public let id: String
