@@ -17,4 +17,7 @@ public enum Catalogs {
     // sessions.json, pour ne jamais entrer dans la rotation de la séance du jour.
     public static func postureActivities() throws -> [Activity] { try load("posture-activities") }
     public static func postureSessions() throws -> [ActivitySession] { try load("posture-sessions") }
+    /// Séances muscu (spec v1.14 §4.4) : fichier SÉPARÉ de sessions.json, pour ne
+    /// jamais entrer dans la rotation de la séance du jour.
+    public static func muscuSessions() throws -> [ActivitySession] { try load("muscu-sessions") }
 }
