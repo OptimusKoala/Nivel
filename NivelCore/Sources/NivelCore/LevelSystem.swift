@@ -51,7 +51,7 @@ public enum LevelSystem {
     /// la 1.14.
     ///
     /// Supprimable seulement le jour où aucune base ne peut plus être en
-    /// `levelCurveVersion` 0 — donc jamais : une restauration de sauvegarde 1.13 en
+    /// `levelCurveVersion` 1 — donc jamais : une restauration de sauvegarde 1.13 en
     /// recrée une. La modifier ferait perdre un niveau à quelqu'un, et
     /// `testFormuleAncienneEstPreservee` est là pour que ça devienne rouge et non
     /// silencieux.
