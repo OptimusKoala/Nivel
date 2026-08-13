@@ -46,7 +46,7 @@ public struct SessionStep: Codable, Hashable, Sendable {
 
 /// Séance composée toute faite — la « séance du jour » (spec sport §3.2).
 /// Pas de champ d'icône : l'identité visuelle d'une séance est son illustration
-/// `Sport/<id>`, et les 31 ids du catalogue en ont toutes une (spec icônes catalogues §2.3).
+/// `Sport/<id>`, et chaque id des catalogues sport en a une (spec icônes catalogues §2.3).
 public struct ActivitySession: Codable, Identifiable, Hashable, Sendable {
     public let id: String
     public let title: String

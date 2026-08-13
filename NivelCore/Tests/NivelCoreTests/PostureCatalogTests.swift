@@ -23,7 +23,7 @@ final class PostureCatalogTests: XCTestCase {
         XCTAssertTrue(globalActivities.isDisjoint(with: postureActivities))
         XCTAssertTrue(globalSessions.isDisjoint(with: postureSessions))
         XCTAssertEqual(globalSessions.count, 11, "la rotation de la séance du jour a bougé")
-        XCTAssertEqual(globalActivities.count, 20)
+        XCTAssertEqual(globalActivities.count, 30)
     }
 
     func testTailleDesCatalogues() {

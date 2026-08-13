@@ -297,7 +297,7 @@ private struct IdentityPage: View {
 
     // Les deux Nivelito illustrés (Avatars/boy, Avatars/girl) et non des glyphes
     // cozy : un glyphe monochrome de 28 pt ne fait pas un visage, et l'app a déjà
-    // un langage d'illustrations couleur (les 31 vignettes sport). Décoratifs : le
+    // un langage d'illustrations couleur (les vignettes sport). Décoratifs : le
     // label porte le sens. L'état retenu reprend le vocabulaire d'`activityRow`
     // (bordure + fond orange clair) : cet écran n'a pas de coche, il doit dire
     // « sélectionné » autrement.

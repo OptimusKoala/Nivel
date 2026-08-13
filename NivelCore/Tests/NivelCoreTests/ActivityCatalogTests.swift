@@ -2,9 +2,12 @@ import XCTest
 @testable import NivelCore
 
 final class ActivityCatalogTests: XCTestCase {
+
+    // MARK: - Activités
+
     func testActivitiesLoadAndIdsAreUnique() throws {
         let activities = try Catalogs.activities()
-        XCTAssertEqual(activities.count, 20)
+        XCTAssertEqual(activities.count, 30)
         XCTAssertEqual(Set(activities.map(\.id)).count, activities.count)
         XCTAssertTrue(activities.contains { $0.id == "walk" && $0.location == .outdoor })
         XCTAssertTrue(activities.contains { $0.id == "wall_sit" && $0.location == .home })
@@ -20,18 +23,11 @@ final class ActivityCatalogTests: XCTestCase {
         }
     }
 
-    func testSessionsLoadAndStepsResolve() throws {
-        let sessions = try Catalogs.sessions()
-        let activityIDs = Set(try Catalogs.activities().map(\.id))
-        XCTAssertEqual(sessions.count, 11)
-        XCTAssertEqual(Set(sessions.map(\.id)).count, sessions.count)
-        for session in sessions {
-            XCTAssertFalse(session.steps.isEmpty, "\(session.id)")
-            for step in session.steps {
-                XCTAssertTrue(activityIDs.contains(step.activityID),
-                              "\(session.id) référence '\(step.activityID)' inconnu")
-                XCTAssertGreaterThan(step.minutes, 0)
-            }
+    func testEveryActivityHasInstructions() throws {
+        for activity in try Catalogs.activities() {
+            XCTAssertGreaterThanOrEqual(activity.instructions.count, 3, activity.id)
+            XCTAssertLessThanOrEqual(activity.instructions.count, 4, activity.id)
+            XCTAssertTrue(activity.instructions.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty }, activity.id)
         }
     }
 
@@ -64,11 +60,91 @@ final class ActivityCatalogTests: XCTestCase {
         XCTAssertEqual(legsDay.estimatedKcal(activitiesByID: byID), 50)
     }
 
-    func testEveryActivityHasInstructions() throws {
-        for activity in try Catalogs.activities() {
-            XCTAssertGreaterThanOrEqual(activity.instructions.count, 3, activity.id)
-            XCTAssertLessThanOrEqual(activity.instructions.count, 4, activity.id)
-            XCTAssertTrue(activity.instructions.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty }, activity.id)
+    /// Les sept activités qui produisent des pas déjà comptés par HealthKit.
+    func testStepsBasedSontExactementLesActivitesMarchees() throws {
+        let expected: Set<String> = ["walk", "brisk_walk", "digestive_walk", "hike",
+                                     "stairs", "march_in_place", "running"]
+        XCTAssertEqual(Set(try Catalogs.activities().filter(\.stepsBased).map(\.id)), expected)
+    }
+
+    /// Un exercice posture n'est ni intense ni marché : il ne doit jamais entrer
+    /// dans la section « Ça pousse » ni dans l'anneau de dépense par les pas.
+    func testExercicesPostureSontDouxEtSansPas() throws {
+        for activity in try Catalogs.postureActivities() {
+            XCTAssertEqual(activity.intensity, .gentle, activity.id)
+            XCTAssertFalse(activity.stepsBased, activity.id)
+        }
+    }
+
+    /// L'ensemble exact des dix activités de la section « Ça pousse » (spec §4.2).
+    /// C'est l'exactitude — pas une poignée d'ids en dur — qui attrape un `bike`
+    /// ou un `yoga` marqué `strong` par erreur de frappe, et qui interdit à une
+    /// onzième d'entrer dans la section sans passer par la spec.
+    ///
+    /// Les clés du pin ci-dessous sont ce même ensemble, donc oui, ce test est
+    /// techniquement subsumé : on le garde parce qu'un diff de `Set` est lisible
+    /// d'un coup d'œil là où un diff de trois dictionnaires de dix entrées ne
+    /// l'est pas. C'est celui-ci qu'on lira en premier quand ça cassera.
+    func testActivitesIntensesSontExactementCetEnsemble() throws {
+        let expected: Set<String> = ["running", "pushups", "crunches", "burpees", "jumping_jacks",
+                                     "mountain_climbers", "squat_jumps", "dips_chair", "side_plank", "superman"]
+        XCTAssertEqual(Set(try Catalogs.activities().filter { $0.intensity == .strong }.map(\.id)), expected)
+    }
+
+    /// Pin EXHAUSTIF de la table de la spec §4.2. Sans lui, rien ne garde les
+    /// valeurs : `testActivityDurationsAreThreeAscending` vérifie la forme des
+    /// durées, pas les nombres, et `testEstimatedKcalRoundsToTens` ne fixe le
+    /// `kcalPerMin` que de cinq activités douces. Un `burpees` saisi à 1,0 au lieu
+    /// de 10,0 passerait toute la suite et fausserait en silence chaque estimation
+    /// « ~ kcal » ; un `pushups` saisi `outdoor` l'enverrait sous « Dehors ».
+    func testChiffresDesActivitesIntensesSontCeuxDeLaSpec() throws {
+        let intenses = try Catalogs.activities().filter { $0.intensity == .strong }
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: intenses.map { ($0.id, $0.kcalPerMin) }), [
+            "running": 10.0, "pushups": 7.0, "crunches": 5.0, "burpees": 10.0, "jumping_jacks": 8.0,
+            "mountain_climbers": 8.5, "squat_jumps": 8.0, "dips_chair": 6.0, "side_plank": 4.5, "superman": 4.0,
+        ])
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: intenses.map { ($0.id, $0.durations) }), [
+            "running": [15, 30, 45], "pushups": [3, 5, 8], "crunches": [3, 5, 10],
+            "burpees": [2, 4, 6], "jumping_jacks": [3, 5, 8], "mountain_climbers": [2, 4, 6],
+            "squat_jumps": [2, 4, 6], "dips_chair": [3, 5, 8], "side_plank": [2, 4, 6],
+            "superman": [2, 3, 5],
+        ])
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: intenses.map { ($0.id, $0.location) }), [
+            "running": .outdoor,
+            "pushups": .home, "crunches": .home, "burpees": .home, "jumping_jacks": .home,
+            "mountain_climbers": .home, "squat_jumps": .home, "dips_chair": .home,
+            "side_plank": .home, "superman": .home,
+        ])
+    }
+
+    /// Les six mouvements explosifs portent quatre consignes quand les autres n'en
+    /// doivent que trois : la quatrième est la porte de sortie (poser les genoux,
+    /// enlever le saut, ralentir), et ces mouvements-là font mal quand on les fait
+    /// mal. Le test compte, il ne juge pas le contenu du repère de sécurité :
+    /// celui-ci se relit à l'œil. Les gainages `side_plank` et `superman` n'en sont
+    /// pas et restent au minimum commun de trois.
+    func testLesMouvementsExplosifsPortentQuatreConsignes() throws {
+        let byID = Dictionary(uniqueKeysWithValues: try Catalogs.activities().map { ($0.id, $0) })
+        for id in ["burpees", "jumping_jacks", "mountain_climbers",
+                   "squat_jumps", "dips_chair", "running"] {
+            XCTAssertGreaterThanOrEqual(byID[id]?.instructions.count ?? 0, 4, id)
+        }
+    }
+
+    // MARK: - Séances
+
+    func testSessionsLoadAndStepsResolve() throws {
+        let sessions = try Catalogs.sessions()
+        let activityIDs = Set(try Catalogs.activities().map(\.id))
+        XCTAssertEqual(sessions.count, 11)
+        XCTAssertEqual(Set(sessions.map(\.id)).count, sessions.count)
+        for session in sessions {
+            XCTAssertFalse(session.steps.isEmpty, "\(session.id)")
+            for step in session.steps {
+                XCTAssertTrue(activityIDs.contains(step.activityID),
+                              "\(session.id) référence '\(step.activityID)' inconnu")
+                XCTAssertGreaterThan(step.minutes, 0)
+            }
         }
     }
 
@@ -107,33 +183,7 @@ final class ActivityCatalogTests: XCTestCase {
         ])
     }
 
-    /// Les six activités qui produisent des pas déjà comptés par HealthKit.
-    /// `running` s'y ajoutera à la spec §4.2 — le jeu est écrit ici SANS lui, pour
-    /// que cette tâche finisse verte.
-    func testStepsBasedSontExactementLesActivitesMarchees() throws {
-        let expected: Set<String> = ["walk", "brisk_walk", "digestive_walk", "hike",
-                                     "stairs", "march_in_place"]
-        XCTAssertEqual(Set(try Catalogs.activities().filter(\.stepsBased).map(\.id)), expected)
-    }
-
-    /// Un exercice posture n'est ni intense ni marché : il ne doit jamais entrer
-    /// dans la section « Ça pousse » ni dans l'anneau de dépense par les pas.
-    func testExercicesPostureSontDouxEtSansPas() throws {
-        for activity in try Catalogs.postureActivities() {
-            XCTAssertEqual(activity.intensity, .gentle, activity.id)
-            XCTAssertFalse(activity.stepsBased, activity.id)
-        }
-    }
-
-    /// L'ensemble exact des activités intenses : vide pour l'instant, les dix de
-    /// la section « Ça pousse » (spec §4.2) viendront le remplir. C'est
-    /// l'exactitude — pas une poignée d'ids en dur — qui attrape un `bike` ou un
-    /// `yoga` marqué `strong` par erreur de frappe, alors que rien ne lit encore
-    /// `intensity` pour le signaler autrement.
-    func testActivitesIntensesSontExactementCetEnsemble() throws {
-        let expected: Set<String> = []
-        XCTAssertEqual(Set(try Catalogs.activities().filter { $0.intensity == .strong }.map(\.id)), expected)
-    }
+    // MARK: - Conventions de bundle
 
     func testNoBundleResourceContainsEmDash() throws {
         // Convention v1.2 : aucun tiret cadratin dans les textes utilisateur.
