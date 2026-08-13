@@ -33,15 +33,24 @@ final class LevelMigrationTests: XCTestCase {
     /// Monte un état COMME LE FERAIT UN STORE D'AVANT LA 1.14 : `levelCurveVersion`
     /// est forcé après coup, puisque l'init de la 1.14 fait naître les états en
     /// version 2.
+    ///
+    /// ⚠️ ORDRE VOLONTAIRE : le service est construit AVANT que l'état existe. L'init
+    /// migre déjà (c'est tout l'intérêt), donc l'insérer d'abord ferait sortir la
+    /// migration sur `version == 2` à chaque appel explicite des tests, qui
+    /// deviendraient inertes — prouvé par mutation : commentés, ils laissaient la
+    /// cible verte. Sans état en base, l'init ne fait rien, et le
+    /// `migrateLevelCurveIfNeeded()` du test redevient le PREMIER appel réel.
+    /// Le chemin de l'init reste couvert, une fois, par
+    /// `testLInitDuServiceMigreDejaSansAppelExplicite`.
     private func makeService(totalXP: Int, curveVersion: Int) -> (GameService, GamificationState) {
         let context = container.mainContext
+        let service = GameService(modelContext: context,
+                                  stepsService: FakeStepsService(authorized: false),
+                                  widgetDefaults: nil)
         let state = GamificationState(totalXP: totalXP)
         state.levelCurveVersion = curveVersion
         context.insert(state)
         try? context.save()
-        let service = GameService(modelContext: context,
-                                  stepsService: FakeStepsService(authorized: false),
-                                  widgetDefaults: nil)
         return (service, state)
     }
 
@@ -60,20 +69,28 @@ final class LevelMigrationTests: XCTestCase {
 
     /// Une deuxième exécution ne doit RIEN recharger : sinon chaque lancement
     /// offrirait un niveau.
+    ///
+    /// La première recharge est assertée en VALEUR et pas seulement comparée à la
+    /// seconde : deux appels qui ne feraient rien du tout se vaudraient aussi, et le
+    /// test passerait sur une migration morte.
     func testLaMigrationNeSexecuteQuUneFois() {
         let (service, state) = makeService(totalXP: 3000, curveVersion: 1)
         service.migrateLevelCurveIfNeeded()
         let apresLaPremiere = state.totalXP
+        XCTAssertEqual(apresLaPremiere, LevelSystem.xpRequired(forLevel: 13))
         service.migrateLevelCurveIfNeeded()
         XCTAssertEqual(state.totalXP, apresLaPremiere)
     }
 
-    /// Un profil neuf n'est pas touché : 0 XP reste 0 XP, pas de cadeau.
+    /// Un profil neuf n'est pas touché : 0 XP reste 0 XP, pas de cadeau. La version
+    /// est quand même tamponnée — c'est ce qui prouve que la migration a bien tourné
+    /// ici, et pas seulement qu'elle n'a rien cassé.
     func testUnProfilNeufNEstPasTouche() {
         let (service, state) = makeService(totalXP: 0, curveVersion: 1)
         service.migrateLevelCurveIfNeeded()
         XCTAssertEqual(state.totalXP, 0)
         XCTAssertEqual(LevelSystem.level(forXP: state.totalXP), 1)
+        XCTAssertEqual(state.levelCurveVersion, 2)
     }
 
     // MARK: - Le trou de l'installation neuve
@@ -93,13 +110,15 @@ final class LevelMigrationTests: XCTestCase {
     /// XP gagnée normalement, relance. Rien ne bouge.
     func testUneInstallationNeuveQuiGagneDeLXPNEstJamaisMigree() {
         let context = container.mainContext
+        // Service d'abord, comme au vrai lancement : il se construit AVANT
+        // l'onboarding, donc avant que l'état existe (même ordre que `makeService`).
+        let service = GameService(modelContext: context,
+                                  stepsService: FakeStepsService(authorized: false),
+                                  widgetDefaults: nil)
         let state = GamificationState()          // comme l'onboarding le crée
         context.insert(state)
         state.totalXP = 3000                     // trois semaines de jeu, nouvelle courbe
         try? context.save()
-        let service = GameService(modelContext: context,
-                                  stepsService: FakeStepsService(authorized: false),
-                                  widgetDefaults: nil)
         service.migrateLevelCurveIfNeeded()
         XCTAssertEqual(state.totalXP, 3000, "aucun niveau offert")
         XCTAssertEqual(LevelSystem.level(forXP: state.totalXP), 6)
@@ -120,19 +139,14 @@ final class LevelMigrationTests: XCTestCase {
 
     // MARK: - La recharge ne retire jamais rien
 
-    /// La recharge ne RETIRE jamais d'XP, même quand la nouvelle courbe est plus
-    /// généreuse (niveaux 2 et 3) : `max` et non affectation sèche.
-    func testLaMigrationNeRetireJamaisDXP() {
-        let (service, state) = makeService(totalXP: 300, curveVersion: 1)  // ancien L2
-        service.migrateLevelCurveIfNeeded()
-        XCTAssertEqual(state.totalXP, 300)
-        XCTAssertGreaterThanOrEqual(LevelSystem.level(forXP: state.totalXP), 2)
-    }
-
-    /// Le même piège, mais en visant le NIVEAU et pas seulement l'XP : à 500 XP
-    /// (ancien niveau 3, seuil neuf de 322) une affectation sèche ferait perdre
-    /// 178 XP sans changer le niveau — une perte invisible, donc jamais signalée.
-    /// Balaye toute la zone où la nouvelle courbe est plus généreuse.
+    /// La recharge ne RETIRE jamais d'XP, même là où la nouvelle courbe est plus
+    /// GÉNÉREUSE (niveaux 2 à 4) : `max` et non affectation sèche. À 500 XP par
+    /// exemple — ancien niveau 3, seuil neuf de 322 — une affectation ferait perdre
+    /// 178 XP sans changer le niveau affiché : une perte invisible, donc jamais
+    /// signalée par personne.
+    ///
+    /// Oracle EXACT (`max(xp, xpRequired(legacyLevel(xp)))`) et non deux inégalités :
+    /// une borne se satisfait par accident, une égalité non.
     func testUneXPDejaAuDessusDuSeuilNeufNeBougePas() throws {
         for xp in [70, 100, 300, 322, 500, 784] {
             // Un conteneur NEUF par cas : `fetchState()` rend le PREMIER état trouvé,
@@ -140,11 +154,11 @@ final class LevelMigrationTests: XCTestCase {
             // passerait alors sans rien avoir vérifié.
             container = try Self.makeContainer()
             let (service, state) = makeService(totalXP: xp, curveVersion: 1)
-            let niveauAvant = LevelSystem.legacyLevel(forXP: xp)
+            let attendu = max(xp, LevelSystem.xpRequired(forLevel: LevelSystem.legacyLevel(forXP: xp)))
             service.migrateLevelCurveIfNeeded()
-            XCTAssertGreaterThanOrEqual(state.totalXP, xp,
-                                        "la migration a retiré de l'XP à \(xp) XP")
-            XCTAssertGreaterThanOrEqual(LevelSystem.level(forXP: state.totalXP), niveauAvant,
+            XCTAssertEqual(state.totalXP, attendu, "XP fausse après migration à \(xp) XP")
+            XCTAssertGreaterThanOrEqual(LevelSystem.level(forXP: state.totalXP),
+                                        LevelSystem.legacyLevel(forXP: xp),
                                         "descente de niveau à \(xp) XP")
         }
     }
@@ -162,6 +176,9 @@ final class LevelMigrationTests: XCTestCase {
     /// rien de tout ça. Un badge Niveau 10 obtenu sous l'ancienne courbe le reste.
     func testLaMigrationNeToucheNiAuxBadgesNiAuxQuetes() {
         let context = container.mainContext
+        let service = GameService(modelContext: context,
+                                  stepsService: FakeStepsService(authorized: false),
+                                  widgetDefaults: nil)
         let obtenuLe = Date(timeIntervalSince1970: 1_700_000_000)
         let state = GamificationState(totalXP: 3000,
                                       badgeUnlocks: ["level_10": obtenuLe],
@@ -173,10 +190,10 @@ final class LevelMigrationTests: XCTestCase {
         state.levelCurveVersion = 1
         context.insert(state)
         try? context.save()
-        let service = GameService(modelContext: context,
-                                  stepsService: FakeStepsService(authorized: false),
-                                  widgetDefaults: nil)
         service.migrateLevelCurveIfNeeded()
+        // La recharge a bien EU LIEU (sans quoi ce test passerait sur une migration
+        // morte) — et n'a pourtant touché à rien de ce qui suit.
+        XCTAssertEqual(state.totalXP, LevelSystem.xpRequired(forLevel: 13))
         XCTAssertEqual(state.badgeUnlocks, ["level_10": obtenuLe])
         XCTAssertEqual(state.activeQuestIDs, ["q1", "q2"])
         XCTAssertEqual(state.questWeekID, "2026-W33")
@@ -204,7 +221,7 @@ final class LevelMigrationTests: XCTestCase {
     /// SwiftData remplissait un jour la colonne absente avec 0 plutôt qu'avec le
     /// défaut déclaré, `== 1` sauterait la migration en silence et ferait tomber le
     /// joueur de sept niveaux. Vérifié par mutation : sans ce test, remplacer `< 2`
-    /// par `== 1` ne fait rougir aucune des 132 assertions de la cible.
+    /// par `== 1` ne fait rougir aucun autre test de la cible.
     func testUneVersionInferieureAUnEstMigreeAussi() {
         let (service, state) = makeService(totalXP: 3000, curveVersion: 0)
         service.migrateLevelCurveIfNeeded()
