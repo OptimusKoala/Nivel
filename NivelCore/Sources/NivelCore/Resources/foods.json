@@ -710,19 +710,6 @@
     "defaultGrams": 125
   },
   {
-    "id": "choco_square",
-    "name": "Carré de chocolat",
-    "emoji": "🍫",
-    "kcalPer100g": 550,
-    "unitLabel": "carré",
-    "unitLabelPlural": null,
-    "unitGrams": 10,
-    "category": "snack",
-    "tags": [],
-    "slots": [],
-    "defaultGrams": 10
-  },
-  {
     "id": "biscuit",
     "name": "Biscuit",
     "emoji": "🍪",
@@ -747,19 +734,6 @@
     "tags": [],
     "slots": [],
     "defaultGrams": 30
-  },
-  {
-    "id": "compote",
-    "name": "Compote",
-    "emoji": "🍏",
-    "kcalPer100g": 100,
-    "unitLabel": "gourde",
-    "unitLabelPlural": null,
-    "unitGrams": 90,
-    "category": "snack",
-    "tags": [],
-    "slots": [],
-    "defaultGrams": 90
   },
   {
     "id": "cheese_snack",
@@ -817,7 +791,7 @@
   },
   {
     "id": "croissant",
-    "name": "Viennoiserie",
+    "name": "Croissant ou pain au chocolat",
     "emoji": "🥐",
     "kcalPer100g": 430,
     "unitLabel": "viennoiserie",
@@ -829,21 +803,6 @@
     ],
     "slots": [],
     "defaultGrams": 70
-  },
-  {
-    "id": "ice_cream",
-    "name": "Glace",
-    "emoji": "🍨",
-    "kcalPer100g": 200,
-    "unitLabel": "boule",
-    "unitLabelPlural": null,
-    "unitGrams": 100,
-    "category": "snack",
-    "tags": [
-      "richDessert"
-    ],
-    "slots": [],
-    "defaultGrams": 100
   },
   {
     "id": "pasta_cooked",
@@ -1598,5 +1557,145 @@
     "tags": [],
     "slots": [],
     "defaultGrams": 50
+  },
+  {
+    "id": "fruit_salad",
+    "name": "Salade de fruits",
+    "emoji": "🍓",
+    "kcalPer100g": 60,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 200
+  },
+  {
+    "id": "cake",
+    "name": "Pâtisserie",
+    "emoji": "🍰",
+    "kcalPer100g": 380,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "fruit_tart",
+    "name": "Tarte aux fruits",
+    "emoji": "🥧",
+    "kcalPer100g": 250,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 120
+  },
+  {
+    "id": "choco_mousse",
+    "name": "Mousse au chocolat",
+    "emoji": "🍮",
+    "kcalPer100g": 210,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "crepe_sugar",
+    "name": "Crêpe sucrée",
+    "emoji": "🥞",
+    "kcalPer100g": 220,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 90
+  },
+  {
+    "id": "skyr",
+    "name": "Skyr",
+    "emoji": "🥛",
+    "kcalPer100g": 85,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 150
+  },
+  {
+    "id": "greek_yogurt",
+    "name": "Yaourt grec sucré",
+    "emoji": "🥣",
+    "kcalPer100g": 120,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 150
+  },
+  {
+    "id": "choco_square",
+    "name": "Carré de chocolat",
+    "emoji": "🍫",
+    "kcalPer100g": 550,
+    "unitLabel": "carré",
+    "unitLabelPlural": null,
+    "unitGrams": 10,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 10
+  },
+  {
+    "id": "ice_cream",
+    "name": "Glace",
+    "emoji": "🍨",
+    "kcalPer100g": 200,
+    "unitLabel": "boule",
+    "unitLabelPlural": null,
+    "unitGrams": 100,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "compote",
+    "name": "Compote",
+    "emoji": "🍏",
+    "kcalPer100g": 100,
+    "unitLabel": "gourde",
+    "unitLabelPlural": null,
+    "unitGrams": 90,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 90
   }
 ]

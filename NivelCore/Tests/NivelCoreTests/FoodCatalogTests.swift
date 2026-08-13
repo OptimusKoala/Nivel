@@ -18,17 +18,30 @@ final class FoodCatalogTests: XCTestCase {
         catalog = try FoodCatalog.load()
     }
 
-    // MARK: Catalogue v1 (spec v1.10)
-
-    func testLeCatalogueSeChargeEtEstComplet() throws {
-        XCTAssertEqual(catalog.items(category: .drink, slot: nil).count, 15)
-        XCTAssertEqual(catalog.items(category: .snack, slot: nil).count, 12)
-        XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 30)
-        XCTAssertGreaterThanOrEqual(catalog.items(category: .side, slot: nil).count, 40)
-    }
+    // MARK: Invariants du catalogue
 
     func testPasDeDoublonDId() {
         XCTAssertEqual(Set(catalog.items.map(\.id)).count, catalog.items.count)
+    }
+
+    /// Garde-fou de rangement : `foods.json` est groupé par catégorie et la grille de
+    /// taps s'affiche dans l'ordre du fichier. Une entrée dont la catégorie change
+    /// mais qui reste à sa place hors du bloc de sa nouvelle catégorie apparaîtrait
+    /// donc au mauvais endroit de son onglet — sans qu'aucun autre test ne s'en
+    /// aperçoive. C'est ce qui s'était produit au premier jet de ce lot, avant que les
+    /// trois desserts déménagés ne soient physiquement déplacés hors du bloc snack.
+    /// Ici, on vérifie qu'aucune catégorie ne revient après avoir été quittée.
+    func testLesCategoriesSontContiguesDansLeFichier() {
+        var categoriesVues: Set<FoodItem.Category> = []
+        var categorieCourante: FoodItem.Category?
+        for item in catalog.items {
+            if item.category != categorieCourante {
+                XCTAssertFalse(categoriesVues.contains(item.category),
+                               "\(item.category) réapparaît après avoir été quittée, autour de \(item.id)")
+                categoriesVues.insert(item.category)
+                categorieCourante = item.category
+            }
+        }
     }
 
     func testUniteEtPoidsVontEnsemble() {
@@ -41,12 +54,63 @@ final class FoodCatalogTests: XCTestCase {
         }
     }
 
+    /// Les unités invariables doivent porter leur pluriel explicite, sinon on lit
+    /// « 2 c. à soupes ».
+    func testUnitesInvariables() {
+        for item in catalog.items where item.unitLabel?.contains("c. à") == true {
+            XCTAssertEqual(item.unitLabelPlural, item.unitLabel,
+                           "\(item.id) : pluriel explicite attendu")
+        }
+    }
+
+    func testToutIngredientCiteExiste() {
+        for (dishID, composition) in catalog.compositions {
+            for component in composition {
+                XCTAssertNotNil(catalog.byID[component.itemID],
+                                "\(dishID) cite un item inconnu : \(component.itemID)")
+                XCTAssertGreaterThan(component.grams, 0, "\(dishID)/\(component.itemID)")
+            }
+        }
+    }
+
+    /// Deux entrées homonymes DANS LE MÊME ONGLET sont un piège : on tape l'une en
+    /// croyant taper l'autre. D'un onglet à l'autre, en revanche, l'homonymie est
+    /// légitime et voulue — « Fromage » existe en ingrédient (350 kcal/100 g, pour
+    /// une composition) ET en encas, « Céréales » en plat ET en ingrédient. C'est
+    /// donc l'unicité PAR CATÉGORIE qu'il faut exiger, pas l'unicité globale.
+    func testLesNomsSontUniquesParCategorie() {
+        for category in FoodItem.Category.allCases {
+            let names = catalog.items.filter { $0.category == category }.map(\.name)
+            XCTAssertEqual(Set(names).count, names.count,
+                           "\(category) : \(Dictionary(grouping: names, by: { $0 }).filter { $0.value.count > 1 }.keys)")
+        }
+    }
+
+    /// 122 est une donnée, pas une règle de calcul : un ajout légitime au catalogue
+    /// doit faire bouger cette valeur, en même temps que le compte par catégorie
+    /// concerné. Elle verrouille aussi, indirectement, les 58 ingrédients que
+    /// `testLeCatalogueSeChargeEtEstComplet` n'épingle qu'en `>= 40`.
+    func testLaTailleDuCatalogue() {
+        XCTAssertEqual(catalog.items.count, 122, "le catalogue ne compte plus 122 aliments")
+    }
+
+    // MARK: Catalogue v1 (spec v1.10)
+
+    func testLeCatalogueSeChargeEtEstComplet() throws {
+        XCTAssertEqual(catalog.items(category: .drink, slot: nil).count, 15)
+        XCTAssertEqual(catalog.items(category: .snack, slot: nil).count, 9)     // 12 − 3 déménagés
+        XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 30)
+        XCTAssertGreaterThanOrEqual(catalog.items(category: .side, slot: nil).count, 40)
+        XCTAssertEqual(catalog.items(category: .dessert, slot: nil).count, 10)
+    }
+
     /// Garde-fou de transcription : les kcal par unité des tables de la spec doivent
     /// se retrouver à partir de kcalPer100g et du poids d'une unité.
     func testKcalParUniteRetombentSurLaSpec() {
         let expected: [String: Int] = [
-            // Les 15 boissons et les 12 encas de la spec, pas un échantillon : une
-            // erreur de conversion sur une seule ligne du JSON doit tomber ici.
+            // Les 15 boissons, les 9 encas et les 3 desserts (anciens encas) de la
+            // spec, pas un échantillon : une erreur de conversion sur une seule ligne
+            // du JSON doit tomber ici.
             "water": 0, "tea": 0, "coffee": 2, "soda_zero": 1, "coffee_milk": 90,
             "milk": 128, "juice": 110, "soda": 139, "beer_half": 108, "beer_pint": 215,
             "wine": 106, "spirit": 100, "cocktail": 250, "hot_chocolate": 200,
@@ -70,15 +134,6 @@ final class FoodCatalogTests: XCTestCase {
         XCTAssertEqual(egg?.frQuantity(grams: 120), "2 œufs")
         XCTAssertEqual(egg?.frQuantity(grams: 30), "0,5 œuf")
         XCTAssertEqual(catalog.byID["chicken"]?.frQuantity(grams: 150), "150 g")
-    }
-
-    /// Les unités invariables doivent porter leur pluriel explicite, sinon on lit
-    /// « 2 c. à soupes ».
-    func testUnitesInvariables() {
-        for item in catalog.items where item.unitLabel?.contains("c. à") == true {
-            XCTAssertEqual(item.unitLabelPlural, item.unitLabel,
-                           "\(item.id) : pluriel explicite attendu")
-        }
     }
 
     /// LE test de contenu de ce lot. Si la composition par défaut d'un plat s'éloigne
@@ -117,17 +172,7 @@ final class FoodCatalogTests: XCTestCase {
         XCTAssertNil(catalog.compositions["other"])
     }
 
-    func testToutIngredientCiteExiste() {
-        for (dishID, composition) in catalog.compositions {
-            for component in composition {
-                XCTAssertNotNil(catalog.byID[component.itemID],
-                                "\(dishID) cite un item inconnu : \(component.itemID)")
-                XCTAssertGreaterThan(component.grams, 0, "\(dishID)/\(component.itemID)")
-            }
-        }
-    }
-
-    // MARK: Catégories (spec v1.14 §3.4)
+    // MARK: La cinquième catégorie (spec v1.14 §3.4)
 
     func testLaCategorieDessertExiste() {
         XCTAssertEqual(FoodItem.Category.dessert.frLabel, "Desserts")
@@ -163,7 +208,8 @@ final class FoodCatalogTests: XCTestCase {
         XCTAssertEqual(alcohol, ["beer_half", "beer_pint", "wine", "spirit", "cocktail"])
 
         let richDessert = Set(catalog.items.filter { $0.tags.contains("richDessert") }.map(\.id))
-        XCTAssertEqual(richDessert, ["choco_bar", "ice_cream", "croissant"])
+        XCTAssertEqual(richDessert, ["choco_bar", "ice_cream", "croissant",
+                                     "cake", "fruit_tart", "choco_mousse", "crepe_sugar"])
     }
 
     // MARK: Seize ingrédients (spec v1.14 §3.2)
@@ -282,5 +328,63 @@ final class FoodCatalogTests: XCTestCase {
     /// la seule forme possible.
     func testLaPlancheAperoNAPasDeCreneau() throws {
         XCTAssertEqual(catalog.byID["apero_platter"]?.slots, [])
+    }
+
+    // MARK: Dix desserts (spec v1.14 §3.4)
+
+    func testLesDixDessertsSontComplets() {
+        let desserts = catalog.items.filter { $0.category == .dessert }
+        XCTAssertEqual(desserts.count, 10, "sept nouveaux + trois déménagés")
+        for id in ["fruit_salad", "cake", "fruit_tart", "choco_mousse",
+                   "crepe_sugar", "skyr", "greek_yogurt",
+                   "choco_square", "ice_cream", "compote"] {
+            let item = catalog.byID[id]
+            XCTAssertNotNil(item, "dessert manquant : \(id)")
+            XCTAssertEqual(item?.category, .dessert, "\(id)")
+        }
+    }
+
+    /// Garde-fou de transcription : les sept kcal/100 g du tableau §3.4, pas un
+    /// échantillon : une erreur de recopie sur une seule ligne du JSON doit tomber ici.
+    func testKcalDesSeptNouveauxDessertsRetombentSurLaSpec() {
+        let expected: [String: Int] = [
+            "fruit_salad": 60, "cake": 380, "fruit_tart": 250, "choco_mousse": 210,
+            "crepe_sugar": 220,
+            // Skyr et yaourt grec sont deux entrées et non une : 35 kcal d'écart aux
+            // 100 g, soit 50 kcal sur un pot. Les confondre ferait mentir une
+            // estimation qui porte un tilde précisément pour ne pas mentir.
+            "skyr": 85, "greek_yogurt": 120,
+        ]
+        for (id, kcal) in expected {
+            let item = catalog.byID[id]
+            XCTAssertNotNil(item, "dessert manquant : \(id)")
+            XCTAssertEqual(item?.kcalPer100g, Double(kcal), "\(id) : kcal/100 g incohérent avec la spec")
+        }
+    }
+
+    /// « Viennoiserie » à 300 kcal/100 g (`pastry`, un plat) et « Viennoiserie » à
+    /// 430 kcal/100 g (`croissant`, un encas) : c'était deux barèmes
+    /// sous un seul nom. L'unicité par catégorie (`testLesNomsSontUniquesParCategorie`)
+    /// ne peut pas le protéger, puisque les deux entrées sont dans deux onglets
+    /// différents. Comme `testLeLibelleDesIngredients`, un renommage se défait sans
+    /// bruit à la première relecture qui croit corriger une étourderie.
+    func testLeRenommageDuCroissantEstEpingle() {
+        XCTAssertEqual(catalog.byID["croissant"]?.name, "Croissant ou pain au chocolat")
+        XCTAssertEqual(catalog.byID["pastry"]?.name, "Viennoiserie")
+    }
+
+    /// Seul test du fichier qui passe par `hasTag(_:itemID:)`, le chemin qu'emprunte
+    /// réellement `GameService` (`GameService.swift:372,382`) pour la quête « jours en
+    /// dessert léger ». `testTagsAlcoolEtDessertGourmandSontExactementCesItems` lit
+    /// `item.tags` en direct et épingle déjà la liste exacte des deux volets ; celui-ci
+    /// exerce l'API plutôt que la donnée.
+    func testLesNouveauxDessertsGourmandsSontTagues() {
+        for id in ["cake", "fruit_tart", "choco_mousse", "crepe_sugar"] {
+            XCTAssertTrue(catalog.hasTag("richDessert", itemID: id), "\(id) doit être gourmand")
+        }
+        // Et les légers ne le portent pas, sinon la quête devient impossible.
+        for id in ["fruit_salad", "skyr", "greek_yogurt", "compote"] {
+            XCTAssertFalse(catalog.hasTag("richDessert", itemID: id), "\(id) n'est pas gourmand")
+        }
     }
 }
