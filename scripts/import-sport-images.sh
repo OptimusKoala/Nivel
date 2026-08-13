@@ -17,7 +17,7 @@ if [ "${#sources[@]}" -eq 0 ]; then
 fi
 
 catalog_ids=$(grep -ho '"id": *"[a-z_]*"' \
-  NivelCore/Sources/NivelCore/Resources/{activities,sessions,posture-activities,posture-sessions}.json \
+  NivelCore/Sources/NivelCore/Resources/{activities,sessions,posture-activities,posture-sessions,muscu-sessions}.json \
   | sed 's/.*"\(.*\)"$/\1/' | sort)
 source_ids=$(printf '%s\n' "${sources[@]}" | xargs -n1 basename | sed 's/\.png$//' | sort)
 if ! diff <(echo "$catalog_ids") <(echo "$source_ids") >/dev/null; then

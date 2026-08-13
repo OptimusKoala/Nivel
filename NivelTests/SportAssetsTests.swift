@@ -9,10 +9,13 @@ final class SportAssetsTests: XCTestCase {
     /// (spec illustrations §7). Le fallback emoji existe, mais un asset manquant est un
     /// bug de packaging à attraper ici.
     func testEveryCatalogEntryHasAnIllustration() throws {
-        // Catalogues posture inclus (spec v1.11 §11) : 9 exercices + 5 séances, mêmes
-        // règles de packaging que les catalogues sport globaux.
+        // Tous les catalogues qui alimentent un écran sport : le commun, la posture
+        // (spec v1.11 §11) et la muscu (spec v1.14 §4.5) — mêmes règles de packaging.
+        // Volontairement sans compte en dur : quand un lot ajoute un catalogue, c'est
+        // cette liste qu'il faut compléter, et un chiffre en commentaire ne le dirait pas.
         let ids = try Catalogs.activities().map(\.id) + Catalogs.sessions().map(\.id)
             + Catalogs.postureActivities().map(\.id) + Catalogs.postureSessions().map(\.id)
+            + Catalogs.muscuSessions().map(\.id)
         XCTAssertFalse(ids.isEmpty)
         for id in ids {
             let image = try XCTUnwrap(UIImage(named: "Sport/\(id)"), "asset manquant : Sport/\(id)")
