@@ -19,6 +19,12 @@ final class UserProfile {
     // completedThisWeekQuestIDs en v1). Clé absente = valeur du ReminderCatalog.
     var reminderTimes: [String: Int] = [:]      // id → minutes depuis minuit (0...1439)
     var reminderWeekdays: [String: Int] = [:]   // id → jour (1 = dimanche … 7 = samedi)
+    // Défaut sur la DÉCLARATION (migration légère SwiftData, même motif que
+    // reminderTimes ci-dessus) : 0 = jamais réglé, donc la valeur calculée depuis le
+    // poids fait foi (spec v1.14 §5.3). Ni l'onboarding ni l'`init` ne posent 0
+    // explicitement — c'est ce défaut de déclaration qui porte le sentinelle, pour
+    // les stores d'avant la 1.14 comme pour les profils créés après.
+    var dailyBurnTarget: Int = 0
     var createdAt: Date
     var lastMessageIDs: [String: String] // contexte → dernier id de message (anti-répétition)
 
@@ -60,6 +66,16 @@ final class UserProfile {
     var activity: ActivityLevel {
         get { ActivityLevel(rawValue: activityRaw) ?? .sedentary }
         set { activityRaw = newValue.rawValue }
+    }
+
+    /// Résout le sentinelle `dailyBurnTarget == 0` (spec v1.14 §5.3) : la valeur
+    /// réglée dans les Réglages si elle existe, sinon le calcul à la volée depuis le
+    /// poids courant — jamais stocké tant que l'utilisateur ne règle rien lui-même.
+    /// `currentWeightKg` en paramètre : `UserProfile` ne porte que `initialWeightKg`,
+    /// le poids qui compte ici vient de la dernière `WeightEntry` (même chemin que
+    /// `SettingsView.currentWeightKg`), que ce type ne peut pas interroger lui-même.
+    func burnTarget(currentWeightKg: Double) -> Int {
+        dailyBurnTarget > 0 ? dailyBurnTarget : CalorieCalculator.dailyBurnTarget(weightKg: currentWeightKg)
     }
 }
 

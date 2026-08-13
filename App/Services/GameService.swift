@@ -653,6 +653,31 @@ final class GameService {
         (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first
     }
 
+    /// Poids courant : dernière pesée (`WeightEntry` la plus récente PAR DATE), ou
+    /// `initialWeightKg` si aucune n'existe encore — garde de sécurité, en pratique
+    /// toujours fausse après l'onboarding, qui en insère une. internal : chemin
+    /// UNIQUE vers le poids courant, utilisé par `SettingsView`, `ProgressScreen`,
+    /// et bientôt `DayCloser.swift` (Task 5) et l'anneau de dépense (Task 6) — à la
+    /// place des copies de `weights.last` que le plan v1.14 voulait éviter.
+    func currentWeightKg() -> Double {
+        var descriptor = FetchDescriptor<WeightEntry>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        descriptor.fetchLimit = 1
+        let last = (try? modelContext.fetch(descriptor))?.first?.weightKg
+        return last ?? fetchProfile()?.initialWeightKg ?? 0
+    }
+
+    /// Point d'appariement UNIQUE entre le poids courant et la résolution du
+    /// sentinelle (spec v1.14 §5.3). `profile.burnTarget(currentWeightKg:
+    /// profile.initialWeightKg)` compile tout aussi bien et fige silencieusement la
+    /// cible au poids de l'onboarding — cette méthode existe pour que chaque
+    /// appelant (`SettingsView`, et bientôt `DayCloser` Task 5, l'anneau d'accueil
+    /// Task 6) n'ait jamais à réapparier les deux lui-même. 0 avant l'onboarding
+    /// (aucun profil) : il n'y a alors rien à cibler.
+    func burnTarget() -> Int {
+        guard let profile = fetchProfile() else { return 0 }
+        return profile.burnTarget(currentWeightKg: currentWeightKg())
+    }
+
     /// DayLog du jour donné, créé (cible kcal actuelle du profil) s'il n'existe pas.
     /// ⚠️ `day` doit être une clé canonique (`Self.dayKey`) — DayLog.day n'est
     /// JAMAIS écrit autrement. internal : aussi utilisé par DayCloser.swift.

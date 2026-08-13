@@ -249,6 +249,59 @@ final class GameServiceTests: XCTestCase {
         XCTAssertNotNil(state.badgeUnlocks["first_weigh"])
     }
 
+    // MARK: - Poids courant (spec v1.14 §5.3) : chemin unique partagé par
+    // SettingsView, ProgressScreen, et bientôt DayCloser (Task 5) et l'objectif de
+    // dépense affiché à l'accueil (Task 6).
+
+    /// Aucune pesée encore loggée (juste après l'onboarding, en théorie jamais vrai
+    /// en pratique puisqu'il en insère une) → repli sur `initialWeightKg`.
+    func testCurrentWeightKgSansPeseeReplieSurLePoidsInitial() {
+        XCTAssertEqual(service.currentWeightKg(), 90) // initialWeightKg posé au setUp
+    }
+
+    /// Plusieurs pesées : la plus RÉCENTE PAR DATE gagne, pas la dernière insérée
+    /// (elles peuvent diverger, par ex. une correction a posteriori).
+    func testCurrentWeightKgRetientLaPeseeLaPlusRecenteParDate() async throws {
+        let later = Date(timeIntervalSince1970: 2_000_000)
+        let earlier = Date(timeIntervalSince1970: 1_000_000)
+        await service.logWeight(kg: 91, date: later)
+        await service.logWeight(kg: 89, date: earlier) // insérée en second, datée AVANT
+        XCTAssertEqual(service.currentWeightKg(), 91)
+    }
+
+    // MARK: - Objectif de dépense (spec v1.14 §5.3) : sentinelle 0 = jamais réglé
+
+    /// Un profil migré (ou tout juste créé — ni l'un ni l'autre ne pose 0
+    /// explicitement, c'est le défaut de déclaration qui le fait) résout son
+    /// objectif de dépense depuis le poids courant. Attendu écrit EN DUR (350, et
+    /// non `CalorieCalculator.dailyBurnTarget(weightKg: 90)`) : comparer aux deux
+    /// implémentations de la même formule ne prouverait rien si la formule
+    /// elle-même devenait fausse.
+    func testBurnTargetSansReglageEstCalculeDepuisLePoids() throws {
+        let profile = try XCTUnwrap(try context.fetch(FetchDescriptor<UserProfile>()).first)
+        XCTAssertEqual(profile.dailyBurnTarget, 0)
+        XCTAssertEqual(profile.burnTarget(currentWeightKg: 90), 350)
+    }
+
+    /// Une valeur réglée explicitement l'emporte sur le calcul, même si le poids
+    /// utilisé au calcul donnerait un résultat différent.
+    func testBurnTargetRegleExplicitementIgnoreLePoids() throws {
+        let profile = try XCTUnwrap(try context.fetch(FetchDescriptor<UserProfile>()).first)
+        profile.dailyBurnTarget = 500
+        XCTAssertEqual(profile.burnTarget(currentWeightKg: 40), 500) // 40 kg calculerait 200
+    }
+
+    /// La composition complète que `SettingsView`, et bientôt `DayCloser` (Task 5)
+    /// et l'anneau d'accueil (Task 6), utilisent : `GameService.burnTarget()`
+    /// enchaîne le fetch du poids courant (`currentWeightKg()`) et la résolution du
+    /// sentinelle (`UserProfile.burnTarget(currentWeightKg:)`). Poids réglé à 110 kg
+    /// (pas les 90 kg d'`initialWeightKg` posés au setUp) sur un profil jamais réglé
+    /// → 450, et non 350 : seul ce test fait se rencontrer les deux moitiés.
+    func testGameServiceBurnTargetComposeLeFetchDuPoidsEtLaResolutionDuSentinelle() async throws {
+        await service.logWeight(kg: 110)
+        XCTAssertEqual(service.burnTarget(), 450)
+    }
+
     // MARK: - Quêtes qui lisent le contenu des repas (correction spec §7.1)
 
     /// NOUVEAU (pas un portage) : preuve que la quête lit les TAGS du catalogue,

@@ -147,8 +147,16 @@ struct ProgressScreen: View {
             HStack(alignment: .firstTextBaseline) {
                 SectionTitle("Poids")
                 Spacer()
-                if let last = allWeights.last {
-                    Text("\(last.weightKg.frWeight) kg")
+                if !allWeights.isEmpty {
+                    // `game.currentWeightKg()` est un fetch one-shot, pas un état observé —
+                    // mais `allWeights` est un `@Query` DÉCLARÉ SUR CETTE VUE (pas un
+                    // `@Observable` qu'il faudrait lire pour s'y abonner) : SwiftData
+                    // invalide TOUTE la vue dès qu'une `WeightEntry` change, que le corps
+                    // la lise ou non. Ça tient donc même si `WeightChart` disparaissait —
+                    // et `WeighInSheet` (seule origine de `logWeight`) n'est présentée QUE
+                    // depuis cet écran, donc ce chiffre ne peut jamais rester périmé
+                    // pendant qu'on pèse.
+                    Text("\(game.currentWeightKg().frWeight) kg")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.orange)
                 }
