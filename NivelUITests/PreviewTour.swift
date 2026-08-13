@@ -40,8 +40,13 @@ final class PreviewTour: XCTestCase {
         tap(app.buttons.matching(labelContains("Noter un repas")).firstMatch, "bouton noter un repas")
         pause(0.8)
         // Le créneau est pré-rempli d'après l'heure ; « Déjeuner » a le catalogue de
-        // plats le plus parlant (les encas n'ont que quatre entrées).
-        tap(app.buttons["Déjeuner"], "créneau Déjeuner")
+        // plats le plus parlant.
+        //
+        // Correspondance PARTIELLE, pour la même raison qu'au bouton précédent : depuis
+        // la 1.14 la pastille porte un libellé d'accessibilité préfixé (« Créneau
+        // Déjeuner »), parce que « Encas » désigne à la fois un créneau et une catégorie
+        // dans cette feuille. Une égalité de libellé décrochait ici en silence.
+        tap(app.buttons.matching(labelContains("Déjeuner")).firstMatch, "créneau Déjeuner")
         pause(0.6)
         tap(app.buttons.matching(labelContains("Salade composée")).firstMatch, "plat Salade composée")
         pause(0.8)

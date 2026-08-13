@@ -220,8 +220,14 @@ struct MealLogSheet: View {
                         .padding(.vertical, 9)
                         .background(slot == candidate ? Theme.orange : Theme.card, in: Capsule())
                         .foregroundStyle(slot == candidate ? .white : Theme.text)
+                        // 44 pt de cible tactile (règle Apple), la pastille seule
+                        // n'atteignant que 36 pt de haut — cf. FoodCatalogView.categoryPicker.
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Créneau \(candidate.frShort)")
+                .accessibilityAddTraits(slot == candidate ? [.isSelected] : [])
             }
         }
         .frame(maxWidth: .infinity)
