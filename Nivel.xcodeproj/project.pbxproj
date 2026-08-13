@@ -21,6 +21,7 @@
 		1F43357BA9FC3C15EC018C56 /* MealBasketView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3412AFA14494C601193A76 /* MealBasketView.swift */; };
 		1FF19C44AD93A713440F748D /* GameService+WidgetSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */; };
 		229BF4CEFB8B9929D59ED697 /* WidgetSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B501D130466BA533B52476E1 /* WidgetSyncTests.swift */; };
+		23F4B4B11B463C4A2AEA60F1 /* GameService+LevelMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */; };
 		291CD5438E6A3A57272E0D3D /* WidgetNivelito.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */; };
 		2E84FFC862B46AF4F65B9EC0 /* SettingsView+DevicePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D6B63A9C04FD9C8F04CD75 /* SettingsView+DevicePreferences.swift */; };
 		3823F2CEF73FE2E0AF8B05D6 /* AccessoryWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */; };
@@ -266,6 +267,7 @@
 		F21802DEC6553C0882ADE3CF /* LevelMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelMigrationTests.swift; sourceTree = "<group>"; };
 		F61A0C215E7AF8D8BAB3D8A4 /* SystemWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemWidgetViews.swift; sourceTree = "<group>"; };
 		F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheet.swift; sourceTree = "<group>"; };
+		FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameService+LevelMigration.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -393,6 +395,7 @@
 				7FD0D49D1E0B2314767BA85A /* DayCloser.swift */,
 				4C4CF000EF99C1C649915C18 /* DeepLink.swift */,
 				6A1F6969B88BCA1A9BE77195 /* GameService.swift */,
+				FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */,
 				6909EF00448EC3D59E1F1401 /* GameService+Sport.swift */,
 				46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */,
 				2749E47DBFD2A5D89042A89E /* HealthKitService.swift */,
@@ -763,6 +766,7 @@
 				B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */,
 				5D4D67FBBA062126EF9E6359 /* FoodCatalogView.swift in Sources */,
 				F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */,
+				23F4B4B11B463C4A2AEA60F1 /* GameService+LevelMigration.swift in Sources */,
 				5A7B97883F447747C5AC4269 /* GameService+Sport.swift in Sources */,
 				1FF19C44AD93A713440F748D /* GameService+WidgetSync.swift in Sources */,
 				FDCB8202104609DE46003A7A /* GameService.swift in Sources */,

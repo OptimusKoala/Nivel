@@ -184,8 +184,13 @@ final class GamificationState {
     // completedThisWeekQuestIDs en v1, reconfirmée par reminderTimes en v1.9).
     // 1 = courbe d'avant la 1.14, 2 = courbe durcie avec recharge appliquée.
     //
+    // SON UNIQUE LECTEUR est `GameService.migrateLevelCurveIfNeeded()`
+    // (App/Services/GameService+LevelMigration.swift) : l'en-tête de ce fichier décrit
+    // le dispositif entier, dont le défaut de l'`init` ci-dessous, qui vaut 2 et NON 1.
+    // Les deux valeurs diffèrent exprès — ne pas les harmoniser sans l'avoir lu.
+    //
     // ⚠️ CE 1 N'EST PROTÉGÉ PAR AUCUN TEST, et c'est démontré : le passer à 2 laisse
-    // les 132 tests de la cible verts. Ce serait pourtant le bug catastrophique du
+    // la cible entière verte. Ce serait pourtant le bug catastrophique du
     // lot — chaque joueur d'avant la 1.14 sauterait la migration et tomberait du
     // niveau 13 au niveau 6, sans moyen de le retrouver. Aucune suite ne peut
     // l'attraper : toutes montent des stores `isStoredInMemoryOnly` et fixent la
@@ -203,7 +208,8 @@ final class GamificationState {
         questProgress: [String: Int] = [:],
         completedQuestIDs: [String] = [],
         completedThisWeekQuestIDs: [String] = [],
-        // 2 et NON 1 : le défaut de déclaration ci-dessus sert aux stores d'avant la
+        // 2 et NON 1 (voir GameService+LevelMigration.swift, pièce 2 du dispositif) :
+        // le défaut de déclaration ci-dessus sert aux stores d'avant la
         // 1.14, qui n'ont pas la clé. Un état créé PAR le code de la 1.14 (onboarding)
         // naît, lui, sur la nouvelle courbe. Sans cette asymétrie, une installation
         // neuve se ferait « recharger » au lancement suivant une XP déjà gagnée sous la
