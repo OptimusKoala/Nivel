@@ -163,4 +163,32 @@ final class FoodCatalogTests: XCTestCase {
         let richDessert = Set(catalog.items.filter { $0.tags.contains("richDessert") }.map(\.id))
         XCTAssertEqual(richDessert, ["choco_bar", "ice_cream", "croissant"])
     }
+
+    // MARK: Seize ingrédients (spec v1.14 §3.2)
+
+    func testLesSeizeNouveauxIngredientsSontPresents() throws {
+        for id in ["wrap", "pita", "kebab_meat", "cheese_sauce", "white_sauce",
+                   "nuggets", "fried_chicken", "burrata", "dry_sausage", "olives",
+                   "crackers", "oats", "noodles_cooked", "soy_sauce", "sausage", "bechamel"] {
+            let item = catalog.byID[id]
+            XCTAssertNotNil(item, "ingrédient manquant : \(id)")
+            XCTAssertEqual(item?.category, .side, "\(id) doit être un ingrédient")
+        }
+    }
+
+    /// Garde-fou de transcription : les seize kcal/100 g du tableau de la spec, pas un
+    /// échantillon : une erreur de recopie sur une seule ligne du JSON doit tomber ici.
+    func testKcalDesSeizeIngredientsRetombentSurLaSpec() {
+        let expected: [String: Int] = [
+            "wrap": 300, "pita": 270, "kebab_meat": 250, "cheese_sauce": 300,
+            "white_sauce": 350, "nuggets": 290, "fried_chicken": 280, "burrata": 290,
+            "dry_sausage": 450, "olives": 150, "crackers": 450, "oats": 380,
+            "noodles_cooked": 140, "soy_sauce": 60, "sausage": 300, "bechamel": 130,
+        ]
+        for (id, kcal) in expected {
+            let item = catalog.byID[id]
+            XCTAssertNotNil(item, "ingrédient manquant : \(id)")
+            XCTAssertEqual(item?.kcalPer100g, Double(kcal), "\(id) : kcal/100 g incohérent avec la spec")
+        }
+    }
 }
