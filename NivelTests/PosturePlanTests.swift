@@ -133,19 +133,24 @@ final class PosturePlanTests: XCTestCase {
                            stepsService: FakeStepsService(authorized: false), widgetDefaults: nil)
     }
 
-    /// Plafonds INDÉPENDANTS au niveau du SERVICE (pas seulement de XPEngine) :
-    /// faire la séance posture ET la séance du jour le même soir doit payer les
-    /// deux, sinon on punit exactement le comportement qu'on veut installer.
-    func testLogPostureSessionEtSeanceDuJourPaientLesDeuxLeMemeSoir() async throws {
+    /// Plafonds INDÉPENDANTS au niveau du SERVICE (pas seulement de XPEngine) : faire
+    /// la séance posture, la séance du jour ET la séance muscu le même soir doit payer
+    /// les trois, sinon on punit exactement le comportement qu'on veut installer.
+    /// La règle vaut pour les trois ensemble, pas seulement pour un couple (spec §8,
+    /// v1.14 §5.7).
+    func testLesTroisSeancesPaientChacuneLeMemeSoir() async throws {
         let service = try makeService()
         let posture = try XCTUnwrap(service.postureCatalog.sessions.first)
         let daily = try XCTUnwrap(service.sessionCatalog.first)
+        let muscu = try XCTUnwrap(service.muscuCatalog.sessions.first)
 
         let postureEntry = await service.logPostureSession(session: posture)
         let dailyEntry = await service.logDailySession(session: daily)
+        let muscuEntry = await service.logMuscuSession(session: muscu)
 
         XCTAssertEqual(postureEntry.xpAwarded, 40)
         XCTAssertEqual(dailyEntry.xpAwarded, 40)
+        XCTAssertEqual(muscuEntry.xpAwarded, 40)
     }
 
     /// Miroir exact de `dailySessionDayCount` : deux séances posture le même soir

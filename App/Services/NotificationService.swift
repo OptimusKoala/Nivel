@@ -27,7 +27,7 @@ enum NotificationService {
         let planned = ReminderPlanner.planned(enabled: profile.remindersEnabled,
                                               times: profile.reminderTimes,
                                               weekdays: profile.reminderWeekdays,
-                                              planEnabled: PosturePlanSettings.shared.isEnabled)
+                                              enabledPlans: ReminderPlan.enabledOnThisDevice)
         generation += 1
         let gen = generation
         Task { await perform(name: name, planned: planned, generation: gen) }

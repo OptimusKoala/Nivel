@@ -15,9 +15,12 @@ struct SportView: View {
     @State private var selectedActivity: Activity?
     @State private var showSessionPlayer = false
     // Section Posture (spec v1.11 §9) : état séparé de la séance du jour, la
-    // sheet du player reçoit `kind: .posture` pour savoir laquelle des deux logger.
+    // sheet du player reçoit `kind: .posture` pour savoir laquelle des trois logger.
     @State private var postureSessionStatus: (session: ActivitySession, done: Bool)?
     @State private var showPostureSessionPlayer = false
+    // Section Muscu (spec v1.14 §4.4) : troisième état de séance, même mécanique.
+    @State private var muscuSessionStatus: (session: ActivitySession, done: Bool)?
+    @State private var showMuscuSessionPlayer = false
 
     var body: some View {
         ZStack {
@@ -45,6 +48,15 @@ struct SportView: View {
                         .listRowBackground(Theme.card)
                     }
                 } header: { header }
+
+                // APRÈS la séance du jour, avant les sections d'activités (spec v1.14
+                // §4.4) : la posture reste en tête, c'est le programme de Marion.
+                // Auto-cloisonnée, comme PostureSection.
+                MuscuSection(
+                    sessionStatus: muscuSessionStatus,
+                    monthCount: game.muscuSessionsThisMonth(),
+                    onOpenSession: { showMuscuSessionPlayer = true }
+                )
 
                 // Sections, ordre, libellés et icônes viennent tous de `SportSection` :
                 // rien ici ne peut diverger d'ActivityPickerSheet, pas même par omission.
@@ -85,6 +97,11 @@ struct SportView: View {
                 SessionPlayerSheet(session: status.session, done: status.done, kind: .posture)
             }
         }
+        .sheet(isPresented: $showMuscuSessionPlayer, onDismiss: reload) {
+            if let status = muscuSessionStatus {
+                SessionPlayerSheet(session: status.session, done: status.done, kind: .muscu)
+            }
+        }
         .sheet(item: $selectedActivity, onDismiss: reload) { activity in
             ActivityLogSheet(activity: activity)
         }
@@ -103,6 +120,7 @@ struct SportView: View {
     private func reload() {
         sessionStatus = game.dailySessionStatus()
         postureSessionStatus = game.postureSessionStatus()
+        muscuSessionStatus = game.muscuSessionStatus()
         todayEntries = game.todayActivities()
     }
 
@@ -141,6 +159,12 @@ struct SportView: View {
                 return game.postureCatalog.sessions.first { $0.id == entry.refID }?.title
                     ?? game.activitiesByID[entry.refID]?.name
                     ?? entry.refID
+            case .muscu:
+                // Même piège que .posture — un id de SÉANCE, jamais d'exercice — mais
+                // SANS le repli par `activitiesByID` : le programme muscu n'a pas
+                // d'exercices à lui, aucun id `muscu_*` n'existe dans cette table, et
+                // le maillon serait donc du code mort qui retomberait toujours sur l'id brut.
+                return game.muscuCatalog.sessions.first { $0.id == entry.refID }?.title ?? entry.refID
             }
         }()
         return HStack(spacing: 12) {

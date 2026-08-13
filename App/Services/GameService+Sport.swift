@@ -37,6 +37,18 @@ extension GameService {
                               kcal: session.estimatedKcal(activitiesByID: activitiesByID), date: date)
     }
 
+    /// Valide une séance du programme muscu : +40 XP (max 1/jour, INDÉPENDANT des
+    /// plafonds séance du jour ET posture, spec v1.14 §5.7). Miroir exact de
+    /// `logPostureSession` ; seul le `kind` change. Les kcal passent par
+    /// `activitiesByID` comme les autres : les étapes muscu pointent vers le
+    /// catalogue commun, elles y sont donc toutes résolues.
+    @discardableResult
+    func logMuscuSession(session: ActivitySession, date: Date = .now) async -> ActivityEntry {
+        assert(session.totalMinutes > 0, "séance muscu sans étapes")
+        return await logSport(kind: .muscu, refID: session.id, minutes: session.totalMinutes,
+                              kcal: session.estimatedKcal(activitiesByID: activitiesByID), date: date)
+    }
+
     private func logSport(kind: ActivityKind, refID: String, minutes: Int,
                           kcal: Int, date: Date) async -> ActivityEntry {
         let state = fetchOrCreateState()
@@ -50,6 +62,9 @@ extension GameService {
         // Plafond INDÉPENDANT de dailySessionDone (spec §8) : faire la séance
         // posture ET la séance du jour le même soir paie les deux XP.
         case .posture: action = .postureSessionDone
+        // Troisième plafond indépendant (spec v1.14 §5.7) : mutualiser ferait qu'une
+        // séance muscu et une séance posture le même soir n'en paieraient qu'une.
+        case .muscu: action = .muscuSessionDone
         }
         let xp = XPEngine.award(action, todayCount: sportAwardedCount(kind: kind, on: date))
 
@@ -99,6 +114,14 @@ extension GameService {
         return (session, sportCount(kind: .posture, on: now) > 0)
     }
 
+    /// Séance muscu du jour + état « déjà faite » (spec v1.14 §4.4) : miroir exact de
+    /// `postureSessionStatus`, sur le catalogue muscu CLOISONNÉ — même rotation
+    /// générique, même référence fixe, appliquée à un troisième pool distinct.
+    func muscuSessionStatus(now: Date = .now) -> (session: ActivitySession, done: Bool)? {
+        guard let session = muscuCatalog.session(for: now, calendar: Self.calendar) else { return nil }
+        return (session, sportCount(kind: .muscu, on: now) > 0)
+    }
+
     /// Kcal estimées d'une séance (catalogue chargé une fois à l'init).
     func sessionKcal(_ session: ActivitySession) -> Int {
         session.estimatedKcal(activitiesByID: activitiesByID)
@@ -125,7 +148,15 @@ extension GameService {
     /// Jours DISTINCTS avec au moins une séance du jour sur [start, end[ — une double
     /// validation le même jour ne compte qu'une fois (quêtes et badge "Rituel du jour").
     func dailySessionDayCount(from start: Date, to end: Date) -> Int {
-        let kindRaw = ActivityKind.dailySession.rawValue
+        sessionDayCount(kind: .dailySession, from: start, to: end)
+    }
+
+    /// Le comptage lui-même, écrit une seule fois pour les trois natures de séance :
+    /// jours DISTINCTS d'un `kind` sur [start, end[. Trois copies du même prédicat
+    /// auraient fini par diverger, et une seule d'entre elles corrigée aurait fait
+    /// afficher deux chiffres différents pour la même semaine.
+    private func sessionDayCount(kind: ActivityKind, from start: Date, to end: Date) -> Int {
+        let kindRaw = kind.rawValue
         let predicate = #Predicate<ActivityEntry> {
             $0.date >= start && $0.date < end && $0.kindRaw == kindRaw
         }
@@ -139,12 +170,7 @@ extension GameService {
     /// régularité. Alimenté par `logPostureSession`, et par le compteur mensuel
     /// de la carte du soir (`postureSessionsThisMonth`) qui compte pareil.
     func postureSessionDayCount(from start: Date, to end: Date) -> Int {
-        let kindRaw = ActivityKind.posture.rawValue
-        let predicate = #Predicate<ActivityEntry> {
-            $0.date >= start && $0.date < end && $0.kindRaw == kindRaw
-        }
-        let entries = (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
-        return Set(entries.map { Self.calendar.startOfDay(for: $0.date) }).count
+        sessionDayCount(kind: .posture, from: start, to: end)
     }
 
     /// Compteur mensuel de la carte du soir (spec v1.11 §7.3) : jours DISTINCTS du
@@ -154,6 +180,15 @@ extension GameService {
     func postureSessionsThisMonth(now: Date = .now) -> Int {
         guard let month = Self.calendar.dateInterval(of: .month, for: now) else { return 0 }
         return postureSessionDayCount(from: month.start, to: month.end)
+    }
+
+    /// Compteur mensuel de la carte muscu (spec v1.14 §4.4) : jours DISTINCTS du mois
+    /// contenant `now`, exactement comme la posture. Aucune quête muscu ne le lit
+    /// aujourd'hui — c'est le seul chiffre affiché du programme, et il compte en jours
+    /// pour dire la régularité plutôt que le bachotage, comme partout ailleurs.
+    func muscuSessionsThisMonth(now: Date = .now) -> Int {
+        guard let month = Self.calendar.dateInterval(of: .month, for: now) else { return 0 }
+        return sessionDayCount(kind: .muscu, from: month.start, to: month.end)
     }
 
     /// Validations sur [start, end[, optionnellement filtrées par kind (quêtes hebdo).

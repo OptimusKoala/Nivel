@@ -61,6 +61,10 @@ final class GameService {
     /// Catalogues posture, CLOISONNÉS des catalogues sport globaux : les verser dedans
     /// ferait passer la rotation de la séance du jour de 11 à 16 entrées (spec v1.11 §6).
     let postureCatalog: PostureCatalog
+    /// Séances muscu, cloisonnées pour exactement la même raison (spec v1.14 §4.4).
+    /// Différence avec la posture : PAS de catalogue d'exercices propre — les étapes
+    /// pointent vers `activityCatalog`, donc rien à verser dans `activitiesByID`.
+    let muscuCatalog: MuscuCatalog
 
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
@@ -140,11 +144,14 @@ final class GameService {
         self.sessionCatalog = Self.loadOrAssert({ try Catalogs.sessions() }, fallback: [])
         self.foodCatalog = Self.loadOrAssert({ try FoodCatalog.load() }, fallback: .empty)
         self.postureCatalog = Self.loadOrAssert({ try PostureCatalog.load() }, fallback: .empty)
+        self.muscuCatalog = Self.loadOrAssert({ try MuscuCatalog.load() }, fallback: .empty)
         // uniquingKeysWith (et non uniqueKeysWithValues) : un id dupliqué dans un
         // bundle corrompu ne doit jamais crasher — on garde la première occurrence.
-        // Table FUSIONNÉE : les listes affichées et les deux rotations restent cloisonnées,
-        // mais un exercice posture doit pouvoir être nommé partout où un id est résolu
-        // (liste du jour, récapitulatifs), sinon il s'affiche en id brut.
+        // Table FUSIONNÉE : les listes affichées et les trois rotations (séance du jour,
+        // posture, muscu) restent cloisonnées, mais un exercice posture doit pouvoir être
+        // nommé partout où un id est résolu (liste du jour, récapitulatifs), sinon il
+        // s'affiche en id brut. Le catalogue muscu n'a RIEN à verser ici : il n'a pas
+        // d'exercices à lui, ses étapes pointent déjà vers `activityCatalog`.
         self.activitiesByID = Dictionary((activityCatalog + postureCatalog.activities).map { ($0.id, $0) },
                                         uniquingKeysWith: { first, _ in first })
     }

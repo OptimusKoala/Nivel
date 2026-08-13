@@ -28,6 +28,8 @@ struct DailySessionCard: View {
     }
 }
 
+/// Séance du jour : la coque commune (`PlanSessionCard.swift`), avec le seul
+/// sous-titre des trois qui dit une durée et des kcal plutôt qu'un compteur.
 struct DailySessionCardContent: View {
     let session: ActivitySession
     let kcal: Int
@@ -36,31 +38,12 @@ struct DailySessionCardContent: View {
     var illustrationSize: CGFloat = 56
 
     var body: some View {
-        HStack(spacing: 12) {
-            SportIllustration(name: session.id, size: illustrationSize, cornerRadius: 14)
-            VStack(alignment: .leading, spacing: 3) {
-                Text("SÉANCE DU JOUR")
-                    .font(.system(size: 10, weight: .bold))
-                    .kerning(0.5)
-                    .foregroundStyle(Theme.subtext)
-                Text(session.title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.text)
-                Text("\(session.totalMinutes) min · ~\(kcal.frFormatted) kcal")
-                    .font(.caption)
-                    .foregroundStyle(Theme.subtext)
-            }
-            Spacer()
-            if done {
-                Label { Text("Faite !") } icon: { CozyIcon(name: "icon_check", size: 20) }
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Theme.green)
-            } else {
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.bold))
-                    .foregroundStyle(Theme.orange)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        PlanSessionCardContent(
+            overline: "SÉANCE DU JOUR",
+            session: session,
+            subtitle: "\(session.totalMinutes) min · ~\(kcal.frFormatted) kcal",
+            done: done,
+            illustrationSize: illustrationSize
+        )
     }
 }

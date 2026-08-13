@@ -63,8 +63,8 @@ struct PostureSection: View {
     }
 }
 
-/// Carte de la séance du soir (spec v1.11 §9) : même forme que
-/// `DailySessionCardContent`, mais le sous-titre est le compteur mensuel en jours
+/// Carte de la séance du soir (spec v1.11 §9) : la coque commune
+/// (`PlanSessionCard.swift`), avec pour sous-titre le compteur mensuel en jours
 /// DISTINCTS plutôt que la durée/kcal — cohérent avec la quête
 /// `postureSessionsDone`, qui compte pareil (spec §7.3 : les deux doivent parler
 /// le même chiffre pour la même semaine).
@@ -74,32 +74,8 @@ struct PostureEveningCardContent: View {
     let monthCount: Int
 
     var body: some View {
-        HStack(spacing: 12) {
-            SportIllustration(name: session.id, size: 56, cornerRadius: 14)
-            VStack(alignment: .leading, spacing: 3) {
-                Text("SÉANCE DU SOIR")
-                    .font(.system(size: 10, weight: .bold))
-                    .kerning(0.5)
-                    .foregroundStyle(Theme.subtext)
-                Text(session.title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.text)
-                Text(monthlyCounterLabel)
-                    .font(.caption)
-                    .foregroundStyle(Theme.subtext)
-            }
-            Spacer()
-            if done {
-                Label { Text("Faite !") } icon: { CozyIcon(name: "icon_check", size: 20) }
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Theme.green)
-            } else {
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.bold))
-                    .foregroundStyle(Theme.orange)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        PlanSessionCardContent(overline: "SÉANCE DU SOIR", session: session,
+                               subtitle: monthlyCounterLabel, done: done)
     }
 
     /// Un fait, pas un jugement (spec §7.3) : jamais "aucune séance encore", juste

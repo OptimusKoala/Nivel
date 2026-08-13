@@ -16,13 +16,12 @@ extension SettingsContent {
     private static let referenceDayComponents = DateComponents(year: 2000, month: 1, day: 1)
 
     var remindersSection: some View {
-        // Filtré par PosturePlanSettings (spec v1.11 §3, §10) : un rappel
-        // `requiresPosturePlan` (aujourd'hui, seulement "posture") ne doit
-        // apparaître QUE si le programme est allumé, sinon la ligne casse la
-        // promesse "rien ne change chez toi" et laisse allumer un rappel pour un
-        // programme jamais vu. La garde vit dans `ReminderCatalog.visibleReminders`
-        // (pure, testée), pas ici.
-        let visible = ReminderCatalog.visibleReminders(planEnabled: PosturePlanSettings.shared.isEnabled)
+        // Filtré par les interrupteurs de programme (spec v1.11 §3, §10 ; v1.14 §4.4) :
+        // un rappel qui exige un programme ("posture", "muscu") ne doit apparaître QUE
+        // si SON programme est allumé, sinon la ligne casse la promesse "rien ne change
+        // chez toi" et laisse allumer un rappel pour un programme jamais vu. La garde
+        // vit dans `ReminderCatalog.visibleReminders` (pure, testée), pas ici.
+        let visible = ReminderCatalog.visibleReminders(enabledPlans: ReminderPlan.enabledOnThisDevice)
         return section("Rappels") {
             ForEach(Array(visible.enumerated()), id: \.element.id) { index, definition in
                 if index > 0 { divider }

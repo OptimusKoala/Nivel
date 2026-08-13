@@ -1,9 +1,10 @@
 // App/Views/Settings/SettingsView+DevicePreferences.swift
-// Sections "Son", "Programme posture" et "Thème" des réglages (spec §4.5, §4.11) :
-// préférences PAR APPAREIL qui vivent dans UserDefaults (SoundSettings, ThemeStore,
-// PosturePlanSettings). Son et thème n'appellent donc pas le `save()` local ; le
-// programme posture fait exception (voir postureSection) puisqu'allumer le
-// programme doit AUSSI poser une clé sur le profil SwiftData (spec v1.11 §3).
+// Sections "Son", "Programme posture", "Programme muscu" et "Thème" des réglages
+// (spec §4.5, §4.11) : préférences PAR APPAREIL qui vivent dans UserDefaults
+// (SoundSettings, ThemeStore, PosturePlanSettings, MuscuPlanSettings). Son et thème
+// n'appellent donc pas le `save()` local ; les deux programmes font exception (voir
+// postureSection) puisque les allumer doit AUSSI poser une clé sur le profil
+// SwiftData (spec v1.11 §3, v1.14 §4.4).
 
 import SwiftUI
 import NivelCore
@@ -57,6 +58,35 @@ extension SettingsContent {
         Binding(
             get: { PosturePlanSettings.shared.isEnabled },
             set: { PosturePlanSettings.shared.setEnabled($0, on: profile) }
+        )
+    }
+
+    // MARK: - Programme muscu
+
+    /// Second interrupteur PAR APPAREIL (spec v1.14 §4.4), éteint par défaut, et pour
+    /// les mêmes raisons que la posture : `MuscuPlanSettings.setEnabled` pose
+    /// `profile.remindersEnabled["muscu"]` puis replanifie, sans quoi le rappel de 19 h
+    /// naîtrait éteint (piège documenté v1.9). Les deux programmes sont indépendants :
+    /// deux sections distinctes, jamais un seul interrupteur "programmes".
+    ///
+    /// Sous-titre honnête (spec §1.1) : décrit ce que c'est (cinq séances au poids du
+    /// corps, en rotation) et ne promet aucun résultat.
+    var muscuSection: some View {
+        section("Programme muscu") {
+            Toggle(isOn: muscuBinding) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Programme muscu").font(.subheadline.weight(.semibold))
+                    Text("Cinq séances au poids du corps, en rotation, avec un rappel chaque soir à 19 h.")
+                        .font(.caption).foregroundStyle(Theme.subtext)
+                }
+            }
+        }
+    }
+
+    private var muscuBinding: Binding<Bool> {
+        Binding(
+            get: { MuscuPlanSettings.shared.isEnabled },
+            set: { MuscuPlanSettings.shared.setEnabled($0, on: profile) }
         )
     }
 

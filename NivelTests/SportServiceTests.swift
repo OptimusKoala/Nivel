@@ -161,6 +161,24 @@ final class SportServiceTests: XCTestCase {
         let awarded = entries.map(\.xpAwarded).sorted()
         XCTAssertEqual(awarded, [0, 30, 30])   // le plafond tient même en vol simultané
     }
+
+    /// Une entrée muscu porte un id de SÉANCE (comme `.dailySession` et `.posture`),
+    /// résoluble via le catalogue muscu du service — et par LUI SEUL : aucun id
+    /// `muscu_*` n'existe dans `activitiesByID`, c'est pourquoi `doneRow` n'y a pas
+    /// de repli intermédiaire. Sans cette résolution, la liste du jour afficherait
+    /// « muscu_core » en dur, ce qu'aucune compilation ne signalerait.
+    func testEntreeMuscuResolubleParSonTitre() async throws {
+        let muscu = try XCTUnwrap(service.muscuCatalog.sessions.first { $0.id == "muscu_core" })
+        let entry = await service.logMuscuSession(session: muscu)
+
+        XCTAssertEqual(entry.refID, "muscu_core")
+        XCTAssertEqual(service.muscuCatalog.sessions.first { $0.id == entry.refID }?.title,
+                       muscu.title)
+        XCTAssertNotEqual(muscu.title, "muscu_core")
+        XCTAssertNil(service.activitiesByID[entry.refID])
+        XCTAssertTrue(service.todayActivities().contains { $0.id == entry.id })
+        XCTAssertTrue(try XCTUnwrap(service.muscuSessionStatus()).done)
+    }
 }
 
 /// StepsProviding disponible mais lent (simule l'attente HealthKit) — force

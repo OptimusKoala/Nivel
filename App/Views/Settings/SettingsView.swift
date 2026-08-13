@@ -64,6 +64,7 @@ struct SettingsContent: View {
                     goalsSection
                     soundSection
                     postureSection
+                    muscuSection
                     remindersSection
                     themeSection
                     healthSection
