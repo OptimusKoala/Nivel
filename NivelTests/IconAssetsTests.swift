@@ -54,6 +54,15 @@ final class IconAssetsTests: XCTestCase {
             XCTAssertNotNil(UIImage(named: "Icons/\(palette.icon)"),
                             "thème \(palette.id) : Icons/\(palette.icon) introuvable")
         }
+
+        // Les en-têtes des trois sections de l'onglet Sport (spec v1.14 §4.3). Leurs
+        // noms d'icônes vivent dans NivelCore, hors de portée de la liste épinglée
+        // ci-dessus : une faute de frappe n'afficherait rien, en silence, et dans les
+        // DEUX vues à la fois.
+        for section in SportSection.allCases {
+            XCTAssertNotNil(UIImage(named: "Icons/\(section.icon)"),
+                            "section \(section.rawValue) : Icons/\(section.icon) introuvable")
+        }
     }
 
     /// Les deux Nivelito des cartes de profil : illustrations couleur, donc NI template

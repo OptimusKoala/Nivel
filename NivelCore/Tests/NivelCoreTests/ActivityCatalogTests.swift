@@ -131,6 +131,63 @@ final class ActivityCatalogTests: XCTestCase {
         }
     }
 
+    /// Les sections de l'onglet Sport (spec §4.3) forment une partition STRICTE du
+    /// catalogue : aucune activité perdue, aucune montrée deux fois. La boucle est sur
+    /// `allCases` et non sur trois noms écrits à la main : une quatrième section
+    /// ajoutée un jour entre d'office dans la vérification.
+    func testLesSectionsPartitionnentLeCatalogue() throws {
+        let activities = try Catalogs.activities()
+        let parSection = SportSection.allCases.map { Set($0.activities(in: activities).map(\.id)) }
+
+        let somme = parSection.reduce(0) { $0 + $1.count }
+        XCTAssertEqual(somme, activities.count, "des activités manquent ou sont en trop")
+        XCTAssertEqual(parSection.reduce(into: Set<String>()) { $0.formUnion($1) }.count, somme,
+                       "une activité apparaît dans deux sections")
+
+        // Les ancres ci-dessous ne sont pas décoratives : la partition est INVARIANTE
+        // par permutation des étiquettes, et elle reste vraie si une section est vidée
+        // au profit d'une autre. Vérifié par mutation : intervertir `gentleHome` et
+        // `gentleOutdoor`, ou vider « Dehors » dans « À la maison », laisse les deux
+        // égalités ci-dessus intactes. Seuls ces ids rattachent chaque section à un
+        // contenu.
+        let home = SportSection.gentleHome.activities(in: activities)
+        let outdoor = SportSection.gentleOutdoor.activities(in: activities)
+        let strong = SportSection.strong.activities(in: activities)
+
+        // `stairs` est la seule `location == .both` : le découpage la range sous
+        // « À la maison », comme avant la section intense.
+        XCTAssertTrue(home.contains { $0.id == "stairs" })
+
+        // « Dehors » n'est pas qu'un en-tête : sans cette ancre, une section vidée
+        // passerait la partition et l'écran afficherait un titre sans rien dessous.
+        XCTAssertTrue(outdoor.contains { $0.id == "walk" })
+
+        // « Ça pousse » mélange maison et dehors : la course y côtoie les pompes.
+        XCTAssertTrue(strong.contains { $0.id == "running" })
+        XCTAssertTrue(strong.contains { $0.id == "pushups" })
+        XCTAssertFalse(home.contains { $0.id == "pushups" })
+    }
+
+    /// Garde-fou : une section ajoutée à l'enum sans être rangée dans `displayOrder`
+    /// disparaîtrait de l'écran en silence, dans les deux vues à la fois.
+    func testChaqueSectionEstDansLOrdreDAffichage() {
+        XCTAssertEqual(Set(SportSection.displayOrder), Set(SportSection.allCases))
+        XCTAssertEqual(SportSection.displayOrder.count, SportSection.allCases.count,
+                       "pas de doublon")
+        // La position, elle, est prescrite ; le reste de l'ordre ne l'est pas, donc on
+        // n'épingle pas le tableau entier : un réagencement voulu doit rester libre.
+        XCTAssertEqual(SportSection.displayOrder.last, .strong,
+                       "spec §4.3 : l'intense en dernier, un pas qu'on descend chercher")
+    }
+
+    /// Les libellés sont épinglés parce qu'ils sont maintenant la SEULE source des
+    /// deux en-têtes : plus aucune chaîne en dur dans les vues pour les contredire.
+    func testLesLibellesDesSections() {
+        XCTAssertEqual(SportSection.gentleHome.frLabel, "À la maison")
+        XCTAssertEqual(SportSection.gentleOutdoor.frLabel, "Dehors")
+        XCTAssertEqual(SportSection.strong.frLabel, "Ça pousse")
+    }
+
     // MARK: - Séances
 
     func testSessionsLoadAndStepsResolve() throws {

@@ -1,5 +1,6 @@
 // App/Views/Sport/SportView.swift
-// Onglet Sport (spec sport §8.3) : séance du jour, catalogue Maison/Dehors,
+// Onglet Sport (spec sport §8.3) : séance du jour, catalogue Maison/Dehors/Ça pousse
+// (les sections viennent de `SportSection`, spec v1.14 §4.3),
 // « Fait aujourd'hui » (swipe = supprimer, jour même par construction).
 
 import SwiftUI
@@ -17,13 +18,6 @@ struct SportView: View {
     // sheet du player reçoit `kind: .posture` pour savoir laquelle des deux logger.
     @State private var postureSessionStatus: (session: ActivitySession, done: Bool)?
     @State private var showPostureSessionPlayer = false
-
-    private var homeActivities: [Activity] {
-        game.activityCatalog.filter { $0.location != .outdoor }
-    }
-    private var outdoorActivities: [Activity] {
-        game.activityCatalog.filter { $0.location == .outdoor }
-    }
 
     var body: some View {
         ZStack {
@@ -52,8 +46,12 @@ struct SportView: View {
                     }
                 } header: { header }
 
-                activitySection("À la maison", icon: "tab_home", activities: homeActivities)
-                activitySection("Dehors", icon: "icon_tree", activities: outdoorActivities)
+                // Sections, ordre, libellés et icônes viennent tous de `SportSection` :
+                // rien ici ne peut diverger d'ActivityPickerSheet, pas même par omission.
+                ForEach(SportSection.displayOrder, id: \.self) { section in
+                    activitySection(section.frLabel, icon: section.icon,
+                                    activities: section.activities(in: game.activityCatalog))
+                }
 
                 if !todayEntries.isEmpty {
                     Section {

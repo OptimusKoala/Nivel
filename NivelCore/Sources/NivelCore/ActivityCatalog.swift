@@ -4,8 +4,9 @@ import Foundation
 public struct Activity: Codable, Identifiable, Hashable, Sendable {
     public enum Location: String, Codable, Sendable { case home, outdoor, both }
 
-    /// Rangement de l'onglet Sport (spec v1.14 §4.1) : le catalogue doux garde sa
-    /// place et son rang, l'intense va dans sa propre section, en dernier.
+    /// Rangement de l'onglet Sport : le catalogue doux garde sa place et son rang,
+    /// l'intense va dans sa propre section, en dernier. Le champ est posé en spec
+    /// v1.14 §4.1, le rangement qu'il commande est décrit en §4.3.
     public enum Intensity: String, Codable, Sendable { case gentle, strong }
 
     public let id: String
@@ -69,4 +70,49 @@ public enum ActivityKind: String, Codable, Sendable {
     /// Séance ou exercice du programme posture (spec v1.11 §8) — catalogue cloisonné
     /// (`PostureCatalog`), mais même mécanique de validation que `dailySession`.
     case posture
+}
+
+/// Le découpage de l'onglet Sport (spec v1.14 §4.3), en un seul endroit : deux vues
+/// affichent les mêmes sections (`SportView` et `ActivityPickerSheet`) et elles ne
+/// doivent pas pouvoir diverger. Pas seulement sur l'appartenance : le libellé,
+/// l'icône, l'ordre et la simple PRÉSENCE d'une section viennent d'ici aussi, sans
+/// quoi les vues peuvent encore se contredire en silence — une section perdue dans un
+/// merge ne casserait aucun test.
+public enum SportSection: String, CaseIterable, Sendable {
+    case gentleHome, gentleOutdoor, strong
+
+    /// Ordre d'affichage (spec v1.14 §4.3) : le doux d'abord, il reste le chemin par
+    /// défaut ; l'intense en dernier, un pas qu'on descend chercher. Explicite et non
+    /// déduit de `allCases` : un cas inséré au milieu de l'enum réordonnerait l'écran
+    /// sans que personne ne le demande. Un test vérifie qu'aucune section n'y manque.
+    public static let displayOrder: [SportSection] = [.gentleHome, .gentleOutdoor, .strong]
+
+    public var frLabel: String {
+        switch self {
+        case .gentleHome: "À la maison"
+        case .gentleOutdoor: "Dehors"
+        case .strong: "Ça pousse"
+        }
+    }
+
+    /// Glyphe cozy de l'en-tête. Un test de la cible app le résout contre les assets
+    /// réels : une faute de frappe ici n'afficherait rien du tout, sans un bruit.
+    public var icon: String {
+        switch self {
+        case .gentleHome: "tab_home"
+        case .gentleOutdoor: "icon_tree"
+        case .strong: "icon_flame"
+        }
+    }
+
+    /// Les activités de la section. Les trois partitionnent le catalogue : `.both`
+    /// (les escaliers) n'est pas `.outdoor`, donc elle part avec « À la maison » —
+    /// une fois, et une seule.
+    public func activities(in activities: [Activity]) -> [Activity] {
+        switch self {
+        case .gentleHome: activities.filter { $0.intensity == .gentle && $0.location != .outdoor }
+        case .gentleOutdoor: activities.filter { $0.intensity == .gentle && $0.location == .outdoor }
+        case .strong: activities.filter { $0.intensity == .strong }
+        }
+    }
 }
