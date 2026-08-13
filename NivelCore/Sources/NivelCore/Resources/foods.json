@@ -238,6 +238,229 @@
     "defaultGrams": 250
   },
   {
+    "id": "tacos",
+    "name": "Tacos",
+    "emoji": "🌮",
+    "kcalPer100g": 270,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 390
+  },
+  {
+    "id": "kebab",
+    "name": "Kebab",
+    "emoji": "🥙",
+    "kcalPer100g": 219,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 360
+  },
+  {
+    "id": "burrata_tomato",
+    "name": "Burrata & tomates",
+    "emoji": "🍅",
+    "kcalPer100g": 160,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 375
+  },
+  {
+    "id": "apero_platter",
+    "name": "Planche apéro",
+    "emoji": "🧀",
+    "kcalPer100g": 330,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 215
+  },
+  {
+    "id": "fried_chicken_salad",
+    "name": "Salade au poulet frit",
+    "emoji": "🍗",
+    "kcalPer100g": 153,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 350
+  },
+  {
+    "id": "nuggets_meal",
+    "name": "Nuggets & frites",
+    "emoji": "🍟",
+    "kcalPer100g": 276,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 245
+  },
+  {
+    "id": "omelette",
+    "name": "Omelette nature",
+    "emoji": "🍳",
+    "kcalPer100g": 176,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "snack"
+    ],
+    "defaultGrams": 158
+  },
+  {
+    "id": "omelette_garnie",
+    "name": "Omelette fromage & jambon",
+    "emoji": "🥚",
+    "kcalPer100g": 193,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "snack"
+    ],
+    "defaultGrams": 228
+  },
+  {
+    "id": "gratin_dauphinois",
+    "name": "Gratin dauphinois",
+    "emoji": "🥔",
+    "kcalPer100g": 149,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 348
+  },
+  {
+    "id": "gratin_veg",
+    "name": "Gratin de légumes",
+    "emoji": "🥬",
+    "kcalPer100g": 88,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 360
+  },
+  {
+    "id": "gratin_pasta",
+    "name": "Gratin de pâtes",
+    "emoji": "🫕",
+    "kcalPer100g": 179,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 340
+  },
+  {
+    "id": "asian_noodles",
+    "name": "Nouilles asiatiques",
+    "emoji": "🍜",
+    "kcalPer100g": 137,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 450
+  },
+  {
+    "id": "oatmeal_fruit",
+    "name": "Flocons d'avoine aux fruits",
+    "emoji": "🍯",
+    "kcalPer100g": 113,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast"
+    ],
+    "defaultGrams": 350
+  },
+  {
+    "id": "breakfast_eggs",
+    "name": "Œufs, lard & saucisse",
+    "emoji": "🥓",
+    "kcalPer100g": 219,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast"
+    ],
+    "defaultGrams": 230
+  },
+  {
     "id": "other",
     "name": "Autre",
     "emoji": "🥘",

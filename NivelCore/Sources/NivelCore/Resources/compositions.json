@@ -81,5 +81,89 @@
     { "itemID": "plain_yogurt", "grams": 125 },
     { "itemID": "fruit_pieces", "grams": 120 },
     { "itemID": "honey", "grams": 15 }
+  ],
+  "tacos": [
+    { "itemID": "wrap", "grams": 100 },
+    { "itemID": "kebab_meat", "grams": 120 },
+    { "itemID": "fries", "grams": 100 },
+    { "itemID": "cheese_sauce", "grams": 50 },
+    { "itemID": "lettuce", "grams": 20 }
+  ],
+  "kebab": [
+    { "itemID": "pita", "grams": 110 },
+    { "itemID": "kebab_meat", "grams": 150 },
+    { "itemID": "lettuce", "grams": 30 },
+    { "itemID": "tomato", "grams": 40 },
+    { "itemID": "white_sauce", "grams": 30 }
+  ],
+  "burrata_tomato": [
+    { "itemID": "burrata", "grams": 125 },
+    { "itemID": "tomato", "grams": 200 },
+    { "itemID": "olive_oil", "grams": 10 },
+    { "itemID": "bread", "grams": 40 }
+  ],
+  "apero_platter": [
+    { "itemID": "dry_sausage", "grams": 40 },
+    { "itemID": "cheese", "grams": 60 },
+    { "itemID": "bread", "grams": 60 },
+    { "itemID": "olives", "grams": 30 },
+    { "itemID": "crackers", "grams": 25 }
+  ],
+  "fried_chicken_salad": [
+    { "itemID": "lettuce", "grams": 80 },
+    { "itemID": "tomato", "grams": 80 },
+    { "itemID": "fried_chicken", "grams": 120 },
+    { "itemID": "corn", "grams": 40 },
+    { "itemID": "vinaigrette", "grams": 15 },
+    { "itemID": "croutons", "grams": 15 }
+  ],
+  "nuggets_meal": [
+    { "itemID": "nuggets", "grams": 100 },
+    { "itemID": "fries", "grams": 120 },
+    { "itemID": "ketchup", "grams": 25 }
+  ],
+  "omelette": [
+    { "itemID": "egg", "grams": 150 },
+    { "itemID": "butter", "grams": 8 }
+  ],
+  "omelette_garnie": [
+    { "itemID": "egg", "grams": 150 },
+    { "itemID": "cheese", "grams": 30 },
+    { "itemID": "ham", "grams": 40 },
+    { "itemID": "butter", "grams": 8 }
+  ],
+  "gratin_dauphinois": [
+    { "itemID": "potato", "grams": 250 },
+    { "itemID": "cream", "grams": 60 },
+    { "itemID": "grated_cheese", "grams": 30 },
+    { "itemID": "butter", "grams": 8 }
+  ],
+  "gratin_veg": [
+    { "itemID": "green_veg", "grams": 250 },
+    { "itemID": "bechamel", "grams": 80 },
+    { "itemID": "grated_cheese", "grams": 30 }
+  ],
+  "gratin_pasta": [
+    { "itemID": "pasta_cooked", "grams": 220 },
+    { "itemID": "bechamel", "grams": 80 },
+    { "itemID": "grated_cheese", "grams": 40 }
+  ],
+  "asian_noodles": [
+    { "itemID": "noodles_cooked", "grams": 220 },
+    { "itemID": "chicken", "grams": 100 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "soy_sauce", "grams": 20 },
+    { "itemID": "olive_oil", "grams": 10 }
+  ],
+  "oatmeal_fruit": [
+    { "itemID": "oats", "grams": 60 },
+    { "itemID": "drink_milk", "grams": 200 },
+    { "itemID": "fruit_pieces", "grams": 80 },
+    { "itemID": "honey", "grams": 10 }
+  ],
+  "breakfast_eggs": [
+    { "itemID": "egg", "grams": 120 },
+    { "itemID": "bacon", "grams": 40 },
+    { "itemID": "sausage", "grams": 70 }
   ]
 }

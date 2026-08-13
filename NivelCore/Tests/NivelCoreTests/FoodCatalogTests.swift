@@ -18,10 +18,12 @@ final class FoodCatalogTests: XCTestCase {
         catalog = try FoodCatalog.load()
     }
 
+    // MARK: Catalogue v1 (spec v1.10)
+
     func testLeCatalogueSeChargeEtEstComplet() throws {
         XCTAssertEqual(catalog.items(category: .drink, slot: nil).count, 15)
         XCTAssertEqual(catalog.items(category: .snack, slot: nil).count, 12)
-        XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 16)
+        XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 30)
         XCTAssertGreaterThanOrEqual(catalog.items(category: .side, slot: nil).count, 40)
     }
 
@@ -190,5 +192,95 @@ final class FoodCatalogTests: XCTestCase {
             XCTAssertNotNil(item, "ingrédient manquant : \(id)")
             XCTAssertEqual(item?.kcalPer100g, Double(kcal), "\(id) : kcal/100 g incohérent avec la spec")
         }
+    }
+
+    // MARK: Quatorze plats (spec v1.14 §3.3)
+
+    /// Les ≈ kcal de la dernière colonne du tableau §3.3. Trois gardes s'en servent :
+    /// la composition par défaut et le repli par item, comme `forfaitsV1`, plus la
+    /// liste des quatorze ids elle-même. Une seule table, donc pas de risque qu'elles
+    /// divergent.
+    private static let platsV114: [String: Int] = [
+        "tacos": 1050, "kebab": 790, "burrata_tomato": 600, "apero_platter": 710,
+        "fried_chicken_salad": 535, "nuggets_meal": 675, "omelette": 280,
+        "omelette_garnie": 440, "gratin_dauphinois": 520, "gratin_veg": 320,
+        "gratin_pasta": 610, "asian_noodles": 615, "oatmeal_fruit": 395,
+        "breakfast_eggs": 505,
+    ]
+
+    /// Même garde-fou que `testChaqueCompositionRetombeSurLeForfaitV1`, tolérance élargie
+    /// à 5 % (les sommes réelles sont toutes à moins de 1 % de la spec) : elle attrape un
+    /// dosage grossièrement faux sans être si stricte qu'un demi-gramme la fasse échouer.
+    func testChaqueCompositionRetombeSurLaSpec114() {
+        for (dishID, kcal) in Self.platsV114 {
+            let composition = catalog.compositions[dishID]
+            XCTAssertNotNil(composition, "composition manquante : \(dishID)")
+            guard let composition else { continue }
+            let sum = MealEstimator.kcal(
+                lines: [.composed(itemID: dishID, components: composition)],
+                kcalPer100g: catalog.kcalPer100g
+            )
+            let tolerance = Double(kcal) * 0.05
+            XCTAssertEqual(Double(sum), Double(kcal), accuracy: tolerance,
+                           "\(dishID) : composition à \(sum) kcal pour ~\(kcal) kcal en spec")
+        }
+    }
+
+    /// Même garde-fou que `testLeRepliDesPlatsRetombeSurLeForfaitV1` : `kcalPer100g` et
+    /// `defaultGrams` ne sont jamais lus par l'estimation tant qu'une composition existe,
+    /// mais ils s'affichent dans la grille du catalogue et doivent rester honnêtes.
+    func testLeRepliDesQuatorzePlatsRetombeSurLaSpec114() {
+        for (dishID, kcal) in Self.platsV114 {
+            let item = catalog.byID[dishID]
+            XCTAssertNotNil(item, "plat manquant : \(dishID)")
+            guard let item else { continue }
+            let repli = item.kcalPer100g * Double(item.defaultGrams) / 100
+            XCTAssertEqual(repli, Double(kcal), accuracy: Double(kcal) * 0.05,
+                           "\(dishID) : repli à \(Int(repli)) kcal pour ~\(kcal) kcal en spec")
+        }
+    }
+
+    func testLesQuatorzeNouveauxPlatsOntUneCompositionResoluble() throws {
+        for id in Self.platsV114.keys {
+            let item = catalog.byID[id]
+            XCTAssertNotNil(item, "plat manquant : \(id)")
+            guard let item else { continue }
+            XCTAssertEqual(item.category, .dish, "\(id)")
+            XCTAssertTrue(catalog.line(for: item).isComposed, "\(id) doit avoir une composition")
+        }
+    }
+
+    /// Deux valeurs témoins, en plus du garde-fou à 5 % ci-dessus : ce sont les sommes
+    /// EXACTES des compositions du tableau §3.3 (que la spec arrondit à ~280 et ~1 050),
+    /// pas des nombres choisis a posteriori. Si un barème d'ingrédient bouge de quelques
+    /// kcal, c'est ici que ça se voit ; un écart se corrige dans la composition, jamais
+    /// en recopiant la nouvelle somme dans ce test.
+    func testEstimationsTemoinsDesPlats() throws {
+        let omeletteItem = catalog.byID["omelette"]
+        XCTAssertNotNil(omeletteItem, "plat manquant : omelette")
+        if let omeletteItem {
+            let omelette = catalog.line(for: omeletteItem)
+            XCTAssertEqual(MealEstimator.kcal(lines: [omelette], kcalPer100g: catalog.kcalPer100g), 278)
+        }
+        let tacosItem = catalog.byID["tacos"]
+        XCTAssertNotNil(tacosItem, "plat manquant : tacos")
+        if let tacosItem {
+            let tacos = catalog.line(for: tacosItem)
+            XCTAssertEqual(MealEstimator.kcal(lines: [tacos], kcalPer100g: catalog.kcalPer100g), 1053)
+        }
+    }
+
+    func testLesPlatsDePetitDejSontCantonnesAuCreneau() throws {
+        for id in ["oatmeal_fruit", "breakfast_eggs"] {
+            XCTAssertEqual(catalog.byID[id]?.slots, [.breakfast], "\(id)")
+        }
+    }
+
+    /// La planche apéro n'est ni un déjeuner ni un dîner : slots vide = proposée partout.
+    /// Équivalent aujourd'hui à lister les quatre créneaux en clair (`Foods.swift:107-109`
+    /// résout les deux formes de la même façon) ; le vide est un choix éditorial ici, pas
+    /// la seule forme possible.
+    func testLaPlancheAperoNAPasDeCreneau() throws {
+        XCTAssertEqual(catalog.byID["apero_platter"]?.slots, [])
     }
 }
