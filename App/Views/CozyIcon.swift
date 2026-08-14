@@ -35,7 +35,13 @@ struct CatalogGlyph: View {
     ///   pixels sombres — rendait le glyphe indiscernable du fond (Theme.subtext #B09A8A
     ///   sur Theme.track #F4E7DB : constaté au simulateur, badges verrouillés invisibles).
     /// - `.emoji` : `grayscale` ne ferait rien à un PDF template déjà monochrome, mais
-    ///   c'est le bon outil pour un emoji, avec son 0,35 d'origine.
+    ///   c'est le bon outil pour un emoji.
+    ///
+    /// Attention : ce second cas n'a plus d'APPELANT. `locked` n'est passé qu'en un point,
+    /// la grille des badges de QuestsView, et depuis la 1.14 aucun badge n'est en emoji.
+    /// La branche reste parce que la porte est restée ouverte — quatre quêtes sont encore
+    /// en emoji, et rien n'interdit qu'un jour une entrée verrouillée en soit — mais elle
+    /// n'est plus vérifiée par l'œil de personne. La rallumer, c'est la re-regarder.
     var locked = false
 
     var body: some View {
@@ -49,7 +55,11 @@ struct CatalogGlyph: View {
                 .font(.system(size: size * 0.76))
                 .grayscale(locked ? 1 : 0)
                 // 0,5 et non le 0,35 d'avant la bascule : à 0,35 l'emoji désaturé pesait
-                // visiblement moins que les glyphes teintés voisins de la grille.
+                // visiblement moins que les glyphes teintés qui l'entouraient dans la
+                // grille des badges. Ces voisins-là n'existent plus (la grille est
+                // entièrement en glyphes) : ce 0,5 n'a donc plus rien à côté de quoi
+                // peser, il est à recalibrer sur ce qui entourera le prochain emoji
+                // verrouillé, pas à reprendre tel quel.
                 .opacity(locked ? 0.5 : 1)
                 .frame(width: size, height: size)
                 .accessibilityHidden(true)

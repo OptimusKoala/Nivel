@@ -252,7 +252,7 @@ func avatarBust(_ ctx: CGContext) {
     strokePath(ctx, shoulders)
 }
 
-// MARK: - Les 15 glyphes
+// MARK: - Les 54 glyphes
 
 let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
     // UNE silhouette canonique pour la paire (retour Michaël : structure toit-chapeau
@@ -773,6 +773,124 @@ let glyphs: [(name: String, draw: (CGContext) -> Void)] = [
             p.addCurve(to: P(23.4, y), control1: P(16.8, y - 3.4), control2: P(20.6, y + 3.4))
             strokePath(ctx, p, width: w)
         }
+    }),
+
+    // MARK: Vague 3 — les cinq paliers hauts de la 1.14
+    //
+    // Cinq badges étaient partis en emoji couleur faute de glyphe libre. Dans une grille
+    // de 38 pastilles monochromes, ils détonnaient, et leur état verrouillé ne se traitait
+    // même pas pareil (grayscale pour un emoji, teinte pour un glyphe — voir CatalogGlyph).
+    // Chacun des cinq est le HAUT d'une série existante : il doit se lire comme la version
+    // supérieure de sa famille, et non comme un objet neuf tombé d'ailleurs.
+
+    ("icon_barbell", { ctx in
+        // Muscu, au-dessus de l'haltère court de tab_sport (badge « Première séance muscu »).
+        // MÊME grammaire — des masses et une barre — mais la barre traverse tout le canvas
+        // et porte DEUX disques par côté. Et surtout : plein là où tab_sport est en contour.
+        // À 25 pt, personne ne compte les disques ; c'est la masse d'encre qui dit « lourd ».
+        let bar = CGMutablePath(); bar.move(to: P(5.2, 14)); bar.addLine(to: P(22.8, 14))
+        strokePath(ctx, bar)
+        for x in [CGFloat(8.8), 15.6] { fillPath(ctx, rr(x, 6.8, 3.6, 14.4, 1.7)) }
+        for x in [CGFloat(4.2), 21.2] { fillPath(ctx, rr(x, 10.2, 2.6, 7.6, 1.3)) }
+    }),
+    ("icon_crown", { ctx in
+        // Niveau 50, au-dessus du soleil du niveau 30. La série des niveaux (étoile, double
+        // étoile, comète, soleil) monte dans le ciel ; la couronne en sort exprès — elle est
+        // le seul objet du jeu qui dise « plus haut que tout le reste » sans être un astre.
+        // Base PLATE et flancs verticaux : c'est ce qui la sépare de la montagne d'icon_mountain,
+        // dont le zigzag est proche.
+        let c = CGMutablePath()
+        c.move(to: P(5.9, 20.6))
+        c.addLine(to: P(5.0, 9.6))       // pointe gauche
+        c.addLine(to: P(9.8, 14.0))      // creux
+        c.addLine(to: P(14.0, 7.4))      // pointe centrale, la plus haute
+        c.addLine(to: P(18.2, 14.0))
+        c.addLine(to: P(23.0, 9.6))
+        c.addLine(to: P(22.1, 20.6))
+        c.closeSubpath()
+        fillPath(ctx, c)
+        strokePath(ctx, c)               // fill + stroke = pointes et creux arrondis (cf. icon_play)
+    }),
+    ("icon_laurel", { ctx in
+        // Cent activités, au-dessus de la médaille du tout premier pas. La couronne de
+        // laurier est le seul cran au-dessus d'une médaille qui reste une récompense de
+        // sport, et l'étoile qu'elle enserre est de la MÊME FAMILLE que celle de la
+        // médaille — la même starPath à 5 branches, pas les mêmes réglages : ici elle est
+        // seule au milieu d'un vide, donc un peu plus grande (3,6 contre 3,2) et contournée
+        // à 1,4 pour peser autant que celle qui, là-bas, est calée dans un disque. Deux
+        // fonds, deux réglages : rien à partager dans une aide commune.
+        // Les feuilles ne touchent pas l'étoile (2,5 pt de blanc) — un PDF template est
+        // monochrome, ce qui se touche fusionne.
+        func polar(_ r: CGFloat, _ deg: CGFloat) -> CGPoint {
+            P(14 + r * cos(deg * .pi / 180), 14 + r * sin(deg * .pi / 180))
+        }
+        for s in [CGFloat(-1), 1] {
+            // s = -1 : la branche gauche, arc de 95° à 182°. s = +1 : la même en miroir
+            // par rapport à l'axe vertical, d'où θ → 180 − θ et le sens de l'arc inversé.
+            let stem = CGMutablePath()
+            let a0: CGFloat = s < 0 ? 95 : 85
+            let a1: CGFloat = s < 0 ? 182 : -2
+            stem.addArc(center: P(14, 14), radius: 7.8,
+                        startAngle: a0 * .pi / 180, endAngle: a1 * .pi / 180, clockwise: s > 0)
+            strokePath(ctx, stem, width: 2.0)
+            // La dernière feuille est POSÉE à 176°, donc pointe à 200° (176 + les 24° de
+            // balayage ci-dessous) : plus haut sur la branche, sa pointe se redressait à la
+            // verticale et la couronne prenait deux cornes.
+            for a in [CGFloat(108), 142, 176] {
+                let ang = s < 0 ? a : 180 - a
+                let base = polar(7.8, ang)
+                // 30° de balayage, et non la direction radiale : des feuilles plantées
+                // DROIT vers l'extérieur donnaient une roue dentée autour d'une étoile.
+                // Couchées le long de la branche, elles se lisent enfin comme du feuillage.
+                let tip = polar(10.0, ang - s * 24)
+                fillPath(ctx, leafShape(base.x, base.y, tip.x, tip.y, bulge: 1.15))
+            }
+        }
+        let star = starPath(14, 15.0, points: 5, r: 3.6, inner: 1.6)
+        fillPath(ctx, star); strokePath(ctx, star, width: 1.4)
+    }),
+    ("icon_cake", { ctx in
+        // Une année de journal, au-dessus des 100 jours du ruban. Un TROISIÈME calendrier
+        // était exclu : les deux existants ne diffèrent que par la densité de leurs
+        // pastilles, un de plus serait illisible. Le gâteau dit « un an » d'un coup.
+        // Ce qui le sépare du flan (dôme + assiette, lui aussi un dessert de la grille) :
+        // des flancs droits, et surtout la bougie qui dépasse en haut.
+        strokePath(ctx, rr(5.6, 13.0, 16.8, 9.4, 2.6))
+        // Glaçage : trois festons qui retombent dans le gâteau. Un simple trait droit
+        // aurait donné une part de mille-feuille.
+        let icing = CGMutablePath()
+        icing.move(to: P(5.7, 15.4))
+        icing.addQuadCurve(to: P(11.3, 15.4), control: P(8.5, 19.6))
+        icing.addQuadCurve(to: P(16.9, 15.4), control: P(14.1, 19.6))
+        icing.addQuadCurve(to: P(22.3, 15.4), control: P(19.7, 19.6))
+        strokePath(ctx, icing, width: 2.0)
+        let candle = CGMutablePath()
+        candle.move(to: P(14, 12.9)); candle.addLine(to: P(14, 9.2))
+        strokePath(ctx, candle, width: 2.2)
+        // Flamme large (1,45 de renflement) et bougie raccourcie d'autant : fine, la flamme
+        // prolongeait la bougie et l'ensemble ne faisait plus qu'un bâtonnet à 25 pt.
+        fillPath(ctx, leafShape(14, 9.4, 14, 4.8, bulge: 1.45))
+    }),
+    ("icon_mountain", { ctx in
+        // 20 000 pas en un jour, au-dessus de l'empreinte des 10 000. Une TROISIÈME
+        // empreinte ne se serait pas distinguée de la paire d'icon_footprints ; le sommet,
+        // lui, dit la journée hors norme. Deux cimes et non une : une cime seule est un
+        // triangle, deux cimes sont une montagne.
+        let peaks = CGMutablePath()
+        peaks.move(to: P(4.0, 22.4))
+        peaks.addLine(to: P(13.0, 5.8))    // cime principale
+        peaks.addLine(to: P(17.0, 13.0))   // col
+        peaks.addLine(to: P(20.2, 9.4))    // seconde cime
+        peaks.addLine(to: P(24.0, 22.4))
+        peaks.closeSubpath()
+        strokePath(ctx, peaks)
+        // Ligne de neige : le zigzag va d'un flanc à l'autre à hauteur constante (y = 11,4),
+        // sinon il flotte au milieu du vide et se lit « éclair ».
+        let snow = CGMutablePath()
+        snow.move(to: P(9.7, 11.4))
+        snow.addLine(to: P(11.3, 13.0)); snow.addLine(to: P(12.8, 11.3))
+        snow.addLine(to: P(14.4, 13.2)); snow.addLine(to: P(16.2, 11.4))
+        strokePath(ctx, snow, width: 2.0)
     }),
 ]
 

@@ -187,9 +187,10 @@ private struct BadgeTile: View {
             ZStack {
                 Circle()
                     .fill(isUnlocked ? Theme.accent.opacity(0.22) : Theme.track)
-                // Verrouillé : la TEINTE porte l'estompage d'un glyphe cozy (un PDF
-                // template est déjà monochrome, `grayscale` n'y ferait rien) ; CatalogGlyph
-                // garde la désaturation pour le seul badge resté en emoji.
+                // Verrouillé : la TEINTE porte l'estompage, et elle seule — un glyphe cozy
+                // est un PDF template déjà monochrome, `grayscale` n'y ferait rien. Depuis
+                // la 1.14 les 38 badges sont des glyphes : c'est le SEUL traitement que
+                // cette grille demande encore.
                 CatalogGlyph(icon: badge.icon, size: 39, locked: !isUnlocked)
                     .foregroundStyle(isUnlocked ? Theme.orange : Theme.subtext)
             }
