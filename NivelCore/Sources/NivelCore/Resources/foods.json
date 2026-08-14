@@ -732,7 +732,7 @@
     "id": "chicken_wrap",
     "name": "Wrap au poulet et à l'avocat",
     "emoji": "🌯",
-    "kcalPer100g": 156,
+    "kcalPer100g": 152,
     "unitLabel": null,
     "unitLabelPlural": null,
     "unitGrams": null,
@@ -741,7 +741,7 @@
     "slots": [
       "lunch"
     ],
-    "defaultGrams": 300,
+    "defaultGrams": 325,
     "isRecipe": true
   },
   {

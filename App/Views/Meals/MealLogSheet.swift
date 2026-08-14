@@ -80,6 +80,21 @@ struct MealLogSheet: View {
         #endif
     }
 
+    /// Ouverture depuis une suggestion de la bande d'idées (spec §6.5) : le panier
+    /// arrive garni de la ligne composée de la recette, sur le créneau que la bande
+    /// visait. Rien n'est enregistré pour autant — la validation reste explicite, et
+    /// le panier se modifie comme n'importe quel autre avant d'être validé.
+    ///
+    /// Le garde de fermeture s'applique alors d'office : un panier pré-rempli n'est
+    /// pas vide, donc la recette ne se jette pas d'un glissement distrait.
+    init(prefilled line: MealLine, slot: MealSlot) {
+        self.editedEntry = nil
+        self.catalog = (try? FoodCatalog.load()) ?? .empty
+        _slot = State(initialValue: slot)
+        _lines = State(initialValue: [line])
+        _manualKcal = State(initialValue: nil)
+    }
+
     // MARK: Données dérivées
 
     private var isEditing: Bool { editedEntry != nil }

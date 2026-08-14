@@ -264,9 +264,9 @@
     { "itemID": "cream", "grams": 15 }
   ],
   "chicken_wrap": [
-    { "itemID": "wrap", "grams": 80 },
+    { "itemID": "wrap", "grams": 70 },
     { "itemID": "chicken", "grams": 90 },
-    { "itemID": "avocado", "grams": 40 },
+    { "itemID": "avocado", "grams": 75 },
     { "itemID": "lettuce", "grams": 30 },
     { "itemID": "tomato", "grams": 60 }
   ],

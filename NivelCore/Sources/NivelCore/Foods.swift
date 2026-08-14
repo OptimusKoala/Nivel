@@ -119,7 +119,17 @@ public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
         let number = rounded == rounded.rounded()
             ? String(Int(rounded))
             : String(rounded).replacingOccurrences(of: ".", with: ",")
-        let label = rounded > 1 ? (unitLabelPlural ?? unitLabel + "s") : unitLabel
+        // DEUX, pas « plus d'un » : en français le pluriel commence à deux, et un
+        // nombre décimal en dessous reste au singulier — « 1,5 tranche », jamais
+        // « 1,5 tranches ». Le seul cas concerné est le demi-cran entre 1 et 2, mais il
+        // se présente sur DIX combinaisons du catalogue — dix couples (plat, ingrédient)
+        // dont la quantité tombe sur « 1,5 », le jambon du sandwich et le pain du
+        // gaspacho en tête — et sur trois écrans (le panier, le détail d'une ligne, la
+        // fiche recette). Défaut de la v1.10, corrigé en 1.14.
+        //
+        // Dix, pas dix-neuf : dix-neuf est le nombre d'aliments À UNITÉ cités par les
+        // compositions, une autre grandeur, et la plupart y tombent sur un compte rond.
+        let label = rounded >= 2 ? (unitLabelPlural ?? unitLabel + "s") : unitLabel
         return "\(number) \(label)"
     }
 }

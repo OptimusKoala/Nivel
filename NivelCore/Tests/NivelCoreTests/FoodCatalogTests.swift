@@ -154,6 +154,12 @@ final class FoodCatalogTests: XCTestCase {
         XCTAssertEqual(egg?.frQuantity(grams: 60), "1 œuf")
         XCTAssertEqual(egg?.frQuantity(grams: 120), "2 œufs")
         XCTAssertEqual(egg?.frQuantity(grams: 30), "0,5 œuf")
+        // LE cran qui manquait, et le seul où le pluriel se décide vraiment : en
+        // français il commence à deux, donc un décimal en dessous reste au singulier.
+        // Écrit « 1,5 œufs » de la v1.10 à la 1.14, sur trois écrans, sans qu'aucune
+        // des trois autres bornes ci-dessus puisse s'en apercevoir.
+        XCTAssertEqual(egg?.frQuantity(grams: 90), "1,5 œuf")
+        XCTAssertEqual(catalog.byID["bread"]?.frQuantity(grams: 60), "1,5 tranche")
         XCTAssertEqual(catalog.byID["chicken"]?.frQuantity(grams: 150), "150 g")
     }
 
