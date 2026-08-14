@@ -218,21 +218,23 @@ Merci !
 ## 8. Captures d'écran
 
 Dix captures 6,9 pouces (1320 × 2868), dans `docs/appstore/framed/`, à téléverser **dans
-cet ordre** — les trois premières sont les seules visibles sans faire défiler, et c'est
-pourquoi les idées de saison, la nouveauté de la 1.14, sont en deuxième position :
+cet ordre** — qui est aussi l'ordre alphabétique des fichiers, parce que `asc-fiche.py`
+téléverse `sorted(framed/*.png)` : renuméroter est le seul moyen de changer l'ordre
+d'affichage. Les trois premières sont les seules visibles sans faire défiler, d'où les
+idées de saison en deuxième position.
 
 | # | Fichier | Accroche |
 |---|---|---|
 | 1 | `01-home.png` | Ta journée d'un coup d'œil |
-| 2 | `09-idees.png` | Des idées de saison |
-| 3 | `02-meallog.png` | Un repas en trois gestes |
-| 4 | `10-recette.png` | La recette, puis c'est noté |
-| 5 | `03-sport.png` | Tout doux, ou ça pousse |
-| 6 | `04-session.png` | Nivelito bouge avec toi |
-| 7 | `05-step.png` | Une étape par écran |
-| 8 | `06-progress.png` | Des progrès honnêtes |
-| 9 | `07-quests.png` | Des quêtes, zéro reproche |
-| 10 | `08-night.png` | Quatre thèmes cozy |
+| 2 | `02-idees.png` | Des idées de saison |
+| 3 | `03-meallog.png` | Un repas en trois gestes |
+| 4 | `04-recette.png` | La recette, puis c'est noté |
+| 5 | `05-sport.png` | Tout doux, ou ça pousse |
+| 6 | `06-session.png` | Nivelito bouge avec toi |
+| 7 | `07-step.png` | Une étape par écran |
+| 8 | `08-progress.png` | Des progrès honnêtes |
+| 9 | `09-quests.png` | Des quêtes, zéro reproche |
+| 10 | `10-night.png` | Quatre thèmes cozy |
 
 La taille 6,9 pouces est la seule exigée pour l'iPhone : App Store Connect s'en sert pour
 toutes les tailles inférieures. Les captures brutes, sans habillage, sont dans
