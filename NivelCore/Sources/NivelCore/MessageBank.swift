@@ -8,6 +8,13 @@ public enum MessageContext: String, Codable, CaseIterable, Sendable {
     /// correspondante DOIT exister dans messages.json, sinon `MessageBank.load` déclenche
     /// `assertionFailure` en debug (silencieux en release) — les deux s'ajoutent ensemble.
     case postureReminder
+    /// Rappel de 19 h du programme muscu maison (spec v1.14 §4.4). Contexte séparé de
+    /// `.postureReminder` : réutiliser ce dernier ferait dire à Nivelito un texte
+    /// d'étirement de la nuque pour une séance de pompes. Comme pour la posture, la clé
+    /// JSON correspondante DOIT exister dans messages.json, sinon `MessageBank.load`
+    /// déclenche `assertionFailure` en debug (silencieux en release) — les deux
+    /// s'ajoutent ensemble.
+    case muscuReminder
 }
 
 public struct NivelitoMessage: Codable, Identifiable, Sendable {
@@ -27,6 +34,16 @@ public struct MessageBank: Sendable {
                 continue
             }
             store[ctx] = msgs
+        }
+        // Le symétrique du garde ci-dessus, et le plus important des deux. Une clé JSON
+        // inconnue est bruyante : elle vient d'être écrite, on la cherche. Un CONTEXTE
+        // SANS CLÉ est silencieux — la boucle ci-dessus itère les clés du JSON, donc un
+        // cas d'enum ajouté sans ses textes n'y est jamais visité : `messages(for:)`
+        // rend [], et `pick` retombe sur « Salut {name} ! ». Une notification générique
+        // à la place d'un rappel, en release comme en debug, sans rien dans les logs.
+        // Possible seulement parce que `MessageContext` est `CaseIterable`.
+        for context in MessageContext.allCases where (store[context] ?? []).isEmpty {
+            assertionFailure("messages.json: contexte '\(context.rawValue)' sans textes")
         }
         return MessageBank(store: store)
     }

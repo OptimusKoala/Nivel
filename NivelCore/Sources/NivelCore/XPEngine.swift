@@ -9,6 +9,11 @@ public enum XPAction: String, Codable, Sendable {
     /// soir ne paieraient qu'une fois, ce qui punirait exactement le comportement que
     /// le lot veut installer.
     case postureSessionDone
+    /// Programme muscu maison (spec v1.14 §5.7) : troisième plafond INDÉPENDANT,
+    /// pour la même raison que `postureSessionDone`. Mutualiser les plafonds ferait
+    /// que deux séances faites le même soir ne paieraient qu'une fois, ce qui
+    /// punirait exactement le comportement que le lot veut installer.
+    case muscuSessionDone
 }
 
 public enum XPEngine {
@@ -24,6 +29,7 @@ public enum XPEngine {
         case .activityDone:    todayCount < 2 ? 30 : 0
         case .dailySessionDone: todayCount < 1 ? 40 : 0
         case .postureSessionDone: todayCount < 1 ? 40 : 0
+        case .muscuSessionDone: todayCount < 1 ? 40 : 0
         }
     }
 }

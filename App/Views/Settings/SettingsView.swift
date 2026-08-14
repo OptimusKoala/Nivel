@@ -31,7 +31,6 @@ struct SettingsContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
     @Environment(GameService.self) var game
-    @Query(sort: \WeightEntry.date) private var weights: [WeightEntry]
 
     @State private var kcalText = ""
     /// Nouvel objectif proposé par "Recalculer" — non nil = alerte de confirmation visible.
@@ -64,6 +63,7 @@ struct SettingsContent: View {
                     goalsSection
                     soundSection
                     postureSection
+                    muscuSection
                     remindersSection
                     themeSection
                     healthSection
@@ -98,6 +98,7 @@ struct SettingsContent: View {
         .onChange(of: profile.sexRaw) { save() }
         .onChange(of: profile.activityRaw) { save() }
         .onChange(of: profile.dailyStepGoal) { save() }
+        .onChange(of: profile.dailyBurnTarget) { save() }
         .alert(
             "Recalculer mon objectif",
             isPresented: Binding(
@@ -116,8 +117,13 @@ struct SettingsContent: View {
     // MARK: - Valeurs dérivées
 
     /// Poids courant = dernière pesée (il y en a toujours une, créée à l'onboarding).
+    /// `game.currentWeightKg()` est un fetch one-shot, pas un état observé — mais
+    /// aucune pesée ne peut être enregistrée pendant que les Réglages sont ouverts :
+    /// `logWeight` n'a qu'un seul appelant dans toute l'app, `WeighInSheet`, qui
+    /// n'est présentée que depuis `ProgressScreen` (jamais depuis les Réglages).
+    /// Rien ici ne peut donc devenir périmé en cours d'écran.
     private var currentWeightKg: Double {
-        weights.last?.weightKg ?? profile.initialWeightKg
+        game.currentWeightKg()
     }
 
     private var formattedWeight: String {
@@ -137,6 +143,15 @@ struct SettingsContent: View {
             ageYears: ageYears,
             activity: profile.activity
         )
+    }
+
+    /// Objectif de dépense affiché : réglé, ou calculé depuis le poids courant tant
+    /// que `profile.dailyBurnTarget` vaut son sentinelle 0 (spec §5.3). Passe par
+    /// `game.burnTarget()` — le point d'appariement unique entre le poids et la
+    /// résolution du sentinelle — plutôt que de réapparier `profile.burnTarget(
+    /// currentWeightKg:)` avec `currentWeightKg` ici même.
+    private var effectiveBurnTarget: Int {
+        game.burnTarget()
     }
 
     private var appVersion: String {
@@ -229,6 +244,22 @@ struct SettingsContent: View {
             row("Pas quotidiens") {
                 Stepper(value: $profile.dailyStepGoal, in: 2000...30000, step: 500) {
                     Text("\(profile.dailyStepGoal)").font(.headline)
+                }
+            }
+            divider
+            // Sentinelle 0 = jamais réglé (spec §5.3) : tant que le joueur n'a pas
+            // touché ce Stepper, il affiche et modifie la valeur calculée depuis le
+            // poids courant. Premier mouvement → dailyBurnTarget se fixe et fait foi.
+            row("Objectif de dépense") {
+                Stepper(
+                    value: Binding(
+                        get: { effectiveBurnTarget },
+                        set: { profile.dailyBurnTarget = $0 }
+                    ),
+                    in: 200...600,
+                    step: 50
+                ) {
+                    Text("\(effectiveBurnTarget) kcal").font(.headline)
                 }
             }
         }

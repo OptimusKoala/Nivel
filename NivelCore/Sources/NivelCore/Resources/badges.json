@@ -22,5 +22,20 @@
   {"id": "sport_first",      "title": "Premier pas",            "icon": "icon_medal",          "hint": "Valide ta première activité",                "metric": "activitiesDone",     "threshold": 1},
   {"id": "sport_10",         "title": "En mouvement",           "icon": "icon_runner",         "hint": "Valide 10 activités",                        "metric": "activitiesDone",     "threshold": 10},
   {"id": "sport_50",         "title": "Machine",                "icon": "icon_flame",          "hint": "Valide 50 activités",                        "metric": "activitiesDone",     "threshold": 50},
-  {"id": "sport_sessions_5", "title": "Rituel du jour",         "icon": "icon_repeat",         "hint": "Fais 5 séances du jour",                     "metric": "dailySessionsDone",  "threshold": 5}
+  {"id": "sport_sessions_5", "title": "Rituel du jour",         "icon": "icon_repeat",         "hint": "Fais 5 séances du jour",                     "metric": "dailySessionsDone",  "threshold": 5},
+
+  {"id": "burn_first",       "title": "Ça a bougé",             "icon": "icon_drop",           "hint": "Atteins ton objectif de dépense un jour",     "metric": "burnTargetDays",     "threshold": 1},
+  {"id": "burn_10",          "title": "Dix jours actifs",       "icon": "icon_heart",          "hint": "Atteins ton objectif de dépense 10 jours",    "metric": "burnTargetDays",     "threshold": 10},
+  {"id": "burn_30",          "title": "Un mois de mouvement",   "icon": "icon_moon",           "hint": "Atteins ton objectif de dépense 30 jours",    "metric": "burnTargetDays",     "threshold": 30},
+  {"id": "muscu_first",      "title": "Première séance muscu",  "icon": "tab_sport",           "hint": "Fais ta première séance muscu",               "metric": "muscuSessionsDone",  "threshold": 1},
+  {"id": "muscu_10",         "title": "Ça pousse",              "icon": "icon_tree",           "hint": "Fais 10 séances muscu",                       "metric": "muscuSessionsDone",  "threshold": 10},
+  {"id": "muscu_25",         "title": "Costaud",                "icon": "icon_barbell",        "hint": "Fais 25 séances muscu",                       "metric": "muscuSessionsDone",  "threshold": 25},
+  {"id": "recipe_first",     "title": "Aux fourneaux",          "icon": "icon_flan",           "hint": "Note un repas contenant une recette",         "metric": "recipesLogged",      "threshold": 1},
+  {"id": "recipe_10",        "title": "Dix recettes",           "icon": "icon_notebook",       "hint": "Note 10 repas contenant une recette",         "metric": "recipesLogged",      "threshold": 10},
+  {"id": "level_30",         "title": "Niveau 30",              "icon": "icon_sun",            "hint": "Atteins le niveau 30",                        "metric": "level",              "threshold": 30},
+  {"id": "level_50",         "title": "Niveau 50",              "icon": "icon_crown",          "hint": "Atteins le niveau 50",                        "metric": "level",              "threshold": 50},
+  {"id": "sport_100",        "title": "Cent activités",         "icon": "icon_laurel",         "hint": "Valide 100 activités",                        "metric": "activitiesDone",     "threshold": 100},
+  {"id": "meals_500",        "title": "500 repas notés",        "icon": "tab_meals",           "hint": "Note 500 repas",                              "metric": "mealsLogged",        "threshold": 500},
+  {"id": "journal_365",      "title": "Une année de journal",   "icon": "icon_cake",           "hint": "365 jours avec au moins un repas noté",       "metric": "journalDays",        "threshold": 365},
+  {"id": "steps_20k",        "title": "20 000 pas !",           "icon": "icon_mountain",       "hint": "20 000 pas en une journée",                   "metric": "stepsInOneDay",      "threshold": 20000}
 ]

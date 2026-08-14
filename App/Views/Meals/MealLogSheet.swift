@@ -57,6 +57,7 @@ struct MealLogSheet: View {
     @State private var isSaving = false
     /// Chemin de navigation : l'index de la ligne dont le détail est poussé.
     @State private var path: [Int] = []
+    @State private var showAbandonDialog = false
 
     init(entry: MealEntry? = nil) {
         self.editedEntry = entry
@@ -79,9 +80,44 @@ struct MealLogSheet: View {
         #endif
     }
 
+    /// Ouverture depuis une suggestion de la bande d'idées (spec §6.5) : le panier
+    /// arrive garni de la ligne composée de la recette, sur le créneau que la bande
+    /// visait. Rien n'est enregistré pour autant — la validation reste explicite, et
+    /// le panier se modifie comme n'importe quel autre avant d'être validé.
+    ///
+    /// Le garde de fermeture s'applique alors d'office : un panier pré-rempli n'est
+    /// pas vide, donc la recette ne se jette pas d'un glissement distrait.
+    init(prefilled line: MealLine, slot: MealSlot) {
+        self.editedEntry = nil
+        self.catalog = (try? FoodCatalog.load()) ?? .empty
+        _slot = State(initialValue: slot)
+        _lines = State(initialValue: [line])
+        _manualKcal = State(initialValue: nil)
+    }
+
     // MARK: Données dérivées
 
     private var isEditing: Bool { editedEntry != nil }
+
+    /// Vrai quand fermer la feuille détruirait du travail. Pure et testée
+    /// (MealLogSheetDismissTests) : la vue ne fait que l'appliquer.
+    ///
+    /// C'est le prédicat EXACT du `.disabled` du bouton de validation, et ce n'est pas
+    /// une coïncidence : le garde s'arme précisément quand la feuille est enregistrable.
+    /// Deux asymétries en découlent, toutes deux assumées :
+    /// - en édition le garde s'arme même sans aucune modification, donc « j'ouvre, je
+    ///   regarde, je referme » coûte un tap de trop. Le prix d'un vrai suivi de
+    ///   modifications (comparer les lignes à l'entrée d'origine, et le tenir à jour)
+    ///   est plus élevé que celui de ce tap ;
+    /// - vider entièrement le panier d'un repas existant est la modification la plus
+    ///   destructrice possible, et c'est là que le garde se DÉSARME. Le dommage est
+    ///   borné : rien n'a été écrit, l'entrée persistée reste intacte, et un repas vide
+    ///   ne serait de toute façon pas enregistrable.
+    static func guardsDismissal(lines: [MealLine]) -> Bool { !lines.isEmpty }
+
+    /// La même décision, appliquée au panier courant. La statique existe pour le test,
+    /// celle-ci pour la vue, qui l'interroge à trois endroits.
+    private var guardsDismissal: Bool { Self.guardsDismissal(lines: lines) }
 
     /// Estimation en direct (spec §5.5) — calculée depuis les lignes du panier.
     private var estimatedKcal: Int {
@@ -118,12 +154,71 @@ struct MealLogSheet: View {
             .navigationDestination(for: Int.self) { index in
                 MealLineDetailView(line: $lines[index], catalog: catalog)
             }
+            // Barre d'outils posée sur le CONTENU RACINE, pas sur la NavigationStack :
+            // le contenu d'une `.toolbar` est porté par la vue à laquelle elle est
+            // attachée et ne s'affiche que tant que cette vue est au sommet de la pile.
+            // Pousser le détail d'une ligne masque donc la croix, sans qu'il ait à
+            // déclarer quoi que ce soit de son côté.
+            .toolbar {
+                // Sortie VISIBLE : dès qu'on empêche le glissement, il faut en offrir une.
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        if guardsDismissal {
+                            showAbandonDialog = true
+                        } else {
+                            dismiss()
+                        }
+                    } label: {
+                        // PAS de `.frame(minWidth: 44, minHeight: 44)` ici, contrairement
+                        // à CircleIconButtonStyle et à FoodCatalogView : mesuré sur une
+                        // capture @3x (iPhone 17 Pro Max, iOS 26.5), le fond que le chrome
+                        // de barre d'outils dessine déjà fait 61 × 60 pt, donc au-dessus
+                        // des 44 pt sur les deux axes. L'imposer quand même élargirait ce
+                        // fond à 73 pt sans toucher la hauteur — le cercle deviendrait une
+                        // capsule. Le chiffre vaut pour ces métriques-là : le refaire avant
+                        // de conclure qu'il a changé.
+                        Image(systemName: "xmark")
+                    }
+                    .tint(Theme.subtext)
+                    .accessibilityLabel("Fermer")
+                    // Même protection que le bouton de validation : `validate()` lance
+                    // un Task non structuré qui survit à la vue, donc sans ce garde un
+                    // « Abandonner » tapé pendant l'enregistrement n'abandonnerait rien
+                    // — le repas serait écrit et l'XP attribué malgré la promesse.
+                    .disabled(isSaving)
+                }
+            }
+            // Textes conditionnés au mode : en édition, le repas EST enregistré, et
+            // « ton panier n'est pas encore enregistré » mentirait sur l'état des
+            // données — précisément ce que ce garde existe pour éviter. Le message
+            // dit ce qui reste, pas ce qui se perd.
+            .confirmationDialog(isEditing ? "Abandonner les modifications ?"
+                                          : "Abandonner ce repas ?",
+                                isPresented: $showAbandonDialog,
+                                titleVisibility: .visible) {
+                // PAS de `role: .destructive` : un bouton destructif de confirmationDialog
+                // est peint en rouge par le système et refuse d'être teinté (contrairement
+                // à une action de glissement, cf. SportView). Un bouton ordinaire est la
+                // seule façon de respecter « jamais de rouge » (règle v1 §7.4) dans un
+                // dialogue.
+                Button("Abandonner") { dismiss() }
+                Button("Reprendre", role: .cancel) {}
+            } message: {
+                Text(isEditing ? "Ce repas restera tel qu'il était."
+                               : "Ton panier n'est pas encore enregistré.")
+            }
         }
         // Grand détent d'office (même raison que ActivityLogSheet) : au medium, le
         // catalogue à onglets passerait sous le pli.
         .presentationDetents([.large])
         .presentationCornerRadius(28)
-        .presentationDragIndicator(.visible)
+        // Masqué dès que le garde est armé : l'indicateur invite à un glissement qui
+        // ne fait alors plus rien, et une invitation sans effet n'est qu'une autre
+        // façon de mentir. Panier vide, il reste, puisque le geste marche encore.
+        .presentationDragIndicator(guardsDismissal ? .hidden : .visible)
+        // Posé sur la feuille ENTIÈRE (hors NavigationStack) : le garde vaut aussi
+        // depuis le détail d'une ligne, qui est poussé dans la même feuille.
+        .interactiveDismissDisabled(guardsDismissal)
     }
 
     // MARK: Créneau
@@ -140,8 +235,14 @@ struct MealLogSheet: View {
                         .padding(.vertical, 9)
                         .background(slot == candidate ? Theme.orange : Theme.card, in: Capsule())
                         .foregroundStyle(slot == candidate ? .white : Theme.text)
+                        // 44 pt de cible tactile (règle Apple), la pastille seule
+                        // n'atteignant que 36 pt de haut — cf. FoodCatalogView.categoryPicker.
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Créneau \(candidate.frShort)")
+                .accessibilityAddTraits(slot == candidate ? [.isSelected] : [])
             }
         }
         .frame(maxWidth: .infinity)

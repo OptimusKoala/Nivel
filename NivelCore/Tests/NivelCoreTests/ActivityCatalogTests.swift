@@ -2,9 +2,12 @@ import XCTest
 @testable import NivelCore
 
 final class ActivityCatalogTests: XCTestCase {
+
+    // MARK: - Activités
+
     func testActivitiesLoadAndIdsAreUnique() throws {
         let activities = try Catalogs.activities()
-        XCTAssertEqual(activities.count, 20)
+        XCTAssertEqual(activities.count, 30)
         XCTAssertEqual(Set(activities.map(\.id)).count, activities.count)
         XCTAssertTrue(activities.contains { $0.id == "walk" && $0.location == .outdoor })
         XCTAssertTrue(activities.contains { $0.id == "wall_sit" && $0.location == .home })
@@ -20,18 +23,11 @@ final class ActivityCatalogTests: XCTestCase {
         }
     }
 
-    func testSessionsLoadAndStepsResolve() throws {
-        let sessions = try Catalogs.sessions()
-        let activityIDs = Set(try Catalogs.activities().map(\.id))
-        XCTAssertEqual(sessions.count, 11)
-        XCTAssertEqual(Set(sessions.map(\.id)).count, sessions.count)
-        for session in sessions {
-            XCTAssertFalse(session.steps.isEmpty, "\(session.id)")
-            for step in session.steps {
-                XCTAssertTrue(activityIDs.contains(step.activityID),
-                              "\(session.id) référence '\(step.activityID)' inconnu")
-                XCTAssertGreaterThan(step.minutes, 0)
-            }
+    func testEveryActivityHasInstructions() throws {
+        for activity in try Catalogs.activities() {
+            XCTAssertGreaterThanOrEqual(activity.instructions.count, 3, activity.id)
+            XCTAssertLessThanOrEqual(activity.instructions.count, 4, activity.id)
+            XCTAssertTrue(activity.instructions.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty }, activity.id)
         }
     }
 
@@ -64,11 +60,148 @@ final class ActivityCatalogTests: XCTestCase {
         XCTAssertEqual(legsDay.estimatedKcal(activitiesByID: byID), 50)
     }
 
-    func testEveryActivityHasInstructions() throws {
-        for activity in try Catalogs.activities() {
-            XCTAssertGreaterThanOrEqual(activity.instructions.count, 3, activity.id)
-            XCTAssertLessThanOrEqual(activity.instructions.count, 4, activity.id)
-            XCTAssertTrue(activity.instructions.allSatisfy { !$0.trimmingCharacters(in: .whitespaces).isEmpty }, activity.id)
+    /// Les sept activités qui produisent des pas déjà comptés par HealthKit.
+    func testStepsBasedSontExactementLesActivitesMarchees() throws {
+        let expected: Set<String> = ["walk", "brisk_walk", "digestive_walk", "hike",
+                                     "stairs", "march_in_place", "running"]
+        XCTAssertEqual(Set(try Catalogs.activities().filter(\.stepsBased).map(\.id)), expected)
+    }
+
+    /// Un exercice posture n'est ni intense ni marché : il ne doit jamais entrer
+    /// dans la section « Ça pousse » ni dans l'anneau de dépense par les pas.
+    func testExercicesPostureSontDouxEtSansPas() throws {
+        for activity in try Catalogs.postureActivities() {
+            XCTAssertEqual(activity.intensity, .gentle, activity.id)
+            XCTAssertFalse(activity.stepsBased, activity.id)
+        }
+    }
+
+    /// L'ensemble exact des dix activités de la section « Ça pousse » (spec §4.2).
+    /// C'est l'exactitude — pas une poignée d'ids en dur — qui attrape un `bike`
+    /// ou un `yoga` marqué `strong` par erreur de frappe, et qui interdit à une
+    /// onzième d'entrer dans la section sans passer par la spec.
+    ///
+    /// Les clés du pin ci-dessous sont ce même ensemble, donc oui, ce test est
+    /// techniquement subsumé : on le garde parce qu'un diff de `Set` est lisible
+    /// d'un coup d'œil là où un diff de trois dictionnaires de dix entrées ne
+    /// l'est pas. C'est celui-ci qu'on lira en premier quand ça cassera.
+    func testActivitesIntensesSontExactementCetEnsemble() throws {
+        let expected: Set<String> = ["running", "pushups", "crunches", "burpees", "jumping_jacks",
+                                     "mountain_climbers", "squat_jumps", "dips_chair", "side_plank", "superman"]
+        XCTAssertEqual(Set(try Catalogs.activities().filter { $0.intensity == .strong }.map(\.id)), expected)
+    }
+
+    /// Pin EXHAUSTIF de la table de la spec §4.2. Sans lui, rien ne garde les
+    /// valeurs : `testActivityDurationsAreThreeAscending` vérifie la forme des
+    /// durées, pas les nombres, et `testEstimatedKcalRoundsToTens` ne fixe le
+    /// `kcalPerMin` que de cinq activités douces. Un `burpees` saisi à 1,0 au lieu
+    /// de 10,0 passerait toute la suite et fausserait en silence chaque estimation
+    /// « ~ kcal » ; un `pushups` saisi `outdoor` l'enverrait sous « Dehors ».
+    func testChiffresDesActivitesIntensesSontCeuxDeLaSpec() throws {
+        let intenses = try Catalogs.activities().filter { $0.intensity == .strong }
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: intenses.map { ($0.id, $0.kcalPerMin) }), [
+            "running": 10.0, "pushups": 7.0, "crunches": 5.0, "burpees": 10.0, "jumping_jacks": 8.0,
+            "mountain_climbers": 8.5, "squat_jumps": 8.0, "dips_chair": 6.0, "side_plank": 4.5, "superman": 4.0,
+        ])
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: intenses.map { ($0.id, $0.durations) }), [
+            "running": [15, 30, 45], "pushups": [3, 5, 8], "crunches": [3, 5, 10],
+            "burpees": [2, 4, 6], "jumping_jacks": [3, 5, 8], "mountain_climbers": [2, 4, 6],
+            "squat_jumps": [2, 4, 6], "dips_chair": [3, 5, 8], "side_plank": [2, 4, 6],
+            "superman": [2, 3, 5],
+        ])
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: intenses.map { ($0.id, $0.location) }), [
+            "running": .outdoor,
+            "pushups": .home, "crunches": .home, "burpees": .home, "jumping_jacks": .home,
+            "mountain_climbers": .home, "squat_jumps": .home, "dips_chair": .home,
+            "side_plank": .home, "superman": .home,
+        ])
+    }
+
+    /// Les six mouvements explosifs portent quatre consignes quand les autres n'en
+    /// doivent que trois : la quatrième est la porte de sortie (poser les genoux,
+    /// enlever le saut, ralentir), et ces mouvements-là font mal quand on les fait
+    /// mal. Le test compte, il ne juge pas le contenu du repère de sécurité :
+    /// celui-ci se relit à l'œil. Les gainages `side_plank` et `superman` n'en sont
+    /// pas et restent au minimum commun de trois.
+    func testLesMouvementsExplosifsPortentQuatreConsignes() throws {
+        let byID = Dictionary(uniqueKeysWithValues: try Catalogs.activities().map { ($0.id, $0) })
+        for id in ["burpees", "jumping_jacks", "mountain_climbers",
+                   "squat_jumps", "dips_chair", "running"] {
+            XCTAssertGreaterThanOrEqual(byID[id]?.instructions.count ?? 0, 4, id)
+        }
+    }
+
+    /// Les sections de l'onglet Sport (spec §4.3) forment une partition STRICTE du
+    /// catalogue : aucune activité perdue, aucune montrée deux fois. La boucle est sur
+    /// `allCases` et non sur trois noms écrits à la main : une quatrième section
+    /// ajoutée un jour entre d'office dans la vérification.
+    func testLesSectionsPartitionnentLeCatalogue() throws {
+        let activities = try Catalogs.activities()
+        let parSection = SportSection.allCases.map { Set($0.activities(in: activities).map(\.id)) }
+
+        let somme = parSection.reduce(0) { $0 + $1.count }
+        XCTAssertEqual(somme, activities.count, "des activités manquent ou sont en trop")
+        XCTAssertEqual(parSection.reduce(into: Set<String>()) { $0.formUnion($1) }.count, somme,
+                       "une activité apparaît dans deux sections")
+
+        // Les ancres ci-dessous ne sont pas décoratives : la partition est INVARIANTE
+        // par permutation des étiquettes, et elle reste vraie si une section est vidée
+        // au profit d'une autre. Vérifié par mutation : intervertir `gentleHome` et
+        // `gentleOutdoor`, ou vider « Dehors » dans « À la maison », laisse les deux
+        // égalités ci-dessus intactes. Seuls ces ids rattachent chaque section à un
+        // contenu.
+        let home = SportSection.gentleHome.activities(in: activities)
+        let outdoor = SportSection.gentleOutdoor.activities(in: activities)
+        let strong = SportSection.strong.activities(in: activities)
+
+        // `stairs` est la seule `location == .both` : le découpage la range sous
+        // « À la maison », comme avant la section intense.
+        XCTAssertTrue(home.contains { $0.id == "stairs" })
+
+        // « Dehors » n'est pas qu'un en-tête : sans cette ancre, une section vidée
+        // passerait la partition et l'écran afficherait un titre sans rien dessous.
+        XCTAssertTrue(outdoor.contains { $0.id == "walk" })
+
+        // « Ça pousse » mélange maison et dehors : la course y côtoie les pompes.
+        XCTAssertTrue(strong.contains { $0.id == "running" })
+        XCTAssertTrue(strong.contains { $0.id == "pushups" })
+        XCTAssertFalse(home.contains { $0.id == "pushups" })
+    }
+
+    /// Garde-fou : une section ajoutée à l'enum sans être rangée dans `displayOrder`
+    /// disparaîtrait de l'écran en silence, dans les deux vues à la fois.
+    func testChaqueSectionEstDansLOrdreDAffichage() {
+        XCTAssertEqual(Set(SportSection.displayOrder), Set(SportSection.allCases))
+        XCTAssertEqual(SportSection.displayOrder.count, SportSection.allCases.count,
+                       "pas de doublon")
+        // La position, elle, est prescrite ; le reste de l'ordre ne l'est pas, donc on
+        // n'épingle pas le tableau entier : un réagencement voulu doit rester libre.
+        XCTAssertEqual(SportSection.displayOrder.last, .strong,
+                       "spec §4.3 : l'intense en dernier, un pas qu'on descend chercher")
+    }
+
+    /// Les libellés sont épinglés parce qu'ils sont maintenant la SEULE source des
+    /// deux en-têtes : plus aucune chaîne en dur dans les vues pour les contredire.
+    func testLesLibellesDesSections() {
+        XCTAssertEqual(SportSection.gentleHome.frLabel, "À la maison")
+        XCTAssertEqual(SportSection.gentleOutdoor.frLabel, "Dehors")
+        XCTAssertEqual(SportSection.strong.frLabel, "Ça pousse")
+    }
+
+    // MARK: - Séances
+
+    func testSessionsLoadAndStepsResolve() throws {
+        let sessions = try Catalogs.sessions()
+        let activityIDs = Set(try Catalogs.activities().map(\.id))
+        XCTAssertEqual(sessions.count, 11)
+        XCTAssertEqual(Set(sessions.map(\.id)).count, sessions.count)
+        for session in sessions {
+            XCTAssertFalse(session.steps.isEmpty, "\(session.id)")
+            for step in session.steps {
+                XCTAssertTrue(activityIDs.contains(step.activityID),
+                              "\(session.id) référence '\(step.activityID)' inconnu")
+                XCTAssertGreaterThan(step.minutes, 0)
+            }
         }
     }
 
@@ -106,6 +239,8 @@ final class ActivityCatalogTests: XCTestCase {
             "gentle_cardio/high_knees": 3,
         ])
     }
+
+    // MARK: - Conventions de bundle
 
     func testNoBundleResourceContainsEmDash() throws {
         // Convention v1.2 : aucun tiret cadratin dans les textes utilisateur.

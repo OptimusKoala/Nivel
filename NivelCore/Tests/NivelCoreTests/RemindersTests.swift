@@ -7,10 +7,11 @@ final class RemindersTests: XCTestCase {
     /// rappels des installations existantes sans que personne ne l'ait demandé.
     func testLesQuatreDefautsSontCeuxDeLaV1() {
         let byID = Dictionary(uniqueKeysWithValues: ReminderCatalog.all.map { ($0.id, $0) })
-        // 4 + le rappel posture de la v1.11 (épinglé séparément par
-        // testLaCinquiemeEntreeEstLeRappelPosture) : seule ligne touchée ici, aucune des
-        // valeurs pinnées des quatre rappels historiques ci-dessous n'a changé.
-        XCTAssertEqual(ReminderCatalog.all.count, 5)
+        // 4 + le rappel posture de la v1.11 + le rappel muscu de la v1.14 (épinglés
+        // séparément par testLaCinquiemeEntreeEstLeRappelPosture et
+        // testLeRappelMuscuExisteEtExigeSonProgramme) : seule ligne touchée ici, aucune
+        // des valeurs pinnées des quatre rappels historiques ci-dessous n'a changé.
+        XCTAssertEqual(ReminderCatalog.all.count, 6)
 
         XCTAssertEqual(byID["lunch"]?.defaultHour, 12)
         XCTAssertEqual(byID["lunch"]?.defaultMinute, 30)
@@ -49,6 +50,18 @@ final class RemindersTests: XCTestCase {
         for definition in ReminderCatalog.all {
             XCTAssertEqual(definition.isWeekdayEditable, definition.id == "weigh",
                            "jour modifiable inattendu sur \(definition.id)")
+        }
+    }
+
+    /// L'invariant qui rend le précédent sûr : `isWeekdayEditable` va toujours avec un
+    /// jour concret. Un rappel quotidien qui porterait le drapeau ferait annoncer
+    /// "dim." par les Réglages (repli de `weekdayBinding`) pour une notification qui
+    /// sonne tous les jours, et deviendrait vraiment hebdomadaire au premier tap dans
+    /// un `Picker` qui n'offre pas "tous les jours".
+    func testLeJourModifiableVaToujoursAvecUnJourConcret() {
+        for definition in ReminderCatalog.all where definition.isWeekdayEditable {
+            XCTAssertNotNil(definition.defaultWeekday,
+                            "\(definition.id) est réglable mais n'a pas de jour par défaut")
         }
     }
 
@@ -109,12 +122,28 @@ final class RemindersTests: XCTestCase {
     /// correctement sa ligne.
     func testLeRappelPostureNestJamaisPlanifieProgrammeEteint() {
         let avecPosture = allOn.merging(["posture": true]) { a, _ in a }
-        let eteint = planned(avecPosture, planEnabled: false)
+        let eteint = planned(avecPosture, enabledPlans: [])
         XCTAssertNil(eteint.first { $0.id == "posture" })
         XCTAssertEqual(eteint.count, 4, "les quatre autres rappels doivent rester")
 
-        let allume = planned(avecPosture, planEnabled: true)
+        // Allumer l'AUTRE programme ne suffit pas : chaque rappel exige le sien.
+        XCTAssertNil(planned(avecPosture, enabledPlans: [.muscu]).first { $0.id == "posture" })
+
+        let allume = planned(avecPosture, enabledPlans: [.posture])
         XCTAssertEqual(allume.first { $0.id == "posture" }?.hour, 21)
+    }
+
+    /// Symétrique du précédent pour le programme muscu (spec v1.14 §4.4) : la clé
+    /// peut rester à true dans le profil, le rappel de 19 h ne doit pas sonner tant
+    /// que l'interrupteur du programme est éteint sur CE téléphone.
+    func testLeRappelMuscuNestJamaisPlanifieProgrammeEteint() {
+        let avecMuscu = allOn.merging(["muscu": true]) { a, _ in a }
+        XCTAssertNil(planned(avecMuscu, enabledPlans: []).first { $0.id == "muscu" })
+        XCTAssertNil(planned(avecMuscu, enabledPlans: [.posture]).first { $0.id == "muscu" })
+
+        let allume = planned(avecMuscu, enabledPlans: [.muscu])
+        XCTAssertEqual(allume.first { $0.id == "muscu" }?.hour, 19)
+        XCTAssertEqual(allume.first { $0.id == "muscu" }?.minute, 0)
     }
 
     func testFrequence() {
@@ -125,7 +154,6 @@ final class RemindersTests: XCTestCase {
     /// Cinquième entrée du catalogue (spec v1.11 §10) : le rappel posture, 21 h,
     /// tous les jours, jour non modifiable. Valeurs ÉPINGLÉES comme les quatre autres.
     func testLaCinquiemeEntreeEstLeRappelPosture() {
-        XCTAssertEqual(ReminderCatalog.all.count, 5, "le catalogue gagne le rappel posture")
         let posture = ReminderCatalog.definition(id: "posture")
         XCTAssertEqual(posture?.title, "Posture")
         XCTAssertEqual(posture?.defaultHour, 21)
@@ -141,15 +169,75 @@ final class RemindersTests: XCTestCase {
         )
     }
 
-    // MARK: - Visibilité conditionnée au programme posture (spec v1.11 §3, §10)
+    // MARK: - Visibilité conditionnée aux programmes (spec v1.11 §3, §10 ; v1.14 §4.4)
 
-    /// Seul "posture" porte le drapeau : les quatre rappels historiques ne
-    /// doivent JAMAIS se retrouver masqués par erreur si le drapeau change de
-    /// nom ou de sens un jour.
-    func testSeulLeRappelPostureRequiertLeProgramme() {
+    /// Sixième entrée du catalogue (spec v1.14 §4.4) : le rappel muscu, 19 h, tous les
+    /// jours, jour non modifiable. Valeurs ÉPINGLÉES comme les cinq autres.
+    func testLeRappelMuscuExisteEtExigeSonProgramme() {
+        XCTAssertEqual(ReminderCatalog.all.count, 6)
+        let muscu = ReminderCatalog.all.first { $0.id == "muscu" }
+        XCTAssertEqual(muscu?.title, "Muscu")
+        XCTAssertEqual(muscu?.defaultHour, 19)
+        XCTAssertEqual(muscu?.defaultMinute, 0)
+        XCTAssertNil(muscu?.defaultWeekday, "tous les jours, pas de jour fixe")
+        XCTAssertEqual(muscu?.isWeekdayEditable, false, "jour non modifiable, comme la posture")
+        XCTAssertEqual(muscu?.requiresPlan, .muscu)
+        XCTAssertEqual(muscu?.context, .muscuReminder)
+    }
+
+    /// Chaque rappel de programme exige LE SIEN, et aucun autre n'exige quoi que ce
+    /// soit : les quatre rappels historiques ne doivent JAMAIS se retrouver masqués
+    /// par erreur si le drapeau change de nom ou de sens un jour.
+    func testChaqueRappelDeProgrammeExigeLeSien() {
         for definition in ReminderCatalog.all {
-            XCTAssertEqual(definition.requiresPosturePlan, definition.id == "posture",
-                           "drapeau requiresPosturePlan inattendu sur \(definition.id)")
+            switch definition.id {
+            case "posture": XCTAssertEqual(definition.requiresPlan, .posture)
+            case "muscu": XCTAssertEqual(definition.requiresPlan, .muscu)
+            default: XCTAssertNil(definition.requiresPlan, definition.id)
+            }
+        }
+    }
+
+    /// Les deux programmes sont indépendants : allumer la muscu ne fait pas
+    /// apparaître le rappel posture, et réciproquement.
+    func testLaVisibiliteEstParProgramme() {
+        XCTAssertEqual(ReminderCatalog.visibleReminders(enabledPlans: []).count, 4)
+        let withMuscu = ReminderCatalog.visibleReminders(enabledPlans: [.muscu])
+        XCTAssertEqual(withMuscu.count, 5)
+        XCTAssertTrue(withMuscu.contains { $0.id == "muscu" })
+        XCTAssertFalse(withMuscu.contains { $0.id == "posture" })
+        XCTAssertEqual(ReminderCatalog.visibleReminders(enabledPlans: [.posture, .muscu]).count, 6)
+    }
+
+    /// Tous les sous-ensembles de programmes, construits depuis `allCases` : un
+    /// troisième programme sera couvert sans qu'on ait à revenir ici.
+    private var tousLesSousEnsemblesDeProgrammes: [Set<ReminderPlan>] {
+        let plans = ReminderPlan.allCases
+        return (0..<(1 << plans.count)).map { mask in
+            Set(plans.enumerated().compactMap { mask & (1 << $0.offset) == 0 ? nil : $0.element })
+        }
+    }
+
+    /// LA relation entre les deux portes, et non chacune dans son coin : quel que soit
+    /// l'ensemble de programmes allumés, un rappel PLANIFIÉ est toujours un rappel
+    /// VISIBLE — sans quoi un rappel sonnerait pour un programme que les Réglages ne
+    /// montrent pas.
+    ///
+    /// Depuis que les deux portes partagent `isAvailable(with:)`, ce test ne peut plus
+    /// attraper une divergence dans la règle elle-même : elle n'existe plus qu'à un
+    /// endroit. Ce qu'il garde, c'est le CÂBLAGE (une porte qui oublierait d'appeler
+    /// `isAvailable`) et surtout la couverture des programmes À VENIR : il énumère tous
+    /// les sous-ensembles, donc un troisième programme est couvert des deux côtés sans
+    /// que personne n'y pense. Les tests par rappel, eux, sont écrits un par un — c'est
+    /// là qu'on écrira la version « visibilité » en oubliant la « planification ».
+    func testToutRappelPlanifieEstUnRappelVisible() {
+        let toutAllume = Dictionary(uniqueKeysWithValues: ReminderCatalog.all.map { ($0.id, true) })
+        for plans in tousLesSousEnsemblesDeProgrammes {
+            let visibles = Set(ReminderCatalog.visibleReminders(enabledPlans: plans).map(\.id))
+            let planifies = Set(planned(toutAllume, enabledPlans: plans).map(\.id))
+            // Tout étant activé dans le profil, les deux ensembles doivent même coïncider.
+            XCTAssertEqual(planifies, visibles,
+                           "programmes \(plans.map(\.rawValue).sorted()) : les deux portes divergent")
         }
     }
 
@@ -159,7 +247,7 @@ final class RemindersTests: XCTestCase {
     /// peut allumer le rappel de 21 h sans jamais avoir vu le programme ni son
     /// interrupteur, et le laisser sonner en silence pour un programme invisible.
     func testProgrammeEteintMasqueLaLignePosture() {
-        let visible = ReminderCatalog.visibleReminders(planEnabled: false)
+        let visible = ReminderCatalog.visibleReminders(enabledPlans: [])
         XCTAssertFalse(visible.contains { $0.id == "posture" })
         XCTAssertEqual(visible.count, 4)
     }
@@ -167,10 +255,11 @@ final class RemindersTests: XCTestCase {
     /// Programme allumé : la ligne réapparaît, sans qu'aucun des quatre rappels
     /// historiques ait bougé.
     func testProgrammeAllumeMontreLaLignePosture() {
-        let visible = ReminderCatalog.visibleReminders(planEnabled: true)
+        let visible = ReminderCatalog.visibleReminders(enabledPlans: [.posture])
         XCTAssertTrue(visible.contains { $0.id == "posture" })
         XCTAssertEqual(visible.count, 5)
-        XCTAssertEqual(Set(visible.map(\.id)), Set(ReminderCatalog.all.map(\.id)))
+        XCTAssertEqual(Set(visible.map(\.id)),
+                       Set(ReminderCatalog.all.map(\.id)).subtracting(["muscu"]))
     }
 
     /// Aucun tiret cadratin dans les textes destinés à l'écran (règle v1.2).
@@ -234,9 +323,9 @@ final class RemindersTests: XCTestCase {
 
     private func planned(_ enabled: [String: Bool], times: [String: Int] = [:],
                          weekdays: [String: Int] = [:],
-                         planEnabled: Bool = true) -> [PlannedReminder] {
+                         enabledPlans: Set<ReminderPlan> = Set(ReminderPlan.allCases)) -> [PlannedReminder] {
         ReminderPlanner.planned(enabled: enabled, times: times, weekdays: weekdays,
-                                planEnabled: planEnabled)
+                                enabledPlans: enabledPlans)
     }
 
     func testSansSurchargeOnRetrouveLesDefauts() {

@@ -1,0 +1,351 @@
+[
+  {
+    "itemID": "cod_papillote",
+    "months": [5, 6, 7, 8, 9],
+    "steps": [
+      "Pose le cabillaud sur une feuille de papier cuisson",
+      "Ajoute les courgettes en rondelles, un filet d'huile, du citron",
+      "Referme en papillote et enfourne 20 min à 180 °C",
+      "Ça cuit tout seul : profites-en pour mettre la table"
+    ]
+  },
+  {
+    "itemID": "leek_potato_soup",
+    "months": [11, 12, 1, 2, 3],
+    "steps": [
+      "Coupe les poireaux et les pommes de terre en morceaux",
+      "Couvre d'eau et laisse mijoter 25 min à petit feu",
+      "Mixe, ajoute une noisette de beurre et une cuillère de crème",
+      "Il y en aura pour demain soir : c'est encore meilleur réchauffé"
+    ]
+  },
+  {
+    "itemID": "omelette_salad",
+    "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "steps": [
+      "Bats trois œufs avec les herbes que tu as sous la main",
+      "Verse-les dans une poêle beurrée et laisse prendre à feu doux",
+      "Sers avec la salade, les tomates et une tranche de pain",
+      "Trois minutes de cuisson : juste le temps de t'asseoir"
+    ]
+  },
+  {
+    "itemID": "lentil_salad",
+    "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "steps": [
+      "Rince les lentilles cuites et verse-les dans un grand saladier",
+      "Ajoute les tomates en dés, l'œuf dur en quartiers et une poignée de salade",
+      "Assaisonne à la vinaigrette et mélange sans écraser",
+      "Elle se garde deux jours au frais : fais-en pour demain"
+    ]
+  },
+  {
+    "itemID": "steam_fish_rice",
+    "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "steps": [
+      "Pose le poisson dans le panier vapeur avec les légumes verts",
+      "Compte dix minutes, pas une de plus, sinon il sèche",
+      "Sers sur le riz chaud avec un filet d'huile d'olive",
+      "Rien à surveiller : le minuteur travaille pour toi"
+    ]
+  },
+  {
+    "itemID": "veg_wok",
+    "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "steps": [
+      "Fais chauffer l'huile dans le wok à feu vif avant d'y jeter quoi que ce soit",
+      "Saisis le poulet deux minutes, ajoute les légumes, remue sans arrêt",
+      "Verse les nouilles et la sauce soja, mélange une minute encore",
+      "C'est prêt avant que la table soit mise"
+    ]
+  },
+  {
+    "itemID": "chicken_pita",
+    "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "steps": [
+      "Fais tiédir le pain pita une minute au grille-pain",
+      "Ouvre-le et garnis-le de poulet, de salade et de tomates",
+      "Ajoute une cuillère de sauce blanche, pas trois",
+      "Emballé dans du papier, il voyage très bien"
+    ]
+  },
+  {
+    "itemID": "stuffed_potatoes",
+    "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "steps": [
+      "Fais cuire les pommes de terre entières, quarante minutes au four",
+      "Creuse-les et mélange la chair au jambon, aux légumes et à la crème",
+      "Remplis-les, couvre de fromage râpé, repasse dix minutes au four",
+      "Le four fait le plus long : profites-en pour souffler"
+    ]
+  },
+  {
+    "itemID": "tuna_potato_salad",
+    "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "steps": [
+      "Fais cuire les pommes de terre en morceaux, quinze minutes à l'eau",
+      "Laisse-les tiédir avant d'ajouter le thon égoutté et les tomates",
+      "Assaisonne à la vinaigrette, mélange, et pose le tout sur un lit de salade",
+      "Tiède ou froide, elle est bonne des deux façons"
+    ]
+  },
+  {
+    "itemID": "asparagus_egg",
+    "months": [3, 4, 5, 6],
+    "steps": [
+      "Fais cuire les asperges huit minutes à l'eau bouillante salée",
+      "Plonge les œufs six minutes, puis passe-les sous l'eau froide",
+      "Dresse sur la salade, ajoute la vinaigrette et les croûtons",
+      "Casse le jaune sur les asperges : c'est là que tout se joue"
+    ]
+  },
+  {
+    "itemID": "pea_risotto",
+    "months": [3, 4, 5, 6],
+    "steps": [
+      "Fais nacrer le riz une minute avant d'ajouter le premier bouillon",
+      "Mouille louche par louche, en remuant, pendant dix-huit minutes",
+      "Ajoute les petits pois, le fromage et le beurre hors du feu",
+      "Un risotto attend mal : appelle tout le monde à table"
+    ]
+  },
+  {
+    "itemID": "chicken_crudites",
+    "months": [3, 4, 5, 6],
+    "steps": [
+      "Fais griller le poulet à la poêle, sans matière grasse",
+      "Râpe les crudités, coupe les tomates et grille une tranche de pain",
+      "Mélange le yaourt nature avec du citron et des herbes, en sauce",
+      "Une sauce fraîche en trente secondes, et c'est le printemps"
+    ]
+  },
+  {
+    "itemID": "spring_pasta",
+    "months": [3, 4, 5, 6],
+    "steps": [
+      "Fais cuire les pâtes et jette les légumes trois minutes avant la fin",
+      "Égoutte tout ensemble en gardant un fond d'eau de cuisson",
+      "Mélange avec l'huile d'olive, le fromage et un tour de poivre",
+      "Un seul faitout à laver : c'était bien le but"
+    ]
+  },
+  {
+    "itemID": "fish_new_potatoes",
+    "months": [3, 4, 5, 6],
+    "steps": [
+      "Fais revenir les pommes de terre nouvelles entières, avec leur peau",
+      "Ajoute le poisson à mi-cuisson, côté peau en premier",
+      "Termine avec les légumes verts et une noisette de beurre",
+      "Servi dans la poêle, ça garde le chaud et ça fait un plat de moins à laver"
+    ]
+  },
+  {
+    "itemID": "spring_soup",
+    "months": [3, 4, 5, 6],
+    "steps": [
+      "Fais fondre les légumes et les pommes de terre vingt minutes dans un fond d'eau",
+      "Mixe grossièrement et garde des morceaux, c'est plus gai",
+      "Une cuillère de crème, une tranche de pain grillé, c'est tout",
+      "Il en restera pour demain, et elle sera meilleure"
+    ]
+  },
+  {
+    "itemID": "chicken_wrap",
+    "months": [3, 4, 5, 6],
+    "steps": [
+      "Écrase l'avocat à la fourchette et étale-le sur la galette",
+      "Pose le poulet, la salade et les tomates au centre, sans surcharger",
+      "Roule serré, replie un bord, coupe en deux en biais",
+      "Il tient dans une main : parfait pour manger dehors"
+    ]
+  },
+  {
+    "itemID": "gazpacho",
+    "months": [5, 6, 7, 8, 9],
+    "steps": [
+      "Mixe les tomates avec le concombre, le poivron et l'huile d'olive",
+      "Sale, poivre, et mets au frais au moins deux heures",
+      "Sers très froid avec des tranches de pain grillé",
+      "Tout se prépare la veille : le jour venu, tu ne fais rien"
+    ]
+  },
+  {
+    "itemID": "tomato_mozza",
+    "months": [5, 6, 7, 8, 9],
+    "steps": [
+      "Coupe les tomates en tranches épaisses, sale-les, alterne avec la mozzarella",
+      "Pose le basilic entier, jamais coupé, et arrose d'un filet d'huile d'olive",
+      "Poivre du moulin, une tranche de pain, et l'été est servi"
+    ]
+  },
+  {
+    "itemID": "rice_salad",
+    "months": [5, 6, 7, 8, 9],
+    "steps": [
+      "Passe le riz cuit sous l'eau froide, puis égoutte-le bien",
+      "Ajoute les tomates, le maïs et le concombre en petits dés",
+      "Huile d'olive, citron, et beaucoup de menthe ciselée",
+      "Elle se transporte partout : pense au pique-nique"
+    ]
+  },
+  {
+    "itemID": "stuffed_zucchini",
+    "months": [6, 7, 8, 9],
+    "steps": [
+      "Creuse les courgettes et garde la chair, elle va dans la farce",
+      "Mélange la viande, le riz, la chair et la sauce tomate",
+      "Remplis, couvre de fromage râpé, trente-cinq minutes à 190 °C",
+      "Le four s'en occupe : va lire quelque chose"
+    ]
+  },
+  {
+    "itemID": "chicken_avocado_salad",
+    "months": [5, 6, 7, 8, 9],
+    "steps": [
+      "Fais griller le poulet et laisse-le tiédir avant de le trancher",
+      "Coupe l'avocat au dernier moment et arrose-le de citron",
+      "Ajoute la salade et les tomates, vinaigrette, croûtons, et sers aussitôt",
+      "Un couteau, un saladier, rien de plus à laver"
+    ]
+  },
+  {
+    "itemID": "summer_pasta_salad",
+    "months": [5, 6, 7, 8, 9],
+    "steps": [
+      "Cuis les pâtes une minute de moins que le paquet, elles vont refroidir",
+      "Rince-les à l'eau froide et huile-les pour qu'elles ne collent pas",
+      "Ajoute tomates, mozzarella, olives, et du basilic si tu en as",
+      "Elle est meilleure après une heure au frais : prends ton temps"
+    ]
+  },
+  {
+    "itemID": "grilled_chicken_ratatouille",
+    "months": [6, 7, 8, 9],
+    "steps": [
+      "Fais mijoter les tomates et les légumes d'été à l'huile d'olive, vingt-cinq minutes",
+      "Grille le poulet à part, à feu vif, pour qu'il reste moelleux",
+      "Sale, poivre, ajoute du thym et sers avec un morceau de pain",
+      "La ratatouille est encore meilleure réchauffée : fais-en trop"
+    ]
+  },
+  {
+    "itemID": "pumpkin_soup",
+    "months": [10, 11, 12],
+    "steps": [
+      "Coupe la courge en gros cubes, inutile de faire joli, tout sera mixé",
+      "Couvre d'eau à hauteur et laisse cuire vingt-cinq minutes avec les pommes de terre",
+      "Mixe, ajoute la crème, et sers avec du pain grillé",
+      "Un bol chaud entre les mains, c'est déjà l'automne"
+    ]
+  },
+  {
+    "itemID": "veg_pan_eggs",
+    "months": [9, 10, 11],
+    "steps": [
+      "Fais revenir les légumes à l'huile d'olive et à feu vif, sans trop les remuer",
+      "Casse les œufs par-dessus et couvre deux minutes",
+      "Sale au dernier moment et sers avec du pain de campagne",
+      "Un seul poêlon, et le dîner est fait"
+    ]
+  },
+  {
+    "itemID": "roast_chicken_potatoes",
+    "months": [9, 10, 11, 12],
+    "steps": [
+      "Coupe les pommes de terre en quartiers et mélange-les à l'huile",
+      "Pose le poulet dessus et enfourne quarante-cinq minutes à 200 °C",
+      "Retourne les pommes de terre à mi-cuisson, ajoute les légumes verts",
+      "Ça embaume toute la maison, et tu n'as rien à faire"
+    ]
+  },
+  {
+    "itemID": "squash_risotto",
+    "months": [10, 11, 12],
+    "steps": [
+      "Fais fondre les dés de courge dans le beurre avant d'ajouter le riz",
+      "Mouille au bouillon, louche par louche, en remuant dix-huit minutes",
+      "Fromage râpé hors du feu, poivre, et laisse reposer deux minutes",
+      "Deux minutes de repos : le temps de servir un verre d'eau"
+    ]
+  },
+  {
+    "itemID": "autumn_lentils",
+    "months": [9, 10, 11],
+    "steps": [
+      "Fais revenir les légumes en dés avant d'ajouter les lentilles",
+      "Couvre d'eau et laisse mijoter vingt-cinq minutes à petit feu",
+      "Sale seulement à la fin, arrose d'un filet d'huile d'olive, et sers avec du pain",
+      "C'est le genre de plat qui attend sans rien perdre"
+    ]
+  },
+  {
+    "itemID": "baked_fish_root_veg",
+    "months": [10, 11, 12],
+    "steps": [
+      "Coupe les pommes de terre et les légumes racines en bâtonnets",
+      "Enfourne-les vingt minutes d'avance, puis pose le poisson dessus, huile, citron",
+      "Encore quinze minutes à 180 °C : la chair doit se détacher à la fourchette",
+      "Un plat, un four, et la cuisine reste propre"
+    ]
+  },
+  {
+    "itemID": "veg_flatbread",
+    "months": [9, 10, 11],
+    "steps": [
+      "Étale la pâte le plus finement possible, c'est tout le principe",
+      "Étale la sauce tomate et range les légumes en lamelles par-dessus",
+      "Mozzarella, filet d'huile, quinze minutes à 220 °C",
+      "Elle se coupe en carrés et se mange avec les doigts"
+    ]
+  },
+  {
+    "itemID": "light_pot_au_feu",
+    "months": [11, 12, 1, 2, 3],
+    "steps": [
+      "Mets la viande dans l'eau froide et monte doucement en température",
+      "Écume, ajoute les légumes et les pommes de terre, et laisse frémir deux heures",
+      "Sers le bouillon d'abord, la viande et les légumes ensuite",
+      "Deux heures pendant lesquelles tu n'as rien à faire : c'est cadeau"
+    ]
+  },
+  {
+    "itemID": "ham_potato_gratin",
+    "months": [11, 12, 1, 2],
+    "steps": [
+      "Fais précuire les pommes de terre en rondelles, dix minutes à l'eau",
+      "Alterne les couches avec le jambon et la béchamel dans le plat",
+      "Fromage râpé sur le dessus, vingt-cinq minutes à 200 °C",
+      "Attends cinq minutes avant de couper : il se tiendra mieux"
+    ]
+  },
+  {
+    "itemID": "lentil_curry",
+    "months": [12, 1, 2, 3],
+    "steps": [
+      "Fais chauffer les épices dans l'huile avant tout le reste, une minute",
+      "Ajoute les légumes, les lentilles, et de l'eau à hauteur",
+      "Laisse mijoter vingt minutes, la crème à la fin, et sers sur le riz",
+      "L'odeur fait venir tout le monde avant même que tu appelles"
+    ]
+  },
+  {
+    "itemID": "chicken_noodle_broth",
+    "months": [11, 12, 1, 2, 3],
+    "steps": [
+      "Fais frémir le bouillon avec le poulet et les légumes, vingt minutes",
+      "Ajoute les nouilles trois minutes avant la fin, pas plus",
+      "Un trait de sauce soja dans le bol, et de la coriandre si tu en as",
+      "Ça se boit autant que ça se mange : prends un grand bol"
+    ]
+  },
+  {
+    "itemID": "fish_mash",
+    "months": [11, 12, 1, 2, 3],
+    "steps": [
+      "Prépare la purée bien lisse, avec une noisette de beurre dedans",
+      "Fais cuire le poisson à la poêle, deux minutes par face",
+      "Sers-le sur la purée avec les légumes verts et un trait de citron",
+      "Un plat de réconfort qui ne pèse rien : c'est assez rare"
+    ]
+  }
+]

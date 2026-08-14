@@ -34,6 +34,11 @@ final class BasketSwipeTests: XCTestCase {
 
     /// La ligne « Salade composée » DU PANIER. Le catalogue plus bas contient une carte
     /// du même nom : seule la ligne du panier porte « ingrédients » dans son libellé.
+    ///
+    /// Depuis la 1.14 il y a AUSSI une pastille « Catégorie Ingrédients » dans cet écran.
+    /// `CONTAINS` est sensible à la casse, donc le minuscule/majuscule suffit à les
+    /// départager — mais la requête ne tient plus qu'à ça : la resserrer si elle devient
+    /// ambiguë, plutôt que de compter sur une capitale.
     private func basketRow(_ app: XCUIApplication) -> XCUIElement {
         app.buttons.matching(NSPredicate(format: "label CONTAINS 'ingrédients'")).firstMatch
     }
@@ -48,6 +53,19 @@ final class BasketSwipeTests: XCTestCase {
     ///   `exists` est donc vrai même au repos.
     private func removeButton(_ app: XCUIApplication) -> XCUIElement {
         app.buttons.matching(identifier: "Retirer").element(boundBy: 0)
+    }
+
+    /// La preuve que le détail d'une ligne est ouvert : une de ses puces de portion.
+    ///
+    /// Les deux tests l'interrogent, l'un en positif et l'autre en négatif, et ils
+    /// passent par ce même point d'entrée exprès. Une assertion négative sur un élément
+    /// devenu introuvable passe TOUJOURS : le jour où ce libellé change, c'est
+    /// `testTappingARowStillOpensItsDetail` qui tombe bruyamment, et il sert de canari au
+    /// `XCTAssertFalse` voisin — lequel, seul, se serait mis à passer à vide sans que
+    /// personne ne le voie. C'est arrivé en 1.14 : un libellé d'accessibilité « Portion
+    /// Copieux » avait décroché les deux requêtes d'un coup.
+    private func portionChip(_ app: XCUIApplication) -> XCUIElement {
+        app.buttons["Copieux"]
     }
 
     /// Glissement LENT vers la gauche : un `swipeLeft()` sec peut franchir le seuil sans
@@ -80,9 +98,9 @@ final class BasketSwipeTests: XCTestCase {
         // 84 pt de découvert au repos : on exige au moins la moitié du chemin.
         XCTAssertLessThan(basketRow(app).frame.minX, originBefore - 42,
                           "la ligne n'a pas glissé vers la gauche")
-        // La régression elle-même : « Copieux » est une puce de portion, donc la preuve
-        // que le détail de la ligne s'est ouvert.
-        XCTAssertFalse(app.buttons["Copieux"].exists,
+        // La régression elle-même : une puce de portion est la preuve que le détail de
+        // la ligne s'est ouvert.
+        XCTAssertFalse(portionChip(app).exists,
                        "le glissement a ouvert le détail au lieu de faire glisser la ligne")
     }
 

@@ -180,11 +180,13 @@ struct OnboardingFlow: View {
 
         let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
         let pool = (try? Catalogs.quests()) ?? []
-        // Lu comme au renouvellement hebdo (DayCloser) : l'interrupteur est éteint
-        // par défaut, donc personne ne tire de quête posture à l'onboarding tant
-        // qu'il n'a pas été allumé dans les Réglages (spec v1.11 §3).
+        // Lus comme au renouvellement hebdo (DayCloser) : les deux interrupteurs sont
+        // éteints par défaut, donc personne ne tire de quête posture ni de quête muscu
+        // à l'onboarding tant qu'ils n'ont pas été allumés dans les Réglages
+        // (spec v1.11 §3, v1.14 §5.7).
         let quests = QuestEngine.weeklyDraw(pool: pool, weekID: weekID, stepsAvailable: healthGranted,
-                                            postureAvailable: PosturePlanSettings.shared.isEnabled)
+                                            postureAvailable: PosturePlanSettings.shared.isEnabled,
+                                            muscuAvailable: MuscuPlanSettings.shared.isEnabled)
         modelContext.insert(GamificationState(
             totalXP: 0,
             activeQuestIDs: quests.map(\.id),
@@ -297,7 +299,7 @@ private struct IdentityPage: View {
 
     // Les deux Nivelito illustrés (Avatars/boy, Avatars/girl) et non des glyphes
     // cozy : un glyphe monochrome de 28 pt ne fait pas un visage, et l'app a déjà
-    // un langage d'illustrations couleur (les 31 vignettes sport). Décoratifs : le
+    // un langage d'illustrations couleur (les vignettes sport). Décoratifs : le
     // label porte le sens. L'état retenu reprend le vocabulaire d'`activityRow`
     // (bordure + fond orange clair) : cet écran n'a pas de coche, il doit dire
     // « sélectionné » autrement.

@@ -249,6 +249,83 @@ final class GameServiceTests: XCTestCase {
         XCTAssertNotNil(state.badgeUnlocks["first_weigh"])
     }
 
+    // MARK: - Poids courant (spec v1.14 §5.3) : chemin unique partagé par
+    // SettingsView, ProgressScreen, et bientôt DayCloser (Task 5) et l'objectif de
+    // dépense affiché à l'accueil (Task 6).
+
+    /// Aucune pesée encore loggée (juste après l'onboarding, en théorie jamais vrai
+    /// en pratique puisqu'il en insère une) → repli sur `initialWeightKg`.
+    func testCurrentWeightKgSansPeseeReplieSurLePoidsInitial() {
+        XCTAssertEqual(service.currentWeightKg(), 90) // initialWeightKg posé au setUp
+    }
+
+    /// Plusieurs pesées : la plus RÉCENTE PAR DATE gagne, pas la dernière insérée
+    /// (elles peuvent diverger, par ex. une correction a posteriori).
+    func testCurrentWeightKgRetientLaPeseeLaPlusRecenteParDate() async throws {
+        let later = Date(timeIntervalSince1970: 2_000_000)
+        let earlier = Date(timeIntervalSince1970: 1_000_000)
+        await service.logWeight(kg: 91, date: later)
+        await service.logWeight(kg: 89, date: earlier) // insérée en second, datée AVANT
+        XCTAssertEqual(service.currentWeightKg(), 91)
+    }
+
+    // MARK: - Objectif de dépense (spec v1.14 §5.3) : sentinelle 0 = jamais réglé
+
+    /// Un profil migré (ou tout juste créé — ni l'un ni l'autre ne pose 0
+    /// explicitement, c'est le défaut de déclaration qui le fait) résout son
+    /// objectif de dépense depuis le poids courant. Attendu écrit EN DUR (350, et
+    /// non `CalorieCalculator.dailyBurnTarget(weightKg: 90)`) : comparer aux deux
+    /// implémentations de la même formule ne prouverait rien si la formule
+    /// elle-même devenait fausse.
+    func testBurnTargetSansReglageEstCalculeDepuisLePoids() throws {
+        let profile = try XCTUnwrap(try context.fetch(FetchDescriptor<UserProfile>()).first)
+        XCTAssertEqual(profile.dailyBurnTarget, 0)
+        XCTAssertEqual(profile.burnTarget(currentWeightKg: 90), 350)
+    }
+
+    /// Une valeur réglée explicitement l'emporte sur le calcul, même si le poids
+    /// utilisé au calcul donnerait un résultat différent.
+    func testBurnTargetRegleExplicitementIgnoreLePoids() throws {
+        let profile = try XCTUnwrap(try context.fetch(FetchDescriptor<UserProfile>()).first)
+        profile.dailyBurnTarget = 500
+        XCTAssertEqual(profile.burnTarget(currentWeightKg: 40), 500) // 40 kg calculerait 200
+    }
+
+    /// La composition complète que `SettingsView`, et bientôt `DayCloser` (Task 5)
+    /// et l'anneau d'accueil (Task 6), utilisent : `GameService.burnTarget()`
+    /// enchaîne le fetch du poids courant (`currentWeightKg()`) et la résolution du
+    /// sentinelle (`UserProfile.burnTarget(currentWeightKg:)`). Poids réglé à 110 kg
+    /// (pas les 90 kg d'`initialWeightKg` posés au setUp) sur un profil jamais réglé
+    /// → 450, et non 350 : seul ce test fait se rencontrer les deux moitiés.
+    func testGameServiceBurnTargetComposeLeFetchDuPoidsEtLaResolutionDuSentinelle() async throws {
+        await service.logWeight(kg: 110)
+        XCTAssertEqual(service.burnTarget(), 450)
+    }
+
+    // MARK: - Dépense du jour (spec v1.14 §5.4) : le câblage de BurnCalculator
+
+    /// `burnKcal` sans `weightKg` prend le poids COURANT. Ce défaut est la moitié
+    /// symétrique de `burnTarget()` : il évite à l'anneau d'accueil (Task 6) d'avoir à
+    /// réapparier poids et calcul lui-même, alors que `profiles.first?.initialWeightKg`
+    /// est à un point de distance dans une vue et donnerait un chiffre juste le jour de
+    /// l'onboarding, puis faux pour toujours.
+    func testBurnKcalSansPoidsUtiliseLePoidsCourant() async throws {
+        await service.logWeight(kg: 60) // initialWeightKg vaut 90 au setUp
+        // 8 000 pas : 274 kcal à 60 kg, contre 411 kcal à 90 kg.
+        XCTAssertEqual(service.burnKcal(on: .now, steps: .measured(8000)), 274)
+    }
+
+    /// La table des séances passée à `BurnCalculator` fusionne les TROIS catalogues.
+    /// Test structurel, et non de calcul, à dessein : aucune séance posture ou muscu
+    /// n'ayant aujourd'hui d'étape marchée, en oublier un ne change AUCUN chiffre —
+    /// jusqu'au jour où une séance de programme gagnerait un échauffement marché, qui
+    /// serait alors compté deux fois, en silence. C'est ici que ça se voit.
+    func testLaTableDesSeancesCouvreLesTroisCatalogues() {
+        XCTAssertNotNil(service.sessionsByID["fresh_air"])    // sessions.json
+        XCTAssertNotNil(service.sessionsByID["posture_open"]) // posture-sessions.json
+        XCTAssertNotNil(service.sessionsByID["muscu_core"])   // muscu-sessions.json
+    }
+
     // MARK: - Quêtes qui lisent le contenu des repas (correction spec §7.1)
 
     /// NOUVEAU (pas un portage) : preuve que la quête lit les TAGS du catalogue,
@@ -302,5 +379,120 @@ final class GameServiceTests: XCTestCase {
         await service.refreshQuestProgress(now: day2)
         XCTAssertEqual(state.questProgress["light_dessert_3"], 1,
                        "un seul des deux jours n'a pas de dessert gourmand")
+    }
+
+    // MARK: - Badges de la 1.14 (spec §5.6)
+
+    /// `burnTargetDays` ne compte que les journées CLÔTURÉES : le verdict n'est définitif
+    /// qu'à la clôture, et `closedDayLogs` est ce qui l'impose.
+    ///
+    /// Accessoirement, `service` porte un `FakeStepsService(authorized: false)` (voir le
+    /// setUp) : ce test épingle donc l'ABSENCE de filtre sur la disponibilité de HealthKit
+    /// — la version filtrée, écrite puis retirée, échouait ici. Il ne dit rien de
+    /// l'atteignabilité elle-même, le `DayLog` étant posé à la main : c'est
+    /// `BurnCalculatorTests.testSansPasToutCompte` qui la tient.
+    func testBurnTargetDaysNeCompteQueLesJourneesCloturees() throws {
+        let closed = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+        let open = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 19)))
+        context.insert(DayLog(day: closed, closed: true, burnTargetReached: true))
+        context.insert(DayLog(day: open, closed: false, burnTargetReached: true))
+        try context.save()
+        XCTAssertEqual(service.badgeStats().burnTargetDays, 1, "la journée encore ouverte ne compte pas")
+
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        service.evaluateBadges(state: state)
+        XCTAssertNotNil(state.badgeUnlocks["burn_first"])
+        XCTAssertNil(state.badgeUnlocks["burn_10"])
+    }
+
+    /// `muscuSessionsDone` compte des ENTRÉES et non des jours distincts, contrairement à
+    /// `dailySessionsDone` : deux séances muscu le même jour comptent double.
+    func testMuscuSessionsDoneCompteLesEntreesPasLesJours() async throws {
+        let session = try XCTUnwrap(service.muscuCatalog.session(for: .now, calendar: GameService.calendar))
+        await service.logMuscuSession(session: session)
+        await service.logMuscuSession(session: session)
+        XCTAssertEqual(service.badgeStats().muscuSessionsDone, 2)
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        XCTAssertNotNil(state.badgeUnlocks["muscu_first"])
+    }
+
+    /// `badgeStats()` parcourt TOUS les `MealEntry` du store : le décor compte, et ces
+    /// deux tests posent donc eux-mêmes chaque repas.
+    ///
+    /// Remplace `testRecipesLoggedResteAZeroJusquAuLotD`, qui verrouillait le 0 du
+    /// `// TODO lot D` tant que `isRecipe` n'existait pas.
+    func testRecipesLoggedCompteLesRepasContenantUneRecette() async throws {
+        let recipe = try XCTUnwrap(catalog.items.first(where: \.isRecipe))
+
+        // Un repas ordinaire ne compte pas : sans ce premier temps, une version qui
+        // compterait TOUS les repas passerait le second.
+        await service.logMeal(slot: .lunch, lines: pastaLines)
+        XCTAssertEqual(service.badgeStats().recipesLogged, 0, "les pâtes ne sont pas une recette")
+
+        await service.logMeal(slot: .dinner, lines: [catalog.line(for: recipe)])
+        XCTAssertEqual(service.badgeStats().recipesLogged, 1)
+
+        // Le câblage complet, et pas seulement le compteur : `logMeal` évalue les badges.
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        XCTAssertNotNil(state.badgeUnlocks["recipe_first"], "premier repas cuisiné → badge")
+        XCTAssertNil(state.badgeUnlocks["recipe_10"], "un seul repas cuisiné, pas dix")
+    }
+
+    /// Deux recettes dans le MÊME repas comptent pour un : la métrique est « des repas
+    /// cuisinés », pas « des lignes de recette ».
+    func testDeuxRecettesDansUnMemeRepasComptentPourUn() async throws {
+        let recipes = catalog.items.filter(\.isRecipe).prefix(2)
+        XCTAssertEqual(recipes.count, 2, "il faut deux recettes distinctes pour que ce test prouve quelque chose")
+        await service.logMeal(slot: .dinner, lines: recipes.map { catalog.line(for: $0) })
+        XCTAssertEqual(service.badgeStats().recipesLogged, 1)
+    }
+
+    // MARK: - Quêtes de la 1.14 (spec §5.7)
+
+    /// La métrique de quête `muscuSessionsDone` compte comme le badge du même nom : des
+    /// ENTRÉES, et non des jours distincts comme `postureSessionsDone`.
+    ///
+    /// Ce test exerce donc un chemin que l'INTERFACE INTERDIT : la rotation n'expose
+    /// qu'une séance muscu par jour et la carte affiche « Déjà faite » ensuite, si bien
+    /// que la double séance du mercredi ci-dessous n'est atteignable que par le service.
+    /// C'est voulu — il verrouille la MÉTRIQUE, pas le parcours, pour qu'une version
+    /// future qui ouvrirait la séance muscu libre ne change pas silencieusement le
+    /// comptage. Aujourd'hui, entrées et jours distincts donnent le même chiffre.
+    ///
+    /// Semaine fixe (mercredi/jeudi de la même semaine ISO), aucun flake au bord d'une semaine.
+    func testLaQueteMuscuCompteLesEntreesPasLesJours() async throws {
+        let day1 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+        let day2 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 19)))
+        let session = try XCTUnwrap(service.muscuCatalog.session(for: day1, calendar: GameService.calendar))
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: day1, calendar: GameService.calendar)
+        state.activeQuestIDs = ["muscu_sessions_4"]
+        try context.save()
+
+        await service.logMuscuSession(session: session, date: day1)
+        await service.logMuscuSession(session: session, date: day1)
+        await service.logMuscuSession(session: session, date: day2)
+
+        await service.refreshQuestProgress(now: day2)
+        XCTAssertEqual(state.questProgress["muscu_sessions_4"], 3,
+                       "compté en jours distincts, la double séance du mercredi n'en vaudrait que 2")
+    }
+
+    /// La quête `burn_target_3` ne compte que les journées CLÔTURÉES, comme
+    /// `daysWithinTarget` : le verdict est figé par le DayCloser et la journée en cours
+    /// peut encore basculer. Miroir exact du test du badge `burnTargetDays`.
+    func testLaQueteDeDepenseNeCompteQueLesJourneesCloturees() async throws {
+        let day1 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+        let day2 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 19)))
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: day1, calendar: GameService.calendar)
+        state.activeQuestIDs = ["burn_target_3"]
+        context.insert(DayLog(day: day1, closed: true, burnTargetReached: true))
+        context.insert(DayLog(day: day2, closed: false, burnTargetReached: true))
+        try context.save()
+
+        await service.refreshQuestProgress(now: day2)
+        XCTAssertEqual(state.questProgress["burn_target_3"], 1,
+                       "la journée encore ouverte ne compte pas")
     }
 }

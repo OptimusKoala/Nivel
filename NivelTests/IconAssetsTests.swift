@@ -5,8 +5,9 @@ import UIKit
 import NivelCore
 
 final class IconAssetsTests: XCTestCase {
-    /// Les 49 glyphes cozy — liste PINNÉE, garde anti-typo de nommage. 15 de la vague 1
-    /// (tab bar, timer, réglages) et 34 de la vague 2 (catalogues). Les deux avatars de
+    /// Les 54 glyphes cozy — liste PINNÉE, garde anti-typo de nommage. 15 de la vague 1
+    /// (tab bar, timer, réglages), 34 de la vague 2 (catalogues) et 5 de la vague 3 (les
+    /// paliers hauts de la 1.14, partis en emoji puis redessinés). Les deux avatars de
     /// l'onboarding n'en font PAS partie : ce sont des illustrations couleur (Avatars/).
     static let iconNames = [
         "tab_home", "tab_home_fill", "tab_meals", "tab_meals_fill",
@@ -22,10 +23,11 @@ final class IconAssetsTests: XCTestCase {
         "icon_trend_down", "icon_compass",
         "icon_drop", "icon_glass_empty", "icon_sun", "icon_moon",
         "icon_tree", "icon_heart", "icon_bell", "icon_flan", "icon_mint", "icon_wave",
+        "icon_barbell", "icon_crown", "icon_laurel", "icon_cake", "icon_mountain",
     ]
 
     func testEveryCozyIconAssetExists() {
-        XCTAssertEqual(Set(Self.iconNames).count, 49)
+        XCTAssertEqual(Set(Self.iconNames).count, 54)
         for name in Self.iconNames {
             let image = UIImage(named: "Icons/\(name)")
             XCTAssertNotNil(image, "asset manquant : Icons/\(name)")
@@ -46,13 +48,29 @@ final class IconAssetsTests: XCTestCase {
             XCTAssertNotNil(UIImage(named: "Icons/\(name)"), "catalogue : Icons/\(name) introuvable")
             cozyCount += 1
         }
-        // 24 badges + 19 quêtes en cozy (16 + les 3 quêtes posture v1.11, icônes
-        // réutilisées : icon_wave, icon_repeat, icon_heart) ; 2 quêtes restent en emoji.
-        XCTAssertEqual(cozyCount, 43, "les 24 badges + 19 quêtes en cozy (2 quêtes restent en emoji)")
+        // TOUS les badges en cozy — 38 sur 38 — plus 21 quêtes. Les cinq derniers badges
+        // en emoji (👑, 💯, 🦾, 🎂, 🏔️) ont reçu leur glyphe à la fin de la 1.14 : dans une
+        // grille monochrome, cinq pastilles en couleur détonnaient, et leur état verrouillé
+        // ne se traitait même pas pareil (grayscale contre teinte, cf. CatalogGlyph).
+        // Quêtes : 16 + les 3 quêtes posture v1.11 (icônes réutilisées : icon_wave,
+        // icon_repeat, icon_heart) + 2 des 4 quêtes de la 1.14 (§5.7 : icon_tree pour
+        // « Ça pousse », icon_flame pour l'objectif de dépense) ; 2 quêtes de dessert et
+        // 2 quêtes muscu restent en emoji — la liste des quêtes n'est pas la grille des
+        // badges, personne n'y voit d'alignement monochrome à tenir.
+        XCTAssertEqual(cozyCount, 59, "38 badges + 21 quêtes en cozy (0 badge et 4 quêtes en emoji)")
 
         for palette in ThemePalette.all {
             XCTAssertNotNil(UIImage(named: "Icons/\(palette.icon)"),
                             "thème \(palette.id) : Icons/\(palette.icon) introuvable")
+        }
+
+        // Les en-têtes des trois sections de l'onglet Sport (spec v1.14 §4.3). Leurs
+        // noms d'icônes vivent dans NivelCore, hors de portée de la liste épinglée
+        // ci-dessus : une faute de frappe n'afficherait rien, en silence, et dans les
+        // DEUX vues à la fois.
+        for section in SportSection.allCases {
+            XCTAssertNotNil(UIImage(named: "Icons/\(section.icon)"),
+                            "section \(section.rawValue) : Icons/\(section.icon) introuvable")
         }
     }
 
@@ -64,14 +82,18 @@ final class IconAssetsTests: XCTestCase {
         }
     }
 
-    /// L'inverse : les SEULES entrées restées en emoji sont les deux quêtes de dessert
-    /// léger (spec §2.2). Une troisième, oubliée dans un futur ajout, se verrait ici.
-    func testOnlyTheLightDessertQuestsStayEmoji() throws {
+    /// L'inverse : la liste EXHAUSTIVE des entrées restées en emoji — QUATRE QUÊTES, et
+    /// plus aucun badge. Les deux quêtes de dessert léger (spec §2.2) et les deux quêtes
+    /// muscu (§5.7 : 💪 et 🦾). Une entrée de plus, glissée par inadvertance dans un futur
+    /// ajout alors qu'un glyphe existait, se verrait ici — et un badge de plus ferait
+    /// retomber la grille des Trophées dans le bariolage que la 1.14 a corrigé.
+    func testLaListeDesEntreesResteesEnEmojiEstExhaustive() throws {
         func isEmoji(_ icon: CatalogIcon) -> Bool {
             if case .emoji = icon { true } else { false }
         }
         let ids = try Catalogs.badges().filter { isEmoji($0.icon) }.map(\.id)
             + Catalogs.quests().filter { isEmoji($0.icon) }.map(\.id)
-        XCTAssertEqual(Set(ids), ["light_dessert_3", "light_dessert_5"])
+        XCTAssertEqual(Set(ids), ["light_dessert_3", "light_dessert_5",
+                                  "muscu_sessions_2", "muscu_sessions_4"])
     }
 }

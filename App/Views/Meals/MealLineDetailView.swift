@@ -88,8 +88,20 @@ struct MealLineDetailView: View {
                             .background(currentPortion == candidate ? Theme.orange : Theme.card,
                                         in: RoundedRectangle(cornerRadius: 14))
                             .foregroundStyle(currentPortion == candidate ? .white : Theme.text)
+                            // 44 pt de cible tactile (règle Apple) — cf.
+                            // FoodCatalogView.categoryPicker.
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    // PAS de préfixe « Portion … » dans le libellé, contrairement aux
+                    // pastilles de créneau et de catégorie. Celles-là en ont besoin parce
+                    // qu'elles côtoient des homonymes dans le même écran (« Encas » est à
+                    // la fois un créneau et une catégorie ; « Encas » la catégorie voisine
+                    // une grille de noms d'aliments). Ici rien ne ressemble à « Léger » ou
+                    // « Copieux », la section porte déjà le titre « Portion », et le
+                    // préfixe ne s'accorderait pas — « Portion Léger ».
+                    .accessibilityAddTraits(currentPortion == candidate ? [.isSelected] : [])
                 }
             }
         }
@@ -216,7 +228,9 @@ struct MealLineDetailView: View {
     }
 
     /// Réassignation complète des composants (une ligne composée n'a pas de poids
-    /// propre à recalculer, spec §3.2) : jamais de mutation en place.
+    /// propre à recalculer, spec §3.2). C'est bien une copie locale modifiée puis
+    /// réaffectée — le seul motif qui compte, voir `Pantry` (PersistentModels.swift) :
+    /// oublier la réaffectation finale perd la modification, en silence.
     private func setGrams(itemID: String, grams: Int) {
         let bounded = max(1, grams)
         var components = line.components

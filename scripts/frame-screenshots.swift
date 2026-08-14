@@ -67,11 +67,14 @@ let shots: [Shot] = [
          palette: light),
     Shot(file: "02-meallog",
          title: "Un repas en trois gestes",
-         subtitle: "85 aliments, estimation immédiate, au gramme si tu veux.",
+         subtitle: "122 aliments et 35 recettes, au gramme si tu veux.",
          palette: light),
+    // « Tout doux » ne peut plus être seul dans le titre : depuis la 1.14 cette capture
+    // cadre la section « Ça pousse » (course, pompes, burpees), et une accroche gravée
+    // dans l'image ne se relit jamais — elle doit dire ce que l'image montre.
     Shot(file: "03-sport",
-         title: "Du sport tout doux",
-         subtitle: "20 activités et 11 séances, illustrées par Nivelito.",
+         title: "Tout doux, ou ça pousse",
+         subtitle: "30 activités et 11 séances, illustrées par Nivelito.",
          palette: light),
     Shot(file: "04-session",
          title: "Nivelito bouge avec toi",
@@ -87,12 +90,20 @@ let shots: [Shot] = [
          palette: light),
     Shot(file: "07-quests",
          title: "Des quêtes, zéro reproche",
-         subtitle: "18 quêtes tirées le lundi, 24 badges à débloquer.",
+         subtitle: "25 quêtes tirées le lundi, 38 badges à débloquer.",
          palette: light),
     Shot(file: "08-night",
          title: "Quatre thèmes cozy",
          subtitle: "Crème, Menthe, Océan et Nuit douce.",
          palette: night),
+    Shot(file: "09-idees",
+         title: "Des idées de saison",
+         subtitle: "Classées selon ce que tu as déjà dans le frigo.",
+         palette: light),
+    Shot(file: "10-recette",
+         title: "La recette, puis c'est noté",
+         subtitle: "Les ingrédients, la préparation, et hop, dans le journal.",
+         palette: light),
 ]
 
 // MARK: - Texte

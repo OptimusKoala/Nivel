@@ -1,0 +1,27 @@
+[
+  {"id": "muscu_upper",  "title": "Haut du corps", "steps": [
+    {"activityID": "pushups",    "minutes": 4, "tempo": "3 séries de ~8, genoux posés dès que la forme se dégrade", "segments": 3},
+    {"activityID": "dips_chair", "minutes": 3, "tempo": "3 séries de ~8, coudes serrés vers l'arrière", "segments": 3},
+    {"activityID": "superman",   "minutes": 3, "tempo": "3 séries de ~10, sans forcer sur le bas du dos", "segments": 3},
+    {"activityID": "plank",      "minutes": 3, "tempo": "3 tenues de ~30 s, repos entre chaque", "segments": 3}]},
+  {"id": "muscu_lower",  "title": "Bas du corps",  "steps": [
+    {"activityID": "squats",      "minutes": 4, "tempo": "4 séries de ~12, poussées dans les talons", "segments": 4},
+    {"activityID": "lunges",      "minutes": 4, "tempo": "3 séries de ~8 par jambe, en alternant", "segments": 3},
+    {"activityID": "squat_jumps", "minutes": 3, "tempo": "3 séries de ~8, réception souple", "segments": 3},
+    {"activityID": "wall_sit",    "minutes": 2, "tempo": "2 tenues de ~45 s, remonte dès que les cuisses brûlent trop", "segments": 2}]},
+  {"id": "muscu_core",   "title": "Ceinture abdo", "steps": [
+    {"activityID": "crunches",           "minutes": 4, "tempo": "3 séries de ~15, souffle en montant", "segments": 3},
+    {"activityID": "plank",              "minutes": 3, "tempo": "3 tenues de ~30 s, ventre serré", "segments": 3},
+    {"activityID": "side_plank",         "minutes": 4, "tempo": "2 tenues de ~30 s de chaque côté", "segments": 4},
+    {"activityID": "mountain_climbers",  "minutes": 3, "tempo": "3 séries de ~30 s, hanches basses", "segments": 3}]},
+  {"id": "muscu_full",   "title": "Corps entier",  "steps": [
+    {"activityID": "burpees",       "minutes": 3, "tempo": "3 séries de ~6, saute seulement si tu le sens", "segments": 3},
+    {"activityID": "pushups",       "minutes": 4, "tempo": "3 séries de ~8, corps aligné des épaules aux talons", "segments": 3},
+    {"activityID": "squats",        "minutes": 4, "tempo": "3 séries de ~12, dos droit et talons au sol", "segments": 3},
+    {"activityID": "jumping_jacks", "minutes": 3, "tempo": "3 séries de ~30 s, genoux souples à la réception", "segments": 3}]},
+  {"id": "muscu_cardio", "title": "Cardio-force",  "steps": [
+    {"activityID": "jumping_jacks",     "minutes": 4, "tempo": "4 séries de ~30 s, pause entre chaque", "segments": 4},
+    {"activityID": "mountain_climbers", "minutes": 3, "tempo": "3 séries de ~30 s, au rythme que tu tiens", "segments": 3},
+    {"activityID": "burpees",           "minutes": 3, "tempo": "3 séries de ~6, ralentis dès que le souffle monte", "segments": 3},
+    {"activityID": "high_knees",        "minutes": 3, "tempo": "3 séries de ~40 s, repos entre les séries", "segments": 3}]}
+]

@@ -54,6 +54,15 @@ final class GameService {
     let sessionCatalog: [ActivitySession]
     /// Index id → Activity (kcal des séances, libellés des vues).
     let activitiesByID: [String: Activity]
+    /// Index id → ActivitySession des TROIS catalogues de séances (commun, posture,
+    /// muscu), pour `BurnCalculator` seul : une séance validée n'a qu'un TOTAL en
+    /// base, il faut son détail pour en retirer les étapes marchées déjà comptées par
+    /// le podomètre. Le réflexe symétrique de `sessionCatalog` (sessions.json seul)
+    /// ferait retomber toute séance posture ou muscu sur le repli « total stocké » :
+    /// aucune n'a d'étape marchée aujourd'hui, mais la première qui gagnerait un
+    /// échauffement marché serait alors comptée deux fois, en silence.
+    /// N'affecte AUCUNE rotation : les trois catalogues restent cloisonnés.
+    let sessionsByID: [String: ActivitySession]
     /// Catalogue d'aliments (spec v1.10 §4.1) : barème du calcul de kcal des repas
     /// ET tags "alcohol"/"richDessert" des deux quêtes qui lisent le contenu d'un
     /// repas. Vide si le bundle est corrompu, jamais de crash.
@@ -61,6 +70,10 @@ final class GameService {
     /// Catalogues posture, CLOISONNÉS des catalogues sport globaux : les verser dedans
     /// ferait passer la rotation de la séance du jour de 11 à 16 entrées (spec v1.11 §6).
     let postureCatalog: PostureCatalog
+    /// Séances muscu, cloisonnées pour exactement la même raison (spec v1.14 §4.4).
+    /// Différence avec la posture : PAS de catalogue d'exercices propre — les étapes
+    /// pointent vers `activityCatalog`, donc rien à verser dans `activitiesByID`.
+    let muscuCatalog: MuscuCatalog
 
     /// File des célébrations en attente d'affichage (les vues dépilent).
     var pendingCelebrations: [Celebration] = []
@@ -140,13 +153,28 @@ final class GameService {
         self.sessionCatalog = Self.loadOrAssert({ try Catalogs.sessions() }, fallback: [])
         self.foodCatalog = Self.loadOrAssert({ try FoodCatalog.load() }, fallback: .empty)
         self.postureCatalog = Self.loadOrAssert({ try PostureCatalog.load() }, fallback: .empty)
+        self.muscuCatalog = Self.loadOrAssert({ try MuscuCatalog.load() }, fallback: .empty)
         // uniquingKeysWith (et non uniqueKeysWithValues) : un id dupliqué dans un
         // bundle corrompu ne doit jamais crasher — on garde la première occurrence.
-        // Table FUSIONNÉE : les listes affichées et les deux rotations restent cloisonnées,
-        // mais un exercice posture doit pouvoir être nommé partout où un id est résolu
-        // (liste du jour, récapitulatifs), sinon il s'affiche en id brut.
+        // Table FUSIONNÉE : les listes affichées et les trois rotations (séance du jour,
+        // posture, muscu) restent cloisonnées, mais un exercice posture doit pouvoir être
+        // nommé partout où un id est résolu (liste du jour, récapitulatifs), sinon il
+        // s'affiche en id brut. Le catalogue muscu n'a RIEN à verser ici : il n'a pas
+        // d'exercices à lui, ses étapes pointent déjà vers `activityCatalog`.
         self.activitiesByID = Dictionary((activityCatalog + postureCatalog.activities).map { ($0.id, $0) },
                                         uniquingKeysWith: { first, _ in first })
+        // Même prudence sur les doublons d'id, et les TROIS catalogues cette fois
+        // (voir la déclaration) : une séance absente d'ici ne se décompose plus.
+        self.sessionsByID = Dictionary(
+            (sessionCatalog + postureCatalog.sessions + muscuCatalog.sessions).map { ($0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        // En DERNIER, une fois toutes les propriétés initialisées : la migration lit
+        // l'état SwiftData, donc elle a besoin d'un `self` complet, et elle doit tourner
+        // avant tout affichage — personne ne doit voir un niveau faux, fût-ce une
+        // fraction de seconde. Elle ne dépend d'aucun catalogue, seulement de `totalXP`.
+        // Corps et mode d'emploi complet dans GameService+LevelMigration.swift.
+        migrateLevelCurveIfNeeded()
     }
 
     /// Fallback silencieux en release (jamais de crash), mais signal en debug :
@@ -252,7 +280,7 @@ final class GameService {
         let previousKcal = entry.estimatedKcal
         let kcal = manualKcal ?? MealEstimator.kcal(lines: lines, kcalPer100g: foodCatalog.kcalPer100g)
         entry.slot = slot
-        // Réassignation complète (règle SwiftData : pas de mutation en place des collections).
+        // Réassignation complète : l'idiome du dépôt, voir `Pantry` (PersistentModels.swift).
         entry.lines = lines
         entry.manualKcal = manualKcal
         entry.estimatedKcal = kcal
@@ -324,8 +352,11 @@ final class GameService {
             stepsByDay = await stepsService.dailySteps(from: week.start, to: now) ?? [:]
         }
 
-        // Règle SwiftData : jamais de mutation en place des collections d'un @Model —
-        // copie locale, modification, puis réassignation complète.
+        // Copie locale, modification, puis réassignation complète. C'est ICI que se
+        // joue la vraie règle : la copie locale qu'on oublie de réaffecter en fin de
+        // boucle est perdue, et rien ne le signale. (Ce n'est pas « la mutation en place
+        // ne sauvegarde pas », énoncé faux, mesuré au lot D — voir `Pantry`.) La copie
+        // évite aussi N allers-retours d'accesseur pour N quêtes.
         var progress = state.questProgress
         var completedHistory = state.completedQuestIDs
         var completedThisWeek = state.completedThisWeekQuestIDs
@@ -394,6 +425,27 @@ final class GameService {
             return dailySessionDayCount(from: week.start, to: week.end)
         case .postureSessionsDone:
             return postureSessionDayCount(from: week.start, to: week.end)
+        case .muscuSessionsDone:
+            // Des ENTRÉES et non des jours distincts, contrairement à
+            // `postureSessionsDone` juste au-dessus : c'est la définition unique de la
+            // métrique `muscuSessionsDone` (spec v1.14 §5.6, « ActivityEntry de kind
+            // .muscu »), celle que compte déjà le badge du même nom.
+            //
+            // Aujourd'hui les deux comptages COÏNCIDENT : la rotation n'expose qu'une
+            // séance muscu par jour (`MuscuCatalog.session(for:)`) et la carte affiche
+            // « Déjà faite » dès qu'une entrée existe pour le jour — une seconde entrée
+            // `.muscu` le même jour est donc inatteignable par l'interface. La
+            // distinction ne deviendrait visible que si une version future ouvrait la
+            // séance muscu libre : `muscu_sessions_4` serait alors complétable en un
+            // soir là où `posture_sessions_4` demande quatre jours, la seconde séance ne
+            // rapportant ni XP (plafond 1/jour) ni compteur mensuel.
+            return activityCount(from: week.start, to: week.end, kind: .muscu)
+        case .burnTargetDays:
+            // Uniquement les journées clôturées, comme `daysWithinTarget` : le verdict
+            // "objectif de dépense atteint" est figé par le DayCloser (§5.6), et la
+            // journée en cours peut encore basculer. Corollaire assumé : la quête ne
+            // peut pas se compléter le dimanche soir sur la journée du dimanche.
+            return closedDayLogs(from: week.start, to: week.end).count(where: \.burnTargetReached)
         }
     }
 
@@ -414,6 +466,10 @@ final class GameService {
         stats.stepsInOneDay = closed.map(\.steps).max() ?? 0
         stats.totalSteps = closed.reduce(0) { $0 + $1.steps }
         stats.totalKm = Int(Double(stats.totalSteps) * 0.00075) // ≈ 0,75 m par pas → km = pas × 0.00075
+        // Le verdict figé par le DayCloser (§5.6) — jamais recalculé après coup, donc 0 sur
+        // tout l'historique d'avant la 1.14 : `burn_10` demande dix jours RÉELS après la mise
+        // à jour, même à quelqu'un qui marche depuis des mois. C'est un délai, pas un défaut.
+        stats.burnTargetDays = closed.count { $0.burnTargetReached }
 
         stats.level = LevelSystem.level(forXP: state.totalXP)
         stats.questsCompleted = state.completedQuestIDs.count
@@ -427,6 +483,30 @@ final class GameService {
         stats.dailySessionsDone = Set(
             activities.filter { $0.kind == .dailySession }.map { Self.calendar.startOfDay(for: $0.date) }
         ).count
+        // Des ENTRÉES et non des jours distincts (spec v1.14 §5.6). En pratique les deux
+        // comptages coïncident : `MuscuCatalog.session(for:)` n'expose qu'une séance par
+        // jour, et la carte affiche « Déjà faite » ensuite — une seconde entrée `.muscu`
+        // le même jour n'est pas atteignable par l'interface. La distinction ne
+        // deviendrait visible que si une version future ouvrait la séance muscu libre.
+        // Même choix et même raisonnement que `questValue`, qui le détaille.
+        stats.muscuSessionsDone = activities.count { $0.kind == .muscu }
+
+        // Des REPAS et non des lignes (spec §5.6) : un dîner qui contient deux recettes
+        // compte pour UN — la métrique est « des repas cuisinés ». Le drapeau se lit sur
+        // l'item de la LIGNE et jamais sur ses composants : une recette est une ligne
+        // composée dont la tête porte `isRecipe` et dont les ingrédients sont des aliments
+        // ordinaires (spec §6.1). Item inconnu = pas une recette, même repli que `hasTag`.
+        //
+        // RÉTROACTIF, contrairement à `burnTargetDays` trois lignes plus haut, dont le
+        // délai est assumé : ici tout l'historique est relu à chaque appel. Sans
+        // conséquence aujourd'hui — les 35 ids `isRecipe` sont NÉS en 1.14, donc aucun
+        // repas d'avant ne peut en contenir. Ce qui le garde vrai, et qu'il faut donc
+        // tenir : ne JAMAIS poser `isRecipe` sur un aliment déjà au catalogue. Ce seul
+        // drapeau débloquerait `recipe_first` rétroactivement, sur un repas que
+        // l'utilisateur n'a jamais cuisiné.
+        stats.recipesLogged = meals.count { meal in
+            meal.lines.contains { foodCatalog.byID[$0.itemID]?.isRecipe == true }
+        }
 
         return stats
     }
@@ -638,6 +718,31 @@ final class GameService {
 
     func fetchProfile() -> UserProfile? {
         (try? modelContext.fetch(FetchDescriptor<UserProfile>()))?.first
+    }
+
+    /// Poids courant : dernière pesée (`WeightEntry` la plus récente PAR DATE), ou
+    /// `initialWeightKg` si aucune n'existe encore — garde de sécurité, en pratique
+    /// toujours fausse après l'onboarding, qui en insère une. internal : chemin
+    /// UNIQUE vers le poids courant, utilisé par `SettingsView`, `ProgressScreen`,
+    /// et bientôt `DayCloser.swift` (Task 5) et l'anneau de dépense (Task 6) — à la
+    /// place des copies de `weights.last` que le plan v1.14 voulait éviter.
+    func currentWeightKg() -> Double {
+        var descriptor = FetchDescriptor<WeightEntry>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        descriptor.fetchLimit = 1
+        let last = (try? modelContext.fetch(descriptor))?.first?.weightKg
+        return last ?? fetchProfile()?.initialWeightKg ?? 0
+    }
+
+    /// Point d'appariement UNIQUE entre le poids courant et la résolution du
+    /// sentinelle (spec v1.14 §5.3). `profile.burnTarget(currentWeightKg:
+    /// profile.initialWeightKg)` compile tout aussi bien et fige silencieusement la
+    /// cible au poids de l'onboarding — cette méthode existe pour que chaque
+    /// appelant (`SettingsView`, et bientôt `DayCloser` Task 5, l'anneau d'accueil
+    /// Task 6) n'ait jamais à réapparier les deux lui-même. 0 avant l'onboarding
+    /// (aucun profil) : il n'y a alors rien à cibler.
+    func burnTarget() -> Int {
+        guard let profile = fetchProfile() else { return 0 }
+        return profile.burnTarget(currentWeightKg: currentWeightKg())
     }
 
     /// DayLog du jour donné, créé (cible kcal actuelle du profil) s'il n'existe pas.

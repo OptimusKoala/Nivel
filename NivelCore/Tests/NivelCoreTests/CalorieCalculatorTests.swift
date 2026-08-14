@@ -37,4 +37,21 @@ final class CalorieCalculatorTests: XCTestCase {
         let target = CalorieCalculator.dailyTarget(sex: .male, weightKg: 50, heightCm: 155, ageYears: 70, activity: .sedentary)
         XCTAssertEqual(target, 1500)
     }
+
+    func testObjectifDeDepense() {
+        XCTAssertEqual(CalorieCalculator.dailyBurnTarget(weightKg: 70), 300)
+        XCTAssertEqual(CalorieCalculator.dailyBurnTarget(weightKg: 90), 350)
+        XCTAssertEqual(CalorieCalculator.dailyBurnTarget(weightKg: 110), 450)
+        // Bornes : ni décourageant, ni irréaliste.
+        XCTAssertEqual(CalorieCalculator.dailyBurnTarget(weightKg: 40), 200)
+        XCTAssertEqual(CalorieCalculator.dailyBurnTarget(weightKg: 200), 600)
+    }
+
+    /// Multiple de 50 quel que soit le poids : un objectif affiché « 347 kcal »
+    /// prétendrait à une précision que ce calcul n'a pas.
+    func testObjectifDeDepenseArrondiALaCinquantaine() {
+        for weight in stride(from: 40.0, through: 200.0, by: 0.5) {
+            XCTAssertEqual(CalorieCalculator.dailyBurnTarget(weightKg: weight) % 50, 0, "\(weight)")
+        }
+    }
 }

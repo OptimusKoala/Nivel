@@ -77,6 +77,24 @@ final class DayCloserTests: XCTestCase {
         try context.fetch(FetchDescriptor<DayLog>(sortBy: [SortDescriptor(\.day)]))
     }
 
+    /// DayLog d'une journée précise — XCTUnwrap plutôt qu'un index : un test qui
+    /// parle de J-3 doit échouer en le disant, pas sur un `logs[0]` décalé.
+    private func fetchDayLog(_ day: Date) throws -> DayLog {
+        try XCTUnwrap(fetchDayLogs().first { $0.day == day }, "aucun DayLog pour \(day)")
+    }
+
+    /// Validation sport insérée directement (sans XP) à 18 h du jour donné : la
+    /// clôture doit en tirer la dépense de la journée.
+    private func insertActivity(on day: Date, kind: ActivityKind, refID: String, kcal: Int) {
+        context.insert(ActivityEntry(
+            date: day.addingTimeInterval(18 * 3600),
+            kind: kind,
+            refID: refID,
+            durationMinutes: 30,
+            estimatedKcal: kcal
+        ))
+    }
+
     // MARK: - Clôture d'un trou de 3 jours
 
     func testClosesThreeDayGapWithCorrectXPAndSnapshots() async throws {
@@ -118,9 +136,14 @@ final class DayCloserTests: XCTestCase {
         XCTAssertFalse(logs[2].withinTarget)
         XCTAssertEqual(logs[2].xpEarned, 0)
 
-        // XP total = 90 (clôtures) + 50 (badge "Premier repas", 4 repas au journal).
-        XCTAssertEqual(state.totalXP, 140)
-        XCTAssertNotNil(state.badgeUnlocks["first_meal"])
+        // XP total = 90 (clôtures) + 50 (badge "Premier repas", 4 repas au journal)
+        // + 50 (badge "Ça a bougé" : J-3 et ses 9000 pas passent la cible de dépense).
+        XCTAssertEqual(state.totalXP, 190)
+        XCTAssertTrue(logs[0].burnTargetReached)
+        // L'ENSEMBLE exact, et pas deux XCTAssertNotNil : un futur badge qui tomberait
+        // aussi dans ce scénario ferait sinon échouer le total sur un « 190 != 240 » nu,
+        // sans nommer le coupable.
+        XCTAssertEqual(Set(state.badgeUnlocks.keys), ["first_meal", "burn_first"])
         XCTAssertEqual(state.lastClosedDay, yesterday)
     }
 
@@ -146,13 +169,17 @@ final class DayCloserTests: XCTestCase {
         let currentWeekID = QuestEngine.weekID(for: today, calendar: GameService.calendar)
         XCTAssertEqual(state.questWeekID, currentWeekID)
 
-        // Nouveau tirage : 3 quêtes valides du catalogue, sans quête de pas (HealthKit refusé).
+        // Nouveau tirage : 3 quêtes valides du catalogue, sans quête de pas (HealthKit
+        // refusé). Les drapeaux de programme sont hors sujet ici : ce test tire pour
+        // `Date.now`, donc selon la semaine réelle son triplet peut n'en contenir aucun
+        // même avec le filtre cassé. Ce sont les deux tests à quinze semaines fixes qui
+        // les tiennent (chercher `quetesTireesSurQuinzeSemaines`).
         let catalog = try Catalogs.quests()
         let catalogByID = Dictionary(uniqueKeysWithValues: catalog.map { ($0.id, $0) })
         XCTAssertEqual(state.activeQuestIDs.count, 3)
         for id in state.activeQuestIDs {
             let quest = try XCTUnwrap(catalogByID[id], "id de quête inconnu : \(id)")
-            XCTAssertFalse(quest.requiresSteps)
+            XCTAssertFalse(quest.requiresSteps, id)
         }
 
         // Garde hebdo remis à zéro ; l'HISTORIQUE all-time n'est PAS retouché
@@ -166,6 +193,98 @@ final class DayCloserTests: XCTestCase {
         XCTAssertTrue(state.questProgress.values.allSatisfy { $0 == 0 })
 
         XCTAssertEqual(state.totalXP, 0)
+    }
+
+    /// Ce que le test précédent ne prouve pas : que `DayCloser` passe bien les DEUX
+    /// interrupteurs de programme à `weeklyDraw`. Il tire pour la seule semaine courante,
+    /// et écrire `postureAvailable: true` / `muscuAvailable: true` en dur dans le closer
+    /// laissait toute la suite verte — mutation faite, le trou était réel, et il
+    /// préexistait à la 1.14 pour la posture.
+    ///
+    /// Ce qui le comble : QUINZE semaines FIXES, balayées par
+    /// `quetesTireesSurQuinzeSemaines`. Des dates figées plutôt que `Date.now` — une
+    /// garde ne doit pas dépendre du jour où la suite tourne.
+    ///
+    /// Les deux drapeaux sont INJECTÉS, plus lus sur les singletons : ce test dit ce que
+    /// fait le closer quand on lui passe `false`, pas ce que contiennent les
+    /// `UserDefaults` du hôte.
+    func testLeRenouvellementNeTirePasDeQueteAProgrammeEteint() async throws {
+        let tirages = try await quetesTireesSurQuinzeSemaines(postureAvailable: false,
+                                                              muscuAvailable: false)
+        for (weekID, quetes) in tirages {
+            XCTAssertEqual(quetes.count, 3, weekID)
+            for quete in quetes {
+                XCTAssertFalse(quete.requiresPosture, "\(weekID) : \(quete.id)")
+                XCTAssertFalse(quete.requiresMuscu, "\(weekID) : \(quete.id)")
+                XCTAssertFalse(quete.requiresSteps, "\(weekID) : \(quete.id)")
+            }
+        }
+    }
+
+    /// La moitié qui décide si le câblage sert à quelque chose : le test ci-dessus
+    /// protège Michaël de recevoir des quêtes qu'il ne peut pas faire, celui-ci protège
+    /// Marion de ne JAMAIS en recevoir. Un closer qui cesserait de lire les interrupteurs
+    /// laisserait les six quêtes à drapeau hors de tout tirage du lundi, en silence — et
+    /// aucun test ne le dirait, `muscuAvailable: false` en dur passait au vert.
+    ///
+    /// Un drapeau à la fois : allumer la posture ne doit pas faire sortir de quête muscu,
+    /// et réciproquement. Le pool éligible passe alors de 15 quêtes (25 moins les 4 de pas
+    /// moins les 6 à drapeau) à 18, dont 3 portent le drapeau allumé.
+    ///
+    /// « Au moins un tirage » n'est pas une nécessité mathématique, c'est une propriété
+    /// MESURÉE de ces graines-là : six des quinze semaines sortent une quête à drapeau,
+    /// pour la posture comme pour la muscu, et la première est la première du balayage
+    /// (2026-W12). La marge est confortable mais elle vaut pour ce catalogue et ces quinze
+    /// dates — un futur ajout de quêtes la déplacera, et c'est le genre d'échec qui se lit
+    /// tout seul.
+    func testLeRenouvellementTireLesQuetesAProgrammeQuandIlEstAllume() async throws {
+        let avecPosture = try await quetesTireesSurQuinzeSemaines(postureAvailable: true,
+                                                                  muscuAvailable: false)
+        XCTAssertTrue(avecPosture.contains { $0.quetes.contains(where: \.requiresPosture) },
+                      "aucune quête posture sur quinze semaines, programme allumé")
+        XCTAssertFalse(avecPosture.contains { $0.quetes.contains(where: \.requiresMuscu) },
+                       "la posture allumée a fait sortir une quête muscu")
+
+        let avecMuscu = try await quetesTireesSurQuinzeSemaines(postureAvailable: false,
+                                                                muscuAvailable: true)
+        XCTAssertTrue(avecMuscu.contains { $0.quetes.contains(where: \.requiresMuscu) },
+                      "aucune quête muscu sur quinze semaines, programme allumé")
+        XCTAssertFalse(avecMuscu.contains { $0.quetes.contains(where: \.requiresPosture) },
+                       "la muscu allumée a fait sortir une quête posture")
+    }
+
+    /// Quinze renouvellements hebdo consécutifs, pilotés par les dates : pour chacun, le
+    /// weekID est vérifié et les quêtes tirées sont résolues sur le catalogue.
+    ///
+    /// `questWeekID` périmé force le rollover ; `lastClosedDay` à la veille saute tout le
+    /// bloc de clôture, si bien que seul le tirage s'exerce. HealthKit refusé, donc jamais
+    /// de quête de pas : c'est ce qui laisse de la place aux quêtes à drapeau.
+    private func quetesTireesSurQuinzeSemaines(
+        postureAvailable: Bool, muscuAvailable: Bool
+    ) async throws -> [(weekID: String, quetes: [Quest])] {
+        let catalogByID = Dictionary(uniqueKeysWithValues: try Catalogs.quests().map { ($0.id, $0) })
+        let service = makeService(steps: FakeStepsService(authorized: false))
+        let base = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+
+        var tirages: [(weekID: String, quetes: [Quest])] = []
+        for semaine in 0..<15 {
+            let jour = try XCTUnwrap(GameService.calendar.date(byAdding: .weekOfYear, value: -semaine, to: base))
+            state.questWeekID = "2000-W1"
+            state.lastClosedDay = try XCTUnwrap(GameService.calendar.date(byAdding: .day, value: -1, to: jour))
+            try context.save()
+
+            await service.closeOpenDays(today: jour,
+                                        postureAvailable: postureAvailable,
+                                        muscuAvailable: muscuAvailable)
+
+            let weekID = QuestEngine.weekID(for: jour, calendar: GameService.calendar)
+            XCTAssertEqual(state.questWeekID, weekID)
+            let quetes = try state.activeQuestIDs.map {
+                try XCTUnwrap(catalogByID[$0], "id de quête inconnu : \($0)")
+            }
+            tirages.append((weekID, quetes))
+        }
+        return tirages
     }
 
     // MARK: - Erreur HealthKit
@@ -193,6 +312,125 @@ final class DayCloserTests: XCTestCase {
         await service.closeOpenDays(today: today)
         XCTAssertEqual(state.lastClosedDay, yesterday)
         XCTAssertEqual(try fetchDayLogs().first?.xpEarned, 90)
+    }
+
+    // MARK: - Dépense du jour (spec v1.14 §5.4/§5.5)
+
+    /// 8 000 pas à 90 kg = 411 kcal, au-dessus de l'objectif de 350 (4 × 90 arrondi
+    /// au pas de 50) : la dépense est enregistrée ET l'objectif marqué atteint.
+    func testLaClotureEnregistreLaDepenseDuJour() async throws {
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000, day2: 2000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 411)
+        XCTAssertEqual(log.burnTarget, 350) // cible GELÉE, comme kcalTarget
+        XCTAssertTrue(log.burnTargetReached)
+    }
+
+    /// 2 000 pas = 103 kcal, sous l'objectif : rien n'est marqué, et surtout rien
+    /// n'est reproché.
+    func testObjectifDeDepenseNonAtteintResteFaux() async throws {
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000, day2: 2000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day2)
+        XCTAssertEqual(log.kcalBurned, 103)
+        XCTAssertFalse(log.burnTargetReached)
+    }
+
+    /// Les validations sport du jour s'ajoutent aux pas, SAUF celles qui sont déjà
+    /// dans le podomètre : 411 (8 000 pas) + 90 (yoga) + 0 (marche, doublon).
+    func testLaDepenseAjouteLeSportSansDoublerLaMarche() async throws {
+        insertActivity(on: day1, kind: .activity, refID: "yoga", kcal: 90)
+        insertActivity(on: day1, kind: .activity, refID: "walk", kcal: 100)
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        XCTAssertEqual(try fetchDayLog(day1).kcalBurned, 501)
+    }
+
+    /// HealthKit refusé : la dépense ne tombe pas à zéro, elle vaut le sport validé —
+    /// marche comprise, puisque aucun podomètre ne peut la compter deux fois.
+    func testSansPodometreLaMarcheValideeCompteQuandMeme() async throws {
+        insertActivity(on: day1, kind: .activity, refID: "walk", kcal: 100)
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(authorized: false))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 100)
+        XCTAssertFalse(log.burnTargetReached)
+    }
+
+    /// Tomber PILE sur l'objectif, c'est l'avoir atteint — le cas le plus frustrant
+    /// à perdre pour un kcal, et le seul que `>` au lieu de `>=` ferait disparaître.
+    func testTomberPileSurLObjectifCompteCommeAtteint() async throws {
+        profile.dailyBurnTarget = 411 // exactement la dépense de 8 000 pas à 90 kg
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 411)
+        XCTAssertTrue(log.burnTargetReached)
+    }
+
+    /// L'objectif réglé dans les Réglages fait FOI : à 600, une journée de 8 000 pas
+    /// ne l'atteint pas, alors que le calcul automatique (350 à 90 kg) l'aurait dit
+    /// atteint. La clôture doit lire le profil, pas recalculer depuis le poids.
+    func testLObjectifRegleDansLesReglagesLEmporteSurLeCalcul() async throws {
+        profile.dailyBurnTarget = 600
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 411)
+        XCTAssertEqual(log.burnTarget, 600) // la cible gelée est bien celle du profil
+        XCTAssertFalse(log.burnTargetReached)
+    }
+
+    /// Dépense et objectif suivent le poids COURANT, pas celui de l'onboarding :
+    /// après une pesée à 60 kg, 8 000 pas ne valent plus 411 kcal mais 274, et
+    /// l'objectif automatique descend de 350 à 250 — donc atteint.
+    func testLaDepenseSuitLaDernierePeseeEtNonLePoidsInitial() async throws {
+        context.insert(WeightEntry(date: day3, weightKg: 60))
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 274)  // 411 avec le poids initial de 90 kg
+        XCTAssertEqual(log.burnTarget, 250)  // 350 avec le poids initial
+        XCTAssertTrue(log.burnTargetReached) // 274 ≥ 250, alors que 274 < 350
+    }
+
+    /// Une séance de programme n'est pas un total opaque : elle est REDÉCOMPOSÉE par
+    /// ses étapes, ce qui n'est possible que si la table des séances contient aussi
+    /// les catalogues posture et muscu, et pas seulement `sessions.json`.
+    ///
+    /// Les 500 kcal de l'entrée sont ARTIFICIELLES — en production, le total stocké est
+    /// calculé depuis les mêmes étapes et vaut donc déjà 16. C'est justement pourquoi il
+    /// faut les fausser : aucune séance posture ou muscu n'ayant d'étape marchée
+    /// aujourd'hui, décomposition et repli sur le total stocké donnent le même chiffre,
+    /// et un test « honnête » passerait aussi bien sans la fusion des catalogues. L'écart
+    /// est le seul moyen de voir LEQUEL des deux chemins a servi.
+    func testUneSeancePostureEstRedecomposeeParSesEtapes() async throws {
+        insertActivity(on: day1, kind: .posture, refID: "posture_open", kcal: 500)
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        // 411 (8 000 pas) + 16 (2 + 3 + 3 min à 2 kcal/min), et non le total stocké.
+        XCTAssertEqual(try fetchDayLog(day1).kcalBurned, 427)
     }
 
     // MARK: - Idempotence

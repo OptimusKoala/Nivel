@@ -2,9 +2,14 @@
 // « Tu viens de faire quoi ? » (spec v1.13 §6.3) — la page ouverte par le bouton
 // « Noter une activité » de l'accueil.
 //
-// Le CATALOGUE LIBRE uniquement : « À la maison » et « Dehors ». Ni la séance du jour
-// ni le programme posture, qui répondent à « qu'est-ce que je fais maintenant » —
-// c'est le rôle de l'onglet Sport, et les redoubler ici en ferait un doublon.
+// Le CATALOGUE LIBRE uniquement : « À la maison », « Dehors » et « Ça pousse ». Ni la
+// séance du jour ni le programme posture, qui répondent à « qu'est-ce que je fais
+// maintenant » — c'est le rôle de l'onglet Sport, et les redoubler ici en ferait un
+// doublon.
+//
+// Les sections viennent de `SportSection` (spec v1.14 §4.3) — ordre, libellés, icônes
+// et appartenance —, partagé avec `SportView` : les deux listes des mêmes activités ne
+// doivent pas pouvoir diverger, et il n'est même plus possible d'en oublier une.
 //
 // Un tap POUSSE la feuille de durée existante au lieu d'empiler une feuille sur une
 // feuille ; sa validation referme toute la pile d'un coup, via `onLogged`.
@@ -21,31 +26,14 @@ struct ActivityPickerSheet: View {
     /// (la feuille de durée est une feuille terminale).
     @State private var path: [Activity] = []
 
-    private var homeActivities: [Activity] {
-        game.activityCatalog.filter { $0.location != .outdoor }
-    }
-    private var outdoorActivities: [Activity] {
-        game.activityCatalog.filter { $0.location == .outdoor }
-    }
-
     var body: some View {
         NavigationStack(path: $path) {
             ZStack {
                 Theme.background.ignoresSafeArea()
                 List {
-                    Section {
-                        ForEach(homeActivities) { activity in
-                            ActivityRow(activity: activity) { path.append(activity) }
-                        }
-                    } header: {
-                        Overline("À la maison", icon: "tab_home")
-                    }
-                    Section {
-                        ForEach(outdoorActivities) { activity in
-                            ActivityRow(activity: activity) { path.append(activity) }
-                        }
-                    } header: {
-                        Overline("Dehors", icon: "icon_tree")
+                    ForEach(SportSection.displayOrder, id: \.self) { section in
+                        activitySection(section.frLabel, icon: section.icon,
+                                        activities: section.activities(in: game.activityCatalog))
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -65,6 +53,18 @@ struct ActivityPickerSheet: View {
         .presentationDetents([.large])
         .presentationCornerRadius(28)
         .presentationDragIndicator(.visible)
+    }
+
+    private func activitySection(_ title: String, icon: String, activities: [Activity]) -> some View {
+        Section {
+            // Ligne partagée avec SportView (v1.13) : les deux listes des mêmes
+            // activités ne doivent pas pouvoir diverger.
+            ForEach(activities) { activity in
+                ActivityRow(activity: activity) { path.append(activity) }
+            }
+        } header: {
+            Overline(title, icon: icon)
+        }
     }
 }
 

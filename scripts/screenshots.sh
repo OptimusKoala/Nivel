@@ -68,6 +68,13 @@ capture 05-step     step     creme 4
 capture 06-progress progress creme
 capture 07-quests   quests   creme
 capture 08-night    home     nuit-douce
+# Les idées de saison (v1.14). Le mode captures garnit le frigo du profil de démo et
+# ÉPINGLE la date de la bande (13 août, 9 h 41) : sans ça le titre annoncerait « ce
+# soir » au-dessus d'une barre d'état figée à 9 h 41, et les trois plats changeraient
+# d'un jour de tournage à l'autre — voir ScreenshotMode.ideasReferenceDate.
+# Deux captures et non une : la fiche est présentée en `.large`, elle COUVRE la bande.
+capture 09-idees    idees    creme 4
+capture 10-recette  recette  creme 4
 
 xcrun simctl status_bar "$DEVICE_ID" clear
 

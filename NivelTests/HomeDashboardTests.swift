@@ -144,6 +144,18 @@ final class HomeDashboardTests: XCTestCase {
                        .context(.levelUp, 5))
     }
 
+    // MARK: - Pas de l'anneau de dépense
+
+    /// L'anneau intérieur ne doit JAMAIS voir `.measured(0)` tant que la lecture n'est
+    /// pas revenue : `.measured` fait exclure les activités marchées, l'anneau
+    /// clignoterait vers le bas au lancement puis remonterait. `nil` (refusé ou pas
+    /// encore répondu) donne `.unavailable`, un 0 mesuré reste `.measured(0)`.
+    func testPasDuJourEnDailySteps() {
+        XCTAssertEqual(HomeView.dailySteps(from: nil), .unavailable)
+        XCTAssertEqual(HomeView.dailySteps(from: 0), .measured(0))
+        XCTAssertEqual(HomeView.dailySteps(from: 8000), .measured(8000))
+    }
+
     // MARK: - Expression de Nivelito (accueil)
 
     func testNivelitoExpressionPriorities() {

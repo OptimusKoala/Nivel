@@ -1,24 +1,18 @@
 // App/Views/Meals/FoodCatalogView.swift
-// Le catalogue à onglets (spec v1.10 §5.3) : Plats · Accompagnements · Boissons ·
-// Encas. Un tap ajoute la ligne avec son `defaultGrams` et rien d'autre, le chemin
-// de quinze secondes. Pas de sélection persistante : la puce ne reste pas allumée,
-// c'est le panier qui matérialise le choix.
+// Le catalogue à onglets (spec v1.10 §5.3) : Plats · Ingrédients · Boissons ·
+// Encas · Desserts. Un tap ajoute la ligne avec son `defaultGrams` et rien
+// d'autre, le chemin de quinze secondes. Pas de sélection persistante : la puce
+// ne reste pas allumée, c'est le panier qui matérialise le choix.
 
 import SwiftUI
 import NivelCore
 
-extension FoodItem.Category {
-    /// Ordre d'affichage des onglets (spec §5.3) : Plats · Accompagnements ·
-    /// Boissons · Encas, différent de l'ordre de déclaration de l'enum.
-    static let tabOrder: [FoodItem.Category] = [.dish, .side, .drink, .snack]
-}
-
 struct FoodCatalogView: View {
     let catalog: FoodCatalog
-    /// Créneau courant, pour filtrer l'onglet Plats. Sans effet sur les trois autres.
+    /// Créneau courant, pour filtrer l'onglet Plats. Sans effet sur les quatre autres.
     var slot: MealSlot?
-    /// Verrouille l'onglet, sans Picker visible : utilisé par l'écran de détail pour
-    /// n'ouvrir que les accompagnements (spec §5.4, « Ajouter un ingrédient »).
+    /// Verrouille l'onglet, sans sélecteur visible : utilisé par l'écran de détail pour
+    /// n'ouvrir que les ingrédients (spec §5.4, « Ajouter un ingrédient »).
     var lockedCategory: FoodItem.Category?
     let onPick: (FoodItem) -> Void
 
@@ -37,14 +31,44 @@ struct FoodCatalogView: View {
         VStack(alignment: .leading, spacing: 10) {
             if lockedCategory == nil {
                 SectionTitle("Catalogue")
-                Picker("Catégorie", selection: $category) {
-                    ForEach(FoodItem.Category.tabOrder, id: \.self) { candidate in
-                        Text(candidate.frLabel).tag(candidate)
-                    }
-                }
-                .pickerStyle(.segmented)
+                categoryPicker
             }
             grid
+        }
+    }
+
+    // MARK: Catégorie
+    //
+    // Rangée de pastilles défilantes : cinq catégories ne tiennent plus dans la
+    // largeur d'un iPhone, et le Dynamic Type achève le Picker segmenté. Motif
+    // proche des pastilles de créneau de MealLogSheet.slotPicker — à ceci près
+    // que le trait `.isSelected` est posé à la main : un Picker segmenté le
+    // portait nativement pour VoiceOver, un Button nu ne l'a pas.
+    private var categoryPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(FoodItem.Category.tabOrder, id: \.self) { candidate in
+                    Button {
+                        category = candidate
+                    } label: {
+                        Text(candidate.frLabel)
+                            .font(.footnote.weight(.semibold))
+                            .padding(.horizontal, 13)
+                            .padding(.vertical, 9)
+                            .background(category == candidate ? Theme.orange : Theme.card,
+                                        in: Capsule())
+                            .foregroundStyle(category == candidate ? .white : Theme.text)
+                            // 44 pt de cible tactile (règle Apple), la pastille seule
+                            // n'atteignant que 36 pt de haut.
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
+                            .animation(.snappy, value: category)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Catégorie \(candidate.frLabel)")
+                    .accessibilityAddTraits(category == candidate ? [.isSelected] : [])
+                }
+            }
         }
     }
 
@@ -90,4 +114,12 @@ struct FoodCatalogView: View {
     private func defaultKcal(_ item: FoodItem) -> Int {
         MealEstimator.kcal(lines: [catalog.line(for: item)], kcalPer100g: catalog.kcalPer100g)
     }
+}
+
+#Preview("Catalogue") {
+    let catalog = try! FoodCatalog.load()
+    return FoodCatalogView(catalog: catalog) { _ in }
+        .fontDesign(.rounded)
+        .padding(20)
+        .background(Theme.background)
 }

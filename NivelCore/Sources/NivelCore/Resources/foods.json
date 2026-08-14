@@ -238,6 +238,229 @@
     "defaultGrams": 250
   },
   {
+    "id": "tacos",
+    "name": "Tacos",
+    "emoji": "🌮",
+    "kcalPer100g": 270,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 390
+  },
+  {
+    "id": "kebab",
+    "name": "Kebab",
+    "emoji": "🥙",
+    "kcalPer100g": 219,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 360
+  },
+  {
+    "id": "burrata_tomato",
+    "name": "Burrata & tomates",
+    "emoji": "🍅",
+    "kcalPer100g": 160,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 375
+  },
+  {
+    "id": "apero_platter",
+    "name": "Planche apéro",
+    "emoji": "🧀",
+    "kcalPer100g": 330,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 215
+  },
+  {
+    "id": "fried_chicken_salad",
+    "name": "Salade au poulet frit",
+    "emoji": "🍗",
+    "kcalPer100g": 153,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 350
+  },
+  {
+    "id": "nuggets_meal",
+    "name": "Nuggets & frites",
+    "emoji": "🍟",
+    "kcalPer100g": 276,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 245
+  },
+  {
+    "id": "omelette",
+    "name": "Omelette nature",
+    "emoji": "🍳",
+    "kcalPer100g": 176,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "snack"
+    ],
+    "defaultGrams": 158
+  },
+  {
+    "id": "omelette_garnie",
+    "name": "Omelette fromage & jambon",
+    "emoji": "🥚",
+    "kcalPer100g": 193,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "snack"
+    ],
+    "defaultGrams": 228
+  },
+  {
+    "id": "gratin_dauphinois",
+    "name": "Gratin dauphinois",
+    "emoji": "🥔",
+    "kcalPer100g": 149,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 348
+  },
+  {
+    "id": "gratin_veg",
+    "name": "Gratin de légumes",
+    "emoji": "🥬",
+    "kcalPer100g": 88,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 360
+  },
+  {
+    "id": "gratin_pasta",
+    "name": "Gratin de pâtes",
+    "emoji": "🫕",
+    "kcalPer100g": 179,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 340
+  },
+  {
+    "id": "asian_noodles",
+    "name": "Nouilles asiatiques",
+    "emoji": "🍜",
+    "kcalPer100g": 137,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 450
+  },
+  {
+    "id": "oatmeal_fruit",
+    "name": "Flocons d'avoine aux fruits",
+    "emoji": "🍯",
+    "kcalPer100g": 113,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast"
+    ],
+    "defaultGrams": 350
+  },
+  {
+    "id": "breakfast_eggs",
+    "name": "Œufs, lard & saucisse",
+    "emoji": "🥓",
+    "kcalPer100g": 219,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "breakfast"
+    ],
+    "defaultGrams": 230
+  },
+  {
     "id": "other",
     "name": "Autre",
     "emoji": "🥘",
@@ -254,6 +477,589 @@
       "snack"
     ],
     "defaultGrams": 400
+  },
+  {
+    "id": "cod_papillote",
+    "name": "Papillote de cabillaud",
+    "emoji": "🐟",
+    "kcalPer100g": 91,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 430,
+    "isRecipe": true
+  },
+  {
+    "id": "leek_potato_soup",
+    "name": "Soupe poireaux-pommes de terre",
+    "emoji": "🥔",
+    "kcalPer100g": 78,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 430,
+    "isRecipe": true
+  },
+  {
+    "id": "omelette_salad",
+    "name": "Omelette et salade de tomates",
+    "emoji": "🍳",
+    "kcalPer100g": 125,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 340,
+    "isRecipe": true
+  },
+  {
+    "id": "lentil_salad",
+    "name": "Salade de lentilles",
+    "emoji": "🥗",
+    "kcalPer100g": 98,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 392,
+    "isRecipe": true
+  },
+  {
+    "id": "steam_fish_rice",
+    "name": "Poisson vapeur et riz",
+    "emoji": "🐟",
+    "kcalPer100g": 115,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 406,
+    "isRecipe": true
+  },
+  {
+    "id": "veg_wok",
+    "name": "Wok de légumes et poulet",
+    "emoji": "🥢",
+    "kcalPer100g": 116,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 401,
+    "isRecipe": true
+  },
+  {
+    "id": "chicken_pita",
+    "name": "Pita au poulet et crudités",
+    "emoji": "🥙",
+    "kcalPer100g": 162,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch"
+    ],
+    "defaultGrams": 295,
+    "isRecipe": true
+  },
+  {
+    "id": "stuffed_potatoes",
+    "name": "Pommes de terre farcies au four",
+    "emoji": "🥔",
+    "kcalPer100g": 101,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 425,
+    "isRecipe": true
+  },
+  {
+    "id": "tuna_potato_salad",
+    "name": "Salade de thon et pommes de terre",
+    "emoji": "🥗",
+    "kcalPer100g": 87,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 392,
+    "isRecipe": true
+  },
+  {
+    "id": "asparagus_egg",
+    "name": "Asperges et œuf mollet",
+    "emoji": "🥚",
+    "kcalPer100g": 98,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 387,
+    "isRecipe": true
+  },
+  {
+    "id": "pea_risotto",
+    "name": "Risotto de petits pois",
+    "emoji": "🍚",
+    "kcalPer100g": 131,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 350,
+    "isRecipe": true
+  },
+  {
+    "id": "chicken_crudites",
+    "name": "Poulet, crudités et sauce au yaourt",
+    "emoji": "🍗",
+    "kcalPer100g": 95,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch"
+    ],
+    "defaultGrams": 475,
+    "isRecipe": true
+  },
+  {
+    "id": "spring_pasta",
+    "name": "Pâtes aux légumes de printemps",
+    "emoji": "🍝",
+    "kcalPer100g": 136,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 350,
+    "isRecipe": true
+  },
+  {
+    "id": "fish_new_potatoes",
+    "name": "Poisson et pommes de terre nouvelles",
+    "emoji": "🐟",
+    "kcalPer100g": 106,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 450,
+    "isRecipe": true
+  },
+  {
+    "id": "spring_soup",
+    "name": "Soupe printanière",
+    "emoji": "🥣",
+    "kcalPer100g": 73,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 455,
+    "isRecipe": true
+  },
+  {
+    "id": "chicken_wrap",
+    "name": "Wrap au poulet et à l'avocat",
+    "emoji": "🌯",
+    "kcalPer100g": 152,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch"
+    ],
+    "defaultGrams": 325,
+    "isRecipe": true
+  },
+  {
+    "id": "gazpacho",
+    "name": "Gaspacho et pain grillé",
+    "emoji": "🍅",
+    "kcalPer100g": 75,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 470,
+    "isRecipe": true
+  },
+  {
+    "id": "tomato_mozza",
+    "name": "Tomates et mozzarella",
+    "emoji": "🍅",
+    "kcalPer100g": 140,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 330,
+    "isRecipe": true
+  },
+  {
+    "id": "rice_salad",
+    "name": "Salade de riz d'été",
+    "emoji": "🍚",
+    "kcalPer100g": 106,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch"
+    ],
+    "defaultGrams": 420,
+    "isRecipe": true
+  },
+  {
+    "id": "stuffed_zucchini",
+    "name": "Courgettes farcies",
+    "emoji": "🥒",
+    "kcalPer100g": 100,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 485,
+    "isRecipe": true
+  },
+  {
+    "id": "chicken_avocado_salad",
+    "name": "Salade de poulet et avocat",
+    "emoji": "🥑",
+    "kcalPer100g": 126,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 352,
+    "isRecipe": true
+  },
+  {
+    "id": "summer_pasta_salad",
+    "name": "Salade de pâtes à l'italienne",
+    "emoji": "🍝",
+    "kcalPer100g": 148,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch"
+    ],
+    "defaultGrams": 326,
+    "isRecipe": true
+  },
+  {
+    "id": "grilled_chicken_ratatouille",
+    "name": "Poulet grillé et ratatouille",
+    "emoji": "🍗",
+    "kcalPer100g": 103,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 470,
+    "isRecipe": true
+  },
+  {
+    "id": "pumpkin_soup",
+    "name": "Soupe de courge",
+    "emoji": "🎃",
+    "kcalPer100g": 70,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 490,
+    "isRecipe": true
+  },
+  {
+    "id": "veg_pan_eggs",
+    "name": "Poêlée de légumes et œufs au plat",
+    "emoji": "🍳",
+    "kcalPer100g": 109,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 418,
+    "isRecipe": true
+  },
+  {
+    "id": "roast_chicken_potatoes",
+    "name": "Poulet et pommes de terre au four",
+    "emoji": "🍗",
+    "kcalPer100g": 118,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 408,
+    "isRecipe": true
+  },
+  {
+    "id": "squash_risotto",
+    "name": "Risotto de courge",
+    "emoji": "🍲",
+    "kcalPer100g": 122,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 380,
+    "isRecipe": true
+  },
+  {
+    "id": "autumn_lentils",
+    "name": "Lentilles aux légumes du marché",
+    "emoji": "🍲",
+    "kcalPer100g": 119,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 390,
+    "isRecipe": true
+  },
+  {
+    "id": "baked_fish_root_veg",
+    "name": "Poisson au four et légumes racines",
+    "emoji": "🐟",
+    "kcalPer100g": 92,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 468,
+    "isRecipe": true
+  },
+  {
+    "id": "veg_flatbread",
+    "name": "Tarte fine aux légumes",
+    "emoji": "🥧",
+    "kcalPer100g": 144,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 355,
+    "isRecipe": true
+  },
+  {
+    "id": "light_pot_au_feu",
+    "name": "Pot-au-feu léger",
+    "emoji": "🍲",
+    "kcalPer100g": 98,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 480,
+    "isRecipe": true
+  },
+  {
+    "id": "ham_potato_gratin",
+    "name": "Gratin de pommes de terre au jambon",
+    "emoji": "🥔",
+    "kcalPer100g": 117,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 405,
+    "isRecipe": true
+  },
+  {
+    "id": "lentil_curry",
+    "name": "Curry de lentilles",
+    "emoji": "🍛",
+    "kcalPer100g": 114,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 420,
+    "isRecipe": true
+  },
+  {
+    "id": "chicken_noodle_broth",
+    "name": "Bouillon de poulet aux nouilles",
+    "emoji": "🍜",
+    "kcalPer100g": 105,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 415,
+    "isRecipe": true
+  },
+  {
+    "id": "fish_mash",
+    "name": "Poisson et purée maison",
+    "emoji": "🐟",
+    "kcalPer100g": 109,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 426,
+    "isRecipe": true
   },
   {
     "id": "water",
@@ -487,19 +1293,6 @@
     "defaultGrams": 125
   },
   {
-    "id": "choco_square",
-    "name": "Carré de chocolat",
-    "emoji": "🍫",
-    "kcalPer100g": 550,
-    "unitLabel": "carré",
-    "unitLabelPlural": null,
-    "unitGrams": 10,
-    "category": "snack",
-    "tags": [],
-    "slots": [],
-    "defaultGrams": 10
-  },
-  {
     "id": "biscuit",
     "name": "Biscuit",
     "emoji": "🍪",
@@ -524,19 +1317,6 @@
     "tags": [],
     "slots": [],
     "defaultGrams": 30
-  },
-  {
-    "id": "compote",
-    "name": "Compote",
-    "emoji": "🍏",
-    "kcalPer100g": 100,
-    "unitLabel": "gourde",
-    "unitLabelPlural": null,
-    "unitGrams": 90,
-    "category": "snack",
-    "tags": [],
-    "slots": [],
-    "defaultGrams": 90
   },
   {
     "id": "cheese_snack",
@@ -594,7 +1374,7 @@
   },
   {
     "id": "croissant",
-    "name": "Viennoiserie",
+    "name": "Croissant ou pain au chocolat",
     "emoji": "🥐",
     "kcalPer100g": 430,
     "unitLabel": "viennoiserie",
@@ -606,21 +1386,6 @@
     ],
     "slots": [],
     "defaultGrams": 70
-  },
-  {
-    "id": "ice_cream",
-    "name": "Glace",
-    "emoji": "🍨",
-    "kcalPer100g": 200,
-    "unitLabel": "boule",
-    "unitLabelPlural": null,
-    "unitGrams": 100,
-    "category": "snack",
-    "tags": [
-      "richDessert"
-    ],
-    "slots": [],
-    "defaultGrams": 100
   },
   {
     "id": "pasta_cooked",
@@ -1167,5 +1932,353 @@
     "tags": [],
     "slots": [],
     "defaultGrams": 150
+  },
+  {
+    "id": "wrap",
+    "name": "Galette de blé",
+    "emoji": "🫓",
+    "kcalPer100g": 300,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "pita",
+    "name": "Pain pita",
+    "emoji": "🫓",
+    "kcalPer100g": 270,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "kebab_meat",
+    "name": "Viande kebab",
+    "emoji": "🥙",
+    "kcalPer100g": 250,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 150
+  },
+  {
+    "id": "cheese_sauce",
+    "name": "Sauce fromagère",
+    "emoji": "🧀",
+    "kcalPer100g": 300,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 50
+  },
+  {
+    "id": "white_sauce",
+    "name": "Sauce blanche",
+    "emoji": "🥫",
+    "kcalPer100g": 350,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 50
+  },
+  {
+    "id": "nuggets",
+    "name": "Nuggets",
+    "emoji": "🍗",
+    "kcalPer100g": 290,
+    "unitLabel": "nugget",
+    "unitLabelPlural": null,
+    "unitGrams": 18,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 90
+  },
+  {
+    "id": "fried_chicken",
+    "name": "Poulet frit",
+    "emoji": "🍗",
+    "kcalPer100g": 280,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 150
+  },
+  {
+    "id": "burrata",
+    "name": "Burrata",
+    "emoji": "🧀",
+    "kcalPer100g": 290,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 125
+  },
+  {
+    "id": "dry_sausage",
+    "name": "Saucisson",
+    "emoji": "🌭",
+    "kcalPer100g": 450,
+    "unitLabel": "rondelle",
+    "unitLabelPlural": null,
+    "unitGrams": 5,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 30
+  },
+  {
+    "id": "olives",
+    "name": "Olives",
+    "emoji": "🫒",
+    "kcalPer100g": 150,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 30
+  },
+  {
+    "id": "crackers",
+    "name": "Crackers & gressins",
+    "emoji": "🥨",
+    "kcalPer100g": 450,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 30
+  },
+  {
+    "id": "oats",
+    "name": "Flocons d'avoine",
+    "emoji": "🌾",
+    "kcalPer100g": 380,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 40
+  },
+  {
+    "id": "noodles_cooked",
+    "name": "Nouilles de blé cuites",
+    "emoji": "🍜",
+    "kcalPer100g": 140,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "soy_sauce",
+    "name": "Sauce soja",
+    "emoji": "🧂",
+    "kcalPer100g": 60,
+    "unitLabel": "c. à soupe",
+    "unitLabelPlural": "c. à soupe",
+    "unitGrams": 15,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 15
+  },
+  {
+    "id": "sausage",
+    "name": "Saucisse",
+    "emoji": "🌭",
+    "kcalPer100g": 300,
+    "unitLabel": "saucisse",
+    "unitLabelPlural": null,
+    "unitGrams": 70,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 140
+  },
+  {
+    "id": "bechamel",
+    "name": "Béchamel",
+    "emoji": "🥫",
+    "kcalPer100g": 130,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "side",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 50
+  },
+  {
+    "id": "fruit_salad",
+    "name": "Salade de fruits",
+    "emoji": "🍓",
+    "kcalPer100g": 60,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 200
+  },
+  {
+    "id": "cake",
+    "name": "Pâtisserie",
+    "emoji": "🍰",
+    "kcalPer100g": 380,
+    "unitLabel": "part",
+    "unitLabelPlural": null,
+    "unitGrams": 100,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "fruit_tart",
+    "name": "Tarte aux fruits",
+    "emoji": "🥧",
+    "kcalPer100g": 250,
+    "unitLabel": "part",
+    "unitLabelPlural": null,
+    "unitGrams": 120,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 120
+  },
+  {
+    "id": "choco_mousse",
+    "name": "Mousse au chocolat",
+    "emoji": "🍮",
+    "kcalPer100g": 210,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "crepe_sugar",
+    "name": "Crêpe sucrée",
+    "emoji": "🥞",
+    "kcalPer100g": 220,
+    "unitLabel": "crêpe",
+    "unitLabelPlural": null,
+    "unitGrams": 90,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 90
+  },
+  {
+    "id": "skyr",
+    "name": "Skyr",
+    "emoji": "🥛",
+    "kcalPer100g": 85,
+    "unitLabel": "pot",
+    "unitLabelPlural": null,
+    "unitGrams": 150,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 150
+  },
+  {
+    "id": "greek_yogurt",
+    "name": "Yaourt grec sucré",
+    "emoji": "🥣",
+    "kcalPer100g": 120,
+    "unitLabel": "pot",
+    "unitLabelPlural": null,
+    "unitGrams": 150,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 150
+  },
+  {
+    "id": "choco_square",
+    "name": "Carré de chocolat",
+    "emoji": "🍫",
+    "kcalPer100g": 550,
+    "unitLabel": "carré",
+    "unitLabelPlural": null,
+    "unitGrams": 10,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 10
+  },
+  {
+    "id": "ice_cream",
+    "name": "Glace",
+    "emoji": "🍨",
+    "kcalPer100g": 200,
+    "unitLabel": "boule",
+    "unitLabelPlural": null,
+    "unitGrams": 100,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 100
+  },
+  {
+    "id": "compote",
+    "name": "Compote",
+    "emoji": "🍏",
+    "kcalPer100g": 100,
+    "unitLabel": "gourde",
+    "unitLabelPlural": null,
+    "unitGrams": 90,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 90
   }
 ]

@@ -32,20 +32,23 @@ extension View {
 enum SessionPlayerKind {
     case dailySession
     case posture
+    case muscu
 
-    /// Titre de l'aperçu (page 0) : seule différence de texte entre les deux.
+    /// Titre de l'aperçu (page 0) : seule différence de texte entre les trois.
     var overlineText: String {
         switch self {
         case .dailySession: "Séance du jour"
         case .posture: "Séance du soir"
+        case .muscu: "Séance muscu"
         }
     }
 
-    /// Action d'XP à créditer à la validation (spec §8 : plafonds indépendants).
+    /// Action d'XP à créditer à la validation (spec §8, v1.14 §5.7 : plafonds indépendants).
     var xpAction: XPAction {
         switch self {
         case .dailySession: .dailySessionDone
         case .posture: .postureSessionDone
+        case .muscu: .muscuSessionDone
         }
     }
 }
@@ -213,6 +216,7 @@ struct SessionPlayerSheet: View {
             switch kind {
             case .dailySession: await game.logDailySession(session: session)
             case .posture: await game.logPostureSession(session: session)
+            case .muscu: await game.logMuscuSession(session: session)
             }
             dismiss()
         }

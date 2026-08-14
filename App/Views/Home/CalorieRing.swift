@@ -1,5 +1,6 @@
 // App/Views/Home/CalorieRing.swift
 // Anneau des calories du jour (spec §4.1) : mangé / objectif, restant mis en avant.
+// Anneau intérieur : dépense du jour / cible de dépense (spec v1.14 §5.5).
 // Dépassement = accent chaleureux + message neutre — JAMAIS de rouge (spec §2).
 
 import SwiftUI
@@ -7,12 +8,69 @@ import SwiftUI
 struct CalorieRingCard: View {
     let eaten: Int
     let target: Int
+    /// Dépense estimée du jour — pas + sport non marché (spec v1.14 §5.4). INDICATIVE :
+    /// elle n'est jamais créditée au budget alimentaire (règle v1 §2).
+    let burned: Int
+    let burnTarget: Int
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// La légende de dépense s'efface aux tailles d'ACCESSIBILITÉ (au-delà de
+    /// `.xxxLarge`). Relevé à `.accessibility4` sur iPhone 17 Pro Max : la légende
+    /// passe à trois lignes, le sous-titre entier en occupe cinq, la carte passe de
+    /// 584 à 1 100 px de haut (près du DOUBLE, pas le quadruple qu'on lit parfois) et
+    /// la ligne de quête finit sous la barre d'onglets.
+    ///
+    /// Le seuil retenu est celui du système, mais il flatte la réalité : à `.xxxLarge`
+    /// la légende passe DÉJÀ à deux lignes, l'emoji seul sur la seconde. Elle n'y tient
+    /// pas au large, elle passe tout juste — c'est le fait à regarder le jour où l'on
+    /// se demandera s'il faut redescendre le seuil à `.xxLarge`.
+    ///
+    /// Le compromis, sans l'enjoliver. VoiceOver ne perd rien : l'anneau porte déjà
+    /// « Dépensé : environ X sur Y » dans son `.accessibilityLabel` (voir `ring`), et
+    /// ce libellé ne dépend pas de la taille de texte. Mais ce chiffre n'est visible
+    /// NULLE PART ailleurs dans l'app — l'écran Progrès a trois sections (Poids,
+    /// Calories mangées, Pas) et aucune ne montre la dépense en kcal ; `burnKcal` n'a
+    /// que deux appelants, celui-ci et l'écriture du DayLog à la clôture, invisible.
+    /// Donc quelqu'un qui grossit le texte SANS VoiceOver perd l'information pour de
+    /// bon, et c'est précisément l'utilisateur que la forme visible du réglage sert.
+    /// On échange ce chiffre contre la lisibilité du reste de l'accueil ; l'anneau
+    /// orange, lui, reste tracé.
+    static func showsBurnLegend(at size: DynamicTypeSize) -> Bool { !size.isAccessibilitySize }
+
+    /// La même décision, appliquée à la taille courante. La statique existe pour le
+    /// test, celle-ci pour la vue.
+    private var showsBurnLegend: Bool { Self.showsBurnLegend(at: dynamicTypeSize) }
+
+    /// Plafond de mise à l'échelle du SEUL contenu central de l'anneau (défaut antérieur
+    /// à la 1.13, pas de la 1.14). La largeur de l'anneau est PLAFONNÉE à 130 pt — un
+    /// `.frame(maxWidth:maxHeight:)`, donc un plafond et non une taille imposée : sous
+    /// les 130 pt il rétrécit, au-dessus il ne suit pas. Le texte en son centre n'a donc
+    /// aucune place garantie pour croître. Les deux bornes, relevées à l'image :
+    /// - dès `.xLarge`, le gros chiffre « ~1 030 » mord déjà le tracé à gauche et à
+    ///   droite — c'est CETTE borne qui fixe le plafond, pas la suivante ;
+    /// - dès `.xxxLarge`, la seconde ligne « / 1 650 kcal » traverse le tracé en plus et
+    ///   se tronque en « / 1 65… ».
+    /// `.large` est donc la dernière taille où les DEUX lignes tiennent dans le disque
+    /// intérieur — et le rendu y est celui de la taille par défaut.
+    ///
+    /// Rien n'est perdu pour l'assistance : le `ZStack` de `ring` est
+    /// `.accessibilityElement(children: .ignore)` avec son propre libellé, donc VoiceOver
+    /// ne lit jamais ces deux `Text`, et le libellé n'est pas mis à l'échelle. Ce plafond
+    /// ne touche que le rendu graphique.
+    static let centerTypeSizeCap: DynamicTypeSize = .large
 
     private var isOver: Bool { target > 0 && eaten > target }
     private var fraction: Double {
         guard target > 0 else { return 0 }
         return min(1, Double(eaten) / Double(target))
     }
+
+    private var burnFraction: Double {
+        guard burnTarget > 0 else { return 0 }
+        return min(1, Double(burned) / Double(burnTarget))
+    }
+    private var burnReached: Bool { burnTarget > 0 && burned >= burnTarget }
 
     var body: some View {
         VStack(spacing: 10) {
@@ -35,6 +93,23 @@ struct CalorieRingCard: View {
                 .stroke(isOver ? Theme.accent : Theme.green,
                         style: StrokeStyle(lineWidth: 12, lineCap: .round))
                 .rotationEffect(.degrees(-90))
+            // Anneau de dépense (spec §5.5), rayon de tracé 45 contre 59 à l'extérieur
+            // (le padding de 14 sur une largeur plafonnée à 130). `Theme.orange`
+            // et NON `Theme.accent` : l'anneau extérieur passe à `accent` en cas de
+            // dépassement calorique, et les deux cercles deviendraient alors
+            // indistinguables — précisément les jours où l'on regarde la carte de près.
+            // (La façade `Theme` n'expose pas `primary` : c'est `Theme.orange` qui
+            // porte `palette.primary`.)
+            Circle()
+                .stroke(Theme.track, lineWidth: 8)
+                .padding(14)
+            Circle()
+                .trim(from: 0, to: burnFraction)
+                .stroke(Theme.orange, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .padding(14)
+            // Le centre ne change pas : le chiffre qu'on vient chercher reste le mangé,
+            // en grand (spec §5.5).
             VStack(spacing: 2) {
                 // "~" : le total mangé est une somme d'estimations (spec §13).
                 Text("~\(eaten.frFormatted)")
@@ -50,40 +125,67 @@ struct CalorieRingCard: View {
                     .foregroundStyle(Theme.subtext)
             }
             .padding(.horizontal, 14)
+            .dynamicTypeSize(...Self.centerTypeSizeCap)
         }
         // Un log/édition de repas anime l'anneau et fait défiler le compteur
         // (contentTransition numérique) au lieu de sauter d'une valeur à l'autre.
         .animation(.snappy, value: eaten)
+        // Même raison pour la dépense : les pas arrivent APRÈS le premier rendu
+        // (lecture HealthKit asynchrone), l'anneau intérieur se remplit au lieu de
+        // sauter d'un coup.
+        .animation(.snappy, value: burned)
         .padding(6) // le trait (12 pt) déborde du cercle géométrique
         .frame(maxWidth: 130, maxHeight: 130)
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Calories : environ \(eaten) sur \(target)")
+        .accessibilityLabel("Calories : environ \(eaten) sur \(target). Dépensé : environ \(burned) sur \(burnTarget)")
     }
 
+    /// Le sous-titre porte les DEUX lignes (reste à manger + dépense) : la légende de
+    /// dépense se fond dans le sous-titre existant plutôt que de s'ajouter comme
+    /// troisième enfant de la carte (qui aurait coûté 10 pt d'interligne de plus) — la
+    /// 1.13 s'est battue pour chaque point de hauteur (spec §5.5).
     @ViewBuilder private var subtitle: some View {
-        if isOver {
-            Text("Objectif dépassé de ~\((eaten - target).frFormatted), ça arrive 😌")
-                .foregroundStyle(Theme.subtext)
-        } else {
-            HStack(spacing: 4) {
-                Text("Reste ~\(max(0, target - eaten).frFormatted) kcal")
-                CozyIcon(name: "tab_meals", size: 15)
+        VStack(spacing: 3) {
+            if isOver {
+                Text("Objectif dépassé de ~\((eaten - target).frFormatted), ça arrive 😌")
+                    .foregroundStyle(Theme.subtext)
+            } else {
+                HStack(spacing: 4) {
+                    Text("Reste ~\(max(0, target - eaten).frFormatted) kcal")
+                    CozyIcon(name: "tab_meals", size: 15)
+                }
+                .foregroundStyle(Theme.green)
             }
-            .foregroundStyle(Theme.green)
+            if showsBurnLegend {
+                HStack(spacing: 4) {
+                    // La pastille rappelle la couleur de l'anneau intérieur : sans elle,
+                    // rien ne dit lequel des deux cercles la ligne commente.
+                    Circle().fill(Theme.orange).frame(width: 7, height: 7)
+                    // Jamais de reproche au-delà de l'objectif : on a bougé plus que prévu,
+                    // il n'y a rien à redire (spec §5.5, aucun rouge non plus ici).
+                    Text(burnReached
+                         ? "Objectif de dépense atteint 🎉"
+                         : "Dépensé ~\(burned.frFormatted) / \(burnTarget.frFormatted)")
+                }
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Theme.subtext)
+            }
         }
     }
 }
 
 #Preview("Sous l'objectif") {
-    CalorieRingCard(eaten: 1240, target: 2000)
+    CalorieRingCard(eaten: 1240, target: 2000, burned: 180, burnTarget: 400)
         .frame(width: 210, height: 210)
         .padding()
         .background(Theme.background)
 }
 
 #Preview("Dépassé (jamais rouge)") {
-    CalorieRingCard(eaten: 2350, target: 2000)
+    // Dépassement des DEUX objectifs : l'anneau extérieur passe à `Theme.accent`,
+    // c'est le cas où l'intérieur ne doit surtout pas prendre la même couleur.
+    CalorieRingCard(eaten: 2350, target: 2000, burned: 520, burnTarget: 400)
         .frame(width: 210, height: 210)
         .padding()
         .background(Theme.background)

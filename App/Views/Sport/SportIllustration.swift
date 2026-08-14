@@ -3,8 +3,8 @@
 // l'asset "Sport/<name>" ; FALLBACK automatique en pastille si l'asset manque :
 // l'app ne dépend jamais d'une image.
 //
-// Le repli était un emoji porté par chaque entrée de catalogue. Les 31 ids ont tous
-// leur illustration, donc ce champ ne s'affichait JAMAIS : il a été retiré du modèle
+// Le repli était un emoji porté par chaque entrée de catalogue. Tous les ids ont leur
+// illustration, donc ce champ ne s'affichait JAMAIS : il a été retiré du modèle
 // et le repli est désormais l'haltère cozy (spec icônes catalogues §2.3).
 
 import SwiftUI

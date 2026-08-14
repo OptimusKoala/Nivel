@@ -187,9 +187,10 @@ private struct BadgeTile: View {
             ZStack {
                 Circle()
                     .fill(isUnlocked ? Theme.accent.opacity(0.22) : Theme.track)
-                // Verrouillé : la TEINTE porte l'estompage d'un glyphe cozy (un PDF
-                // template est déjà monochrome, `grayscale` n'y ferait rien) ; CatalogGlyph
-                // garde la désaturation pour le seul badge resté en emoji.
+                // Verrouillé : la TEINTE porte l'estompage, et elle seule — un glyphe cozy
+                // est un PDF template déjà monochrome, `grayscale` n'y ferait rien. Depuis
+                // la 1.14 les 38 badges sont des glyphes : c'est le SEUL traitement que
+                // cette grille demande encore.
                 CatalogGlyph(icon: badge.icon, size: 39, locked: !isUnlocked)
                     .foregroundStyle(isUnlocked ? Theme.orange : Theme.subtext)
             }
@@ -295,9 +296,12 @@ private func questsPreviewFixture(unlockedBadges: Bool) -> (ModelContainer, Game
 
     let quests = (try? Catalogs.quests()) ?? []
     let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
-    // postureAvailable: false — fixture de preview Xcode, sans effet en dehors du
-    // canvas ; ce n'est pas un des deux appelants réels (DayCloser, OnboardingFlow).
-    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: true, postureAvailable: false)
+    // postureAvailable/muscuAvailable: false — fixture de preview Xcode, sans effet en
+    // dehors du canvas ; ce n'est pas un des deux appelants réels (DayCloser,
+    // OnboardingFlow). En dur plutôt que lu sur `MuscuPlanSettings.shared` : un canvas
+    // ne doit pas dépendre des réglages réels de la machine qui l'ouvre.
+    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: true,
+                                        postureAvailable: false, muscuAvailable: false)
     let unlocks: [String: Date] = unlockedBadges
         ? ["first_meal": .now, "first_weigh": .now.addingTimeInterval(-4 * 86_400),
            "journal_7": .now.addingTimeInterval(-86_400)]

@@ -128,7 +128,7 @@ var reminderWeekdays: [String: Int] = [:]  // id → jour (1...7)
 
 Clé absente = valeur du catalogue. Les deux téléphones déjà installés retrouvent donc leurs horaires actuels sans aucune action.
 
-Règle SwiftData déjà en vigueur dans le projet : **réassignation complète du dictionnaire** à chaque écriture, jamais de mutation en place.
+Idiome déjà en vigueur dans le projet : **réassignation complète du dictionnaire** à chaque écriture. (La v1.9 le justifiait par « une mutation en place ne déclenche pas la sauvegarde » : c'est **faux**, mesuré au lot D de la 1.14 avec les contrôles qui discriminent. L'idiome reste le bon — il est gratuit et il empêche d'écrire la vraie faute, la copie locale non réaffectée — mais il n'est pas obligatoire.)
 
 ### 4.3 La planification (NivelCore + App)
 
