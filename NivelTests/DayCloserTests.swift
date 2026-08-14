@@ -77,6 +77,24 @@ final class DayCloserTests: XCTestCase {
         try context.fetch(FetchDescriptor<DayLog>(sortBy: [SortDescriptor(\.day)]))
     }
 
+    /// DayLog d'une journée précise — XCTUnwrap plutôt qu'un index : un test qui
+    /// parle de J-3 doit échouer en le disant, pas sur un `logs[0]` décalé.
+    private func fetchDayLog(_ day: Date) throws -> DayLog {
+        try XCTUnwrap(fetchDayLogs().first { $0.day == day }, "aucun DayLog pour \(day)")
+    }
+
+    /// Validation sport insérée directement (sans XP) à 18 h du jour donné : la
+    /// clôture doit en tirer la dépense de la journée.
+    private func insertActivity(on day: Date, kind: ActivityKind, refID: String, kcal: Int) {
+        context.insert(ActivityEntry(
+            date: day.addingTimeInterval(18 * 3600),
+            kind: kind,
+            refID: refID,
+            durationMinutes: 30,
+            estimatedKcal: kcal
+        ))
+    }
+
     // MARK: - Clôture d'un trou de 3 jours
 
     func testClosesThreeDayGapWithCorrectXPAndSnapshots() async throws {
@@ -193,6 +211,125 @@ final class DayCloserTests: XCTestCase {
         await service.closeOpenDays(today: today)
         XCTAssertEqual(state.lastClosedDay, yesterday)
         XCTAssertEqual(try fetchDayLogs().first?.xpEarned, 90)
+    }
+
+    // MARK: - Dépense du jour (spec v1.14 §5.4/§5.5)
+
+    /// 8 000 pas à 90 kg = 411 kcal, au-dessus de l'objectif de 350 (4 × 90 arrondi
+    /// au pas de 50) : la dépense est enregistrée ET l'objectif marqué atteint.
+    func testLaClotureEnregistreLaDepenseDuJour() async throws {
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000, day2: 2000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 411)
+        XCTAssertEqual(log.burnTarget, 350) // cible GELÉE, comme kcalTarget
+        XCTAssertTrue(log.burnTargetReached)
+    }
+
+    /// 2 000 pas = 103 kcal, sous l'objectif : rien n'est marqué, et surtout rien
+    /// n'est reproché.
+    func testObjectifDeDepenseNonAtteintResteFaux() async throws {
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000, day2: 2000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day2)
+        XCTAssertEqual(log.kcalBurned, 103)
+        XCTAssertFalse(log.burnTargetReached)
+    }
+
+    /// Les validations sport du jour s'ajoutent aux pas, SAUF celles qui sont déjà
+    /// dans le podomètre : 411 (8 000 pas) + 90 (yoga) + 0 (marche, doublon).
+    func testLaDepenseAjouteLeSportSansDoublerLaMarche() async throws {
+        insertActivity(on: day1, kind: .activity, refID: "yoga", kcal: 90)
+        insertActivity(on: day1, kind: .activity, refID: "walk", kcal: 100)
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        XCTAssertEqual(try fetchDayLog(day1).kcalBurned, 501)
+    }
+
+    /// HealthKit refusé : la dépense ne tombe pas à zéro, elle vaut le sport validé —
+    /// marche comprise, puisque aucun podomètre ne peut la compter deux fois.
+    func testSansPodometreLaMarcheValideeCompteQuandMeme() async throws {
+        insertActivity(on: day1, kind: .activity, refID: "walk", kcal: 100)
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(authorized: false))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 100)
+        XCTAssertFalse(log.burnTargetReached)
+    }
+
+    /// Tomber PILE sur l'objectif, c'est l'avoir atteint — le cas le plus frustrant
+    /// à perdre pour un kcal, et le seul que `>` au lieu de `>=` ferait disparaître.
+    func testTomberPileSurLObjectifCompteCommeAtteint() async throws {
+        profile.dailyBurnTarget = 411 // exactement la dépense de 8 000 pas à 90 kg
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 411)
+        XCTAssertTrue(log.burnTargetReached)
+    }
+
+    /// L'objectif réglé dans les Réglages fait FOI : à 600, une journée de 8 000 pas
+    /// ne l'atteint pas, alors que le calcul automatique (350 à 90 kg) l'aurait dit
+    /// atteint. La clôture doit lire le profil, pas recalculer depuis le poids.
+    func testLObjectifRegleDansLesReglagesLEmporteSurLeCalcul() async throws {
+        profile.dailyBurnTarget = 600
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 411)
+        XCTAssertEqual(log.burnTarget, 600) // la cible gelée est bien celle du profil
+        XCTAssertFalse(log.burnTargetReached)
+    }
+
+    /// Dépense et objectif suivent le poids COURANT, pas celui de l'onboarding :
+    /// après une pesée à 60 kg, 8 000 pas ne valent plus 411 kcal mais 274, et
+    /// l'objectif automatique descend de 350 à 250 — donc atteint.
+    func testLaDepenseSuitLaDernierePeseeEtNonLePoidsInitial() async throws {
+        context.insert(WeightEntry(date: day3, weightKg: 60))
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        let log = try fetchDayLog(day1)
+        XCTAssertEqual(log.kcalBurned, 274)  // 411 avec le poids initial de 90 kg
+        XCTAssertEqual(log.burnTarget, 250)  // 350 avec le poids initial
+        XCTAssertTrue(log.burnTargetReached) // 274 ≥ 250, alors que 274 < 350
+    }
+
+    /// Une séance de programme n'est pas un total opaque : elle est REDÉCOMPOSÉE par
+    /// ses étapes, ce qui n'est possible que si la table des séances contient aussi
+    /// les catalogues posture et muscu, et pas seulement `sessions.json`.
+    ///
+    /// Les 500 kcal de l'entrée sont ARTIFICIELLES — en production, le total stocké est
+    /// calculé depuis les mêmes étapes et vaut donc déjà 16. C'est justement pourquoi il
+    /// faut les fausser : aucune séance posture ou muscu n'ayant d'étape marchée
+    /// aujourd'hui, décomposition et repli sur le total stocké donnent le même chiffre,
+    /// et un test « honnête » passerait aussi bien sans la fusion des catalogues. L'écart
+    /// est le seul moyen de voir LEQUEL des deux chemins a servi.
+    func testUneSeancePostureEstRedecomposeeParSesEtapes() async throws {
+        insertActivity(on: day1, kind: .posture, refID: "posture_open", kcal: 500)
+        try context.save()
+
+        let service = makeService(steps: FakeStepsService(stepsByDay: [day1: 8000]))
+        await service.closeOpenDays(today: today)
+
+        // 411 (8 000 pas) + 16 (2 + 3 + 3 min à 2 kcal/min), et non le total stocké.
+        XCTAssertEqual(try fetchDayLog(day1).kcalBurned, 427)
     }
 
     // MARK: - Idempotence

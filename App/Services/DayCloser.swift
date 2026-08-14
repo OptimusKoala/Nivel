@@ -63,9 +63,23 @@ extension GameService {
                 stepsByDay = fetched
             }
 
+            // Poids courant et objectif de dépense lus UNE fois : ni l'un ni l'autre ne
+            // dépend de la journée clôturée (`currentWeightKg` rend toujours la dernière
+            // pesée connue), les relire à chaque tour ne changerait que le nombre de
+            // requêtes — un rattrapage de plusieurs mois en ferait deux par journée.
+            //
+            // Et même sur un tel rattrapage, où le poids réel a pu changer d'un jour à
+            // l'autre, le VERDICT ne dérive quasiment pas : la dépense des pas et la
+            // cible automatique sont toutes deux proportionnelles au poids, un poids trop
+            // récent gonfle donc les deux côtés de la comparaison ensemble. C'est le
+            // nombre affiché qui bouge de quelques kcal, pas `burnTargetReached`.
+            let weightKg = currentWeightKg()
+            let dailyBurnTarget = burnTarget()
+
             var day = firstDay
             while day <= yesterday {
-                close(day: day, state: state, profile: profile, stepsByDay: stepsByDay)
+                close(day: day, state: state, profile: profile, stepsByDay: stepsByDay,
+                      weightKg: weightKg, burnTarget: dailyBurnTarget)
                 guard let next = Self.calendar.date(byAdding: .day, value: 1, to: day) else { break }
                 day = next
             }
@@ -104,13 +118,23 @@ extension GameService {
 
     /// Fige la journée `day` (clé canonique, minuit local) : kcal recalculées
     /// depuis les MealEntry (source de vérité — le cumul incrémental du DayLog
-    /// pourrait avoir dérivé), snapshot de pas, jugement `withinTarget` et XP.
+    /// pourrait avoir dérivé), snapshot de pas, dépense estimée, jugement
+    /// `withinTarget` et XP.
     /// `stepsByDay` nil = données de pas indisponibles (pas d'XP de pas).
+    ///
+    /// ⚠️ Le paramètre `burnTarget` masque VOLONTAIREMENT la méthode `burnTarget()` de
+    /// `GameService` dans ce corps : l'objectif doit venir de l'appelant, qui l'a lu une
+    /// fois pour toutes les journées du lot, et un `burnTarget()` distrait ici ne
+    /// compilerait pas (« cannot call value of non-function type Int »). Le renommer
+    /// pour « harmoniser » avec la locale `dailyBurnTarget` du site d'appel rendrait cet
+    /// appel possible à nouveau, sans qu'aucun test ne tombe.
     private func close(
         day: Date,
         state: GamificationState,
         profile: UserProfile,
-        stepsByDay: [Date: Int]?
+        stepsByDay: [Date: Int]?,
+        weightKg: Double,
+        burnTarget: Int
     ) {
         guard let dayEnd = Self.calendar.date(byAdding: .day, value: 1, to: day) else { return }
 
@@ -125,6 +149,28 @@ extension GameService {
 
         let steps = stepsByDay.map { $0[day] ?? 0 }
         log.steps = steps ?? 0
+
+        // Dépense du jour, figée ICI et seulement ici : c'est le dernier moment où
+        // elle est définitive, les pas pouvant encore monter jusqu'à minuit.
+        // On repart de `steps` (l'Int?) et NON de `log.steps` : ce dernier vaut 0 quand
+        // HealthKit est refusé, ce que `BurnCalculator` lirait comme "les pas sont
+        // connus, ils valent zéro" — il exclurait alors les activités marchées et une
+        // journée de marche sans HealthKit afficherait une dépense nulle (spec §5.4).
+        log.kcalBurned = burnKcal(on: day,
+                                  steps: steps.map(DailySteps.measured) ?? .unavailable,
+                                  weightKg: weightKg)
+        // Cible de dépense FIGÉE, exactement comme `kcalTarget` juste au-dessus : sans
+        // elle, changer d'objectif dans les Réglages rendrait indéchiffrables tous les
+        // verdicts déjà rendus.
+        if log.burnTarget == 0 { log.burnTarget = burnTarget }
+        // Un simple constat, jamais un reproche : sous l'objectif, rien n'est marqué et
+        // rien n'est dit (spec §5.5). `log.burnTarget > 0` est une défense en profondeur
+        // — ce chemin garantit déjà un profil (`guard let profile` dans closeOpenDays) et
+        // `CalorieCalculator.dailyBurnTarget` est borné à [200, 600], donc jamais 0 ; le
+        // garde protège d'un futur appelant qui n'aurait ni l'un ni l'autre, où `>=`
+        // serait vrai par accident.
+        log.burnTargetReached = log.burnTarget > 0 && log.kcalBurned >= log.burnTarget
+
         // "Dans l'objectif" = kcal ≤ cible ET ≥ 2 repas loggés ce jour-là —
         // sans journal, pas de jugement (spec §7.1, bienveillance).
         log.withinTarget = meals.count >= 2 && log.kcalEaten <= log.kcalTarget

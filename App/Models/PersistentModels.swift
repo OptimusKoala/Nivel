@@ -164,6 +164,31 @@ final class DayLog {
     var xpEarned: Int
     var withinTarget: Bool
     var closed: Bool                     // clôturé par DayCloser
+    // Défauts sur la DÉCLARATION (migration légère SwiftData). Renseignés par
+    // DayCloser à la clôture : c'est le seul moment où la dépense du jour est
+    // définitive (les pas peuvent encore monter jusqu'à minuit).
+    //
+    // Deux conséquences à connaître AVANT de lire ce champ :
+    // 1. Les journées d'avant la 1.14 restent à 0 et ne sont PAS rétro-calculées.
+    //    `steps == 0` y est exactement l'ambiguïté que `DailySteps` a été créé pour
+    //    éliminer : impossible de savoir après coup si c'était "HealthKit refusé" ou
+    //    "zéro pas". Un rétro-calcul devrait trancher, donc se tromperait sur une
+    //    moitié du passé — et réintroduirait EN BASE le zéro silencieux que tout le
+    //    reste du code interdit. Ne rien inventer est plus honnête.
+    // 2. La journée EN COURS vaut 0 tant qu'elle n'est pas close. Un affichage
+    //    d'aujourd'hui (anneau de dépense) doit appeler `GameService.burnKcal(on:
+    //    steps:weightKg:)` avec les vrais pas du service, JAMAIS lire ce champ,
+    //    sinon il resterait à zéro toute la journée puis sauterait à minuit.
+    var kcalBurned: Int = 0
+    /// Objectif de dépense du jour, GELÉ à la clôture — exact pendant de `kcalTarget`,
+    /// et pour la même raison : sans lui, `burnTargetReached` est un verdict que plus
+    /// personne ne peut re-dériver dès que l'objectif change dans les Réglages, et un
+    /// historique afficherait « objectif atteint » sans dénominateur.
+    /// Ajouté MAINTENANT bien qu'aucun écran ne le lise encore : l'ajouter plus tard
+    /// rouvrirait exactement le « on ne rétro-calcule pas » ci-dessus, et il n'y aurait
+    /// alors plus aucun moyen de le renseigner pour le passé.
+    var burnTarget: Int = 0
+    var burnTargetReached: Bool = false
 
     init(
         day: Date,
@@ -172,7 +197,10 @@ final class DayLog {
         kcalTarget: Int = 0,
         xpEarned: Int = 0,
         withinTarget: Bool = false,
-        closed: Bool = false
+        closed: Bool = false,
+        kcalBurned: Int = 0,
+        burnTarget: Int = 0,
+        burnTargetReached: Bool = false
     ) {
         self.day = day
         self.steps = steps
@@ -181,6 +209,9 @@ final class DayLog {
         self.xpEarned = xpEarned
         self.withinTarget = withinTarget
         self.closed = closed
+        self.kcalBurned = kcalBurned
+        self.burnTarget = burnTarget
+        self.burnTargetReached = burnTargetReached
     }
 }
 

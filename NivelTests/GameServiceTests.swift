@@ -302,6 +302,30 @@ final class GameServiceTests: XCTestCase {
         XCTAssertEqual(service.burnTarget(), 450)
     }
 
+    // MARK: - Dépense du jour (spec v1.14 §5.4) : le câblage de BurnCalculator
+
+    /// `burnKcal` sans `weightKg` prend le poids COURANT. Ce défaut est la moitié
+    /// symétrique de `burnTarget()` : il évite à l'anneau d'accueil (Task 6) d'avoir à
+    /// réapparier poids et calcul lui-même, alors que `profiles.first?.initialWeightKg`
+    /// est à un point de distance dans une vue et donnerait un chiffre juste le jour de
+    /// l'onboarding, puis faux pour toujours.
+    func testBurnKcalSansPoidsUtiliseLePoidsCourant() async throws {
+        await service.logWeight(kg: 60) // initialWeightKg vaut 90 au setUp
+        // 8 000 pas : 274 kcal à 60 kg, contre 411 kcal à 90 kg.
+        XCTAssertEqual(service.burnKcal(on: .now, steps: .measured(8000)), 274)
+    }
+
+    /// La table des séances passée à `BurnCalculator` fusionne les TROIS catalogues.
+    /// Test structurel, et non de calcul, à dessein : aucune séance posture ou muscu
+    /// n'ayant aujourd'hui d'étape marchée, en oublier un ne change AUCUN chiffre —
+    /// jusqu'au jour où une séance de programme gagnerait un échauffement marché, qui
+    /// serait alors compté deux fois, en silence. C'est ici que ça se voit.
+    func testLaTableDesSeancesCouvreLesTroisCatalogues() {
+        XCTAssertNotNil(service.sessionsByID["fresh_air"])    // sessions.json
+        XCTAssertNotNil(service.sessionsByID["posture_open"]) // posture-sessions.json
+        XCTAssertNotNil(service.sessionsByID["muscu_core"])   // muscu-sessions.json
+    }
+
     // MARK: - Quêtes qui lisent le contenu des repas (correction spec §7.1)
 
     /// NOUVEAU (pas un portage) : preuve que la quête lit les TAGS du catalogue,

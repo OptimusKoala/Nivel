@@ -133,14 +133,55 @@ extension GameService {
         XPEngine.award(.activityDone, todayCount: sportAwardedCount(kind: .activity, on: now))
     }
 
-    /// Validations du jour, chronologiques — liste « Fait aujourd'hui ».
+    /// Validations d'une journée quelconque, non triées. Prédicat UNIQUE des
+    /// validations d'un jour : `todayActivities` et `burnKcal` en dérivent tous les
+    /// deux, plutôt que d'écrire deux fois les mêmes bornes.
+    func activities(on day: Date) -> [ActivityEntry] {
+        guard let (start, end) = dayBounds(for: day) else { return [] }
+        let predicate = #Predicate<ActivityEntry> { $0.date >= start && $0.date < end }
+        return (try? modelContext.fetch(FetchDescriptor(predicate: predicate))) ?? []
+    }
+
+    /// Validations du jour, chronologiques — liste « Fait aujourd'hui ». Nom distinct
+    /// de `activities(on:)` à dessein : « today » dit à ses appelants (les vues) que
+    /// c'est la journée en cours, et la clôture d'une journée de la semaine dernière
+    /// n'a pas à passer par une méthode qui la contredit.
     func todayActivities(now: Date = .now) -> [ActivityEntry] {
-        guard let (start, end) = dayBounds(for: now) else { return [] }
-        let descriptor = FetchDescriptor<ActivityEntry>(
-            predicate: #Predicate { $0.date >= start && $0.date < end },
-            sortBy: [SortDescriptor(\.date)]
+        activities(on: now).sorted { $0.date < $1.date }
+    }
+
+    // MARK: - Dépense du jour
+
+    /// Dépense calorique estimée de la journée `day` (spec v1.14 §5.4) : les pas, plus
+    /// les validations sport de ce jour-là dont la dépense ne fait pas doublon avec eux.
+    /// Chemin UNIQUE de l'assemblage des `BurnEntry` — la clôture (DayCloser, Task 5) et
+    /// l'anneau d'accueil (Task 6) doivent afficher le MÊME chiffre pour un même jour.
+    ///
+    /// `steps` est un `DailySteps` et non un `Int` : passer 0 quand HealthKit est refusé
+    /// ferait exclure les activités marchées comme si le podomètre les avait déjà
+    /// comptées, et une journée de marche sans HealthKit afficherait une dépense nulle.
+    /// Il reste un PARAMÈTRE parce que ses deux appelants ne l'obtiennent pas pareil :
+    /// la clôture tient un lot de journées lu en une requête, l'anneau une lecture live.
+    ///
+    /// `weightKg` est optionnel et vaut par défaut le poids courant : le passer est une
+    /// OPTIMISATION (la clôture le hisse hors de sa boucle), pas une décision. L'exiger
+    /// rouvrirait l'appariement que `burnTarget()` existe justement pour supprimer —
+    /// `profiles.first?.initialWeightKg` est à un point de distance dans une vue, compile,
+    /// et donnerait un anneau juste le jour de l'onboarding puis faux pour toujours.
+    /// (`weightKg: Double = currentWeightKg()` est refusé par le compilateur : un membre
+    /// d'instance ne peut pas servir de valeur par défaut.)
+    ///
+    /// Ces kcal restent INDICATIVES : elles ne sont jamais créditées au budget (règle v1 §2).
+    func burnKcal(on day: Date, steps: DailySteps, weightKg: Double? = nil) -> Int {
+        BurnCalculator.kcal(
+            steps: steps,
+            weightKg: weightKg ?? currentWeightKg(),
+            entries: activities(on: day).map {
+                BurnEntry(kind: $0.kind, refID: $0.refID, estimatedKcal: $0.estimatedKcal)
+            },
+            activitiesByID: activitiesByID,
+            sessionsByID: sessionsByID
         )
-        return (try? modelContext.fetch(descriptor)) ?? []
     }
 
     // MARK: - Compteurs

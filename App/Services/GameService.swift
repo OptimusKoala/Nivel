@@ -54,6 +54,15 @@ final class GameService {
     let sessionCatalog: [ActivitySession]
     /// Index id → Activity (kcal des séances, libellés des vues).
     let activitiesByID: [String: Activity]
+    /// Index id → ActivitySession des TROIS catalogues de séances (commun, posture,
+    /// muscu), pour `BurnCalculator` seul : une séance validée n'a qu'un TOTAL en
+    /// base, il faut son détail pour en retirer les étapes marchées déjà comptées par
+    /// le podomètre. Le réflexe symétrique de `sessionCatalog` (sessions.json seul)
+    /// ferait retomber toute séance posture ou muscu sur le repli « total stocké » :
+    /// aucune n'a d'étape marchée aujourd'hui, mais la première qui gagnerait un
+    /// échauffement marché serait alors comptée deux fois, en silence.
+    /// N'affecte AUCUNE rotation : les trois catalogues restent cloisonnés.
+    let sessionsByID: [String: ActivitySession]
     /// Catalogue d'aliments (spec v1.10 §4.1) : barème du calcul de kcal des repas
     /// ET tags "alcohol"/"richDessert" des deux quêtes qui lisent le contenu d'un
     /// repas. Vide si le bundle est corrompu, jamais de crash.
@@ -154,6 +163,12 @@ final class GameService {
         // d'exercices à lui, ses étapes pointent déjà vers `activityCatalog`.
         self.activitiesByID = Dictionary((activityCatalog + postureCatalog.activities).map { ($0.id, $0) },
                                         uniquingKeysWith: { first, _ in first })
+        // Même prudence sur les doublons d'id, et les TROIS catalogues cette fois
+        // (voir la déclaration) : une séance absente d'ici ne se décompose plus.
+        self.sessionsByID = Dictionary(
+            (sessionCatalog + postureCatalog.sessions + muscuCatalog.sessions).map { ($0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
         // En DERNIER, une fois toutes les propriétés initialisées : la migration lit
         // l'état SwiftData, donc elle a besoin d'un `self` complet, et elle doit tourner
         // avant tout affichage — personne ne doit voir un niveau faux, fût-ce une
