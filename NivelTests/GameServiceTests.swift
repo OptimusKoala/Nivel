@@ -416,12 +416,35 @@ final class GameServiceTests: XCTestCase {
         XCTAssertNotNil(state.badgeUnlocks["muscu_first"])
     }
 
-    /// TODO lot D : `isRecipe` n'existe pas encore, le compteur reste donc à 0 et les deux
-    /// badges recette restent verrouillés — ce qui est EXACT, pas un oubli. Ce test tombera
-    /// le jour où le lot D le câblera, et c'est le rappel voulu.
-    func testRecipesLoggedResteAZeroJusquAuLotD() async {
-        await service.logMeal(slot: .dinner, lines: pastaLines)
-        XCTAssertEqual(service.badgeStats().recipesLogged, 0)
+    /// `badgeStats()` parcourt TOUS les `MealEntry` du store : le décor compte, et ces
+    /// deux tests posent donc eux-mêmes chaque repas.
+    ///
+    /// Remplace `testRecipesLoggedResteAZeroJusquAuLotD`, qui verrouillait le 0 du
+    /// `// TODO lot D` tant que `isRecipe` n'existait pas.
+    func testRecipesLoggedCompteLesRepasContenantUneRecette() async throws {
+        let recipe = try XCTUnwrap(catalog.items.first(where: \.isRecipe))
+
+        // Un repas ordinaire ne compte pas : sans ce premier temps, une version qui
+        // compterait TOUS les repas passerait le second.
+        await service.logMeal(slot: .lunch, lines: pastaLines)
+        XCTAssertEqual(service.badgeStats().recipesLogged, 0, "les pâtes ne sont pas une recette")
+
+        await service.logMeal(slot: .dinner, lines: [catalog.line(for: recipe)])
+        XCTAssertEqual(service.badgeStats().recipesLogged, 1)
+
+        // Le câblage complet, et pas seulement le compteur : `logMeal` évalue les badges.
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        XCTAssertNotNil(state.badgeUnlocks["recipe_first"], "premier repas cuisiné → badge")
+        XCTAssertNil(state.badgeUnlocks["recipe_10"], "un seul repas cuisiné, pas dix")
+    }
+
+    /// Deux recettes dans le MÊME repas comptent pour un : la métrique est « des repas
+    /// cuisinés », pas « des lignes de recette ».
+    func testDeuxRecettesDansUnMemeRepasComptentPourUn() async throws {
+        let recipes = catalog.items.filter(\.isRecipe).prefix(2)
+        XCTAssertEqual(recipes.count, 2, "il faut deux recettes distinctes pour que ce test prouve quelque chose")
+        await service.logMeal(slot: .dinner, lines: recipes.map { catalog.line(for: $0) })
+        XCTAssertEqual(service.badgeStats().recipesLogged, 1)
     }
 
     // MARK: - Quêtes de la 1.14 (spec §5.7)

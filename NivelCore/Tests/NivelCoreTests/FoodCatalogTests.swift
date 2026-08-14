@@ -460,11 +460,12 @@ final class FoodCatalogTests: XCTestCase {
     /// Mais elles restent atteignables par id : c'est ainsi que la bande d'idées et
     /// le journal les retrouvent.
     func testLesRecettesRestentAtteignablesParId() throws {
-        // Ignoré tant que la Task 2 du lot D n'a pas ajouté les deux premières
-        // recettes à `foods.json` : elle rétablira ce test en même temps.
-        try XCTSkipIf(!catalog.items.contains { $0.isRecipe },
-                      "aucune recette dans foods.json avant la Task 2 du lot D")
-        let recipe = catalog.items.first { $0.isRecipe }!
+        // `XCTUnwrap` et NON le `XCTSkipIf` d'avant : celui-ci attendait les recettes de
+        // la Task 2 du lot D, qui sont là depuis — il ne se déclenchait donc plus jamais
+        // et masquait le `!` de la ligne suivante. Un catalogue qui perdrait ses recettes
+        // doit rendre ce test ROUGE, pas l'escamoter.
+        let recipe = try XCTUnwrap(catalog.items.first { $0.isRecipe },
+                                   "aucune recette dans foods.json")
         XCTAssertNotNil(catalog.byID[recipe.id])
         XCTAssertTrue(catalog.line(for: recipe).isComposed)
     }

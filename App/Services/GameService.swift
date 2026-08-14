@@ -491,9 +491,22 @@ final class GameService {
         // Même choix et même raisonnement que `questValue`, qui le détaille.
         stats.muscuSessionsDone = activities.count { $0.kind == .muscu }
 
-        // TODO lot D : `isRecipe` n'existe pas encore sur le catalogue d'aliments (spec §6.1).
-        // Laissé à 0 : `recipe_first` et `recipe_10` restent verrouillés, ce qui est exact.
-        stats.recipesLogged = 0
+        // Des REPAS et non des lignes (spec §5.6) : un dîner qui contient deux recettes
+        // compte pour UN — la métrique est « des repas cuisinés ». Le drapeau se lit sur
+        // l'item de la LIGNE et jamais sur ses composants : une recette est une ligne
+        // composée dont la tête porte `isRecipe` et dont les ingrédients sont des aliments
+        // ordinaires (spec §6.1). Item inconnu = pas une recette, même repli que `hasTag`.
+        //
+        // RÉTROACTIF, contrairement à `burnTargetDays` trois lignes plus haut, dont le
+        // délai est assumé : ici tout l'historique est relu à chaque appel. Sans
+        // conséquence aujourd'hui — les 35 ids `isRecipe` sont NÉS en 1.14, donc aucun
+        // repas d'avant ne peut en contenir. Ce qui le garde vrai, et qu'il faut donc
+        // tenir : ne JAMAIS poser `isRecipe` sur un aliment déjà au catalogue. Ce seul
+        // drapeau débloquerait `recipe_first` rétroactivement, sur un repas que
+        // l'utilisateur n'a jamais cuisiné.
+        stats.recipesLogged = meals.count { meal in
+            meal.lines.contains { foodCatalog.byID[$0.itemID]?.isRecipe == true }
+        }
 
         return stats
     }
