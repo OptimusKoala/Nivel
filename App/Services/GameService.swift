@@ -480,8 +480,12 @@ final class GameService {
         stats.dailySessionsDone = Set(
             activities.filter { $0.kind == .dailySession }.map { Self.calendar.startOfDay(for: $0.date) }
         ).count
-        // Des ENTRÉES et non des jours distincts (spec v1.14 §5.6) : la muscu n'a pas la
-        // règle « une par jour » de la séance du jour, deux séances le même jour comptent double.
+        // Des ENTRÉES et non des jours distincts (spec v1.14 §5.6). En pratique les deux
+        // comptages coïncident : `MuscuCatalog.session(for:)` n'expose qu'une séance par
+        // jour, et la carte affiche « Déjà faite » ensuite — une seconde entrée `.muscu`
+        // le même jour n'est pas atteignable par l'interface. La distinction ne
+        // deviendrait visible que si une version future ouvrait la séance muscu libre.
+        // Même choix et même raisonnement que `questValue`, qui le détaille.
         stats.muscuSessionsDone = activities.count { $0.kind == .muscu }
 
         // TODO lot D : `isRecipe` n'existe pas encore sur le catalogue d'aliments (spec §6.1).
