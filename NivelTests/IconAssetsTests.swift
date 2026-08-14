@@ -46,9 +46,14 @@ final class IconAssetsTests: XCTestCase {
             XCTAssertNotNil(UIImage(named: "Icons/\(name)"), "catalogue : Icons/\(name) introuvable")
             cozyCount += 1
         }
-        // 24 badges + 19 quêtes en cozy (16 + les 3 quêtes posture v1.11, icônes
-        // réutilisées : icon_wave, icon_repeat, icon_heart) ; 2 quêtes restent en emoji.
-        XCTAssertEqual(cozyCount, 43, "les 24 badges + 19 quêtes en cozy (2 quêtes restent en emoji)")
+        // 33 badges + 19 quêtes en cozy. Badges : les 24 d'avant la 1.14 + 9 des 14 neufs
+        // (§5.6). Les 5 autres sont en emoji par CHOIX, pas par pénurie : il restait six
+        // glyphes libres (icon_bell, icon_wave, icon_mint, icon_glass_empty, tab_progress,
+        // tab_home), mais aucun ne disait le badge — 👑 pour « Niveau 50 » et 💯 pour « Cent
+        // activités » valent mieux qu'une cloche ou une maison posée là faute de mieux.
+        // Quêtes : 16 + les 3 quêtes posture v1.11 (icônes réutilisées : icon_wave,
+        // icon_repeat, icon_heart) ; 2 quêtes de dessert restent en emoji.
+        XCTAssertEqual(cozyCount, 52, "33 badges + 19 quêtes en cozy (5 badges et 2 quêtes en emoji)")
 
         for palette in ThemePalette.all {
             XCTAssertNotNil(UIImage(named: "Icons/\(palette.icon)"),
@@ -73,14 +78,17 @@ final class IconAssetsTests: XCTestCase {
         }
     }
 
-    /// L'inverse : les SEULES entrées restées en emoji sont les deux quêtes de dessert
-    /// léger (spec §2.2). Une troisième, oubliée dans un futur ajout, se verrait ici.
-    func testOnlyTheLightDessertQuestsStayEmoji() throws {
+    /// L'inverse : la liste EXHAUSTIVE des entrées restées en emoji — les deux quêtes de
+    /// dessert léger (spec §2.2), et les cinq badges de la 1.14 qui n'ont pas trouvé de
+    /// glyphe libre (§5.6). Une sixième, glissée par inadvertance dans un futur ajout
+    /// alors qu'un glyphe existait, se verrait ici.
+    func testLaListeDesEntreesResteesEnEmojiEstExhaustive() throws {
         func isEmoji(_ icon: CatalogIcon) -> Bool {
             if case .emoji = icon { true } else { false }
         }
         let ids = try Catalogs.badges().filter { isEmoji($0.icon) }.map(\.id)
             + Catalogs.quests().filter { isEmoji($0.icon) }.map(\.id)
-        XCTAssertEqual(Set(ids), ["light_dessert_3", "light_dessert_5"])
+        XCTAssertEqual(Set(ids), ["light_dessert_3", "light_dessert_5",
+                                  "muscu_25", "level_50", "sport_100", "journal_365", "steps_20k"])
     }
 }

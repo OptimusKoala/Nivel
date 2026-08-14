@@ -136,9 +136,14 @@ final class DayCloserTests: XCTestCase {
         XCTAssertFalse(logs[2].withinTarget)
         XCTAssertEqual(logs[2].xpEarned, 0)
 
-        // XP total = 90 (clôtures) + 50 (badge "Premier repas", 4 repas au journal).
-        XCTAssertEqual(state.totalXP, 140)
-        XCTAssertNotNil(state.badgeUnlocks["first_meal"])
+        // XP total = 90 (clôtures) + 50 (badge "Premier repas", 4 repas au journal)
+        // + 50 (badge "Ça a bougé" : J-3 et ses 9000 pas passent la cible de dépense).
+        XCTAssertEqual(state.totalXP, 190)
+        XCTAssertTrue(logs[0].burnTargetReached)
+        // L'ENSEMBLE exact, et pas deux XCTAssertNotNil : un futur badge qui tomberait
+        // aussi dans ce scénario ferait sinon échouer le total sur un « 190 != 240 » nu,
+        // sans nommer le coupable.
+        XCTAssertEqual(Set(state.badgeUnlocks.keys), ["first_meal", "burn_first"])
         XCTAssertEqual(state.lastClosedDay, yesterday)
     }
 

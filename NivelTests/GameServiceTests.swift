@@ -380,4 +380,47 @@ final class GameServiceTests: XCTestCase {
         XCTAssertEqual(state.questProgress["light_dessert_3"], 1,
                        "un seul des deux jours n'a pas de dessert gourmand")
     }
+
+    // MARK: - Badges de la 1.14 (spec §5.6)
+
+    /// `burnTargetDays` ne compte que les journées CLÔTURÉES : le verdict n'est définitif
+    /// qu'à la clôture, et `closedDayLogs` est ce qui l'impose.
+    ///
+    /// Accessoirement, `service` porte un `FakeStepsService(authorized: false)` (voir le
+    /// setUp) : ce test épingle donc l'ABSENCE de filtre sur la disponibilité de HealthKit
+    /// — la version filtrée, écrite puis retirée, échouait ici. Il ne dit rien de
+    /// l'atteignabilité elle-même, le `DayLog` étant posé à la main : c'est
+    /// `BurnCalculatorTests.testSansPasToutCompte` qui la tient.
+    func testBurnTargetDaysNeCompteQueLesJourneesCloturees() throws {
+        let closed = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+        let open = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 19)))
+        context.insert(DayLog(day: closed, closed: true, burnTargetReached: true))
+        context.insert(DayLog(day: open, closed: false, burnTargetReached: true))
+        try context.save()
+        XCTAssertEqual(service.badgeStats().burnTargetDays, 1, "la journée encore ouverte ne compte pas")
+
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        service.evaluateBadges(state: state)
+        XCTAssertNotNil(state.badgeUnlocks["burn_first"])
+        XCTAssertNil(state.badgeUnlocks["burn_10"])
+    }
+
+    /// `muscuSessionsDone` compte des ENTRÉES et non des jours distincts, contrairement à
+    /// `dailySessionsDone` : deux séances muscu le même jour comptent double.
+    func testMuscuSessionsDoneCompteLesEntreesPasLesJours() async throws {
+        let session = try XCTUnwrap(service.muscuCatalog.session(for: .now, calendar: GameService.calendar))
+        await service.logMuscuSession(session: session)
+        await service.logMuscuSession(session: session)
+        XCTAssertEqual(service.badgeStats().muscuSessionsDone, 2)
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        XCTAssertNotNil(state.badgeUnlocks["muscu_first"])
+    }
+
+    /// TODO lot D : `isRecipe` n'existe pas encore, le compteur reste donc à 0 et les deux
+    /// badges recette restent verrouillés — ce qui est EXACT, pas un oubli. Ce test tombera
+    /// le jour où le lot D le câblera, et c'est le rappel voulu.
+    func testRecipesLoggedResteAZeroJusquAuLotD() async {
+        await service.logMeal(slot: .dinner, lines: pastaLines)
+        XCTAssertEqual(service.badgeStats().recipesLogged, 0)
+    }
 }

@@ -442,6 +442,10 @@ final class GameService {
         stats.stepsInOneDay = closed.map(\.steps).max() ?? 0
         stats.totalSteps = closed.reduce(0) { $0 + $1.steps }
         stats.totalKm = Int(Double(stats.totalSteps) * 0.00075) // ≈ 0,75 m par pas → km = pas × 0.00075
+        // Le verdict figé par le DayCloser (§5.6) — jamais recalculé après coup, donc 0 sur
+        // tout l'historique d'avant la 1.14 : `burn_10` demande dix jours RÉELS après la mise
+        // à jour, même à quelqu'un qui marche depuis des mois. C'est un délai, pas un défaut.
+        stats.burnTargetDays = closed.count { $0.burnTargetReached }
 
         stats.level = LevelSystem.level(forXP: state.totalXP)
         stats.questsCompleted = state.completedQuestIDs.count
@@ -455,6 +459,13 @@ final class GameService {
         stats.dailySessionsDone = Set(
             activities.filter { $0.kind == .dailySession }.map { Self.calendar.startOfDay(for: $0.date) }
         ).count
+        // Des ENTRÉES et non des jours distincts (spec v1.14 §5.6) : la muscu n'a pas la
+        // règle « une par jour » de la séance du jour, deux séances le même jour comptent double.
+        stats.muscuSessionsDone = activities.count { $0.kind == .muscu }
+
+        // TODO lot D : `isRecipe` n'existe pas encore sur le catalogue d'aliments (spec §6.1).
+        // Laissé à 0 : `recipe_first` et `recipe_10` restent verrouillés, ce qui est exact.
+        stats.recipesLogged = 0
 
         return stats
     }

@@ -23,8 +23,10 @@ final class CatalogsTests: XCTestCase {
 
     func testBadgesLoadAndIdsAreUnique() throws {
         let badges = try Catalogs.badges()
-        XCTAssertEqual(badges.count, 24)
-        XCTAssertEqual(Set(badges.map(\.id)).count, 24)
+        // 24 + les 14 badges de la 1.14 (spec §5.6).
+        XCTAssertEqual(badges.count, 38)
+        XCTAssertEqual(Set(badges.map(\.id)).count, 38)
+        XCTAssertEqual(Set(badges.map(\.title)).count, badges.count, "titres en doublon")
         // Chaque badge a une icône distincte : la grille des badges s'affiche d'un bloc et
         // s'en sert comme identité visuelle. C'est ce qui interdit de mutualiser un glyphe
         // entre deux paliers du même objectif (spec icônes catalogues §3.1).
