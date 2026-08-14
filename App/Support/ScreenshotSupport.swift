@@ -19,6 +19,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI          // pour le seul CGFloat/UIKit du défilement d'ouverture, plus bas
 import NivelCore
 
 enum ScreenshotMode {
@@ -49,6 +50,63 @@ enum ScreenshotMode {
 
     /// Ouvre d'office la feuille de log de repas (capture « catalogue d'aliments »).
     static var autoOpensMealLog: Bool { isEnabled && screen == .meallog }
+
+    /// Section sur laquelle l'écran Sport s'ouvre — `nil` = en haut, comme dans l'app.
+    ///
+    /// Pour la capture `sport` : `.strong`, « Ça pousse ». C'est la section que le lot F
+    /// exige de voir sur `03-sport` (spec v1.14 §7), et elle est TROISIÈME dans
+    /// `SportSection.displayOrder` : vingt lignes d'activités douces la précèdent, soit
+    /// deux écrans de défilement. Aucun garnissage du jeu de démonstration ne pouvait la
+    /// faire remonter — c'est le catalogue lui-même qui est long — donc on déplace le
+    /// regard plutôt que le contenu : la capture montre l'app telle qu'elle est, à un
+    /// endroit où l'utilisateur peut réellement arriver d'un coup de pouce.
+    ///
+    /// `nil` pour `session` et `step`, qui rendent le MÊME écran sous leur feuille : ces
+    /// deux captures-là n'ont pas à hériter d'un défilement dont on ne voit rien, et une
+    /// feuille qui s'ouvre pendant qu'on défile derrière est un tirage de moins bonne
+    /// qualité pour rien.
+    static var initialSportSection: SportSection? {
+        isEnabled ? initialSportSection(for: screen) : nil
+    }
+
+    /// La même règle, en fonction pure de l'écran : `isEnabled` dépend des arguments du
+    /// processus, qu'un test ne peut pas se donner (`ScreenshotSportTests` appelle
+    /// celle-ci, écran par écran).
+    static func initialSportSection(for screen: Screen) -> SportSection? {
+        screen == .sport ? .strong : nil
+    }
+
+    /// La hauteur de la barre d'état, en points : ce qu'il faut dégager en haut d'un
+    /// écran ouvert au milieu d'une liste (voir `SportView`, qui s'en sert deux fois).
+    ///
+    /// Deux choses à savoir sur `scrollTo(anchor: .top)` dans une `List`, toutes deux
+    /// vérifiées à l'image plutôt que déduites de la documentation :
+    ///
+    /// 1. il aligne la vue visée sur le haut de la ZONE SÛRE de la liste, et le contenu
+    ///    d'une liste défile SOUS la barre d'état — un écran nu met donc « ÇA POUSSE »
+    ///    à cheval sur « 9 h 41 ». Rendre cette hauteur à la liste (`safeAreaInset`)
+    ///    redescend le titre juste sous l'heure ;
+    /// 2. il aligne le TITRE lui-même, pas la ligne qui le porte : tout blanc ajouté
+    ///    au-dessus part hors de l'écran. C'est ce qui permet de chasser la dernière
+    ///    ligne de la section précédente, qui sinon dépasse, coupée, derrière l'heure.
+    ///
+    /// L'`anchor` ne remplace ni l'un ni l'autre : `UnitPoint` est une FRACTION, prise à
+    /// l'échelle du contenu défilable — 0,09 y déplaçait la section de 364 pt, et la
+    /// moindre activité ajoutée au catalogue changerait ce que vaut la même fraction.
+    /// Une hauteur en points, elle, dit ce qu'elle fait et ne dérive pas.
+    ///
+    /// Lue sur la fenêtre plutôt qu'écrite en dur — le 6,9 pouces d'aujourd'hui ne sera
+    /// pas celui de la prochaine version — avec un repli de 62 pt (le sien) tant qu'elle
+    /// n'est pas là : mieux vaut un peu de blanc en trop qu'un titre sur l'heure.
+    @MainActor
+    static var scrolledHeaderCushion: CGFloat {
+        let inset = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first { $0.isKeyWindow }?
+            .safeAreaInsets.top
+        return inset.map { $0 > 0 ? $0 : 62 } ?? 62
+    }
 
     /// Ouvre d'office la page « Tu viens de faire quoi ? » (spec v1.13 §6.3) — miroir
     /// exact d'`autoOpensMealLog`, pour pouvoir capturer et relire le second bouton

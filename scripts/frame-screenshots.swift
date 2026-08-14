@@ -69,8 +69,11 @@ let shots: [Shot] = [
          title: "Un repas en trois gestes",
          subtitle: "85 aliments, estimation immédiate, au gramme si tu veux.",
          palette: light),
+    // « Tout doux » ne peut plus être seul dans le titre : depuis la 1.14 cette capture
+    // cadre la section « Ça pousse » (course, pompes, burpees), et une accroche gravée
+    // dans l'image ne se relit jamais — elle doit dire ce que l'image montre.
     Shot(file: "03-sport",
-         title: "Du sport tout doux",
+         title: "Tout doux, ou ça pousse",
          subtitle: "20 activités et 11 séances, illustrées par Nivelito.",
          palette: light),
     Shot(file: "04-session",

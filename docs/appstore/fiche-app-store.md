@@ -209,7 +209,7 @@ cet ordre** — les trois premières sont les seules visibles sans faire défile
 |---|---|---|
 | 1 | `01-home.png` | Ta journée d'un coup d'œil |
 | 2 | `02-meallog.png` | Un repas en trois gestes |
-| 3 | `03-sport.png` | Du sport tout doux |
+| 3 | `03-sport.png` | Tout doux, ou ça pousse |
 | 4 | `04-session.png` | Nivelito bouge avec toi |
 | 5 | `05-step.png` | Une étape par écran |
 | 6 | `06-progress.png` | Des progrès honnêtes |

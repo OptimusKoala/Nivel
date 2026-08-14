@@ -110,6 +110,7 @@
 		E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */; };
 		E25C6AEB1505C0C69F8CB630 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
 		E3B6801717F7DF059E2DD29C /* MealLoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DF803E54753D174CB0E654 /* MealLoggingTests.swift */; };
+		E5E94422F711C94B2A6FD99F /* ScreenshotSportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD295983A2E9FAD0CADE2529 /* ScreenshotSportTests.swift */; };
 		E798FE183A61FFB80A6842BC /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9E90148A545B2C16C0326922 /* NivelCore */; };
 		E7D4FDE0DBF28A9F40684FD8 /* CozyIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DFE3142B4FCF840E98BE4C6 /* CozyIcon.swift */; };
 		E94CE38161C76626D65EFDF9 /* PantryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6BB33F277CCEA2C23BA8D36 /* PantryTests.swift */; };
@@ -270,6 +271,7 @@
 		D9245CF3C47048DB9D88C2E5 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
 		DC2CFCDDF307B46E6407F604 /* MealLineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLineDetailView.swift; sourceTree = "<group>"; };
 		DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkTests.swift; sourceTree = "<group>"; };
+		DD295983A2E9FAD0CADE2529 /* ScreenshotSportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotSportTests.swift; sourceTree = "<group>"; };
 		DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesChart.swift; sourceTree = "<group>"; };
 		DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestsView.swift; sourceTree = "<group>"; };
 		E09E879085373214B880F1CB /* NivelUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -545,6 +547,7 @@
 				BF87114F87B380EA8346D082 /* RecipeStripTests.swift */,
 				37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */,
 				D4C83E7CFF76D5CC970B5615 /* ScreenshotIdeasTests.swift */,
+				DD295983A2E9FAD0CADE2529 /* ScreenshotSportTests.swift */,
 				E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */,
 				544B9CEDBA3774256FB86048 /* SoundAssetsTests.swift */,
 				C469C8E725B6F5111FEA5290 /* SoundPlayerTests.swift */,
@@ -897,6 +900,7 @@
 				095D03B9F4DFEDE000996FA1 /* RecipeStripTests.swift in Sources */,
 				0375D5C747818288487770AE /* ReminderSettingsTests.swift in Sources */,
 				03AAB3EA20253F25A45A4199 /* ScreenshotIdeasTests.swift in Sources */,
+				E5E94422F711C94B2A6FD99F /* ScreenshotSportTests.swift in Sources */,
 				6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */,
 				B68B1D038E169E9553B91658 /* SoundAssetsTests.swift in Sources */,
 				4419A082321509FEF4A7F929 /* SoundPlayerTests.swift in Sources */,
