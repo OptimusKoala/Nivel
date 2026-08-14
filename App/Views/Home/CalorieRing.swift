@@ -13,6 +13,35 @@ struct CalorieRingCard: View {
     let burned: Int
     let burnTarget: Int
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// La légende de dépense s'efface aux tailles d'ACCESSIBILITÉ (au-delà de
+    /// `.xxxLarge`). Relevé à `.accessibility4` sur iPhone 17 Pro Max : la légende
+    /// passe à trois lignes, le sous-titre entier en occupe cinq, la carte passe de
+    /// 584 à 1 100 px de haut (près du DOUBLE, pas le quadruple qu'on lit parfois) et
+    /// la ligne de quête finit sous la barre d'onglets.
+    ///
+    /// Le seuil retenu est celui du système, mais il flatte la réalité : à `.xxxLarge`
+    /// la légende passe DÉJÀ à deux lignes, l'emoji seul sur la seconde. Elle n'y tient
+    /// pas au large, elle passe tout juste — c'est le fait à regarder le jour où l'on
+    /// se demandera s'il faut redescendre le seuil à `.xxLarge`.
+    ///
+    /// Le compromis, sans l'enjoliver. VoiceOver ne perd rien : l'anneau porte déjà
+    /// « Dépensé : environ X sur Y » dans son `.accessibilityLabel` (voir `ring`), et
+    /// ce libellé ne dépend pas de la taille de texte. Mais ce chiffre n'est visible
+    /// NULLE PART ailleurs dans l'app — l'écran Progrès a trois sections (Poids,
+    /// Calories mangées, Pas) et aucune ne montre la dépense en kcal ; `burnKcal` n'a
+    /// que deux appelants, celui-ci et l'écriture du DayLog à la clôture, invisible.
+    /// Donc quelqu'un qui grossit le texte SANS VoiceOver perd l'information pour de
+    /// bon, et c'est précisément l'utilisateur que la forme visible du réglage sert.
+    /// On échange ce chiffre contre la lisibilité du reste de l'accueil ; l'anneau
+    /// orange, lui, reste tracé.
+    static func showsBurnLegend(at size: DynamicTypeSize) -> Bool { !size.isAccessibilitySize }
+
+    /// La même décision, appliquée à la taille courante. La statique existe pour le
+    /// test, celle-ci pour la vue.
+    private var showsBurnLegend: Bool { Self.showsBurnLegend(at: dynamicTypeSize) }
+
     private var isOver: Bool { target > 0 && eaten > target }
     private var fraction: Double {
         guard target > 0 else { return 0 }
@@ -109,18 +138,20 @@ struct CalorieRingCard: View {
                 }
                 .foregroundStyle(Theme.green)
             }
-            HStack(spacing: 4) {
-                // La pastille rappelle la couleur de l'anneau intérieur : sans elle,
-                // rien ne dit lequel des deux cercles la ligne commente.
-                Circle().fill(Theme.orange).frame(width: 7, height: 7)
-                // Jamais de reproche au-delà de l'objectif : on a bougé plus que prévu,
-                // il n'y a rien à redire (spec §5.5, aucun rouge non plus ici).
-                Text(burnReached
-                     ? "Objectif de dépense atteint 🎉"
-                     : "Dépensé ~\(burned.frFormatted) / \(burnTarget.frFormatted)")
+            if showsBurnLegend {
+                HStack(spacing: 4) {
+                    // La pastille rappelle la couleur de l'anneau intérieur : sans elle,
+                    // rien ne dit lequel des deux cercles la ligne commente.
+                    Circle().fill(Theme.orange).frame(width: 7, height: 7)
+                    // Jamais de reproche au-delà de l'objectif : on a bougé plus que prévu,
+                    // il n'y a rien à redire (spec §5.5, aucun rouge non plus ici).
+                    Text(burnReached
+                         ? "Objectif de dépense atteint 🎉"
+                         : "Dépensé ~\(burned.frFormatted) / \(burnTarget.frFormatted)")
+                }
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Theme.subtext)
             }
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(Theme.subtext)
         }
     }
 }
