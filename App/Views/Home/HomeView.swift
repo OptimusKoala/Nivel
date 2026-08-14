@@ -17,6 +17,23 @@ struct HomeView: View {
     /// Pas du jour — nil tant que non chargé OU si HealthKit est refusé/indisponible
     /// (dans les deux cas la carte est masquée et l'XP prend la colonne, spec §10).
     @State private var steps: Int?
+    /// Dépense du jour et sa cible (spec v1.14 §5.5), recalculées ENSEMBLE dans
+    /// `refreshBurn()`. Deux `@State` et non deux lectures directes au niveau du
+    /// `body` : la cible dépend de la dernière pesée, or cette vue n'observe aucun
+    /// `WeightEntry` — la lire dans le `body` ne se rafraîchirait que par accident,
+    /// via le `GamificationState` que `@Query states` observe (et pas du tout à la
+    /// deuxième pesée du jour, l'XP de pesée étant plafonnée à 1/jour). Les porter
+    /// tous les deux garde surtout les deux nombres COHÉRENTS : `burned` dépend lui
+    /// aussi du poids courant, et un anneau dont seule la cible se rafraîchirait
+    /// afficherait « dépensé » et « cible » calculés sur deux poids différents.
+    ///
+    /// La cohérence vaut APRÈS le premier calcul complet : `primeBurnTarget()` avance
+    /// délibérément la cible seule à l'apparition, donc entre elle et la fin de
+    /// `refresh()` la dépense reste sur le poids précédent. L'écart est faible et va
+    /// dans le bon sens (la cible avance, la dépense rattrape) ; l'alternative, ne
+    /// rien amorcer, affichait « / 0 » à chaque lancement.
+    @State private var burned = 0
+    @State private var burnTarget = 0
     @State private var bubbleText = ""
     @State private var lastBubbleContext: MessageContext?
     /// Vrai tant qu'une bulle de récompense (repas/activité) est affichée : protège
@@ -56,6 +73,16 @@ struct HomeView: View {
     /// Quête active la plus avancée non complétée — nil si aucune (carte masquée).
     static func featuredQuest(from statuses: [ActiveQuestStatus]) -> ActiveQuestStatus? {
         statuses.filter { !$0.isCompleted }.max { $0.fraction < $1.fraction }
+    }
+
+    /// Les pas tels que `burnKcal` doit les recevoir — logique PURE, testée
+    /// (HomeDashboardTests). `steps == nil` recouvre ici DEUX situations que rien ne
+    /// distingue (HealthKit refusé, ou lecture pas encore revenue), et les deux
+    /// donnent `.unavailable` : `.measured(0)` en attendant la réponse ferait
+    /// clignoter l'anneau vers le bas au lancement, `.measured` excluant les
+    /// activités marchées alors que `.unavailable` les compte (spec §5.4).
+    static func dailySteps(from steps: Int?) -> DailySteps {
+        steps.map(DailySteps.measured) ?? .unavailable
     }
 
     /// Décision de bulle — logique PURE, testable (HomeDashboardTests) :
@@ -132,6 +159,7 @@ struct HomeView: View {
             // (celle de l'apparition précédente n'a plus lieu d'être protégée).
             rewardBubbleActive = false
             sessionStatus = game.dailySessionStatus()
+            primeBurnTarget()
             updateBubble()
             consumeDeepLink()
             #if DEBUG
@@ -147,12 +175,13 @@ struct HomeView: View {
         .sheet(isPresented: $showMealLog, onDismiss: updateBubble) {
             MealLogSheet()
         }
-        // `updateBubble` à la fermeture, comme pour le repas : `logActivity` publie
+        // Bulle rafraîchie à la fermeture, comme pour le repas : `logActivity` publie
         // `lastActivityXPAwarded`, et c'est ce signal qui fait féliciter Nivelito.
-        .sheet(isPresented: $showActivityPicker, onDismiss: updateBubble) {
+        // Plus la dépense : l'activité qui vient d'être validée compte dans l'anneau.
+        .sheet(isPresented: $showActivityPicker, onDismiss: refreshBurnAndBubble) {
             ActivityPickerSheet()
         }
-        .sheet(isPresented: $showSettings, onDismiss: updateBubble) {
+        .sheet(isPresented: $showSettings, onDismiss: refreshBurnAndBubble) {
             SettingsView()
         }
         .sheet(isPresented: $showSessionPlayer, onDismiss: refreshSessionStatus) {
@@ -166,8 +195,37 @@ struct HomeView: View {
         await game.refreshQuestProgress()
         steps = await game.todaySteps()
         sessionStatus = game.dailySessionStatus()
+        refreshBurn()
         // Le refresh peut lever une célébration → le contexte du message peut changer.
         updateBubble()
+    }
+
+    /// Dépense du jour et cible de dépense, recalculées au même instant et donc sur le
+    /// même poids courant (spec v1.14 §5.5).
+    ///
+    /// ⚠️ La dépense vient de `game.burnKcal`, JAMAIS de `DayLog.kcalBurned` : ce champ
+    /// n'est écrit qu'à la CLÔTURE, c'est-à-dire le lendemain. L'anneau montre
+    /// AUJOURD'HUI, journée non close, où il vaut 0 par construction — le lire donnerait
+    /// un anneau figé à zéro toute la journée qui sauterait d'un coup à minuit.
+    private func refreshBurn() {
+        burned = game.burnKcal(on: .now, steps: Self.dailySteps(from: steps))
+        burnTarget = game.burnTarget()
+    }
+
+    /// Cible de dépense amorcée dès l'apparition, AVANT les deux allers-retours
+    /// HealthKit de `refresh()` (dont `todaySteps`, et `refreshQuestProgress` quand une
+    /// quête de pas est active). Sans elle
+    /// la légende lirait « Dépensé ~0 / 0 » à chaque lancement à froid, et VoiceOver
+    /// « environ 0 sur 0 » : la cible ne dépend que du profil et du poids courant, rien
+    /// ne justifie de la faire attendre les pas.
+    ///
+    /// ⚠️ `burned` n'est délibérément PAS amorcé ici, et « symétriser » les deux serait
+    /// une faute : sans les pas il se calculerait en `.unavailable`, donc activités
+    /// MARCHÉES COMPRISES, puis redescendrait à l'arrivée de la lecture — le
+    /// clignotement vers le bas que `DailySteps` existe précisément pour empêcher. Il
+    /// reste à 0 jusqu'au premier calcul complet : l'anneau part vide et se remplit.
+    private func primeBurnTarget() {
+        burnTarget = game.burnTarget()
     }
 
     /// Deep link « + Repas » du widget : consomme le signal et ouvre la sheet
@@ -181,10 +239,22 @@ struct HomeView: View {
         showMealLog = true
     }
 
-    /// Rafraîchit l'encart séance ET la bulle (une validation dans la sheet peut
-    /// avoir attribué de l'XP d'activité, cf. `lastActivityXPAwarded`).
+    /// Rafraîchit l'encart séance, LA DÉPENSE DU JOUR et la bulle. Les trois, pas
+    /// deux : une séance jouée dans la sheet compte dans l'anneau intérieur, et
+    /// c'est par ici que l'accueil l'apprend. La bulle, elle, parce que la
+    /// validation peut avoir attribué de l'XP d'activité (cf. `lastActivityXPAwarded`).
     private func refreshSessionStatus() {
         sessionStatus = game.dailySessionStatus()
+        refreshBurnAndBubble()
+    }
+
+    /// Fermeture d'une sheet qui a pu changer la dépense du jour (activité validée,
+    /// séance jouée) ou sa cible (objectif de dépense des Réglages) : présenter une
+    /// sheet ne fait pas disparaître l'accueil, donc ni `.task` ni `onAppear` ne
+    /// rejouent au retour — sans ce rappel, l'anneau intérieur resterait sur la valeur
+    /// d'avant jusqu'au prochain changement d'onglet.
+    private func refreshBurnAndBubble() {
+        refreshBurn()
         updateBubble()
     }
 
@@ -298,7 +368,8 @@ struct HomeView: View {
 
     private var statsRow: some View {
         HStack(alignment: .top, spacing: 12) {
-            CalorieRingCard(eaten: kcalEaten, target: profile?.dailyCalorieTarget ?? 0)
+            CalorieRingCard(eaten: kcalEaten, target: profile?.dailyCalorieTarget ?? 0,
+                            burned: burned, burnTarget: burnTarget)
             VStack(spacing: 12) {
                 if let steps {
                     StepsCard(steps: steps, goal: profile?.dailyStepGoal ?? 8000)
@@ -426,8 +497,26 @@ private func homePreviewFixture(
         .environment(game)
 }
 
+#Preview("Dépense atteinte") {
+    // 8 000 pas à 90 kg ≈ 411 kcal, au-dessus de la cible (90 × 4 arrondie à 350) :
+    // la légende doit dire « Objectif de dépense atteint 🎉 » et l'anneau intérieur
+    // être plein — jamais de reproche au-delà (spec §5.5).
+    let (container, game) = homePreviewFixture(kcalEaten: 1240, totalXP: 780,
+                                               stepsAuthorized: true, steps: 8000)
+    return HomeView()
+        .fontDesign(.rounded)
+        .modelContainer(container)
+        .environment(game)
+}
+
 #Preview("Dépassé, sans HealthKit") {
-    let (container, game) = homePreviewFixture(kcalEaten: 2350, totalXP: 120, stepsAuthorized: false)
+    // `sessionDone: true` n'est pas décoratif : sans pas ET sans activité, la dépense
+    // vaudrait 0 et l'anneau intérieur serait invisible — or c'est précisément la
+    // preview qui sert à vérifier que les deux anneaux ne se confondent pas quand
+    // l'extérieur passe à `Theme.accent` (spec §5.5). Sans HealthKit, la séance compte
+    // en entier, marche comprise (spec §5.4).
+    let (container, game) = homePreviewFixture(kcalEaten: 2350, totalXP: 120,
+                                               stepsAuthorized: false, sessionDone: true)
     return HomeView()
         .fontDesign(.rounded)
         .modelContainer(container)
