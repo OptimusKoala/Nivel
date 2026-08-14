@@ -479,6 +479,39 @@
     "defaultGrams": 400
   },
   {
+    "id": "cod_papillote",
+    "name": "Papillote de cabillaud",
+    "emoji": "🐟",
+    "kcalPer100g": 95,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 430,
+    "isRecipe": true
+  },
+  {
+    "id": "leek_potato_soup",
+    "name": "Soupe poireaux-pommes de terre",
+    "emoji": "🥔",
+    "kcalPer100g": 78,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 430,
+    "isRecipe": true
+  },
+  {
     "id": "water",
     "name": "Eau",
     "emoji": "💧",

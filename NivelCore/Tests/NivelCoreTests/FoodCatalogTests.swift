@@ -86,14 +86,18 @@ final class FoodCatalogTests: XCTestCase {
         }
     }
 
-    /// 122 est une donnée, pas une règle de calcul : un ajout légitime au catalogue
-    /// doit faire bouger cette valeur, en même temps que le compte par catégorie
-    /// concerné dans `testChaqueOngletAfficheSonNombreDItems`. Les deux tests se
-    /// tiennent toujours, mais par la seconde ligne : depuis la 1.14 les onglets ne
-    /// montrent pas les recettes (§6.1), c'est donc le compte des aliments ORDINAIRES
-    /// que la somme des cinq catégories doit faire, pas la taille du fichier.
+    /// Deux données, pas des règles de calcul, et elles ne bougent PAS ensemble —
+    /// c'est tout l'intérêt d'en avoir deux depuis la 1.14 :
+    /// - un aliment ordinaire ajouté fait monter les DEUX, et avec elles le compte
+    ///   par catégorie concerné dans `testChaqueOngletAfficheSonNombreDItems` ;
+    /// - une recette ajoutée (§6.1) ne fait monter que la première : elle n'est ni
+    ///   dans un onglet ni parmi les aliments ordinaires, et les 30 plats restent 30.
+    ///
+    /// C'est la seconde ligne qui tient le lien avec `testChaqueOngletAfficheSonNombreDItems` :
+    /// les onglets ne montrant pas les recettes, la somme des cinq catégories doit
+    /// faire le compte des aliments ORDINAIRES, pas la taille du fichier.
     func testLaTailleDuCatalogue() {
-        XCTAssertEqual(catalog.items.count, 122, "le catalogue ne compte plus 122 aliments")
+        XCTAssertEqual(catalog.items.count, 124, "le catalogue ne compte plus 124 entrées")
         XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 122,
                        "les aliments ordinaires ne sont plus 122")
     }

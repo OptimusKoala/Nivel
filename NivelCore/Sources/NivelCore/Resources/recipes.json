@@ -1,0 +1,22 @@
+[
+  {
+    "itemID": "cod_papillote",
+    "months": [5, 6, 7, 8, 9],
+    "steps": [
+      "Pose le cabillaud sur une feuille de papier cuisson",
+      "Ajoute les courgettes en rondelles, un filet d'huile, du citron",
+      "Referme en papillote et enfourne 20 min à 180 °C",
+      "Ça cuit tout seul : profites-en pour mettre la table"
+    ]
+  },
+  {
+    "itemID": "leek_potato_soup",
+    "months": [11, 12, 1, 2, 3],
+    "steps": [
+      "Coupe les poireaux et les pommes de terre en morceaux",
+      "Couvre d'eau et laisse mijoter 25 min à petit feu",
+      "Mixe, ajoute une noisette de beurre et une cuillère de crème",
+      "Il y en aura pour demain soir : c'est encore meilleur réchauffé"
+    ]
+  }
+]
