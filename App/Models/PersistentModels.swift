@@ -85,10 +85,24 @@ final class UserProfile {
 }
 
 /// Mutations du frigo (spec v1.14 §6.3). Réassignation COMPLÈTE du tableau à chaque
-/// fois, jamais de mutation en place : c'est la règle que le code se répète depuis la
-/// v1 (`remindersEnabled`, `reminderTimes`) pour que SwiftData voie bien passer le
-/// changement. Un type à part plutôt que des méthodes sur la vue : la règle est ainsi
-/// écrite à UN endroit, et testable sans écran.
+/// fois — mais PAS pour la raison que ce dépôt écrivait depuis la v1.
+///
+/// L'énoncé historique (« une mutation en place ne déclenche pas la sauvegarde ») est
+/// FAUX sur ce SDK, mesuré au lot D avec les contrôles qui discriminent : `append` en
+/// place suivi de `save()` persiste, et sans `save()` la réassignation ne persiste pas
+/// davantage. `@Model` expose des accesseurs calculés, et le read-modify-write de Swift
+/// passe par le `set`.
+///
+/// Le vrai piège est ailleurs : la COPIE LOCALE qu'on oublie de réaffecter
+/// (`var x = profile.…` ; `x.append(…)` ; et rien derrière). C'est lui que
+/// `GameService.refreshQuests` évite en réassignant à la fin.
+///
+/// La réassignation reste donc l'idiome — elle est lisible, elle ne coûte rien, et elle
+/// rend l'oubli ci-dessus impossible à écrire. Elle n'est simplement pas obligatoire.
+/// Non mesuré : les relations to-many, que ce dépôt n'utilise pas.
+///
+/// Un type à part plutôt que des méthodes sur la vue : la règle est ainsi écrite à UN
+/// endroit, et testable sans écran.
 enum Pantry {
     static func toggle(_ itemID: String, on profile: UserProfile) {
         if profile.pantryItemIDs.contains(itemID) {

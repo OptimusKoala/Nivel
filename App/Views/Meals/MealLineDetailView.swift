@@ -228,7 +228,9 @@ struct MealLineDetailView: View {
     }
 
     /// Réassignation complète des composants (une ligne composée n'a pas de poids
-    /// propre à recalculer, spec §3.2) : jamais de mutation en place.
+    /// propre à recalculer, spec §3.2). C'est bien une copie locale modifiée puis
+    /// réaffectée — le seul motif qui compte, voir `Pantry` (PersistentModels.swift) :
+    /// oublier la réaffectation finale perd la modification, en silence.
     private func setGrams(itemID: String, grams: Int) {
         let bounded = max(1, grams)
         var components = line.components

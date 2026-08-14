@@ -1358,6 +1358,8 @@ Remplacer `remindersSection`, `reminderToggle` et `reminderBinding` par :
     //
     // Règle SwiftData commune aux trois : réassignation COMPLÈTE du dictionnaire,
     // jamais de mutation en place d'une collection d'un @Model.
+    // ⚠️ 1.14 : cet énoncé est FAUX (mesuré au lot D). L'idiome reste bon, sa
+    // justification non — voir `Pantry` dans App/Models/PersistentModels.swift.
 
     private func enabledBinding(_ id: String) -> Binding<Bool> {
         Binding(

@@ -110,8 +110,11 @@ extension SettingsContent {
 
     // MARK: Bindings
     //
-    // Règle SwiftData commune aux trois : réassignation COMPLÈTE du dictionnaire,
-    // jamais de mutation en place d'une collection d'un @Model.
+    // Réassignation COMPLÈTE du dictionnaire dans les trois. Ce n'est pas SwiftData
+    // qui l'exige — l'énoncé « une mutation en place ne sauvegarde pas » est faux,
+    // mesuré au lot D (voir `Pantry`, PersistentModels.swift) — c'est que le `set` d'un
+    // `Binding` réassigne de toute façon, et que l'idiome empêche d'écrire la vraie
+    // faute : la copie locale non réaffectée.
 
     private func enabledBinding(_ id: String) -> Binding<Bool> {
         Binding(

@@ -280,7 +280,7 @@ final class GameService {
         let previousKcal = entry.estimatedKcal
         let kcal = manualKcal ?? MealEstimator.kcal(lines: lines, kcalPer100g: foodCatalog.kcalPer100g)
         entry.slot = slot
-        // Réassignation complète (règle SwiftData : pas de mutation en place des collections).
+        // Réassignation complète : l'idiome du dépôt, voir `Pantry` (PersistentModels.swift).
         entry.lines = lines
         entry.manualKcal = manualKcal
         entry.estimatedKcal = kcal
@@ -352,8 +352,11 @@ final class GameService {
             stepsByDay = await stepsService.dailySteps(from: week.start, to: now) ?? [:]
         }
 
-        // Règle SwiftData : jamais de mutation en place des collections d'un @Model —
-        // copie locale, modification, puis réassignation complète.
+        // Copie locale, modification, puis réassignation complète. C'est ICI que se
+        // joue la vraie règle : la copie locale qu'on oublie de réaffecter en fin de
+        // boucle est perdue, et rien ne le signale. (Ce n'est pas « la mutation en place
+        // ne sauvegarde pas », énoncé faux, mesuré au lot D — voir `Pantry`.) La copie
+        // évite aussi N allers-retours d'accesseur pour N quêtes.
         var progress = state.questProgress
         var completedHistory = state.completedQuestIDs
         var completedThisWeek = state.completedThisWeekQuestIDs
