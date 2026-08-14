@@ -41,16 +41,16 @@ ZÉRO PRESSION, C'EST LA RÈGLE DU JEU
 Pas de rouge, pas de série à ne pas casser, pas de reproche. Un jour « raté » n'existe pas. Nivelito, le petit panda roux qui t'accompagne, encourage — il ne juge pas.
 
 LES REPAS EN TROIS GESTES
-Un catalogue de 85 aliments : plats composés, accompagnements, boissons, encas. L'estimation des calories s'affiche immédiatement, et tu peux descendre au détail de l'ingrédient et au gramme si tu en as envie — ou simplement saisir un chiffre à la main. Ton objectif quotidien est calculé à partir de ton profil (formule de Mifflin-St Jeor, moins un déficit doux).
+Un catalogue de 122 aliments : plats composés, ingrédients, boissons, encas, desserts. L'estimation des calories s'affiche immédiatement, et tu peux descendre au détail de l'ingrédient et au gramme si tu en as envie — ou simplement saisir un chiffre à la main. Ton objectif quotidien est calculé à partir de ton profil (formule de Mifflin-St Jeor, moins un déficit doux).
 
 DU SPORT TOUT DOUX
-20 activités et 11 séances composées, chacune illustrée par Nivelito, avec des consignes « comment faire » et un rythme suggéré. Marche, danse libre, yoga, gainage, étirements, ménage actif : rien d'intimidant.
+30 activités et 11 séances composées, chacune illustrée par Nivelito, avec des consignes « comment faire » et un rythme suggéré. Marche, danse libre, yoga, gainage, étirements, ménage actif : rien d'intimidant.
 
 UNE SÉANCE DU JOUR GUIDÉE
 Une étape par écran, un minuteur en anneau facultatif que tu lances seulement si tu le veux. Jamais d'avance automatique : c'est un guide, pas un chef.
 
 XP, NIVEAUX, QUÊTES ET BADGES
-18 quêtes hebdomadaires tirées le lundi, 24 badges à débloquer, une progression toujours visible et jamais de score négatif.
+25 quêtes hebdomadaires tirées le lundi, 38 badges à débloquer, une progression toujours visible et jamais de score négatif.
 
 DES PROGRÈS HONNÊTES
 Tendance de poids lissée plutôt que le chiffre brut du jour, pas quotidiens lus dans l'app Santé (facultatif), historique de tes journées.
@@ -69,16 +69,17 @@ Nivel est en français, conçu et développé en France, et son code est ouvert 
 Nivel n'est pas un dispositif médical et ne remplace pas l'avis d'un professionnel de santé.
 ```
 
-**Nouveautés de cette version** (4 000 max — version 1.13)
+**Nouveautés de cette version** (4 000 max — version 1.14)
 
 ```
-Six retours d'usage de la première semaine, dont deux corrections.
+Des idées de repas de saison, un programme muscu, et une app qui sait ce que tu dépenses.
 
-• Le widget reste lisible quand l'écran d'accueil est en mode transparent ou teinté : Nivelito ne se réduit plus à une silhouette blanche.
-• Nouveau bouton « Noter une activité » sur l'accueil, pour déclarer ce que tu viens de faire sans passer par l'onglet Sport.
-• « Logger un repas » devient « Noter un repas », et le bouton est maintenant aussi dans l'onglet Repas.
-• Dans un repas en cours, un élément se retire d'un glissement vers la gauche.
-• Les annonces de trophée s'écartent d'un glissement vers le haut, quand tu n'as pas envie de les lire.
+• Chaque jour, trois idées de repas légers de saison dans l'onglet Repas. Coche ce que tu as dans le frigo, elles se classent toutes seules — et se notent en un geste, ingrédients compris.
+• 35 recettes, de la papillote d'été à la soupe d'hiver, avec la préparation en trois ou quatre lignes.
+• 37 aliments de plus au catalogue, dont une nouvelle catégorie Desserts.
+• Un anneau de dépense sur l'accueil : les pas et le sport du jour, à côté de ce que tu as mangé. Indicatif, jamais crédité à ton budget.
+• Dix mouvements de plus côté Sport, et un programme muscu de cinq séances qui tourne sur la semaine, si tu veux pousser un peu.
+• 14 trophées et 4 quêtes de plus, et une courbe de niveaux qui garde du souffle sur la durée.
 ```
 
 **Mots-clés** (100 max — 94 utilisés, séparés par des virgules sans espace)
@@ -202,19 +203,22 @@ Merci !
 
 ## 8. Captures d'écran
 
-Huit captures 6,9 pouces (1320 × 2868), dans `docs/appstore/framed/`, à téléverser **dans
-cet ordre** — les trois premières sont les seules visibles sans faire défiler :
+Dix captures 6,9 pouces (1320 × 2868), dans `docs/appstore/framed/`, à téléverser **dans
+cet ordre** — les trois premières sont les seules visibles sans faire défiler, et c'est
+pourquoi les idées de saison, la nouveauté de la 1.14, sont en deuxième position :
 
 | # | Fichier | Accroche |
 |---|---|---|
 | 1 | `01-home.png` | Ta journée d'un coup d'œil |
-| 2 | `02-meallog.png` | Un repas en trois gestes |
-| 3 | `03-sport.png` | Tout doux, ou ça pousse |
-| 4 | `04-session.png` | Nivelito bouge avec toi |
-| 5 | `05-step.png` | Une étape par écran |
-| 6 | `06-progress.png` | Des progrès honnêtes |
-| 7 | `07-quests.png` | Des quêtes, zéro reproche |
-| 8 | `08-night.png` | Quatre thèmes cozy |
+| 2 | `09-idees.png` | Des idées de saison |
+| 3 | `02-meallog.png` | Un repas en trois gestes |
+| 4 | `10-recette.png` | La recette, puis c'est noté |
+| 5 | `03-sport.png` | Tout doux, ou ça pousse |
+| 6 | `04-session.png` | Nivelito bouge avec toi |
+| 7 | `05-step.png` | Une étape par écran |
+| 8 | `06-progress.png` | Des progrès honnêtes |
+| 9 | `07-quests.png` | Des quêtes, zéro reproche |
+| 10 | `08-night.png` | Quatre thèmes cozy |
 
 La taille 6,9 pouces est la seule exigée pour l'iPhone : App Store Connect s'en sert pour
 toutes les tailles inférieures. Les captures brutes, sans habillage, sont dans
