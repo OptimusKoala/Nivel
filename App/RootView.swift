@@ -68,7 +68,8 @@ private struct MainTabView: View {
             switch ScreenshotMode.screen {
             // Les deux feuilles d'action se présentent depuis l'accueil.
             case .home, .meallog, .activitylog: return .home
-            case .meals: return .meals
+            // La bande d'idées et sa fiche vivent dans l'onglet Repas (spec §6.4).
+            case .meals, .idees, .recette: return .meals
             case .sport, .session, .step: return .sport
             case .progress: return .progress
             case .quests: return .quests

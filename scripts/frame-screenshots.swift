@@ -93,6 +93,14 @@ let shots: [Shot] = [
          title: "Quatre thèmes cozy",
          subtitle: "Crème, Menthe, Océan et Nuit douce.",
          palette: night),
+    Shot(file: "09-idees",
+         title: "Des idées de saison",
+         subtitle: "Classées selon ce que tu as déjà dans le frigo.",
+         palette: light),
+    Shot(file: "10-recette",
+         title: "La recette, puis c'est noté",
+         subtitle: "Les ingrédients, la préparation, et hop, dans le journal.",
+         palette: light),
 ]
 
 // MARK: - Texte

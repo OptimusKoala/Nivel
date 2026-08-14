@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0185ED5CBF4E4F62BDFFDD64 /* IconAssetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D23EC46E843C0AB08C1D436 /* IconAssetsTests.swift */; };
 		0375D5C747818288487770AE /* ReminderSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */; };
+		03AAB3EA20253F25A45A4199 /* ScreenshotIdeasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C83E7CFF76D5CC970B5615 /* ScreenshotIdeasTests.swift */; };
 		059EE6DBE7DF77207ED03B69 /* OnboardingIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213BA90A0D04CBB6102E11CA /* OnboardingIdentityTests.swift */; };
 		085EF23B75C84D733EE86136 /* ActionCardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A386F7B198F3FB996AF79B /* ActionCardButton.swift */; };
 		095D03B9F4DFEDE000996FA1 /* RecipeStripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF87114F87B380EA8346D082 /* RecipeStripTests.swift */; };
@@ -264,6 +265,7 @@
 		CD88F18972D8921623E8DFFB /* CelebrationDismissTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationDismissTests.swift; sourceTree = "<group>"; };
 		D009F36F650CE2DC1B51ADCD /* MuscuPlanSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscuPlanSettingsTests.swift; sourceTree = "<group>"; };
 		D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCalorieRing.swift; sourceTree = "<group>"; };
+		D4C83E7CFF76D5CC970B5615 /* ScreenshotIdeasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotIdeasTests.swift; sourceTree = "<group>"; };
 		D5C1B7BBD4E5939392380700 /* IdeasJourneyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdeasJourneyTests.swift; sourceTree = "<group>"; };
 		D9245CF3C47048DB9D88C2E5 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
 		DC2CFCDDF307B46E6407F604 /* MealLineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLineDetailView.swift; sourceTree = "<group>"; };
@@ -542,6 +544,7 @@
 				0F0A25ADDD52927515408A2F /* ProfileNameSettingsTests.swift */,
 				BF87114F87B380EA8346D082 /* RecipeStripTests.swift */,
 				37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */,
+				D4C83E7CFF76D5CC970B5615 /* ScreenshotIdeasTests.swift */,
 				E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */,
 				544B9CEDBA3774256FB86048 /* SoundAssetsTests.swift */,
 				C469C8E725B6F5111FEA5290 /* SoundPlayerTests.swift */,
@@ -893,6 +896,7 @@
 				68FC7AB0B8348D9985A35645 /* ProfileNameSettingsTests.swift in Sources */,
 				095D03B9F4DFEDE000996FA1 /* RecipeStripTests.swift in Sources */,
 				0375D5C747818288487770AE /* ReminderSettingsTests.swift in Sources */,
+				03AAB3EA20253F25A45A4199 /* ScreenshotIdeasTests.swift in Sources */,
 				6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */,
 				B68B1D038E169E9553B91658 /* SoundAssetsTests.swift in Sources */,
 				4419A082321509FEF4A7F929 /* SoundPlayerTests.swift in Sources */,

@@ -25,6 +25,11 @@ enum ScreenshotMode {
     /// Écran demandé pour cette exécution.
     enum Screen: String {
         case home, meallog, activitylog, meals, sport, session, step, progress, quests
+        /// La bande d'idées de saison (v1.14 §6.4), et la fiche recette par-dessus.
+        /// Deux écrans et non un seul, pour la même raison que `meallog` est distinct
+        /// de `home` : la fiche est présentée en `.large`, elle couvre la bande — une
+        /// seule capture ne peut pas montrer les deux.
+        case idees, recette
     }
 
     static let isEnabled = ProcessInfo.processInfo.arguments.contains("--nivel-screenshots")
@@ -49,6 +54,70 @@ enum ScreenshotMode {
     /// exact d'`autoOpensMealLog`, pour pouvoir capturer et relire le second bouton
     /// d'action sans avoir à simuler un tap.
     static var autoOpensActivityPicker: Bool { isEnabled && screen == .activitylog }
+
+    /// Ouvre d'office la fiche de la PREMIÈRE idée de la bande — même montage que les
+    /// deux crochets ci-dessus. Le lot D a laissé la fiche présentée depuis un état de
+    /// `MealsJournalView` (`shownRecipe`) précisément pour rendre ceci possible.
+    static var autoOpensRecipeDetail: Bool { isEnabled && screen == .recette }
+
+    // MARK: - Les idées de saison (écrans `idees` et `recette`)
+
+    /// Les deux écrans qui montrent les idées. Ils partagent le frigo garni et la date
+    /// épinglée ci-dessous ; tous les autres gardent le frigo vide et l'horloge réelle.
+    static var showsIdeas: Bool { isEnabled && (screen == .idees || screen == .recette) }
+
+    /// Date de référence de la bande d'idées pour ces deux écrans.
+    ///
+    /// TROIS choses de la bande dépendent de l'instant, et aucune n'est figée par
+    /// `scripts/screenshots.sh`, qui ne fige que la barre d'état : le créneau visé
+    /// (déjeuner jusqu'à 15 h, dîner ensuite), le mois gravé dans le titre (« · août »),
+    /// et la rotation des idées incomplètes, qui tourne avec le jour de l'année. Sans
+    /// épinglage, une capture prise l'après-midi grave « Idées pour ce soir » au-dessus
+    /// d'une barre d'état à 9 h 41 — l'image se contredit toute seule sur l'App Store —
+    /// et deux tournages à deux jours d'écart ne donnent pas les mêmes trois plats.
+    ///
+    /// 13 août 2026, 9 h 41 : l'heure EXACTE de la barre d'état (d'où « Idées pour ce
+    /// midi »), et la date de la 1.14, en pleine saison des recettes d'été. Une sortie
+    /// d'hiver n'aura qu'à changer ces quatre nombres — et à revoir `demoPantry`, dont
+    /// l'éloquence est vérifiée à cette date-là par `ScreenshotIdeasTests`.
+    ///
+    /// Le repli est inatteignable (ces composantes-là existent dans tout calendrier
+    /// grégorien) mais `Calendar.date(from:)` est optionnel et ne se force pas ici :
+    /// un `!` dans du code de captures ferait planter le tournage plutôt que de rendre
+    /// une image imparfaite.
+    static let ideasReferenceDate: Date = GameService.calendar.date(
+        from: DateComponents(year: 2026, month: 8, day: 13, hour: 9, minute: 41)
+    ) ?? .now
+
+    /// La même, mais `nil` hors mode captures : c'est ce que `MealsJournalView`
+    /// interroge, et l'app y lit son horloge partout ailleurs.
+    static var ideasReference: Date? { showsIdeas ? ideasReferenceDate : nil }
+
+    /// Le frigo du profil de démonstration.
+    ///
+    /// Posé sur le profil pour les SEULS écrans d'idées (voir `seed`), et c'est
+    /// essentiel : `NivelUITests/IdeasJourneyTests` part de l'écran `meals` et du frigo
+    /// VIDE — cartes muettes sur ce qui manque, carte d'invitation 🧺 en bout de bande —
+    /// puis le garnit lui-même. Garnir sans condition casserait
+    /// `testLeFrigoChangeCeQueLaBandeDit` dès sa première assertion.
+    ///
+    /// Ces huit ingrédients-là, à la date épinglée, donnent une bande en GRADATION :
+    /// « Omelette et salade de tomates » dont on a tout, « Gaspacho et pain grillé » à
+    /// « Il manque 1 », « Salade de lentilles » à « Il manque 2 ». C'est ce qui se
+    /// montre le mieux sur une image : deux cartes « Tu as tout ✓ » côte à côte
+    /// prouvent surtout que l'exemple a été arrangé, tandis qu'une gradation montre le
+    /// classement en train de faire son travail.
+    ///
+    /// Et rien ne s'y répète en pictogramme — ni les trois cartes entre elles (🍳 🍅
+    /// 🥗), ni les ingrédients de la fiche ouverte. Ce n'est pas automatique : le
+    /// catalogue donne facilement deux 🍅 côte à côte (« Gaspacho » et « Tomates et
+    /// mozzarella ») ou deux 🫒 dans une même fiche (« Olives » et « Huile d'olive »),
+    /// et sur une capture App Store deux pictogrammes identiques voisins se lisent
+    /// comme un défaut de rendu, pas comme un catalogue. Les répétitions d'emoji du
+    /// catalogue RESTENT (décision du propriétaire) : c'est le frigo de démonstration
+    /// qui les contourne, et `ScreenshotIdeasTests` qui l'en empêche de dériver.
+    static let demoPantry = ["egg", "tomato", "lettuce", "bread",
+                             "butter", "green_veg", "tomato_sauce", "grated_cheese"]
 
     // MARK: - Environnement d'exécution
 
@@ -116,6 +185,9 @@ enum ScreenshotMode {
             createdAt: day(-40)
         )
         context.insert(profile)
+        // Le frigo : garni pour les seuls écrans d'idées, vide partout ailleurs — voir
+        // `demoPantry`, dont l'en-tête dit ce que ce `if` protège.
+        if showsIdeas { profile.pantryItemIDs = demoPantry }
 
         // --- Pesées : 78,4 → 74,6 kg en huit semaines, avec les paliers du réel ---
         let weights: [(offset: Int, kg: Double)] = [

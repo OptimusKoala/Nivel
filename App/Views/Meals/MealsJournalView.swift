@@ -43,7 +43,23 @@ struct MealsJournalView: View {
     /// premier plan (voir `.task(id:)` et `onChange(of: scenePhase)`) : figé pour la
     /// vie de la vue, il annonçait « Idées pour ce soir » à 0 h 30 à qui avait laissé
     /// l'app ouverte depuis 21 h et tapait « → » pour revenir sur le jour nouveau.
-    @State private var ideasReference = Date.now
+    @State private var ideasReference = Self.ideasNow
+
+    /// L'instant que la bande prend pour référence : `.now`, sauf en mode captures où
+    /// il est ÉPINGLÉ (`ScreenshotMode.ideasReference` en dit le pourquoi).
+    ///
+    /// Le point d'injection est ici et nulle part ailleurs parce que `ideasReference`
+    /// est déjà l'unique entonnoir par lequel l'instant atteint la bande — le cadrage
+    /// et le classement n'en connaissent pas d'autre. Épingler plus haut (l'horloge de
+    /// l'app, ou le `today` du journal) déplacerait aussi « aujourd'hui », et le jeu de
+    /// démonstration, lui, est daté sur l'instant RÉEL du tournage : le journal du jour
+    /// et ses repas se videraient sous la bande.
+    private static var ideasNow: Date {
+        #if DEBUG
+        if let pinned = ScreenshotMode.ideasReference { return pinned }
+        #endif
+        return .now
+    }
 
     /// La recette dont la fiche est ouverte, AVEC le créneau que la bande visait quand
     /// on a tapé sa carte : c'est lui que la feuille de saisie pré-sélectionnera, et le
@@ -123,8 +139,12 @@ struct MealsJournalView: View {
     /// Créneau, mois, et l'affichage même de la bande : TOUT est décidé par une
     /// fonction pure et testée. ⚠️ Et surtout pas par `MealSlot.suggested(forHour:)`,
     /// qui répond à une autre question — voir `RecipeStrip.targetSlot(forHour:)`.
-    private var stripFraming: RecipeStrip.Framing? {
-        RecipeStrip.framing(at: ideasReference, isToday: isToday, calendar: calendar)
+    /// L'instant est un PARAMÈTRE et non `ideasReference` relu ici : l'ouverture
+    /// automatique de la fiche (mode captures, plus bas) appelle ces deux fonctions
+    /// dans la passe même où l'état vient d'être assigné, et SwiftUI ne promet à
+    /// personne qu'un `@State` relu aussitôt après son écriture rende la valeur neuve.
+    private func stripFraming(at reference: Date) -> RecipeStrip.Framing? {
+        RecipeStrip.framing(at: reference, isToday: isToday, calendar: calendar)
     }
 
     /// Recalculées à chaque passe de rendu, et c'est voulu : l'appel coûte 10 µs en
@@ -137,10 +157,25 @@ struct MealsJournalView: View {
     /// millisecondes et non en microsecondes. Dette connue, assumée, et hors de cette
     /// tâche — chiffrer la moitié bon marché en se taisant sur l'autre serait pire que
     /// ne rien chiffrer.
-    private func suggestions(for framing: RecipeStrip.Framing) -> [RecipeSuggestion] {
-        RecipeSuggester.suggestions(date: ideasReference, slot: framing.slot, pantry: pantry,
+    private func suggestions(for framing: RecipeStrip.Framing,
+                            at reference: Date) -> [RecipeSuggestion] {
+        RecipeSuggester.suggestions(date: reference, slot: framing.slot, pantry: pantry,
                                     recipes: recipes, foods: catalog, calendar: calendar)
     }
+
+    #if DEBUG
+    /// Ouvre d'office la fiche de la PREMIÈRE idée de la bande — captures App Store
+    /// (`scripts/screenshots.sh`, écran `recette`), absent du binaire de release.
+    /// Miroir des `autoOpensMealLog` / `autoOpensActivityPicker` de l'accueil, à ceci
+    /// près qu'il faut d'abord savoir QUOI ouvrir : la fiche n'existe pas sans sa
+    /// suggestion ni sans le créneau que la bande visait.
+    private func openFirstIdeaForScreenshots(at reference: Date) {
+        guard ScreenshotMode.autoOpensRecipeDetail,
+              let framing = stripFraming(at: reference),
+              let first = suggestions(for: framing, at: reference).first else { return }
+        shownRecipe = ShownRecipe(suggestion: first, slot: framing.slot)
+    }
+    #endif
 
     // MARK: Corps
 
@@ -159,8 +194,9 @@ struct MealsJournalView: View {
                 // vérifié à l'image, catalogue vidé, les deux rendus sont identiques au
                 // pixel près. Un second garde ici ne servirait qu'à écrire deux fois la
                 // même règle.
-                if let framing = stripFraming {
-                    RecipeStrip(suggestions: suggestions(for: framing), framing: framing,
+                if let framing = stripFraming(at: ideasReference) {
+                    RecipeStrip(suggestions: suggestions(for: framing, at: ideasReference),
+                                framing: framing,
                                 foods: catalog, pantryIsEmpty: pantry.isEmpty,
                                 onPick: { shownRecipe = ShownRecipe(suggestion: $0, slot: framing.slot) },
                                 onOpenPantry: { showPantry = true })
@@ -188,13 +224,17 @@ struct MealsJournalView: View {
         // aujourd'hui après minuit doit rendre les idées du jour nouveau, pas celles
         // calculées sur l'heure de la veille.
         .task(id: selectedDay) {
-            ideasReference = .now
+            let reference = Self.ideasNow
+            ideasReference = reference
             reloadDayMeals()
+            #if DEBUG
+            openFirstIdeaForScreenshots(at: reference)
+            #endif
         }
         // Et au retour de veille : l'app laissée ouverte sur cet onglet ne rejoue
         // aucun `.task`, et garderait « Idées pour ce midi » jusqu'au soir.
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { ideasReference = .now }
+            if phase == .active { ideasReference = Self.ideasNow }
         }
         // Les sheets mutent le store (log/édition) → recharge à la fermeture.
         .sheet(item: $editingEntry, onDismiss: reloadDayMeals) { entry in
