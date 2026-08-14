@@ -19,5 +19,9 @@
   {"id": "daily_sessions_2", "title": "Fais 2 séances du jour",              "icon": "icon_calendar",    "metric": "dailySessionsDone",  "target": 2,     "requiresSteps": false},
   {"id": "posture_sessions_3", "title": "Fais 3 séances posture cette semaine", "icon": "icon_wave",   "metric": "postureSessionsDone", "target": 3, "requiresSteps": false, "requiresPosture": true},
   {"id": "posture_sessions_4", "title": "Fais 4 séances posture cette semaine", "icon": "icon_repeat", "metric": "postureSessionsDone", "target": 4, "requiresSteps": false, "requiresPosture": true},
-  {"id": "posture_sessions_5", "title": "Fais 5 séances posture cette semaine", "icon": "icon_heart",  "metric": "postureSessionsDone", "target": 5, "requiresSteps": false, "requiresPosture": true}
+  {"id": "posture_sessions_5", "title": "Fais 5 séances posture cette semaine", "icon": "icon_heart",  "metric": "postureSessionsDone", "target": 5, "requiresSteps": false, "requiresPosture": true},
+  {"id": "muscu_sessions_2",   "title": "Fais 2 séances muscu",                 "icon": "💪",           "metric": "muscuSessionsDone",   "target": 2, "requiresSteps": false, "requiresMuscu": true},
+  {"id": "muscu_sessions_3",   "title": "Fais 3 séances muscu",                 "icon": "icon_tree",   "metric": "muscuSessionsDone",   "target": 3, "requiresSteps": false, "requiresMuscu": true},
+  {"id": "muscu_sessions_4",   "title": "Fais 4 séances muscu",                 "icon": "🦾",           "metric": "muscuSessionsDone",   "target": 4, "requiresSteps": false, "requiresMuscu": true},
+  {"id": "burn_target_3",      "title": "3 jours à ton objectif de dépense",    "icon": "icon_flame",  "metric": "burnTargetDays",      "target": 3, "requiresSteps": false}
 ]

@@ -422,6 +422,27 @@ final class GameService {
             return dailySessionDayCount(from: week.start, to: week.end)
         case .postureSessionsDone:
             return postureSessionDayCount(from: week.start, to: week.end)
+        case .muscuSessionsDone:
+            // Des ENTRÉES et non des jours distincts, contrairement à
+            // `postureSessionsDone` juste au-dessus : c'est la définition unique de la
+            // métrique `muscuSessionsDone` (spec v1.14 §5.6, « ActivityEntry de kind
+            // .muscu »), celle que compte déjà le badge du même nom.
+            //
+            // Aujourd'hui les deux comptages COÏNCIDENT : la rotation n'expose qu'une
+            // séance muscu par jour (`MuscuCatalog.session(for:)`) et la carte affiche
+            // « Déjà faite » dès qu'une entrée existe pour le jour — une seconde entrée
+            // `.muscu` le même jour est donc inatteignable par l'interface. La
+            // distinction ne deviendrait visible que si une version future ouvrait la
+            // séance muscu libre : `muscu_sessions_4` serait alors complétable en un
+            // soir là où `posture_sessions_4` demande quatre jours, la seconde séance ne
+            // rapportant ni XP (plafond 1/jour) ni compteur mensuel.
+            return activityCount(from: week.start, to: week.end, kind: .muscu)
+        case .burnTargetDays:
+            // Uniquement les journées clôturées, comme `daysWithinTarget` : le verdict
+            // "objectif de dépense atteint" est figé par le DayCloser (§5.6), et la
+            // journée en cours peut encore basculer. Corollaire assumé : la quête ne
+            // peut pas se compléter le dimanche soir sur la journée du dimanche.
+            return closedDayLogs(from: week.start, to: week.end).count(where: \.burnTargetReached)
         }
     }
 

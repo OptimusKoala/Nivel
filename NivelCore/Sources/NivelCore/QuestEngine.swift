@@ -4,7 +4,8 @@ public struct Quest: Codable, Identifiable, Hashable, Sendable {
     public enum Metric: String, Codable, Sendable {
         case mealsLogged, weeklySteps, weighIns,
              daysWithinTarget, daysWithoutAlcohol, lightDessertDays, stepGoalDays,
-             activitiesDone, dailySessionsDone, postureSessionsDone
+             activitiesDone, dailySessionsDone, postureSessionsDone,
+             muscuSessionsDone, burnTargetDays
     }
     public let id: String
     public let title: String
@@ -19,13 +20,18 @@ public struct Quest: Codable, Identifiable, Hashable, Sendable {
     /// les quêtes chez Michaël ET chez Marion. `decodeIfPresent` dans un `init(from:)`
     /// explicite, comme `SessionStep.segments` en v1.5.
     public let requiresPosture: Bool
+    /// Programme muscu maison (spec v1.14 §5.7) : miroir exact de `requiresPosture`,
+    /// même décodage optionnel par défaut à faux, et pour la même raison — les 21
+    /// entrées d'avant la 1.14 ne portent pas ce champ.
+    public let requiresMuscu: Bool
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, icon, metric, target, requiresSteps, slot, requiresPosture
+        case id, title, icon, metric, target, requiresSteps, slot, requiresPosture, requiresMuscu
     }
 
     public init(id: String, title: String, icon: CatalogIcon, metric: Metric, target: Int,
-                requiresSteps: Bool, slot: MealSlot? = nil, requiresPosture: Bool = false) {
+                requiresSteps: Bool, slot: MealSlot? = nil, requiresPosture: Bool = false,
+                requiresMuscu: Bool = false) {
         self.id = id
         self.title = title
         self.icon = icon
@@ -34,6 +40,7 @@ public struct Quest: Codable, Identifiable, Hashable, Sendable {
         self.requiresSteps = requiresSteps
         self.slot = slot
         self.requiresPosture = requiresPosture
+        self.requiresMuscu = requiresMuscu
     }
 
     public init(from decoder: any Decoder) throws {
@@ -46,6 +53,7 @@ public struct Quest: Codable, Identifiable, Hashable, Sendable {
         requiresSteps = try container.decode(Bool.self, forKey: .requiresSteps)
         slot = try container.decodeIfPresent(MealSlot.self, forKey: .slot)
         requiresPosture = try container.decodeIfPresent(Bool.self, forKey: .requiresPosture) ?? false
+        requiresMuscu = try container.decodeIfPresent(Bool.self, forKey: .requiresMuscu) ?? false
     }
 }
 
@@ -58,7 +66,7 @@ public enum QuestEngine {
     }
 
     /// Tirage déterministe (seedé par weekID) de 3 quêtes du pool, sans HealthKit → sans quêtes de pas,
-    /// programme posture éteint → sans quêtes posture.
+    /// programme posture éteint → sans quêtes posture, programme muscu éteint → sans quêtes muscu.
     /// ⚠️ Repose sur le comportement de `Array.shuffled(using:)`, un détail d'implémentation de la
     /// stdlib non contractuel : s'il change entre versions de Swift, les tirages pour un même weekID
     /// changeraient silencieusement. Voir le test de régression `testWeeklyDrawIsPinnedForKnownWeek`.
@@ -73,14 +81,27 @@ public enum QuestEngine {
     ///   le lot. Ce n'est pas un bug : le tirage n'a jamais été une promesse stable dans le temps, il
     ///   l'est seulement à pool constant.
     ///
-    /// Cas de l'extinction en cours de semaine : si le programme est éteint après le tirage du lundi,
-    /// une quête `requiresPosture` déjà active peut devenir inatteignable. On ne fait RIEN de spécial
-    /// ici : elle reste à sa progression, ne se complète pas, et le lundi suivant en tire une autre.
-    /// C'est exactement le comportement d'une quête non finie dans cette app (spec §7.3) ; la retirer
-    /// de force serait la seule fois où l'app reprendrait quelque chose. `weeklyDraw` ne purge donc
-    /// jamais `activeQuestIDs` a posteriori, il ne fait que décider le tirage SUIVANT.
-    public static func weeklyDraw(pool: [Quest], weekID: String, stepsAvailable: Bool, postureAvailable: Bool) -> [Quest] {
-        let eligible = pool.filter { (stepsAvailable || !$0.requiresSteps) && (postureAvailable || !$0.requiresPosture) }
+    /// `muscuAvailable` est le miroir exact de `postureAvailable`, et les deux drapeaux sont
+    /// INDÉPENDANTS : allumer la muscu ne rend pas les quêtes posture tirables (d'où le `&&`, jamais
+    /// un `||`). Attention à la portée de la promesse ci-dessus : elle ne vaut que pour les quêtes
+    /// À DRAPEAU. La 1.14 ajoute aussi `burn_target_3`, qui n'en porte aucun, donc le pool éligible
+    /// de tout le monde passe de 18 à 19 entrées et **les tirages changent, y compris chez Michaël**.
+    /// C'est l'effet recherché — une quête pour tout le monde n'a d'intérêt que si elle peut sortir.
+    ///
+    /// Cas de l'extinction en cours de semaine : si un programme est éteint après le tirage du lundi,
+    /// une quête `requiresPosture` ou `requiresMuscu` déjà active peut devenir inatteignable. On ne
+    /// fait RIEN de spécial ici : elle reste à sa progression, ne se complète pas, et le lundi suivant
+    /// en tire une autre. C'est exactement le comportement d'une quête non finie dans cette app
+    /// (spec §7.3) ; la retirer de force serait la seule fois où l'app reprendrait quelque chose.
+    /// `weeklyDraw` ne purge donc jamais `activeQuestIDs` a posteriori, il ne fait que décider le
+    /// tirage SUIVANT.
+    public static func weeklyDraw(pool: [Quest], weekID: String, stepsAvailable: Bool,
+                                  postureAvailable: Bool, muscuAvailable: Bool) -> [Quest] {
+        let eligible = pool.filter {
+            (stepsAvailable || !$0.requiresSteps)
+                && (postureAvailable || !$0.requiresPosture)
+                && (muscuAvailable || !$0.requiresMuscu)
+        }
         var generator = SeededGenerator(seed: fnv1a(weekID))
         return Array(eligible.shuffled(using: &generator).prefix(3))
     }

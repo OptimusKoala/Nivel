@@ -423,4 +423,53 @@ final class GameServiceTests: XCTestCase {
         await service.logMeal(slot: .dinner, lines: pastaLines)
         XCTAssertEqual(service.badgeStats().recipesLogged, 0)
     }
+
+    // MARK: - Quêtes de la 1.14 (spec §5.7)
+
+    /// La métrique de quête `muscuSessionsDone` compte comme le badge du même nom : des
+    /// ENTRÉES, et non des jours distincts comme `postureSessionsDone`.
+    ///
+    /// Ce test exerce donc un chemin que l'INTERFACE INTERDIT : la rotation n'expose
+    /// qu'une séance muscu par jour et la carte affiche « Déjà faite » ensuite, si bien
+    /// que la double séance du mercredi ci-dessous n'est atteignable que par le service.
+    /// C'est voulu — il verrouille la MÉTRIQUE, pas le parcours, pour qu'une version
+    /// future qui ouvrirait la séance muscu libre ne change pas silencieusement le
+    /// comptage. Aujourd'hui, entrées et jours distincts donnent le même chiffre.
+    ///
+    /// Semaine fixe (mercredi/jeudi de la même semaine ISO), aucun flake au bord d'une semaine.
+    func testLaQueteMuscuCompteLesEntreesPasLesJours() async throws {
+        let day1 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+        let day2 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 19)))
+        let session = try XCTUnwrap(service.muscuCatalog.session(for: day1, calendar: GameService.calendar))
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: day1, calendar: GameService.calendar)
+        state.activeQuestIDs = ["muscu_sessions_4"]
+        try context.save()
+
+        await service.logMuscuSession(session: session, date: day1)
+        await service.logMuscuSession(session: session, date: day1)
+        await service.logMuscuSession(session: session, date: day2)
+
+        await service.refreshQuestProgress(now: day2)
+        XCTAssertEqual(state.questProgress["muscu_sessions_4"], 3,
+                       "compté en jours distincts, la double séance du mercredi n'en vaudrait que 2")
+    }
+
+    /// La quête `burn_target_3` ne compte que les journées CLÔTURÉES, comme
+    /// `daysWithinTarget` : le verdict est figé par le DayCloser et la journée en cours
+    /// peut encore basculer. Miroir exact du test du badge `burnTargetDays`.
+    func testLaQueteDeDepenseNeCompteQueLesJourneesCloturees() async throws {
+        let day1 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+        let day2 = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 19)))
+        let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
+        state.questWeekID = QuestEngine.weekID(for: day1, calendar: GameService.calendar)
+        state.activeQuestIDs = ["burn_target_3"]
+        context.insert(DayLog(day: day1, closed: true, burnTargetReached: true))
+        context.insert(DayLog(day: day2, closed: false, burnTargetReached: true))
+        try context.save()
+
+        await service.refreshQuestProgress(now: day2)
+        XCTAssertEqual(state.questProgress["burn_target_3"], 1,
+                       "la journée encore ouverte ne compte pas")
+    }
 }

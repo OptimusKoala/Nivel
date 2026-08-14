@@ -464,9 +464,11 @@ private func homePreviewFixture(
 
     let quests = (try? Catalogs.quests()) ?? []
     let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
-    // postureAvailable: false — fixture de preview Xcode, sans effet en dehors du
-    // canvas ; ce n'est pas un des deux appelants réels (DayCloser, OnboardingFlow).
-    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: stepsAuthorized, postureAvailable: false)
+    // postureAvailable/muscuAvailable: false — fixture de preview Xcode, sans effet en
+    // dehors du canvas ; ce n'est pas un des deux appelants réels (DayCloser,
+    // OnboardingFlow).
+    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: stepsAuthorized,
+                                        postureAvailable: false, muscuAvailable: false)
     context.insert(GamificationState(
         totalXP: totalXP,
         activeQuestIDs: active.map(\.id),

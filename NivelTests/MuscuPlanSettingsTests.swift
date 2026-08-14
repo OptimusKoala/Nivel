@@ -1,7 +1,7 @@
 // NivelTests/MuscuPlanSettingsTests.swift
 // Interrupteur du programme muscu, par appareil (spec v1.14 §4.4). Miroir de
-// PosturePlanTests : mêmes garanties, second programme. Pas de test d'extinction en
-// cours de semaine ici — aucune quête ne dépend du programme muscu.
+// PosturePlanTests : mêmes garanties, second programme — y compris l'extinction en
+// cours de semaine, depuis que trois quêtes dépendent du programme (spec §5.7).
 
 import XCTest
 import SwiftData
@@ -93,5 +93,31 @@ final class MuscuPlanSettingsTests: XCTestCase {
         let profile = makeProfile()
         settings.setEnabled(true, on: profile)
         XCTAssertNil(profile.remindersEnabled["posture"])
+    }
+
+    // MARK: - Extinction en cours de semaine (spec v1.14 §5.7 : aucune purge de quête)
+
+    /// Miroir du test posture, depuis que les trois quêtes muscu existent : éteindre le
+    /// programme alors qu'une quête muscu est active pour la semaine ne doit RIEN faire
+    /// de plus que le rappel et l'affichage. La quête reste à sa progression, ne se
+    /// complète pas, et le lundi suivant en tire une autre — la retirer de force serait
+    /// la seule fois où l'app reprendrait quelque chose.
+    func testEteindreEnCoursDeSemaineNePurgePasLesQuetes() throws {
+        let settings = makeSettings()
+        let profile = makeProfile()
+        let state = GamificationState(
+            totalXP: 200,
+            activeQuestIDs: ["muscu_sessions_3"],
+            questWeekID: "2026-W32",
+            questProgress: ["muscu_sessions_3": 2]
+        )
+        container.mainContext.insert(state)
+        try container.mainContext.save()
+
+        settings.setEnabled(true, on: profile)
+        settings.setEnabled(false, on: profile)
+
+        XCTAssertEqual(state.activeQuestIDs, ["muscu_sessions_3"])
+        XCTAssertEqual(state.questProgress["muscu_sessions_3"], 2)
     }
 }

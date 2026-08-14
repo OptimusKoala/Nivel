@@ -224,9 +224,9 @@ extension GameService {
     }
 
     /// Compteur mensuel de la carte muscu (spec v1.14 §4.4) : jours DISTINCTS du mois
-    /// contenant `now`, exactement comme la posture. Aucune quête muscu ne le lit
-    /// aujourd'hui — c'est le seul chiffre affiché du programme, et il compte en jours
-    /// pour dire la régularité plutôt que le bachotage, comme partout ailleurs.
+    /// contenant `now`, exactement comme la posture — c'est le chiffre affiché sur la
+    /// carte, et il dit la régularité plutôt que le bachotage. Ce n'est PAS la métrique
+    /// `muscuSessionsDone`, qui compte des entrées ; `questValue` détaille pourquoi.
     func muscuSessionsThisMonth(now: Date = .now) -> Int {
         guard let month = Self.calendar.dateInterval(of: .month, for: now) else { return 0 }
         return sessionDayCount(kind: .muscu, from: month.start, to: month.end)

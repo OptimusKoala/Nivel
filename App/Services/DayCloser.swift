@@ -22,7 +22,25 @@ extension GameService {
     ///
     /// `today` est injectable pour les tests — la logique de clôture ne lit
     /// jamais `.now` directement.
-    func closeOpenDays(today: Date = .now) async {
+    ///
+    /// Les deux interrupteurs de programme le sont aussi, et pour la même raison : lus
+    /// sur les singletons, ils étaient les seules entrées non injectées de la clôture,
+    /// donc le seul comportement que les tests ne pouvaient pas fixer. Deux effets :
+    /// le tirage du lundi devient testable dans les DEUX sens (programme allumé comme
+    /// éteint, voir `testLeRenouvellementNeTirePasDeQueteAProgrammeEteint` et son
+    /// jumeau), et la suite cesse de dépendre des `UserDefaults.standard` du hôte de
+    /// test — que le `didSet` de `isEnabled` pourrait polluer durablement.
+    ///
+    /// `nil` plutôt que `= PosturePlanSettings.shared.isEnabled` en défaut de signature :
+    /// les valeurs par défaut sont évaluées chez l'APPELANT, hors du `@MainActor`, et les
+    /// deux singletons y sont isolés (« main actor-isolated property can not be referenced
+    /// from a nonisolated context »). Les résoudre dans le corps garde l'appel des vues
+    /// inchangé et l'isolation correcte.
+    func closeOpenDays(today: Date = .now,
+                       postureAvailable: Bool? = nil,
+                       muscuAvailable: Bool? = nil) async {
+        let postureAvailable = postureAvailable ?? PosturePlanSettings.shared.isEnabled
+        let muscuAvailable = muscuAvailable ?? MuscuPlanSettings.shared.isEnabled
         // Garde anti-réentrance : `onAppear` et `scenePhase == .active` peuvent
         // se déclencher quasi simultanément au lancement à froid.
         guard !isClosingDays else { return }
@@ -98,11 +116,14 @@ extension GameService {
                 pool: questCatalog,
                 weekID: weekID,
                 stepsAvailable: stepsService.isAvailable,
-                // Lu au moment du tirage du lundi : programme éteint, le pool
-                // éligible ne bouge pas d'une quête (promesse "rien ne change chez
-                // toi"). Programme allumé, la quête posture devient tirable à
-                // PARTIR de ce lundi, jamais avant (spec v1.11 §3, §7.2).
-                postureAvailable: PosturePlanSettings.shared.isEnabled
+                // Évalués au moment du tirage du lundi (défauts de la signature) :
+                // programme éteint, le pool éligible ne bouge pas d'une quête (promesse
+                // "rien ne change chez toi"). Programme allumé, la quête devient tirable
+                // à PARTIR de ce lundi, jamais avant — allumer la muscu un jeudi ne
+                // rattrape pas le tirage du lundi d'avant (spec v1.11 §3, §7.2 ;
+                // v1.14 §5.7).
+                postureAvailable: postureAvailable,
+                muscuAvailable: muscuAvailable
             ).map(\.id)
             state.questWeekID = weekID
         }

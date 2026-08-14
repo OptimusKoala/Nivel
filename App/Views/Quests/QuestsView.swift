@@ -295,9 +295,12 @@ private func questsPreviewFixture(unlockedBadges: Bool) -> (ModelContainer, Game
 
     let quests = (try? Catalogs.quests()) ?? []
     let weekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
-    // postureAvailable: false — fixture de preview Xcode, sans effet en dehors du
-    // canvas ; ce n'est pas un des deux appelants réels (DayCloser, OnboardingFlow).
-    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: true, postureAvailable: false)
+    // postureAvailable/muscuAvailable: false — fixture de preview Xcode, sans effet en
+    // dehors du canvas ; ce n'est pas un des deux appelants réels (DayCloser,
+    // OnboardingFlow). En dur plutôt que lu sur `MuscuPlanSettings.shared` : un canvas
+    // ne doit pas dépendre des réglages réels de la machine qui l'ouvre.
+    let active = QuestEngine.weeklyDraw(pool: quests, weekID: weekID, stepsAvailable: true,
+                                        postureAvailable: false, muscuAvailable: false)
     let unlocks: [String: Date] = unlockedBadges
         ? ["first_meal": .now, "first_weigh": .now.addingTimeInterval(-4 * 86_400),
            "journal_7": .now.addingTimeInterval(-86_400)]

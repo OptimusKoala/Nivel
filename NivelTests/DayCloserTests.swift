@@ -169,13 +169,17 @@ final class DayCloserTests: XCTestCase {
         let currentWeekID = QuestEngine.weekID(for: today, calendar: GameService.calendar)
         XCTAssertEqual(state.questWeekID, currentWeekID)
 
-        // Nouveau tirage : 3 quêtes valides du catalogue, sans quête de pas (HealthKit refusé).
+        // Nouveau tirage : 3 quêtes valides du catalogue, sans quête de pas (HealthKit
+        // refusé). Les drapeaux de programme sont hors sujet ici : ce test tire pour
+        // `Date.now`, donc selon la semaine réelle son triplet peut n'en contenir aucun
+        // même avec le filtre cassé. Ce sont les deux tests à quinze semaines fixes qui
+        // les tiennent (chercher `quetesTireesSurQuinzeSemaines`).
         let catalog = try Catalogs.quests()
         let catalogByID = Dictionary(uniqueKeysWithValues: catalog.map { ($0.id, $0) })
         XCTAssertEqual(state.activeQuestIDs.count, 3)
         for id in state.activeQuestIDs {
             let quest = try XCTUnwrap(catalogByID[id], "id de quête inconnu : \(id)")
-            XCTAssertFalse(quest.requiresSteps)
+            XCTAssertFalse(quest.requiresSteps, id)
         }
 
         // Garde hebdo remis à zéro ; l'HISTORIQUE all-time n'est PAS retouché
@@ -189,6 +193,98 @@ final class DayCloserTests: XCTestCase {
         XCTAssertTrue(state.questProgress.values.allSatisfy { $0 == 0 })
 
         XCTAssertEqual(state.totalXP, 0)
+    }
+
+    /// Ce que le test précédent ne prouve pas : que `DayCloser` passe bien les DEUX
+    /// interrupteurs de programme à `weeklyDraw`. Il tire pour la seule semaine courante,
+    /// et écrire `postureAvailable: true` / `muscuAvailable: true` en dur dans le closer
+    /// laissait toute la suite verte — mutation faite, le trou était réel, et il
+    /// préexistait à la 1.14 pour la posture.
+    ///
+    /// Ce qui le comble : QUINZE semaines FIXES, balayées par
+    /// `quetesTireesSurQuinzeSemaines`. Des dates figées plutôt que `Date.now` — une
+    /// garde ne doit pas dépendre du jour où la suite tourne.
+    ///
+    /// Les deux drapeaux sont INJECTÉS, plus lus sur les singletons : ce test dit ce que
+    /// fait le closer quand on lui passe `false`, pas ce que contiennent les
+    /// `UserDefaults` du hôte.
+    func testLeRenouvellementNeTirePasDeQueteAProgrammeEteint() async throws {
+        let tirages = try await quetesTireesSurQuinzeSemaines(postureAvailable: false,
+                                                              muscuAvailable: false)
+        for (weekID, quetes) in tirages {
+            XCTAssertEqual(quetes.count, 3, weekID)
+            for quete in quetes {
+                XCTAssertFalse(quete.requiresPosture, "\(weekID) : \(quete.id)")
+                XCTAssertFalse(quete.requiresMuscu, "\(weekID) : \(quete.id)")
+                XCTAssertFalse(quete.requiresSteps, "\(weekID) : \(quete.id)")
+            }
+        }
+    }
+
+    /// La moitié qui décide si le câblage sert à quelque chose : le test ci-dessus
+    /// protège Michaël de recevoir des quêtes qu'il ne peut pas faire, celui-ci protège
+    /// Marion de ne JAMAIS en recevoir. Un closer qui cesserait de lire les interrupteurs
+    /// laisserait les six quêtes à drapeau hors de tout tirage du lundi, en silence — et
+    /// aucun test ne le dirait, `muscuAvailable: false` en dur passait au vert.
+    ///
+    /// Un drapeau à la fois : allumer la posture ne doit pas faire sortir de quête muscu,
+    /// et réciproquement. Le pool éligible passe alors de 15 quêtes (25 moins les 4 de pas
+    /// moins les 6 à drapeau) à 18, dont 3 portent le drapeau allumé.
+    ///
+    /// « Au moins un tirage » n'est pas une nécessité mathématique, c'est une propriété
+    /// MESURÉE de ces graines-là : six des quinze semaines sortent une quête à drapeau,
+    /// pour la posture comme pour la muscu, et la première est la première du balayage
+    /// (2026-W12). La marge est confortable mais elle vaut pour ce catalogue et ces quinze
+    /// dates — un futur ajout de quêtes la déplacera, et c'est le genre d'échec qui se lit
+    /// tout seul.
+    func testLeRenouvellementTireLesQuetesAProgrammeQuandIlEstAllume() async throws {
+        let avecPosture = try await quetesTireesSurQuinzeSemaines(postureAvailable: true,
+                                                                  muscuAvailable: false)
+        XCTAssertTrue(avecPosture.contains { $0.quetes.contains(where: \.requiresPosture) },
+                      "aucune quête posture sur quinze semaines, programme allumé")
+        XCTAssertFalse(avecPosture.contains { $0.quetes.contains(where: \.requiresMuscu) },
+                       "la posture allumée a fait sortir une quête muscu")
+
+        let avecMuscu = try await quetesTireesSurQuinzeSemaines(postureAvailable: false,
+                                                                muscuAvailable: true)
+        XCTAssertTrue(avecMuscu.contains { $0.quetes.contains(where: \.requiresMuscu) },
+                      "aucune quête muscu sur quinze semaines, programme allumé")
+        XCTAssertFalse(avecMuscu.contains { $0.quetes.contains(where: \.requiresPosture) },
+                       "la muscu allumée a fait sortir une quête posture")
+    }
+
+    /// Quinze renouvellements hebdo consécutifs, pilotés par les dates : pour chacun, le
+    /// weekID est vérifié et les quêtes tirées sont résolues sur le catalogue.
+    ///
+    /// `questWeekID` périmé force le rollover ; `lastClosedDay` à la veille saute tout le
+    /// bloc de clôture, si bien que seul le tirage s'exerce. HealthKit refusé, donc jamais
+    /// de quête de pas : c'est ce qui laisse de la place aux quêtes à drapeau.
+    private func quetesTireesSurQuinzeSemaines(
+        postureAvailable: Bool, muscuAvailable: Bool
+    ) async throws -> [(weekID: String, quetes: [Quest])] {
+        let catalogByID = Dictionary(uniqueKeysWithValues: try Catalogs.quests().map { ($0.id, $0) })
+        let service = makeService(steps: FakeStepsService(authorized: false))
+        let base = try XCTUnwrap(GameService.calendar.date(from: DateComponents(year: 2026, month: 3, day: 18)))
+
+        var tirages: [(weekID: String, quetes: [Quest])] = []
+        for semaine in 0..<15 {
+            let jour = try XCTUnwrap(GameService.calendar.date(byAdding: .weekOfYear, value: -semaine, to: base))
+            state.questWeekID = "2000-W1"
+            state.lastClosedDay = try XCTUnwrap(GameService.calendar.date(byAdding: .day, value: -1, to: jour))
+            try context.save()
+
+            await service.closeOpenDays(today: jour,
+                                        postureAvailable: postureAvailable,
+                                        muscuAvailable: muscuAvailable)
+
+            let weekID = QuestEngine.weekID(for: jour, calendar: GameService.calendar)
+            XCTAssertEqual(state.questWeekID, weekID)
+            let quetes = try state.activeQuestIDs.map {
+                try XCTUnwrap(catalogByID[$0], "id de quête inconnu : \($0)")
+            }
+            tirages.append((weekID, quetes))
+        }
+        return tirages
     }
 
     // MARK: - Erreur HealthKit
