@@ -25,6 +25,11 @@ final class UserProfile {
     // explicitement — c'est ce défaut de déclaration qui porte le sentinelle, pour
     // les stores d'avant la 1.14 comme pour les profils créés après.
     var dailyBurnTarget: Int = 0
+    /// Le frigo (spec v1.14 §6.3) : ids d'ingrédients cochés, qui servent à classer les
+    /// idées de repas. Défaut sur la DÉCLARATION, même motif que `reminderTimes` et
+    /// `dailyBurnTarget` ci-dessus (migration légère SwiftData) ; pas de paramètre d'init,
+    /// un profil neuf comme un profil migré part du frigo vide. Se mute par `Pantry`.
+    var pantryItemIDs: [String] = []
     var createdAt: Date
     var lastMessageIDs: [String: String] // contexte → dernier id de message (anti-répétition)
 
@@ -76,6 +81,30 @@ final class UserProfile {
     /// `SettingsView.currentWeightKg`), que ce type ne peut pas interroger lui-même.
     func burnTarget(currentWeightKg: Double) -> Int {
         dailyBurnTarget > 0 ? dailyBurnTarget : CalorieCalculator.dailyBurnTarget(weightKg: currentWeightKg)
+    }
+}
+
+/// Mutations du frigo (spec v1.14 §6.3). Réassignation COMPLÈTE du tableau à chaque
+/// fois, jamais de mutation en place : c'est la règle que le code se répète depuis la
+/// v1 (`remindersEnabled`, `reminderTimes`) pour que SwiftData voie bien passer le
+/// changement. Un type à part plutôt que des méthodes sur la vue : la règle est ainsi
+/// écrite à UN endroit, et testable sans écran.
+enum Pantry {
+    static func toggle(_ itemID: String, on profile: UserProfile) {
+        if profile.pantryItemIDs.contains(itemID) {
+            profile.pantryItemIDs = profile.pantryItemIDs.filter { $0 != itemID }
+        } else {
+            profile.pantryItemIDs = profile.pantryItemIDs + [itemID]
+        }
+    }
+
+    // Pas d'`add` : `toggle` est le seul chemin d'écriture, et une méthode que seuls
+    // ses tests appellent n'est pas du code couvert, c'est du code inventé. Le jour où
+    // une recette voudra remplir le frigo d'un tap, elle s'écrira alors — avec son
+    // appelant.
+
+    static func clear(on profile: UserProfile) {
+        profile.pantryItemIDs = []
     }
 }
 

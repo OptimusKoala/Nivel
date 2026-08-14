@@ -19,6 +19,9 @@ struct MealsJournalView: View {
     @State private var dayMeals: [MealEntry] = []
     @State private var editingEntry: MealEntry?
     @State private var showNewMeal = false
+    /// Feuille du frigo (spec §6.3) — présentée, jamais poussée : cet onglet n'a pas
+    /// de pile de navigation.
+    @State private var showPantry = false
 
     /// Résumé des lignes (spec §6) : nom de la première + le nombre des autres, via
     /// MealFormatting.frSummary, et emoji de cette même première ligne. Partagée
@@ -100,6 +103,11 @@ struct MealsJournalView: View {
         .sheet(isPresented: $showNewMeal, onDismiss: reloadDayMeals) {
             MealLogSheet()
         }
+        // Pas de `onDismiss` : le frigo ne touche qu'au profil, jamais aux repas du
+        // jour — recharger la liste ici ne ferait qu'un fetch pour rien.
+        .sheet(isPresented: $showPantry) {
+            PantryView()
+        }
     }
 
     /// Fetch borné au jour sélectionné, trié par heure.
@@ -115,18 +123,41 @@ struct MealsJournalView: View {
 
     // MARK: Navigation par jour
 
+    /// Deux boutons à droite depuis la 1.14 (le frigo) contre un à gauche : les
+    /// `Spacer()` d'origine auraient décalé le titre d'une vingtaine de points vers la
+    /// gauche. Les deux groupes prennent donc une largeur FLEXIBLE identique et le
+    /// titre garde la priorité de mise en page, ce qui le laisse exactement au centre.
     private var dayHeader: some View {
-        HStack {
+        HStack(spacing: 8) {
             chevronButton(systemName: "chevron.left", disabled: false) { moveDay(-1) }
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             Text(dayTitle)
                 .font(.system(size: 19, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.text)
-            Spacer()
-            // Jamais dans le futur : chevron droit inactif sur aujourd'hui.
-            chevronButton(systemName: "chevron.right", disabled: isToday) { moveDay(1) }
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .layoutPriority(1)
+            HStack(spacing: 4) {
+                // Jamais dans le futur : chevron droit inactif sur aujourd'hui.
+                chevronButton(systemName: "chevron.right", disabled: isToday) { moveDay(1) }
+                pantryButton
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, 20)
+    }
+
+    /// Le frigo (spec §6.3), même pastille ronde que l'engrenage de l'accueil. Visible
+    /// aussi sur les jours passés : ce qu'on a sous la main ne dépend pas du jour
+    /// consulté, et la liste sert au classement des idées, pas au journal.
+    private var pantryButton: some View {
+        Button {
+            showPantry = true
+        } label: {
+            Text("🧺").font(.system(size: 20))
+        }
+        .buttonStyle(CircleIconButtonStyle())
+        .accessibilityLabel("Mon frigo")
     }
 
     private func chevronButton(systemName: String, disabled: Bool,
