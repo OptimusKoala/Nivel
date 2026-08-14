@@ -88,15 +88,25 @@ final class FoodCatalogTests: XCTestCase {
 
     /// 122 est une donnée, pas une règle de calcul : un ajout légitime au catalogue
     /// doit faire bouger cette valeur, en même temps que le compte par catégorie
-    /// concerné dans `testLeCatalogueSeChargeEtEstComplet`. Les deux tests se tiennent :
-    /// la somme des cinq comptes par catégorie doit faire ce total.
+    /// concerné dans `testChaqueOngletAfficheSonNombreDItems`. Les deux tests se
+    /// tiennent toujours, mais par la seconde ligne : depuis la 1.14 les onglets ne
+    /// montrent pas les recettes (§6.1), c'est donc le compte des aliments ORDINAIRES
+    /// que la somme des cinq catégories doit faire, pas la taille du fichier.
     func testLaTailleDuCatalogue() {
         XCTAssertEqual(catalog.items.count, 122, "le catalogue ne compte plus 122 aliments")
+        XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 122,
+                       "les aliments ordinaires ne sont plus 122")
     }
 
     // MARK: Catalogue v1 (spec v1.10)
 
-    func testLeCatalogueSeChargeEtEstComplet() throws {
+    /// Renommé en 1.14 : ce test comptait le catalogue, il compte maintenant les
+    /// ONGLETS. `items(category:slot:)` écarte les recettes (§6.1) — aux tâches
+    /// suivantes du lot D, `foods.json` gagnera des plats sans que le 30 ci-dessous
+    /// bouge. Le garde-fou de transcription est devenu un détecteur de recette qui
+    /// fuit dans la grille de taps ; la dernière assertion rétablit le lien avec la
+    /// taille réelle du fichier.
+    func testChaqueOngletAfficheSonNombreDItems() throws {
         XCTAssertEqual(catalog.items(category: .drink, slot: nil).count, 15)
         XCTAssertEqual(catalog.items(category: .snack, slot: nil).count, 9)     // 12 − 3 déménagés
         XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 30)
@@ -105,6 +115,10 @@ final class FoodCatalogTests: XCTestCase {
         // catégorie du fichier qui n'était pas exact.
         XCTAssertEqual(catalog.items(category: .side, slot: nil).count, 58)
         XCTAssertEqual(catalog.items(category: .dessert, slot: nil).count, 10)
+        // Le lien avec `testLaTailleDuCatalogue` : ces cinq comptes couvrent tous les
+        // aliments ordinaires, et rien d'autre. Un item qui disparaîtrait de son onglet
+        // sans être une recette tomberait ici plutôt que nulle part.
+        XCTAssertEqual(15 + 9 + 30 + 58 + 10, catalog.items.filter { !$0.isRecipe }.count)
     }
 
     /// Garde-fou de transcription : les kcal par unité des tables de la spec doivent
@@ -396,6 +410,59 @@ final class FoodCatalogTests: XCTestCase {
     func testLeRenommageDuCroissantEstEpingle() {
         XCTAssertEqual(catalog.byID["croissant"]?.name, "Croissant ou pain au chocolat")
         XCTAssertEqual(catalog.byID["pastry"]?.name, "Viennoiserie")
+    }
+
+    // MARK: Recettes (spec v1.14 §6.1)
+
+    /// Les recettes sont des plats pour le calcul et le journal, mais PAS pour la
+    /// grille de taps : l'onglet Plats passerait du simple au double, et le chemin de
+    /// quinze secondes de la 1.10 en souffrirait.
+    func testLesRecettesSontMasqueesDesOngletsDuCatalogue() {
+        let shown = catalog.items(category: .dish, slot: nil)
+        XCTAssertFalse(shown.contains { $0.isRecipe }, "une recette ne s'affiche pas dans l'onglet Plats")
+        XCTAssertEqual(shown.count, 30, "les trente plats ordinaires, ni plus ni moins")
+    }
+
+    /// Le test ci-dessus ne prouve rien tant que `foods.json` ne porte aucune recette :
+    /// retirer le filtre de `items(category:slot:)` le laisse vert. Un catalogue de
+    /// laboratoire n'attend pas la Task 2 pour épingler le comportement.
+    func testLeFiltreEcarteUneRecetteDeSaCategorie() {
+        let ordinaire = FoodItem(id: "a", name: "A", emoji: "🍝", kcalPer100g: 100,
+                                 category: .dish, defaultGrams: 100)
+        let recette = FoodItem(id: "b", name: "B", emoji: "🐟", kcalPer100g: 95,
+                               category: .dish, defaultGrams: 430, isRecipe: true)
+        let labo = FoodCatalog(items: [ordinaire, recette],
+                               byID: ["a": ordinaire, "b": recette], compositions: [:])
+        XCTAssertEqual(labo.items(category: .dish, slot: nil).map(\.id), ["a"])
+    }
+
+    /// Et rien non plus ne garantit qu'un `"isRecipe": true` posé dans le JSON arrive
+    /// jusqu'à la propriété : `CodingKeys` est écrit à la main, une clé mal orthographiée
+    /// y décoderait faux en silence. Décodage direct, sans passer par le bundle.
+    func testLaCleIsRecipeSeDecodeDepuisLeJSON() throws {
+        let json = Data("""
+        [{"id":"r","name":"R","emoji":"🐟","kcalPer100g":95,"category":"dish",
+          "tags":[],"slots":[],"defaultGrams":430,"isRecipe":true}]
+        """.utf8)
+        XCTAssertEqual(try JSONDecoder().decode([FoodItem].self, from: json).first?.isRecipe, true)
+    }
+
+    /// Mais elles restent atteignables par id : c'est ainsi que la bande d'idées et
+    /// le journal les retrouvent.
+    func testLesRecettesRestentAtteignablesParId() throws {
+        // Ignoré tant que la Task 2 du lot D n'a pas ajouté les deux premières
+        // recettes à `foods.json` : elle rétablira ce test en même temps.
+        try XCTSkipIf(!catalog.items.contains { $0.isRecipe },
+                      "aucune recette dans foods.json avant la Task 2 du lot D")
+        let recipe = catalog.items.first { $0.isRecipe }!
+        XCTAssertNotNil(catalog.byID[recipe.id])
+        XCTAssertTrue(catalog.line(for: recipe).isComposed)
+    }
+
+    func testLesAlimentsOrdinairesNeSontPasDesRecettes() {
+        for id in ["pasta", "tacos", "skyr", "lettuce", "water"] {
+            XCTAssertEqual(catalog.byID[id]?.isRecipe, false, id)
+        }
     }
 
     /// Seul test du fichier qui passe par `hasTag(_:itemID:)`, le chemin qu'emprunte

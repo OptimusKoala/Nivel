@@ -48,6 +48,62 @@ public struct FoodItem: Codable, Identifiable, Hashable, Sendable {
     public let slots: [MealSlot]
     /// Quantité posée au tap dans le catalogue.
     public let defaultGrams: Int
+    /// Recette de saison (spec v1.14 §6.1) : un plat comme les autres pour
+    /// l'estimation, le panier et le journal, mais masqué des onglets du catalogue.
+    /// Sans ce drapeau, l'onglet Plats passerait du simple au double.
+    ///
+    /// DOIT décoder en optionnel avec un défaut à faux, comme `Quest.requiresPosture` :
+    /// les 122 entrées déjà écrites ne portent pas la clé, et un Bool non optionnel
+    /// ferait échouer le décodage de TOUT le catalogue — donc disparaître les aliments.
+    /// Seules les recettes portent donc `"isRecipe": true` dans `foods.json`, ce qui
+    /// les rend en prime repérables d'un `grep`.
+    public let isRecipe: Bool
+
+    /// ⚠️ Liste écrite à la main depuis la 1.14 : le compilateur ne réclame plus les
+    /// clés manquantes. Une propriété qui porte un défaut sur sa déclaration
+    /// (`var seasonal: Bool = false`, la forme courte et spontanée) compile sans
+    /// erreur, n'apparaît ni dans `init(from:)` ni dans le memberwise, et se tait :
+    /// sa clé JSON est ignorée à la lecture et absente à l'écriture. Tout nouveau
+    /// champ s'écrit donc `let` SANS valeur par défaut — alors, et alors seulement,
+    /// l'oubli d'une clé ici est une erreur de compilation.
+    private enum CodingKeys: String, CodingKey {
+        case id, name, emoji, kcalPer100g, unitLabel, unitLabelPlural, unitGrams,
+             category, tags, slots, defaultGrams, isRecipe
+    }
+
+    public init(id: String, name: String, emoji: String, kcalPer100g: Double,
+                unitLabel: String? = nil, unitLabelPlural: String? = nil, unitGrams: Int? = nil,
+                category: Category, tags: [String] = [], slots: [MealSlot] = [],
+                defaultGrams: Int, isRecipe: Bool = false) {
+        self.id = id
+        self.name = name
+        self.emoji = emoji
+        self.kcalPer100g = kcalPer100g
+        self.unitLabel = unitLabel
+        self.unitLabelPlural = unitLabelPlural
+        self.unitGrams = unitGrams
+        self.category = category
+        self.tags = tags
+        self.slots = slots
+        self.defaultGrams = defaultGrams
+        self.isRecipe = isRecipe
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        emoji = try container.decode(String.self, forKey: .emoji)
+        kcalPer100g = try container.decode(Double.self, forKey: .kcalPer100g)
+        unitLabel = try container.decodeIfPresent(String.self, forKey: .unitLabel)
+        unitLabelPlural = try container.decodeIfPresent(String.self, forKey: .unitLabelPlural)
+        unitGrams = try container.decodeIfPresent(Int.self, forKey: .unitGrams)
+        category = try container.decode(Category.self, forKey: .category)
+        tags = try container.decode([String].self, forKey: .tags)
+        slots = try container.decode([MealSlot].self, forKey: .slots)
+        defaultGrams = try container.decode(Int.self, forKey: .defaultGrams)
+        isRecipe = try container.decodeIfPresent(Bool.self, forKey: .isRecipe) ?? false
+    }
 
     public var hasUnit: Bool { unitLabel != nil && unitGrams != nil }
 
@@ -104,6 +160,9 @@ public struct FoodCatalog: Sendable {
 
     public func items(category: FoodItem.Category, slot: MealSlot?) -> [FoodItem] {
         items.filter { item in
+            // Les recettes auront leur propre porte d'entrée (la bande d'idées,
+            // spec v1.14 §6.4) : les laisser ici noierait la grille de taps.
+            guard !item.isRecipe else { return false }
             guard item.category == category else { return false }
             guard let slot, !item.slots.isEmpty else { return true }
             return item.slots.contains(slot)
