@@ -42,6 +42,24 @@ struct CalorieRingCard: View {
     /// test, celle-ci pour la vue.
     private var showsBurnLegend: Bool { Self.showsBurnLegend(at: dynamicTypeSize) }
 
+    /// Plafond de mise à l'échelle du SEUL contenu central de l'anneau (défaut antérieur
+    /// à la 1.13, pas de la 1.14). La largeur de l'anneau est PLAFONNÉE à 130 pt — un
+    /// `.frame(maxWidth:maxHeight:)`, donc un plafond et non une taille imposée : sous
+    /// les 130 pt il rétrécit, au-dessus il ne suit pas. Le texte en son centre n'a donc
+    /// aucune place garantie pour croître. Les deux bornes, relevées à l'image :
+    /// - dès `.xLarge`, le gros chiffre « ~1 030 » mord déjà le tracé à gauche et à
+    ///   droite — c'est CETTE borne qui fixe le plafond, pas la suivante ;
+    /// - dès `.xxxLarge`, la seconde ligne « / 1 650 kcal » traverse le tracé en plus et
+    ///   se tronque en « / 1 65… ».
+    /// `.large` est donc la dernière taille où les DEUX lignes tiennent dans le disque
+    /// intérieur — et le rendu y est celui de la taille par défaut.
+    ///
+    /// Rien n'est perdu pour l'assistance : le `ZStack` de `ring` est
+    /// `.accessibilityElement(children: .ignore)` avec son propre libellé, donc VoiceOver
+    /// ne lit jamais ces deux `Text`, et le libellé n'est pas mis à l'échelle. Ce plafond
+    /// ne touche que le rendu graphique.
+    static let centerTypeSizeCap: DynamicTypeSize = .large
+
     private var isOver: Bool { target > 0 && eaten > target }
     private var fraction: Double {
         guard target > 0 else { return 0 }
@@ -107,6 +125,7 @@ struct CalorieRingCard: View {
                     .foregroundStyle(Theme.subtext)
             }
             .padding(.horizontal, 14)
+            .dynamicTypeSize(...Self.centerTypeSizeCap)
         }
         // Un log/édition de repas anime l'anneau et fait défiler le compteur
         // (contentTransition numérique) au lieu de sauter d'une valeur à l'autre.
