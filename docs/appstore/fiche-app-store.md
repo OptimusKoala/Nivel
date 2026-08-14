@@ -80,7 +80,21 @@ Des idées de repas de saison, un programme muscu, et une app qui sait ce que tu
 • Un anneau de dépense sur l'accueil : les pas et le sport du jour, à côté de ce que tu as mangé. Indicatif, jamais crédité à ton budget.
 • Dix mouvements de plus côté Sport, et un programme muscu de cinq séances qui tourne sur la semaine, si tu veux pousser un peu.
 • 14 trophées et 4 quêtes de plus, et une courbe de niveaux qui garde du souffle sur la durée.
+
+Et les six retours d'usage de la 1.13, si tu ne l'as pas eue :
+
+• Le widget reste lisible quand l'écran d'accueil est en mode transparent ou teinté.
+• Un bouton « Noter une activité » sur l'accueil, pour déclarer ce que tu viens de faire sans passer par l'onglet Sport.
+• « Logger un repas » devient « Noter un repas », et le bouton est aussi dans l'onglet Repas.
+• Dans un repas en cours, un élément se retire d'un glissement vers la gauche.
+• Les annonces de trophée s'écartent d'un glissement vers le haut, quand tu n'as pas envie de les lire.
 ```
+
+> **Le second bloc n'est là que si la 1.13 est remplacée sans jamais sortir.** Elle est en
+> `WAITING_FOR_REVIEW` au moment où ceci est écrit : si elle est publiée avant la 1.14, ses
+> notes ont déjà été lues et ce bloc fait doublon — le retirer. Si elle est annulée au profit
+> de la 1.14, le garder : les utilisateurs passeront de la 1.12 à la 1.14 sans jamais voir ces
+> cinq points autrement.
 
 **Mots-clés** (100 max — 94 utilisés, séparés par des virgules sans espace)
 
