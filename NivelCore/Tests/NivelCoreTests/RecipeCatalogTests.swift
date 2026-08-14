@@ -4,6 +4,13 @@ import XCTest
 @testable import NivelCore
 
 final class RecipeCatalogTests: XCTestCase {
+    /// Les deux bornes de ce fichier sont écrites ICI, une fois, et lues par les tests
+    /// de données comme par la fixture qui les exerce (`testLesDeuxBornesSontTenuesParUneFixture`).
+    /// Recopiées en littéral dans chaque test, elles se desserreraient sans qu'aucun
+    /// autre ne bronche ; partagées, toucher à l'une fait rougir la fixture.
+    private static let toleranceDuRepli = 0.1
+    private static let etapesAttendues = 3...4
+
     func testLesRecettesSeChargentEtPointentVersDeVraisAliments() throws {
         let recipes = try Catalogs.recipes()
         let catalog = try FoodCatalog.load()
@@ -52,7 +59,7 @@ final class RecipeCatalogTests: XCTestCase {
 
     func testLaPreparationFaitTroisOuQuatreLignes() throws {
         for recipe in try Catalogs.recipes() {
-            XCTAssertTrue((3...4).contains(recipe.steps.count),
+            XCTAssertTrue(Self.etapesAttendues.contains(recipe.steps.count),
                           "\(recipe.itemID) : \(recipe.steps.count) lignes")
             for step in recipe.steps {
                 // Trimé, comme `ActivityCatalogTests.testEveryActivityHasInstructions` :
@@ -114,5 +121,138 @@ final class RecipeCatalogTests: XCTestCase {
 
     func testLeCatalogueVideEstLeRepli() {
         XCTAssertTrue(RecipeCatalog.empty.recipes.isEmpty)
+    }
+
+    // MARK: Couverture des trente-cinq recettes (Task 3)
+
+    func testLeCatalogueCompteTrenteCinqRecettes() throws {
+        XCTAssertEqual(try Catalogs.recipes().count, 35)
+    }
+
+    /// Aucun mois sans idée, ni pour le midi ni pour le soir. Le seuil est QUATRE et
+    /// non trois : la bande en montre trois, et il faut au moins une candidate de
+    /// rab pour que la rotation du jour ait de quoi tourner (spec §6.4 règle 7).
+    func testChaqueMoisAQuatreIdeesParCreneau() throws {
+        let recipes = try Catalogs.recipes()
+        let catalog = try FoodCatalog.load()
+        for month in 1...12 {
+            for slot in [MealSlot.lunch, .dinner] {
+                let count = recipes.filter { recipe in
+                    recipe.months.contains(month)
+                        && (catalog.byID[recipe.itemID]?.slots.contains(slot) ?? false)
+                }.count
+                XCTAssertGreaterThanOrEqual(count, 4, "mois \(month), créneau \(slot)")
+            }
+        }
+    }
+
+    /// Chaque ingrédient d'une recette doit être un `.side` : `PantryView` ne liste
+    /// que ceux-là, donc une recette citant un plat ou un encas ne pourrait JAMAIS
+    /// atteindre la couverture complète dans l'app réelle — la carte afficherait
+    /// « il manque 1 » à vie, sans que rien ne l'explique.
+    func testChaqueIngredientDeRecetteEnEstUn() throws {
+        let catalog = try FoodCatalog.load()
+        for recipe in try Catalogs.recipes() {
+            // `guard … continue` et non `byID[...]!` : XCTest joue les tests d'une
+            // classe par ordre alphabétique, et celui-ci passe AVANT
+            // `testLesRecettesSeChargentEtPointentVersDeVraisAliments`, le seul qui
+            // sache nommer une recette sans aliment. Un déballage forcé tuerait le
+            // processus sur un `signal 5` muet avant que le diagnostic ait la parole.
+            guard let item = catalog.byID[recipe.itemID] else { continue }
+            for component in catalog.line(for: item).components {
+                XCTAssertEqual(catalog.byID[component.itemID]?.category, .side,
+                               "\(recipe.itemID) → \(component.itemID) n'est pas un ingrédient")
+            }
+        }
+    }
+
+    /// Le repli tel que l'APP le calculera, et non sa formule recopiée à la main :
+    /// `line(for:)` rend un `.simple` dès que la composition manque, et c'est
+    /// `MealEstimator` — son arrondi compris — qui en fait des kcal. Un test qui
+    /// refait le calcul de son côté tient l'arithmétique ; celui-ci tient le code.
+    private func repli(of item: FoodItem, in catalog: FoodCatalog) -> Int {
+        MealEstimator.kcal(
+            lines: [.simple(MealComponent(itemID: item.id, grams: item.defaultGrams))],
+            kcalPer100g: catalog.kcalPer100g)
+    }
+
+    /// Le repli du plat composé (spec §3.1) : `kcalPer100g × defaultGrams` doit rester
+    /// à ~10 % du total de la composition. Rien ne le vérifiait pour des entrées
+    /// écrites à la main, et un repli faux ne se voit que le jour où il sert.
+    func testLeRepliDeChaqueRecetteSuitSaComposition() throws {
+        let catalog = try FoodCatalog.load()
+        for recipe in try Catalogs.recipes() {
+            guard let item = catalog.byID[recipe.itemID] else { continue }
+            let composed = MealEstimator.kcal(lines: [catalog.line(for: item)],
+                                              kcalPer100g: catalog.kcalPer100g)
+            let fallback = repli(of: item, in: catalog)
+            XCTAssertEqual(Double(fallback), Double(composed),
+                           accuracy: Double(composed) * Self.toleranceDuRepli,
+                           "\(recipe.itemID) : repli \(fallback) vs composition \(composed)")
+        }
+    }
+
+    /// Les deux bornes que les DONNÉES ne tiennent pas, épinglées ici par deux moyens
+    /// différents : `toleranceDuRepli` sur un catalogue de laboratoire — même procédé
+    /// que `FoodCatalogTests.testLeFiltreEcarteUneRecetteDeSaCategorie` —, et
+    /// `etapesAttendues` par quatre assertions directes sur la constante, sans recette
+    /// ni catalogue. La seconde n'a pas besoin de plus, la première ne peut pas s'en
+    /// contenter : c'est tout le chemin du repli qu'il faut exercer.
+    ///
+    /// Ce que les trente-cinq recettes tiennent réellement du `toleranceDuRepli` :
+    /// presque rien. Leur pire écart est de 0,89 % (`leek_potato_soup`), donc le test de
+    /// données passe encore à 0.05 et ne rougit qu'en dessous de 0.009 ; le desserrer à
+    /// 0.5 ne rougirait nulle part. C'est donc la fixture qui tient les DEUX bords : le
+    /// `dedans` à +9 % rougit dès qu'on passe sous 0.09, le `dehors` à +11 % dès qu'on
+    /// atteint 0.11. Fenêtre silencieuse restante : [0.09, 0.11).
+    ///
+    /// Et ces deux-là ne peuvent pas être de vraies recettes : un repli hors bande, c'est
+    /// une donnée fausse livrée à l'utilisateur, qui se verrait débiter quinze kcal de
+    /// trop le jour où elle sert. C'est le métier de l'app.
+    func testLesDeuxBornesSontTenuesParUneFixture() {
+        XCTAssertTrue(Self.etapesAttendues.contains(3), "trois lignes suffisent")
+        XCTAssertTrue(Self.etapesAttendues.contains(4))
+        XCTAssertFalse(Self.etapesAttendues.contains(2), "deux lignes ne sont pas une préparation")
+        XCTAssertFalse(Self.etapesAttendues.contains(5), "cinq lignes ne tiennent pas dans la fiche")
+
+        let ingredient = FoodItem(id: "ing", name: "Ingrédient", emoji: "🥦",
+                                  kcalPer100g: 100, category: .side, defaultGrams: 100)
+        // Deux recettes de laboratoire à 100 kcal de composition PILE : seul leur repli
+        // diffère, +9 % pour l'une et +11 % pour l'autre, au plus près du seuil de part
+        // et d'autre. Un `dehors` plus loin — 125, par exemple — laisserait la tolérance
+        // monter jusqu'à 0.249 sans une rougeur.
+        let dedans = FoodItem(id: "dedans", name: "Dedans", emoji: "🍽", kcalPer100g: 109,
+                              category: .dish, defaultGrams: 100, isRecipe: true)
+        // 111 et non 110 : `100.0 * 0.1` vaut 10.000000000000002 en `Double`, et un écart
+        // de 10 pile retomberait DEDANS — la fixture serait rouge sans rien prouver.
+        let dehors = FoodItem(id: "dehors", name: "Dehors", emoji: "🍽", kcalPer100g: 111,
+                              category: .dish, defaultGrams: 100, isRecipe: true)
+        let composition = [MealComponent(itemID: "ing", grams: 100)]
+        let labo = FoodCatalog(items: [ingredient, dedans, dehors],
+                               byID: ["ing": ingredient, "dedans": dedans, "dehors": dehors],
+                               compositions: ["dedans": composition, "dehors": composition])
+
+        for (item, attendu) in [(dedans, true), (dehors, false)] {
+            let composed = MealEstimator.kcal(lines: [labo.line(for: item)],
+                                              kcalPer100g: labo.kcalPer100g)
+            let fallback = repli(of: item, in: labo)
+            XCTAssertEqual(abs(Double(fallback) - Double(composed)) <= Double(composed) * Self.toleranceDuRepli,
+                           attendu, "\(item.id) : repli \(fallback) pour \(composed) kcal")
+        }
+    }
+
+    /// Une suggestion « légère » qui dépasse son plafond n'est pas une suggestion légère.
+    /// La spec §6.2 écrit « sous ~500 kcal » : les vingt kcal ci-dessous SONT ce tilde,
+    /// écrits une fois pour toutes plutôt que laissés à l'appréciation du rédacteur. Le
+    /// seuil lui-même n'est tenu par aucune donnée — la plus lourde des trente-cinq est
+    /// à 511 (`veg_flatbread`) — et c'est bien un plafond, pas une cible.
+    func testAucuneRecetteNeDepasseCinqCentVingtKcal() throws {
+        let catalog = try FoodCatalog.load()
+        for recipe in try Catalogs.recipes() {
+            guard let item = catalog.byID[recipe.itemID] else { continue }
+            let kcal = MealEstimator.kcal(lines: [catalog.line(for: item)],
+                                          kcalPer100g: catalog.kcalPer100g)
+            XCTAssertLessThanOrEqual(kcal, 520, "\(recipe.itemID) : \(kcal) kcal")
+        }
     }
 }

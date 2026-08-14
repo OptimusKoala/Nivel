@@ -168,14 +168,227 @@
   ],
   "cod_papillote": [
     { "itemID": "fish_fillet", "grams": 150 },
-    { "itemID": "green_veg", "grams": 250 },
-    { "itemID": "olive_oil", "grams": 10 },
-    { "itemID": "lettuce", "grams": 20 }
+    { "itemID": "green_veg", "grams": 270 },
+    { "itemID": "olive_oil", "grams": 10 }
   ],
   "leek_potato_soup": [
     { "itemID": "soup_veg", "grams": 250 },
     { "itemID": "potato", "grams": 150 },
     { "itemID": "cream", "grams": 20 },
     { "itemID": "butter", "grams": 10 }
+  ],
+  "omelette_salad": [
+    { "itemID": "egg", "grams": 150 },
+    { "itemID": "lettuce", "grams": 60 },
+    { "itemID": "tomato", "grams": 80 },
+    { "itemID": "bread", "grams": 40 },
+    { "itemID": "butter", "grams": 10 }
+  ],
+  "lentil_salad": [
+    { "itemID": "legumes", "grams": 180 },
+    { "itemID": "tomato", "grams": 100 },
+    { "itemID": "egg", "grams": 60 },
+    { "itemID": "lettuce", "grams": 40 },
+    { "itemID": "vinaigrette", "grams": 12 }
+  ],
+  "steam_fish_rice": [
+    { "itemID": "fish_fillet", "grams": 130 },
+    { "itemID": "rice_cooked", "grams": 150 },
+    { "itemID": "green_veg", "grams": 120 },
+    { "itemID": "olive_oil", "grams": 6 }
+  ],
+  "veg_wok": [
+    { "itemID": "noodles_cooked", "grams": 150 },
+    { "itemID": "green_veg", "grams": 150 },
+    { "itemID": "chicken", "grams": 80 },
+    { "itemID": "soy_sauce", "grams": 15 },
+    { "itemID": "olive_oil", "grams": 6 }
+  ],
+  "chicken_pita": [
+    { "itemID": "pita", "grams": 90 },
+    { "itemID": "chicken", "grams": 100 },
+    { "itemID": "lettuce", "grams": 30 },
+    { "itemID": "tomato", "grams": 60 },
+    { "itemID": "white_sauce", "grams": 15 }
+  ],
+  "stuffed_potatoes": [
+    { "itemID": "potato", "grams": 250 },
+    { "itemID": "ham", "grams": 40 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "grated_cheese", "grams": 20 },
+    { "itemID": "cream", "grams": 15 }
+  ],
+  "tuna_potato_salad": [
+    { "itemID": "potato", "grams": 180 },
+    { "itemID": "tuna", "grams": 80 },
+    { "itemID": "lettuce", "grams": 40 },
+    { "itemID": "tomato", "grams": 80 },
+    { "itemID": "vinaigrette", "grams": 12 }
+  ],
+  "asparagus_egg": [
+    { "itemID": "green_veg", "grams": 200 },
+    { "itemID": "egg", "grams": 120 },
+    { "itemID": "lettuce", "grams": 40 },
+    { "itemID": "croutons", "grams": 15 },
+    { "itemID": "vinaigrette", "grams": 12 }
+  ],
+  "pea_risotto": [
+    { "itemID": "rice_cooked", "grams": 200 },
+    { "itemID": "green_veg", "grams": 120 },
+    { "itemID": "grated_cheese", "grams": 20 },
+    { "itemID": "butter", "grams": 10 }
+  ],
+  "chicken_crudites": [
+    { "itemID": "chicken", "grams": 130 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "tomato", "grams": 80 },
+    { "itemID": "plain_yogurt", "grams": 125 },
+    { "itemID": "bread", "grams": 40 }
+  ],
+  "spring_pasta": [
+    { "itemID": "pasta_cooked", "grams": 180 },
+    { "itemID": "green_veg", "grams": 150 },
+    { "itemID": "olive_oil", "grams": 10 },
+    { "itemID": "grated_cheese", "grams": 10 }
+  ],
+  "fish_new_potatoes": [
+    { "itemID": "fish_fillet", "grams": 140 },
+    { "itemID": "potato", "grams": 200 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "butter", "grams": 10 }
+  ],
+  "spring_soup": [
+    { "itemID": "soup_veg", "grams": 300 },
+    { "itemID": "potato", "grams": 100 },
+    { "itemID": "bread", "grams": 40 },
+    { "itemID": "cream", "grams": 15 }
+  ],
+  "chicken_wrap": [
+    { "itemID": "wrap", "grams": 80 },
+    { "itemID": "chicken", "grams": 90 },
+    { "itemID": "avocado", "grams": 40 },
+    { "itemID": "lettuce", "grams": 30 },
+    { "itemID": "tomato", "grams": 60 }
+  ],
+  "gazpacho": [
+    { "itemID": "tomato", "grams": 300 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "bread", "grams": 60 },
+    { "itemID": "olive_oil", "grams": 10 }
+  ],
+  "tomato_mozza": [
+    { "itemID": "tomato", "grams": 200 },
+    { "itemID": "mozzarella", "grams": 80 },
+    { "itemID": "bread", "grams": 40 },
+    { "itemID": "olive_oil", "grams": 10 }
+  ],
+  "rice_salad": [
+    { "itemID": "rice_cooked", "grams": 200 },
+    { "itemID": "tomato", "grams": 100 },
+    { "itemID": "corn", "grams": 50 },
+    { "itemID": "green_veg", "grams": 60 },
+    { "itemID": "olive_oil", "grams": 10 }
+  ],
+  "stuffed_zucchini": [
+    { "itemID": "green_veg", "grams": 250 },
+    { "itemID": "beef", "grams": 80 },
+    { "itemID": "rice_cooked", "grams": 80 },
+    { "itemID": "tomato_sauce", "grams": 60 },
+    { "itemID": "grated_cheese", "grams": 15 }
+  ],
+  "chicken_avocado_salad": [
+    { "itemID": "chicken", "grams": 110 },
+    { "itemID": "avocado", "grams": 75 },
+    { "itemID": "lettuce", "grams": 60 },
+    { "itemID": "tomato", "grams": 80 },
+    { "itemID": "croutons", "grams": 15 },
+    { "itemID": "vinaigrette", "grams": 12 }
+  ],
+  "summer_pasta_salad": [
+    { "itemID": "pasta_cooked", "grams": 150 },
+    { "itemID": "tomato", "grams": 100 },
+    { "itemID": "mozzarella", "grams": 50 },
+    { "itemID": "olives", "grams": 20 },
+    { "itemID": "olive_oil", "grams": 6 }
+  ],
+  "grilled_chicken_ratatouille": [
+    { "itemID": "chicken", "grams": 130 },
+    { "itemID": "green_veg", "grams": 200 },
+    { "itemID": "tomato", "grams": 100 },
+    { "itemID": "bread", "grams": 30 },
+    { "itemID": "olive_oil", "grams": 10 }
+  ],
+  "pumpkin_soup": [
+    { "itemID": "soup_veg", "grams": 350 },
+    { "itemID": "potato", "grams": 80 },
+    { "itemID": "bread", "grams": 40 },
+    { "itemID": "cream", "grams": 20 }
+  ],
+  "veg_pan_eggs": [
+    { "itemID": "green_veg", "grams": 250 },
+    { "itemID": "egg", "grams": 120 },
+    { "itemID": "bread", "grams": 40 },
+    { "itemID": "olive_oil", "grams": 8 }
+  ],
+  "roast_chicken_potatoes": [
+    { "itemID": "chicken", "grams": 120 },
+    { "itemID": "potato", "grams": 200 },
+    { "itemID": "green_veg", "grams": 80 },
+    { "itemID": "olive_oil", "grams": 8 }
+  ],
+  "squash_risotto": [
+    { "itemID": "rice_cooked", "grams": 200 },
+    { "itemID": "soup_veg", "grams": 150 },
+    { "itemID": "grated_cheese", "grams": 20 },
+    { "itemID": "butter", "grams": 10 }
+  ],
+  "autumn_lentils": [
+    { "itemID": "legumes", "grams": 200 },
+    { "itemID": "soup_veg", "grams": 150 },
+    { "itemID": "bread", "grams": 30 },
+    { "itemID": "olive_oil", "grams": 10 }
+  ],
+  "baked_fish_root_veg": [
+    { "itemID": "fish_fillet", "grams": 140 },
+    { "itemID": "soup_veg", "grams": 200 },
+    { "itemID": "potato", "grams": 120 },
+    { "itemID": "olive_oil", "grams": 8 }
+  ],
+  "veg_flatbread": [
+    { "itemID": "pizza_dough", "grams": 100 },
+    { "itemID": "green_veg", "grams": 150 },
+    { "itemID": "tomato_sauce", "grams": 60 },
+    { "itemID": "mozzarella", "grams": 40 },
+    { "itemID": "olive_oil", "grams": 5 }
+  ],
+  "light_pot_au_feu": [
+    { "itemID": "beef", "grams": 110 },
+    { "itemID": "soup_veg", "grams": 250 },
+    { "itemID": "potato", "grams": 120 }
+  ],
+  "ham_potato_gratin": [
+    { "itemID": "potato", "grams": 250 },
+    { "itemID": "bechamel", "grams": 80 },
+    { "itemID": "ham", "grams": 60 },
+    { "itemID": "grated_cheese", "grams": 15 }
+  ],
+  "lentil_curry": [
+    { "itemID": "legumes", "grams": 200 },
+    { "itemID": "rice_cooked", "grams": 100 },
+    { "itemID": "soup_veg", "grams": 100 },
+    { "itemID": "cream", "grams": 15 },
+    { "itemID": "olive_oil", "grams": 5 }
+  ],
+  "chicken_noodle_broth": [
+    { "itemID": "noodles_cooked", "grams": 150 },
+    { "itemID": "chicken", "grams": 100 },
+    { "itemID": "soup_veg", "grams": 150 },
+    { "itemID": "soy_sauce", "grams": 15 }
+  ],
+  "fish_mash": [
+    { "itemID": "fish_fillet", "grams": 140 },
+    { "itemID": "mash", "grams": 180 },
+    { "itemID": "green_veg", "grams": 100 },
+    { "itemID": "butter", "grams": 6 }
   ]
 }

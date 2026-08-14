@@ -97,7 +97,7 @@ final class FoodCatalogTests: XCTestCase {
     /// les onglets ne montrant pas les recettes, la somme des cinq catégories doit
     /// faire le compte des aliments ORDINAIRES, pas la taille du fichier.
     func testLaTailleDuCatalogue() {
-        XCTAssertEqual(catalog.items.count, 124, "le catalogue ne compte plus 124 entrées")
+        XCTAssertEqual(catalog.items.count, 157, "le catalogue ne compte plus 157 entrées")
         XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 122,
                        "les aliments ordinaires ne sont plus 122")
     }
