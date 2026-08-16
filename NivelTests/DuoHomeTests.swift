@@ -85,6 +85,23 @@ final class DuoHomeBubbleTests: XCTestCase {
             .context(.midday, nil))
     }
 
+    /// **La bulle ne dit JAMAIS ton propre prénom.** Sans repli, le prénom optionnel du
+    /// partenaire descend dans `nivelitoSays`, qui retombe sur celui du PROFIL : la bulle
+    /// annonçait à Michaël que Michaël avait aimé sa journée. Défaut trouvé en revue.
+    ///
+    /// Le test pinne aussi que les deux surfaces du §3.7 — la bulle et la notification —
+    /// nomment le partenaire de la même façon, puisqu'elles passent par la même fonction.
+    func testLaBulleNeDitJamaisTonPropreNom() {
+        XCTAssertEqual(HomeView.duoBubbleName(partner: nil), "Ton duo")
+        XCTAssertEqual(HomeView.duoBubbleName(partner: ""), "Ton duo")
+        XCTAssertEqual(HomeView.duoBubbleName(partner: "   "), "Ton duo")
+        XCTAssertEqual(HomeView.duoBubbleName(partner: "Marion"), "Marion")
+
+        XCTAssertTrue(DuoNotifications.title(partner: nil, bank: nil)
+            .contains(HomeView.duoBubbleName(partner: nil)),
+                      "la notification et la bulle nomment le partenaire pareil")
+    }
+
     /// Reduce Motion coupe le BATTEMENT, jamais le liseré : c'est le liseré qui porte
     /// l'information, l'animation n'est qu'un renfort (convention posée en v1.2).
     func testReduceMotionCoupeLeBattementPasLeLisere() {

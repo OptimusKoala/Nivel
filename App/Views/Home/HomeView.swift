@@ -138,6 +138,13 @@ struct HomeView: View {
     /// porte l'information, le battement n'est qu'un renfort.
     static func heartBeats(reduceMotion: Bool) -> Bool { !reduceMotion }
 
+    /// Le nom qui remplit la phrase de la bulle. Délègue à la MÊME fonction que la
+    /// notification (§3.7) : les deux surfaces doivent dire la même chose, et elles
+    /// divergeaient exactement sur ce repli.
+    static func duoBubbleName(partner: String?) -> String {
+        DuoNotifications.partnerDisplayName(partner)
+    }
+
     /// Le libellé de l'événement aimé, affiché SOUS le message. Il n'entre jamais dans le
     /// message lui-même : celui-ci est l'une des douze phrases relues de la banque, et y
     /// coudre un nom de repas en fabriquerait une treizième que personne n'a validée.
@@ -339,8 +346,12 @@ struct HomeView: View {
             // la même chose.
             rewardBubbleActive = false
             lastBubbleContext = .duoLikeReceived
-            bubbleText = game.nivelitoSays(context: .duoLikeReceived,
-                                           name: duo.partnerSnapshot?.name)
+            // `Self.duoBubbleName` et non le prénom brut : sans repli, `nivelitoSays`
+            // retombe sur le prénom du PROFIL, et la bulle annonce à Michaël que Michaël a
+            // aimé sa journée.
+            bubbleText = game.nivelitoSays(
+                context: .duoLikeReceived,
+                name: Self.duoBubbleName(partner: duo.partnerSnapshot?.name))
             duoBubbleDetail = Self.duoBubbleDetail(
                 eventTitle: duo.receivedLikes.last?.eventTitle)
         case .context(let context, let value):

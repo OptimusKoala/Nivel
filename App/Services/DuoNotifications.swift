@@ -47,9 +47,24 @@ enum DuoNotifications {
     /// ou banque illisible : on dit quand même quelque chose. Une notification vide serait
     /// pire que tout, puisqu'elle a déjà fait vibrer le téléphone.
     nonisolated static func title(partner: String?, bank: MessageBank?) -> String {
-        let nom = partner ?? "Ton duo"
+        let nom = partnerDisplayName(partner)
         guard let bank else { return "\(nom) t'a envoyé un cœur 💛" }
         return bank.pick(context: .duoLikeReceived, excluding: nil, name: nom, value: nil).text
+    }
+
+    /// Comment on NOMME le partenaire quand on ne connaît pas encore son prénom : il a aimé
+    /// avant que son instantané n'arrive, ce qui est le cas normal des premières secondes
+    /// d'un duo.
+    ///
+    /// **Une seule fonction pour les deux surfaces**, et ce n'est pas de l'économie : le
+    /// §3.7 veut que la notification et la bulle disent la même chose, et elles divergeaient
+    /// précisément ici. La bulle passait un prénom optionnel à `nivelitoSays`, qui retombe
+    /// sur le prénom du PROFIL — c'est-à-dire le sien. Elle annonçait donc « Michaël a jeté
+    /// un œil à ta journée, et ça lui a plu » à Michaël.
+    nonisolated static func partnerDisplayName(_ partner: String?) -> String {
+        guard let partner, !partner.trimmingCharacters(in: .whitespaces).isEmpty
+        else { return "Ton duo" }
+        return partner
     }
 
     /// Le corps : le libellé de l'événement aimé, tel qu'il a été publié. Il voyage dans
