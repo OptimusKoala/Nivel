@@ -102,6 +102,14 @@ final class DuoService {
     /// pas » et « la zone est vide » ne mènent pas à la même décision.
     private(set) var memberCount: Int?
 
+    /// La zone n'existe plus en face : le partenaire a désinstallé, ou le propriétaire a
+    /// défait le duo de son côté. La section Duo des réglages en fait son quatrième état et
+    /// propose de recommencer (§3.10).
+    ///
+    /// Distingué d'une panne de réseau avec soin : annoncer la fin d'un duo parce que le
+    /// train est passé dans un tunnel serait le pire des faux positifs.
+    private(set) var zoneIsGone = false
+
     /// Une lecture est en vol. Même coalescence que `publishDuo`, et pour la même raison :
     /// le retour au premier plan, l'ouverture de la page et le réveil silencieux peuvent
     /// se déclencher dans le même tour, et chacun coûte deux requêtes réseau.
@@ -131,6 +139,22 @@ final class DuoService {
     /// seules, et il n'existe qu'UNE source de vérité. En recopier une seconde ici ferait
     /// diverger le cache persisté de ce qui est affiché.
     var partnerSnapshot: DuoSnapshot? { identity.partnerSnapshot }
+
+    /// Depuis quand ce duo existe, pour la ligne d'état des réglages (§3.9).
+    var pairedAt: Date? { identity.pairedAt }
+
+    /// L'interrupteur « Cœurs reçus » des réglages (§3.7). En écriture aussi : c'est le seul
+    /// réglage du duo que l'utilisateur touche directement, et le faire passer par le service
+    /// évite qu'un écran aille écrire dans `DuoIdentity` de sa propre main.
+    var likeNotificationsEnabled: Bool {
+        get { identity.likeNotificationsEnabled }
+        set { identity.likeNotificationsEnabled = newValue }
+    }
+
+    /// Les événements à moi qui portent un cœur, pour les journaux Repas et Sport (§3.8).
+    /// Lu depuis `DuoIdentity`, donc **persistant** : ils survivent au relancement et au
+    /// désappairage, comme la spec l'exige.
+    var likedEventIDs: Set<String> { Set(identity.receivedLikeEventIDs) }
 
     /// La pastille du bouton avatar de l'accueil (§3.9). La décision est celle du lot A1 ;
     /// ce service ne fait que lui apporter le fil et la date de dernière visite.
@@ -189,6 +213,10 @@ final class DuoService {
 
         if let coeurs = await fetchLikes(in: target, me: me) {
             receivedLikes = Self.incomingLikes(from: coeurs, me: me)
+            // Recopiés dans l'état d'appareil pour survivre au relancement ET au
+            // désappairage (§3.10). La liste REMPLACE la précédente : un cœur retiré par son
+            // auteur est une suppression d'enregistrement, et il doit disparaître aussi ici.
+            identity.receivedLikeEventIDs = receivedLikes.map(\.eventID)
         }
 
         // La place vient peut-être d'être prise. C'est ici, et nulle part ailleurs, qu'on
@@ -210,9 +238,18 @@ final class DuoService {
         in target: DuoDatabase.Target
     ) async -> [(reference: DuoMemberRef, record: CKRecord)]? {
         let requete = CKQuery(recordType: DuoRecord.memberType, predicate: NSPredicate(value: true))
-        guard let reponse = try? await target.database.records(matching: requete,
-                                                               inZoneWith: target.zoneID)
-        else { return nil }
+        let reponse: (matchResults: [(CKRecord.ID, Result<CKRecord, any Error>)],
+                      queryCursor: CKQueryOperation.Cursor?)
+        do {
+            reponse = try await target.database.records(matching: requete,
+                                                        inZoneWith: target.zoneID)
+            zoneIsGone = false
+        } catch {
+            // L'erreur est REGARDÉE, et pas seulement avalée par un `try?` : c'est ici, et
+            // nulle part ailleurs, qu'on apprend que la zone a disparu.
+            zoneIsGone = Self.isZoneGone(error: error)
+            return nil
+        }
 
         return reponse.matchResults.compactMap { _, resultat in
             guard let record = try? resultat.get(),
@@ -427,6 +464,10 @@ extension DuoService {
             // zone de quelqu'un d'autre.
             identity.zoneOwnerName = nil
             identity.shareURL = url
+            // Depuis quand ce duo existe, pour la ligne d'état des réglages (§3.9). Posé une
+            // fois, à la création : rouvrir l'écran ne le repousse pas, la garde
+            // d'idempotence étant sortie bien avant.
+            identity.pairedAt = .now
             return .ready(url)
         } catch {
             return .failed(Self.message(for: error))
@@ -483,6 +524,7 @@ extension DuoService {
             identity.zoneOwnerName = zoneID.ownerName
             // L'invité n'a pas de lien à montrer : le QR est l'affaire de celui qui invite.
             identity.shareURL = nil
+            identity.pairedAt = .now
             return .joined
         } catch {
             return .failed(Self.message(for: error))
@@ -516,6 +558,47 @@ extension DuoService {
         // Le lien ne mène plus nulle part : ne plus le garder, c'est aussi ne plus pouvoir
         // l'afficher en QR code par mégarde.
         identity.shareURL = nil
+    }
+
+    /// Cette erreur dit-elle que la zone n'existe plus ? (spec §3.10)
+    ///
+    /// Deux codes seulement, et le tri compte : une panne de réseau, un service occupé ou un
+    /// compte déconnecté sont PASSAGERS. Les confondre avec une zone disparue ferait
+    /// annoncer la fin du duo à quelqu'un dont le train vient d'entrer dans un tunnel, et
+    /// l'écran lui proposerait de tout recommencer.
+    nonisolated static func isZoneGone(error: Error) -> Bool {
+        guard let ck = error as? CKError else { return false }
+        return ck.code == .zoneNotFound || ck.code == .userDeletedZone
+    }
+
+    /// Y a-t-il un compte iCloud sur cet appareil ? Sans lui, rien du duo ne peut marcher, et
+    /// la section des réglages le dit au lieu de laisser tenter un appairage voué à l'échec.
+    func accountIsAvailable() async -> Bool {
+        (try? await makeContainer().accountStatus()) == .available
+    }
+
+    /// Défait le duo (spec §3.10). Le propriétaire supprime la zone, l'invité quitte le
+    /// partage : dans les deux cas, c'est la MÊME opération sur la base que `DuoDatabase` a
+    /// déjà choisie pour nous, privée d'un côté, partagée de l'autre. L'asymétrie reste
+    /// enfermée là où elle est née.
+    ///
+    /// **L'état local est effacé même si le nuage n'a pas répondu.** Quelqu'un hors ligne
+    /// doit pouvoir quitter un duo : l'inverse ferait d'un défaut de réseau une porte
+    /// verrouillée. Le pire cas est une zone qui survit quelques jours chez l'autre, que
+    /// son propre désappairage effacera.
+    ///
+    /// Ce qui SURVIT est écrit sur `DuoIdentity.unpair()` : le `memberID` de cet appareil et
+    /// les cœurs déjà reçus.
+    func unpair() async {
+        if let target = resolveTarget(identity) {
+            _ = try? await target.database.modifyRecordZones(saving: [], deleting: [target.zoneID])
+        }
+
+        identity.unpair()
+        memberCount = nil
+        zoneIsGone = false
+        // `receivedLikes` n'est PAS vidé : les cœurs de la session restent affichés, comme
+        // leur trace persistée. Ils font partie de l'histoire, pas de la connexion.
     }
 
     /// Le repli quand aucun cas ne correspond, et le plus fréquent en vrai : CloudKit a une

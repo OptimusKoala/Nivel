@@ -29,8 +29,19 @@ struct SettingsView: View {
 struct SettingsContent: View {
     @Bindable var profile: UserProfile
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.openURL) private var openURL
+    // `internal` : la section Duo, rangée dans son propre fichier, ouvre les réglages
+    // système quand aucun compte iCloud n'est configuré.
+    @Environment(\.openURL) var openURL
     @Environment(GameService.self) var game
+    /// L'état du duo (spec 1.15 §3.9). La section vit dans `SettingsView+Duo.swift` ; ces
+    /// quatre propriétés sont ici parce qu'une extension ne peut pas en déclarer.
+    @Environment(DuoService.self) var duo
+    /// La feuille d'appairage ouverte, `nil` si aucune.
+    @State var duoSheet: DuoPairingSheet?
+    @State var duoConfirmingUnpair = false
+    /// Optimiste par défaut, voir `duoSection` : afficher « connecte-toi à iCloud » pendant
+    /// la fraction de seconde que met le système à répondre serait un mensonge clignotant.
+    @State var duoHasICloudAccount = true
 
     @State private var kcalText = ""
     /// Nouvel objectif proposé par "Recalculer" — non nil = alerte de confirmation visible.
@@ -65,6 +76,7 @@ struct SettingsContent: View {
                     postureSection
                     muscuSection
                     remindersSection
+                    duoSection
                     themeSection
                     healthSection
                     aboutSection

@@ -42,6 +42,9 @@ final class DuoIdentity {
         static let unreadLikeCount = "nivel.duo.unreadLikeCount"
         static let partnerSnapshot = "nivel.duo.partnerSnapshot"
         static let lastPublishedSnapshot = "nivel.duo.lastPublishedSnapshot"
+        static let pairedAt = "nivel.duo.pairedAt"
+        static let likeNotificationsEnabled = "nivel.duo.likeNotificationsEnabled"
+        static let receivedLikeEventIDs = "nivel.duo.receivedLikeEventIDs"
     }
 
     /// L'identité de CET appareil dans le duo. `nil` tant qu'aucun duo n'a jamais été
@@ -108,6 +111,34 @@ final class DuoIdentity {
         }
     }
 
+    /// Depuis quand ce duo existe, posé à l'appairage réussi et effacé au désappairage.
+    /// La section Duo des réglages l'affiche (§3.9). Optionnel, et il le restera : un duo
+    /// noué par une version antérieure n'a pas de date, et il vaut mieux ne rien dire que
+    /// d'en inventer une.
+    var pairedAt: Date? { didSet { defaults.set(pairedAt, forKey: Key.pairedAt) } }
+
+    /// L'interrupteur « Cœurs reçus » (§3.7) : il coupe la NOTIFICATION locale, jamais
+    /// l'appairage ni la réception. On garde le duo et on cesse d'être prévenu.
+    ///
+    /// Allumé par défaut, et la lecture en `object` plutôt qu'en `bool` est ce qui le
+    /// garantit : `defaults.bool(forKey:)` rend `false` sur une clé absente, donc lu ainsi
+    /// l'interrupteur naîtrait ÉTEINT sur tout appareil qui n'y a jamais touché, sans que
+    /// rien ne paraisse anormal dans les réglages.
+    var likeNotificationsEnabled: Bool {
+        didSet { defaults.set(likeNotificationsEnabled, forKey: Key.likeNotificationsEnabled) }
+    }
+
+    /// Les `publicID` de MES entrées qui ont reçu un cœur. Persistés, et c'est une décision
+    /// de la spec §3.10 : les cœurs déjà reçus restent affichés sur les entrées des journaux
+    /// Repas et Sport **après le désappairage**, parce qu'ils font partie de l'histoire et
+    /// non de la connexion. Gardés en mémoire seulement, ils disparaîtraient au premier
+    /// relancement, et la zone qui les portait n'existe plus pour les redonner.
+    ///
+    /// Un tableau plutôt qu'un `Set` : `UserDefaults` ne sait pas ranger un `Set`.
+    var receivedLikeEventIDs: [String] {
+        didSet { defaults.set(receivedLikeEventIDs, forKey: Key.receivedLikeEventIDs) }
+    }
+
     var isPaired: Bool { role != nil }
 
     private let defaults: UserDefaults
@@ -138,6 +169,12 @@ final class DuoIdentity {
             .flatMap { try? JSONDecoder().decode(DuoSnapshot.self, from: $0) }
         lastPublishedSnapshot = (defaults.data(forKey: Key.lastPublishedSnapshot))
             .flatMap { try? JSONDecoder().decode(DuoSnapshot.self, from: $0) }
+        pairedAt = defaults.object(forKey: Key.pairedAt) as? Date
+        // Voir la propriété : `object` et non `bool`, sous peine d'un interrupteur qui naît
+        // éteint sur tous les appareils du monde.
+        likeNotificationsEnabled =
+            defaults.object(forKey: Key.likeNotificationsEnabled) as? Bool ?? true
+        receivedLikeEventIDs = defaults.stringArray(forKey: Key.receivedLikeEventIDs) ?? []
     }
 
     /// Crée l'identité de cet appareil et la persiste. **Un seul appelant légitime : le
@@ -165,6 +202,12 @@ final class DuoIdentity {
     /// Chaque affectation passe par son `didSet`, donc l'effacement est écrit sur le
     /// disque et pas seulement dans cette instance — un duo qui réapparaîtrait au
     /// lancement suivant serait le plus déroutant des modes de panne.
+    /// `receivedLikeEventIDs` survit lui aussi, et pour une raison de la même famille : les
+    /// cœurs déjà reçus font partie de l'histoire, pas de la connexion (§3.10). Les effacer
+    /// avec le duo retirerait des journaux ce que quelqu'un vous a dit de gentil.
+    ///
+    /// `likeNotificationsEnabled` survit aussi : c'est une préférence d'appareil, comme le
+    /// thème, et défaire un duo n'est pas une raison de la remettre à zéro.
     func unpair() {
         role = nil
         zoneName = nil
@@ -173,6 +216,7 @@ final class DuoIdentity {
         profileLastSeenAt = nil
         unreadLikeCount = 0
         partnerSnapshot = nil
+        pairedAt = nil
         // Sans cette ligne, réappairer avec la même personne ne republierait RIEN tant
         // que la journée n'a pas changé : l'instantané construit serait égal à celui
         // d'avant le désappairage, et le partenaire n'aurait jamais rien à afficher.
