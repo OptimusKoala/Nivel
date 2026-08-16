@@ -50,3 +50,55 @@ final class DuoHomeButtonTests: XCTestCase {
                        DuoProfileView.avatarName(sexRaw: "male"))
     }
 }
+
+final class DuoHomeBubbleTests: XCTestCase {
+
+    /// Un cœur n'interrompt PAS une récompense : Nivelito ne coupe pas un « +20 XP » pour
+    /// annoncer un cœur. Même famille de décision que le reste de `bubbleDecision`, étendue
+    /// et non doublée — un second mécanisme à côté aurait fini par se contredire.
+    func testUnCoeurNInterromptPasUneRecompense() {
+        XCTAssertEqual(
+            HomeView.bubbleDecision(mealXP: 20, activityXP: nil, unreadDuoLikes: 1,
+                                    fallback: .midday, fallbackValue: nil),
+            .reward(.afterMealLog, 20))
+        XCTAssertEqual(
+            HomeView.bubbleDecision(mealXP: nil, activityXP: 30, unreadDuoLikes: 1,
+                                    fallback: .midday, fallbackValue: nil),
+            .reward(.afterActivity, 30))
+    }
+
+    /// Mais il prime sur l'humeur horaire : un cœur reçu vaut mieux qu'un « bonne
+    /// après-midi », et c'est le rattrapage promis par le §3.7 quand la notification n'est
+    /// pas passée.
+    func testUnCoeurPrimeSurLaBulleDHumeur() {
+        XCTAssertEqual(
+            HomeView.bubbleDecision(mealXP: nil, activityXP: nil, unreadDuoLikes: 1,
+                                    fallback: .midday, fallbackValue: nil),
+            .duoLike)
+    }
+
+    /// Sans cœur non lu, rien ne change : c'est la bulle de la 1.14, au mot près.
+    func testSansCoeurNonLuLaBulleEstCelleDAvant() {
+        XCTAssertEqual(
+            HomeView.bubbleDecision(mealXP: nil, activityXP: nil, unreadDuoLikes: 0,
+                                    fallback: .midday, fallbackValue: nil),
+            .context(.midday, nil))
+    }
+
+    /// Reduce Motion coupe le BATTEMENT, jamais le liseré : c'est le liseré qui porte
+    /// l'information, l'animation n'est qu'un renfort (convention posée en v1.2).
+    func testReduceMotionCoupeLeBattementPasLeLisere() {
+        XCTAssertFalse(HomeView.heartBeats(reduceMotion: true))
+        XCTAssertTrue(HomeView.heartBeats(reduceMotion: false))
+    }
+
+    /// Le nom de l'événement s'affiche SOUS le message, pas dedans : le message est une des
+    /// douze phrases de la banque, et y coudre un libellé de repas en ferait une treizième
+    /// que personne n'a relue.
+    func testLeNomDeLEvenementVitSousLeMessageEtPasDedans() {
+        XCTAssertEqual(HomeView.duoBubbleDetail(eventTitle: "Poisson et purée maison"),
+                       "Poisson et purée maison")
+        XCTAssertNil(HomeView.duoBubbleDetail(eventTitle: ""))
+        XCTAssertNil(HomeView.duoBubbleDetail(eventTitle: nil))
+    }
+}

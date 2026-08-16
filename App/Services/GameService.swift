@@ -678,9 +678,13 @@ final class GameService {
 
     /// Message contextuel de Nivelito : `MessageBank.pick` sans répéter le dernier,
     /// et persiste `lastMessageIDs` sur le profil.
-    func nivelitoSays(context: MessageContext, value: Int? = nil) -> String {
+    /// `name` permet de substituer un AUTRE prénom que le sien, et c'est le seul cas du
+    /// dépôt : le contexte `duoLikeReceived` de la 1.15 parle du partenaire, pas de soi.
+    /// Partout ailleurs l'argument reste nil et le prénom du profil s'applique.
+    func nivelitoSays(context: MessageContext, value: Int? = nil,
+                      name overrideName: String? = nil) -> String {
         let profile = fetchProfile()
-        let name = profile?.name ?? ""
+        let name = overrideName ?? profile?.name ?? ""
         guard let messageBank else { return "Salut \(name) !" }
         let message = messageBank.pick(
             context: context,

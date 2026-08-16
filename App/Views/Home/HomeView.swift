@@ -45,7 +45,11 @@ struct HomeView: View {
     @State private var showMealLog = false
     @State private var showActivityPicker = false
     @State private var showSettings = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var showDuoProfile = false
+    /// Le libellé de l'événement aimé, sous la bulle. Non nil UNIQUEMENT quand la bulle du
+    /// cœur est à l'écran, et remis à nil par toutes les autres branches de `updateBubble`.
+    @State private var duoBubbleDetail: String?
     @State private var sessionStatus: (session: ActivitySession, done: Bool)?
     @State private var showSessionPlayer = false
 
@@ -94,6 +98,10 @@ struct HomeView: View {
     /// (gardé anti-churn par l'appelant).
     enum BubbleDecision: Equatable {
         case reward(MessageContext, Int)
+        /// Un cœur reçu qu'on n'a pas encore vu (spec 1.15 §3.9). Ne porte ni texte ni
+        /// valeur : le message vient de la banque au moment de l'affichage, avec le prénom
+        /// du PARTENAIRE, et le libellé de l'événement s'affiche sous la bulle.
+        case duoLike
         case context(MessageContext, Int?)
     }
 
@@ -116,6 +124,7 @@ struct HomeView: View {
     ) -> BubbleDecision {
         if let mealXP, mealXP > 0 { return .reward(.afterMealLog, mealXP) }
         if let activityXP, activityXP > 0 { return .reward(.afterActivity, activityXP) }
+        if unreadDuoLikes > 0 { return .duoLike }
         return .context(fallback, fallbackValue)
     }
 
@@ -124,6 +133,19 @@ struct HomeView: View {
     /// rigoureusement celui de la 1.14.
     static func showsDuoButton(hasPartner: Bool) -> Bool { hasPartner }
 
+    /// Le cœur épinglé à la bulle bat, sauf en Reduce Motion — comme les micro-gestes de
+    /// Nivelito depuis la v1.2. Le LISERÉ, lui, reste dans tous les cas : c'est lui qui
+    /// porte l'information, le battement n'est qu'un renfort.
+    static func heartBeats(reduceMotion: Bool) -> Bool { !reduceMotion }
+
+    /// Le libellé de l'événement aimé, affiché SOUS le message. Il n'entre jamais dans le
+    /// message lui-même : celui-ci est l'une des douze phrases relues de la banque, et y
+    /// coudre un nom de repas en fabriquerait une treizième que personne n'a validée.
+    static func duoBubbleDetail(eventTitle: String?) -> String? {
+        guard let eventTitle, !eventTitle.trimmingCharacters(in: .whitespaces).isEmpty
+        else { return nil }
+        return eventTitle
+    }
 
     /// Expression de Nivelito sur l'accueil — logique PURE, testable (HomeDashboardTests).
     /// Les événements transitoires priment sur l'humeur horaire : une célébration
@@ -301,18 +323,32 @@ struct HomeView: View {
         let (context, value) = game.homeMessageContext()
 
         switch Self.bubbleDecision(mealXP: mealXP, activityXP: activityXP,
+                                   unreadDuoLikes: duo.unreadLikeCount,
                                    fallback: context, fallbackValue: value) {
         case .reward(let rewardContext, let rewardValue):
+            duoBubbleDetail = nil
             // Bulle "après log" prioritaire (spec §4.2) : repas d'abord (cas rarissime
             // où les deux sont en attente), sinon activité.
             lastBubbleContext = rewardContext
             bubbleText = game.nivelitoSays(context: rewardContext, value: rewardValue)
             rewardBubbleActive = true
+        case .duoLike:
+            // Le message vient de la banque avec le prénom du PARTENAIRE : c'est le seul
+            // endroit du dépôt où `name:` désigne quelqu'un d'autre que soi, et la même
+            // matière que la notification du §3.7 — un cœur reçu ne dit jamais deux fois
+            // la même chose.
+            rewardBubbleActive = false
+            lastBubbleContext = .duoLikeReceived
+            bubbleText = game.nivelitoSays(context: .duoLikeReceived,
+                                           name: duo.partnerSnapshot?.name)
+            duoBubbleDetail = Self.duoBubbleDetail(
+                eventTitle: duo.receivedLikes.last?.eventTitle)
         case .context(let context, let value):
             // Une bulle de récompense ne cède la place qu'à une célébration : sinon le
             // refresh() asynchrone de la MÊME apparition l'écraserait aussitôt.
             if rewardBubbleActive, context != .levelUp, context != .badge { return }
             rewardBubbleActive = false
+            duoBubbleDetail = nil
             // Recalcule uniquement quand le CONTEXTE change (nouvelle célébration,
             // nouvelle tranche horaire…) : les retours sur l'onglet ne font pas churner
             // le message, mais un événement survenu entre-temps est bien reflété.
@@ -399,8 +435,21 @@ struct HomeView: View {
                 celebrationTrigger: game.celebrationsRaised
             )
             if !bubbleText.isEmpty {
-                SpeechBubble(text: bubbleText)
+                SpeechBubble(text: bubbleText, detail: duoBubbleDetail,
+                             // Maquette C : liseré fixe et cœur épinglé au coin dès qu'un
+                             // cœur non lu attend. Le liseré est en BORDEAUX, jamais en
+                             // rouge : règle fondatrice de la v1, et la maquette d'origine
+                             // était en rouge précisément pour qu'on tranche ce point.
+                             highlighted: duoBubbleDetail != nil || lastBubbleContext == .duoLikeReceived,
+                             heartBeats: Self.heartBeats(reduceMotion: reduceMotion))
                     .padding(.top, 8)
+                    // Un tap ouvre la page du duo et éteint le signal (§3.9). Sur toute la
+                    // bulle, pas seulement sur le cœur : c'est elle qu'on regarde.
+                    .onTapGesture {
+                        guard duo.partnerSnapshot != nil, lastBubbleContext == .duoLikeReceived
+                        else { return }
+                        showDuoProfile = true
+                    }
             }
             Spacer(minLength: 0)
         }
