@@ -6,23 +6,31 @@
 // simulateur ni la CI ne savent jouer deux comptes iCloud. La parade est la même qu'au
 // lot A1 et qu'en v1 avec `HomeView.bubbleDecision` : **toute décision est extraite en
 // statique pure**, éprouvée par un test, et le reste est de la plomberie mince, écrite
-// sans astuce. Cinq décisions vivent ici :
-//
-// 1. qui est mon partenaire parmi les membres de la zone (§3.6) ;
-// 2. le partage doit-il rester ouvert (§3.6) ;
-// 3. quels cœurs me visent (§3.7) ;
-// 4. ce texte scanné est-il une invitation (§3.6) ;
-// 5. que dit-on quand ça rate (§3.10).
+// sans astuce. Ce que ce fichier porte, dans l'ordre : l'état que les écrans lisent, les
+// deux chemins de lecture de la zone (la lecture complète et le réveil silencieux), l'envoi
+// et le retrait d'un cœur, les décisions pures, et l'appairage.
 //
 // L'appairage est en fin de fichier, et il y est plutôt que dans un `+Pairing.swift` pour
 // une raison précise : `identity` est `private`, donc visible des seules extensions de CE
 // fichier. Aucun écran ne peut ainsi pousser lui-même un rôle ou une zone dans les
 // réglages, et l'état d'appairage n'a qu'un seul auteur.
 //
-// Ce que ce fichier ne fait PAS, et qui viendra dans les tâches suivantes du lot : envoyer
-// ou retirer un cœur. Le TEXTE des notifications ne vit pas ici non plus, mais dans
-// `DuoNotifications` : ce service rend les cœurs nouvellement arrivés, un autre décide de
-// ce qu'on en dit.
+// Ce qui ne vit PAS ici : le TEXTE de ce qu'on annonce, qui est dans `DuoNotifications` —
+// ce service rend les cœurs nouvellement arrivés, un autre décide de ce qu'on en dit — et
+// les noms de champs CloudKit, qui sont dans `DuoRecord`.
+//
+// ⚠️ **À reprendre avant la 1.16, et c'est le seul chantier de fond que ce lot laisse.**
+// Trois chemins écrivent `identity.receivedLikeEventIDs` et trois écrivent
+// `identity.givenLikeEventIDs`, dont deux lancés dans le même tour par `onForeground`. Les
+// trois défauts d'état trouvés en revue de qualité — historique effacé par un réveil,
+// notification en double, cœur retenté qui s'éteint — sont tous nés de là, et aucun n'était
+// visible en lisant sa propre ligne.
+//
+// Le geste qui les rendrait IMPOSSIBLES à écrire, plutôt que repérables en revue : que ces
+// listes cessent d'être des propriétés assignables et n'exposent que des méthodes qui disent
+// l'intention (`ajouter ce qui arrive`, `retirer ce qui s'éteint`), l'union et la
+// soustraction vivant à l'intérieur. C'est exactement ce qui a été fait pour le compteur de
+// cœurs non lus avec `unreadCount`, et depuis, ce compteur ne s'est plus trompé.
 
 import CloudKit
 import Foundation

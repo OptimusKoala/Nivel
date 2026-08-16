@@ -12,14 +12,14 @@ import NivelCore
 
 final class DuoHomeButtonTests: XCTestCase {
 
-    /// Sans duo appairé, le bouton n'existe pas — il n'est ni grisé ni vide, il n'est PAS
-    /// LÀ (spec §3.9). C'est tout le mérite de la maquette retenue : il n'y a aucun état
-    /// vide à dessiner, et l'en-tête de quelqu'un qui ne veut pas de duo ne bouge pas d'un
-    /// pixel (§3.11, aucune découverte imposée).
-    func testSansDuoLeBoutonNExistePas() {
-        XCTAssertFalse(HomeView.showsDuoButton(hasPartner: false))
-        XCTAssertTrue(HomeView.showsDuoButton(hasPartner: true))
-    }
+    // Il y avait ici un test de `HomeView.showsDuoButton(hasPartner:)`, retiré avec la
+    // fonction. Elle rendait son argument tel quel, elle était doublée dans l'en-tête par le
+    // dépliage de l'optionnel qui décidait réellement, et son test ne pouvait donc pas
+    // échouer : il restait vert quoi qu'il arrive à la vue.
+    //
+    // La promesse « sans duo, l'en-tête est rigoureusement celui de la 1.14 » repose
+    // maintenant sur la STRUCTURE — un `if let` sur l'instantané du partenaire — et c'est
+    // plus solide qu'une cérémonie qui donnait l'illusion d'être gardée.
 
     /// La pastille n'est pas une information de couleur seule : le bouton le DIT.
     func testLeBoutonAnnonceLesNouveautesAVoiceOver() {

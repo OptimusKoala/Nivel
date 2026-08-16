@@ -128,15 +128,16 @@ struct HomeView: View {
         return .context(fallback, fallbackValue)
     }
 
-    /// Le bouton du duo n'existe QUE s'il y a quelqu'un en face (§3.9). Une fonction pour
-    /// une condition d'une ligne, parce que c'est une promesse : sans duo, l'en-tête est
-    /// rigoureusement celui de la 1.14.
-    static func showsDuoButton(hasPartner: Bool) -> Bool { hasPartner }
-
     /// Le cœur épinglé à la bulle bat, sauf en Reduce Motion — comme les micro-gestes de
     /// Nivelito depuis la v1.2. Le LISERÉ, lui, reste dans tous les cas : c'est lui qui
     /// porte l'information, le battement n'est qu'un renfort.
     static func heartBeats(reduceMotion: Bool) -> Bool { !reduceMotion }
+
+    /// La bulle affichée est-elle celle d'un cœur reçu ? Une seule formulation, lue par le
+    /// liseré comme par le tap : elle existait en trois exemplaires, dont l'un portait une
+    /// disjonction morte (`detail != nil` est impliqué par le contexte, jamais l'inverse).
+    /// Trois écritures d'une même condition, c'est deux occasions de la faire diverger.
+    private var duoBubbleShowsLike: Bool { lastBubbleContext == .duoLikeReceived }
 
     /// Le nom qui remplit la phrase de la bulle. Délègue à la MÊME fonction que la
     /// notification (§3.7) : les deux surfaces doivent dire la même chose, et elles
@@ -340,6 +341,10 @@ struct HomeView: View {
             bubbleText = game.nivelitoSays(context: rewardContext, value: rewardValue)
             rewardBubbleActive = true
         case .duoLike:
+            // Même garde anti-churn que la branche `.context` deux cas plus bas : sans elle,
+            // la phrase changerait parmi les douze à chaque fermeture de feuille tant qu'un
+            // cœur reste non lu. Un message qui tourne tout seul se lit comme du bruit.
+            guard lastBubbleContext != .duoLikeReceived else { return }
             // Le message vient de la banque avec le prénom du PARTENAIRE : c'est le seul
             // endroit du dépôt où `name:` désigne quelqu'un d'autre que soi, et la même
             // matière que la notification du §3.7 — un cœur reçu ne dit jamais deux fois
@@ -388,10 +393,14 @@ struct HomeView: View {
             }
             Spacer(minLength: 4)
             levelPill
-            // Le bouton du duo, à gauche de l'engrenage. Construit seulement s'il y a
-            // quelqu'un en face : sans duo, cette ligne n'ajoute RIEN à l'en-tête.
-            if Self.showsDuoButton(hasPartner: duo.partnerSnapshot != nil),
-               let partenaire = duo.partnerSnapshot {
+            // Le bouton du duo, à gauche de l'engrenage. **La promesse « sans duo,
+            // l'en-tête est rigoureusement celui de la 1.14 » tient dans ce `if let`, et
+            // dans rien d'autre** : il n'existe pas d'instantané du partenaire tant qu'il
+            // n'y a pas de duo, donc pas de bouton. Une fonction de décision a précédé
+            // cette ligne ; elle rendait `hasPartner` tel quel, était doublée ici par le
+            // dépliage, et son test ne pouvait pas échouer. Une cérémonie qui donnait
+            // l'illusion d'être gardée valait moins que la structure elle-même.
+            if let partenaire = duo.partnerSnapshot {
                 DuoAvatarButton(sexRaw: partenaire.sexRaw, partnerName: partenaire.name,
                                 hasNews: duo.hasNewActivity) {
                     showDuoProfile = true
@@ -451,14 +460,13 @@ struct HomeView: View {
                              // cœur non lu attend. Le liseré est en BORDEAUX, jamais en
                              // rouge : règle fondatrice de la v1, et la maquette d'origine
                              // était en rouge précisément pour qu'on tranche ce point.
-                             highlighted: duoBubbleDetail != nil || lastBubbleContext == .duoLikeReceived,
+                             highlighted: duoBubbleShowsLike,
                              heartBeats: Self.heartBeats(reduceMotion: reduceMotion))
                     .padding(.top, 8)
                     // Un tap ouvre la page du duo et éteint le signal (§3.9). Sur toute la
                     // bulle, pas seulement sur le cœur : c'est elle qu'on regarde.
                     .onTapGesture {
-                        guard duo.partnerSnapshot != nil, lastBubbleContext == .duoLikeReceived
-                        else { return }
+                        guard duoBubbleShowsLike, duo.partnerSnapshot != nil else { return }
                         showDuoProfile = true
                     }
             }
