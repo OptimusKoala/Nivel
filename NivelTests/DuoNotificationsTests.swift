@@ -174,6 +174,58 @@ final class DuoExtinguishedLikesTests: XCTestCase {
     }
 }
 
+// MARK: - L'histoire des cœurs survit à un réveil en arrière-plan
+
+/// **Le défaut critique du lot, et il tient en une phrase** : un réveil silencieux peut
+/// relancer l'app DEPUIS RIEN. iOS a repris sa mémoire, le processus redémarre en arrière-
+/// plan — cas courant, et tout différent de « tuée depuis le sélecteur », que le §3.7 exclut
+/// à juste titre. La liste en mémoire naît alors vide pendant que le disque porte toute
+/// l'histoire, et l'écrire par-dessus effaçait tous les cœurs sauf celui qui venait
+/// d'arriver.
+///
+/// Ce test part donc d'un disque GARNI et d'une mémoire VIDE, comme au réveil.
+final class DuoLikeHistoryTests: XCTestCase {
+
+    private func coeur(_ event: String) -> DuoLike {
+        DuoLike(giverID: "TOI", ownerID: "MOI", eventID: event, eventTitle: "Dîner",
+                createdAt: Date(timeIntervalSince1970: 500))
+    }
+
+    func testUnReveilNEffacePasLHistoireDesCoeurs() {
+        let histoire: Set<String> = ["E1", "E2", "E3", "E4", "E5"]
+
+        let apres = DuoService.mergedEventIDs(known: histoire, incoming: [coeur("E6")],
+                                              extinguished: [])
+
+        XCTAssertEqual(Set(apres), ["E1", "E2", "E3", "E4", "E5", "E6"])
+    }
+
+    /// Et un cœur retiré par son auteur s'en va, lui : c'est la seule façon de sortir de
+    /// cette liste, et elle est explicite.
+    func testUnCoeurEteintEstLeSeulQuiSorte() {
+        let apres = DuoService.mergedEventIDs(known: ["E1", "E2"], incoming: [],
+                                              extinguished: ["E1"])
+
+        XCTAssertEqual(apres, ["E2"])
+    }
+
+    /// Un cœur qui arrive et repart dans le même lot ne reste pas : l'extinction est
+    /// appliquée en dernier, elle a le dernier mot.
+    func testLExtinctionALeDernierMot() {
+        let apres = DuoService.mergedEventIDs(known: [], incoming: [coeur("E1")],
+                                              extinguished: ["E1"])
+
+        XCTAssertTrue(apres.isEmpty)
+    }
+
+    /// Rien de neuf, rien d'éteint : l'histoire ne bouge pas d'un iota.
+    func testUnDeltaVideNeChangeRien() {
+        XCTAssertEqual(DuoService.mergedEventIDs(known: ["E1", "E2"], incoming: [],
+                                                 extinguished: []),
+                       ["E1", "E2"])
+    }
+}
+
 // MARK: - La comptabilité des cœurs non lus
 
 /// Le compteur qui allume la bulle de l'accueil. Il a un défaut de conception derrière lui,
@@ -225,6 +277,55 @@ final class DuoChangeTokenTests: XCTestCase {
         XCTAssertFalse(DuoService.shouldRestartFromScratch(error: CKError(.networkFailure)))
         XCTAssertFalse(DuoService.shouldRestartFromScratch(error: CKError(.zoneNotFound)))
         XCTAssertFalse(DuoService.shouldRestartFromScratch(error: CKError(.notAuthenticated)))
+    }
+}
+
+// MARK: - Un seul travail de zone à la fois
+
+/// La seule pièce de concurrence du duo, jouée directement.
+///
+/// Le défaut qu'elle ferme est un entrelacement entre les DEUX chemins : un réveil
+/// silencieux qui atterrit pendant une lecture complète voyait celle-ci écraser le cœur
+/// qu'il venait d'enregistrer et faire régresser le jeton — donc le cœur revenait au réveil
+/// suivant, inconnu, et se faisait notifier une seconde fois.
+@MainActor
+final class DuoZoneSerializationTests: XCTestCase {
+
+    /// Boîte partagée par les deux travaux : c'est son contenu final qui dit s'ils se sont
+    /// coupés la parole.
+    @MainActor private final class Journal { var lignes: [String] = [] }
+
+    func testDeuxTravauxDeZoneNeSeCoupentJamaisLaParole() async {
+        let domaine = "nivel.tests.duoserial.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: domaine)!
+        defer { defaults.removePersistentDomain(forName: domaine) }
+        let service = DuoService(identity: DuoIdentity(defaults: defaults),
+                                 resolveTarget: { _ in nil })
+        let journal = Journal()
+
+        // `Task.yield()` au milieu : c'est le point de suspension où deux travaux non
+        // sérialisés s'entrelaceraient. Avec le sérialiseur, le second n'a même pas commencé.
+        async let premier: Void = service.serialized {
+            journal.lignes.append("A début")
+            await Task.yield()
+            journal.lignes.append("A fin")
+        }
+        async let second: Void = service.serialized {
+            journal.lignes.append("B début")
+            await Task.yield()
+            journal.lignes.append("B fin")
+        }
+        _ = await (premier, second)
+
+        // L'ordre entre A et B n'est pas garanti et n'a aucune importance : ce qui compte
+        // est qu'un travail ne soit jamais COUPÉ par l'autre. On l'éprouve donc sur
+        // l'adjacence, pas sur l'ordre — un test qui exigerait « A puis B » serait un test
+        // qui clignote.
+        XCTAssertEqual(journal.lignes.count, 4)
+        XCTAssertEqual(journal.lignes[0].prefix(1), journal.lignes[1].prefix(1),
+                       "le premier travail a été coupé : \(journal.lignes)")
+        XCTAssertEqual(journal.lignes[2].prefix(1), journal.lignes[3].prefix(1),
+                       "le second travail a été coupé : \(journal.lignes)")
     }
 }
 

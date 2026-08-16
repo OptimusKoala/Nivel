@@ -119,10 +119,15 @@ final class DuoService {
     /// train est passé dans un tunnel serait le pire des faux positifs.
     private(set) var zoneIsGone = false
 
-    /// Une lecture est en vol. Même coalescence que `publishDuo`, et pour la même raison :
-    /// le retour au premier plan, l'ouverture de la page et le réveil silencieux peuvent
-    /// se déclencher dans le même tour, et chacun coûte deux requêtes réseau.
+    /// Une lecture complète est en vol. Même coalescence que `publishDuo` : le retour au
+    /// premier plan et l'ouverture d'un écran peuvent se déclencher dans le même tour, et
+    /// une seconde lecture identique ne rapporterait rien.
+    ///
+    /// Ne dit RIEN du réveil silencieux, qui lui n'est jamais écarté : voir `serialized`.
     private var isRefreshing = false
+
+    /// Le travail de zone en cours, quel qu'il soit. Voir `serialized`.
+    private var zoneWork: Task<Void, Never>?
 
     init(identity: DuoIdentity,
          resolveTarget: @escaping (DuoIdentity) -> DuoDatabase.Target? = {
@@ -233,6 +238,10 @@ final class DuoService {
 
         guard let target = resolveTarget(identity) else { return }
 
+        await serialized { await self.performRefresh(me: me, target: target) }
+    }
+
+    private func performRefresh(me: String, target: DuoDatabase.Target) async {
         // Jeton NIL, donc lecture complète : c'est ce qui rend cette fonction sans mémoire,
         // et donc juste quoi qu'il se soit passé entre deux appels. Le jeton rendu est
         // gardé pour que le prochain RÉVEIL ne voie que ce qui est arrivé après.
@@ -289,6 +298,10 @@ final class DuoService {
         guard identity.isPaired, let me = identity.memberID,
               let target = resolveTarget(identity) else { return [] }
 
+        return await serialized { await self.performWake(me: me, target: target) }
+    }
+
+    private func performWake(me: String, target: DuoDatabase.Target) async -> [DuoLike] {
         var delta = await fetchZoneChanges(in: target,
                                            since: Self.unarchive(identity.zoneChangeToken))
 
@@ -322,6 +335,7 @@ final class DuoService {
         // lecture complète — c'est-à-dire jusqu'au prochain passage au premier plan.
         let eteints = Self.extinguishedEventIDs(delta.deletedLikeRecordNames, me: me,
                                                 partner: identity.partnerSnapshot?.memberID)
+        let connus = likedEventIDs
         if !eteints.isEmpty {
             receivedLikes.removeAll { eteints.contains($0.eventID) }
             identity.givenLikeEventIDs = identity.givenLikeEventIDs.filter {
@@ -331,11 +345,51 @@ final class DuoService {
 
         receivedLikes = Self.merge(receivedLikes, with: miens)
         identity.unreadLikeCount = Self.unreadCount(current: identity.unreadLikeCount,
-                                                    known: likedEventIDs, incoming: miens)
-        identity.receivedLikeEventIDs = receivedLikes.map(\.eventID)
+                                                    known: connus, incoming: miens)
+        // UNION, jamais remplacement, et c'est un défaut critique qui l'impose. Un réveil
+        // silencieux peut relancer l'app DEPUIS RIEN : iOS a repris sa mémoire, le processus
+        // redémarre en arrière-plan, et `receivedLikes` naît donc vide alors que le disque
+        // porte toute l'histoire. Écrire ce que la mémoire contient effacerait tous les
+        // cœurs sauf celui qui vient d'arriver — les petits cœurs disparaîtraient des
+        // journaux, et un jeton périmé plus tard les ferait re-notifier comme neufs.
+        //
+        // Le disque fait donc foi, et un delta ne peut qu'AJOUTER ou retirer explicitement.
+        // C'est aussi ce qui rend la promesse du §3.10 tenable : les cœurs reçus survivent,
+        // y compris à un désappairage qui suivrait de peu un réveil en arrière-plan.
+        identity.receivedLikeEventIDs = Self.mergedEventIDs(known: connus, incoming: miens,
+                                                            extinguished: eteints)
         identity.zoneChangeToken = Self.archive(delta.token)
 
         return nouveaux
+    }
+
+    /// **Un seul travail de zone à la fois**, le suivant attendant son tour plutôt que
+    /// d'abandonner.
+    ///
+    /// Le trou que cela ferme n'était pas entre deux lectures complètes — `isRefreshing`
+    /// s'en charge — mais ENTRE les deux chemins : un réveil qui atterrit pendant une
+    /// lecture complète voyait celle-ci écraser le cœur qu'il venait d'enregistrer et faire
+    /// régresser le jeton, si bien que le réveil suivant retrouvait ce cœur inconnu et le
+    /// notifiait UNE SECONDE FOIS. C'est précisément ce que `unseen` existe pour empêcher.
+    ///
+    /// Et le second attend au lieu de sortir, parce qu'un réveil qui sort ne fait pas son
+    /// travail : le système nous a réveillés pour aller chercher quelque chose, abandonner
+    /// reviendrait à perdre la notification.
+    ///
+    /// `internal` et non privée, pour une raison assumée : c'est la seule pièce de
+    /// concurrence du duo, et un test la joue directement avec deux travaux qui se
+    /// suspendent. Sans cela, elle ne serait éprouvée par rien.
+    func serialized<T: Sendable>(_ travail: @escaping @MainActor () async -> T) async -> T {
+        let precedent = zoneWork
+        let mien = Task { @MainActor () -> T in
+            // Attendre le travail en cours, quel qu'il soit et quoi qu'il rende.
+            _ = await precedent?.value
+            return await travail()
+        }
+        // Marqueur de fin, de type uniforme, pour que le travail suivant puisse nous
+        // attendre sans rien savoir de ce que nous rendons.
+        zoneWork = Task { @MainActor in _ = await mien.value }
+        return await mien.value
     }
 
     /// La lecture de changements de zone, et le SEUL chemin de lecture du duo.
@@ -405,6 +459,20 @@ final class DuoService {
         return Set(recordNames.compactMap { nom in
             donneurs.lazy.compactMap { DuoLikeID.eventID(fromRecordName: nom, giver: $0) }.first
         })
+    }
+
+    /// L'historique des cœurs reçus après un delta : ce qu'on connaissait, PLUS ce qui
+    /// arrive, MOINS ce qui vient d'être éteint.
+    ///
+    /// Une union et non un remplacement, parce qu'un delta ne dit rien de ce qu'il ne
+    /// mentionne pas. C'est l'exact pendant de `merge` pour la liste persistée, et le seul
+    /// endroit où l'histoire des cœurs peut être perdue — donc le seul à éprouver.
+    ///
+    /// Trié : deux exécutions sur les mêmes entrées écrivent la même chose, ce qu'un `Set`
+    /// ne promet pas et ce dont les tests ont besoin.
+    nonisolated static func mergedEventIDs(known: Set<String>, incoming: [DuoLike],
+                                           extinguished: Set<String>) -> [String] {
+        known.union(incoming.map(\.eventID)).subtracting(extinguished).sorted()
     }
 
     /// Le compteur de cœurs non lus après avoir vu passer `incoming`, sachant `known`.
@@ -531,6 +599,14 @@ final class DuoService {
         let aRejouer = pendingLikes
         pendingLikes.removeAll()
         for (evenement, aimer) in aRejouer {
+            // Le rejeu qui RÉUSSIT doit reposer l'état, et pas seulement partir : la lecture
+            // complète vient d'écraser `givenLikeEventIDs` avec ce que disait la zone, donc
+            // sans ce cœur-là, et l'attente locale qui le tenait allumé vient d'être vidée.
+            // Sans cette ligne, le cœur s'éteint sous le doigt à l'instant précis où son
+            // envoi aboutit — exactement le « bouton mou » que `toggleLike` évite, déplacé
+            // d'un cran.
+            var reussi = false
+            defer { if reussi { writeGiven(evenement, liked: aimer) } }
             let recordID = CKRecord.ID(recordName: DuoLikeID.recordName(giver: me,
                                                                         event: evenement),
                                        zoneID: target.zoneID)
@@ -542,26 +618,32 @@ final class DuoService {
                                                 title: "", subtitle: "")
                 let record = DuoRecord.like(giver: me, owner: proprietaire,
                                             event: evenementMinimal, in: target.zoneID)
-                _ = try? await target.database.modifyRecords(saving: [record], deleting: [],
-                                                             savePolicy: .changedKeys,
-                                                             atomically: false)
+                reussi = (try? await target.database.modifyRecords(saving: [record], deleting: [],
+                                                                   savePolicy: .changedKeys,
+                                                                   atomically: false)) != nil
             } else {
-                _ = try? await target.database.modifyRecords(saving: [], deleting: [recordID],
-                                                             savePolicy: .changedKeys,
-                                                             atomically: false)
+                reussi = (try? await target.database.modifyRecords(saving: [], deleting: [recordID],
+                                                                   savePolicy: .changedKeys,
+                                                                   atomically: false)) != nil
             }
         }
     }
 
     /// Écrit l'état local d'un cœur donné, tout de suite : c'est ce que l'écran lit.
     private func setGiven(_ eventID: String, liked: Bool) {
-        var donnes = Set(identity.givenLikeEventIDs)
-        if liked { donnes.insert(eventID) } else { donnes.remove(eventID) }
-        identity.givenLikeEventIDs = donnes.sorted()
+        writeGiven(eventID, liked: liked)
         // L'attente locale prime jusqu'à la prochaine lecture réussie de la zone : sans
         // elle, un rafraîchissement arrivé entre le tap et l'écriture rallumerait ou
         // éteindrait le cœur sous le doigt.
         pendingLikes[eventID] = liked
+    }
+
+    /// L'état persisté d'un cœur donné, SANS attente locale : ce qu'on écrit quand l'aller-
+    /// retour est déjà joué, à l'envoi comme au rejeu.
+    private func writeGiven(_ eventID: String, liked: Bool) {
+        var donnes = Set(identity.givenLikeEventIDs)
+        if liked { donnes.insert(eventID) } else { donnes.remove(eventID) }
+        identity.givenLikeEventIDs = donnes.sorted()
     }
 
     /// Les cœurs donnés tels qu'on les AFFICHE : ce que la zone dit, corrigé de ce qu'on
