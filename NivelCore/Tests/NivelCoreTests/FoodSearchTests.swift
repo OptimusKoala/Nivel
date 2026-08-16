@@ -11,9 +11,15 @@ final class FoodSearchTests: XCTestCase {
     }
 
     /// Le cas qui a motivé la règle : personne ne tape l'accent grave sur un clavier iOS.
+    ///
+    /// Deux résultats depuis la 1.15 §6.3, et non plus un : « Épinards à la crème » est
+    /// arrivé dans les ingrédients. La liste reste épinglée EXACTE, dans l'ordre du
+    /// catalogue — se rabattre sur un `contains` laisserait passer un filtre qui rend
+    /// tout. Les deux noms portent leur accent, donc retirer le rabattage des accents
+    /// vide toujours la liste : la mutation que ce test tue est intacte.
     func testSansAccentTrouveAvecAccent() throws {
         let found = FoodSearch.filter(try ingredients(), query: "creme")
-        XCTAssertEqual(found.map(\.id), ["cream"])
+        XCTAssertEqual(found.map(\.id), ["cream", "spinach_cream"])
     }
 
     /// … et l'inverse doit marcher aussi : accent tapé, nom sans accent trouvé quand

@@ -97,9 +97,9 @@ final class FoodCatalogTests: XCTestCase {
     /// les onglets ne montrant pas les recettes, la somme des cinq catégories doit
     /// faire le compte des aliments ORDINAIRES, pas la taille du fichier.
     func testLaTailleDuCatalogue() {
-        XCTAssertEqual(catalog.items.count, 176, "le catalogue ne compte plus 176 entrées")
-        XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 141,
-                       "les aliments ordinaires ne sont plus 141")
+        XCTAssertEqual(catalog.items.count, 183, "le catalogue ne compte plus 183 entrées")
+        XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 148,
+                       "les aliments ordinaires ne sont plus 148")
     }
 
     // MARK: Catalogue v1 (spec v1.10)
@@ -118,12 +118,12 @@ final class FoodCatalogTests: XCTestCase {
         // Épinglé et non borné par un `>=` : la borne à 40 datait d'un onglet à 42 items
         // et ne gardait plus rien une fois passé à 58. C'est le dernier compte de
         // catégorie du fichier qui n'était pas exact.
-        XCTAssertEqual(catalog.items(category: .side, slot: nil).count, 58)
+        XCTAssertEqual(catalog.items(category: .side, slot: nil).count, 65)  // 58 + 7 brasserie
         XCTAssertEqual(catalog.items(category: .dessert, slot: nil).count, 10)
         // Le lien avec `testLaTailleDuCatalogue` : ces cinq comptes couvrent tous les
         // aliments ordinaires, et rien d'autre. Un item qui disparaîtrait de son onglet
         // sans être une recette tomberait ici plutôt que nulle part.
-        XCTAssertEqual(15 + 9 + 49 + 58 + 10, catalog.items.filter { !$0.isRecipe }.count)
+        XCTAssertEqual(15 + 9 + 49 + 65 + 10, catalog.items.filter { !$0.isRecipe }.count)
     }
 
     /// Garde-fou de transcription : les kcal par unité des tables de la spec doivent
@@ -601,5 +601,63 @@ final class FoodCatalogTests: XCTestCase {
             let item = try XCTUnwrap(catalog.items.first { $0.id == id })
             XCTAssertEqual(item.slots, [.dinner], id)
         }
+    }
+
+    /// Une ligne de la table de la spec §6.3, ses cinq colonnes. Pas de colonne créneau :
+    /// un accompagnement se sert à toute heure, et le test l'exige explicitement plutôt
+    /// que de porter un `[]` de façade dans chaque ligne.
+    private struct AccompagnementDeSpec {
+        let id: String
+        let name: String
+        let emoji: String
+        let kcal: Double
+        let portion: Int
+    }
+
+    /// La table de la spec §6.3, recopiée DEPUIS LA SPEC comme celle des plats.
+    private static let accompagnementsDeBrasserie: [AccompagnementDeSpec] = [
+        .init(id: "green_beans", name: "Haricots verts", emoji: "🫛", kcal: 35, portion: 150),
+        .init(id: "mushrooms_pan", name: "Poêlée de champignons", emoji: "🍄", kcal: 70, portion: 120),
+        .init(id: "potatoes_sauteed", name: "Pommes sautées", emoji: "🥔", kcal: 165, portion: 150),
+        .init(id: "ratatouille", name: "Ratatouille", emoji: "🍆", kcal: 60, portion: 180),
+        .init(id: "spinach_cream", name: "Épinards à la crème", emoji: "🥬", kcal: 90, portion: 150),
+        .init(id: "rice_pilaf", name: "Riz pilaf", emoji: "🍚", kcal: 145, portion: 150),
+        .init(id: "gratin_dauphinois_side", name: "Gratin dauphinois", emoji: "🥔", kcal: 149, portion: 150),
+    ]
+
+    /// Même garde-fou que pour les plats, sur toutes les colonnes de la table §6.3.
+    /// Les accompagnements n'ont volontairement PAS de test d'absence de composition :
+    /// aucun n'en a jamais eu, ce sont eux les composants, et un tel test serait vrai
+    /// par construction sans rien garder.
+    func testLesSeptAccompagnementsRetombentSurLaSpec() {
+        XCTAssertEqual(Self.accompagnementsDeBrasserie.count, 7,
+                       "la table de référence n'a plus sept lignes")
+        for spec in Self.accompagnementsDeBrasserie {
+            guard let item = catalog.items.first(where: { $0.id == spec.id }) else {
+                XCTFail("accompagnement manquant du catalogue : \(spec.id)")
+                continue
+            }
+            XCTAssertEqual(item.name, spec.name, "\(spec.id) : nom")
+            XCTAssertEqual(item.emoji, spec.emoji, "\(spec.id) : emoji")
+            XCTAssertEqual(item.kcalPer100g, spec.kcal, "\(spec.id) : kcal/100 g")
+            XCTAssertEqual(item.defaultGrams, spec.portion, "\(spec.id) : portion")
+            XCTAssertEqual(item.category, .side, "\(spec.id) : catégorie")
+            XCTAssertEqual(item.slots, [], "\(spec.id) : créneaux, un accompagnement se sert partout")
+            XCTAssertFalse(item.isRecipe, "\(spec.id) : ce n'est pas une recette")
+        }
+    }
+
+    /// Doublon VOULU (spec §6.3) : le même gratin existe en plat et en accompagnement,
+    /// pour qu'il puisse accompagner une viande. Les deux kcal sont épinglées ENSEMBLE :
+    /// deux valeurs différentes pour le même gratin seraient un défaut, pas une nuance.
+    /// `testLesNomsSontUniquesParCategorie` autorise ce doublon, l'unicité étant par
+    /// catégorie ; ce test-ci empêche qu'on le « corrige » un jour par mégarde.
+    func testLeGratinDauphinoisExisteDansLesDeuxCategories() throws {
+        let plat = try XCTUnwrap(catalog.items.first { $0.id == "gratin_dauphinois" })
+        let accompagnement = try XCTUnwrap(catalog.items.first { $0.id == "gratin_dauphinois_side" })
+        XCTAssertEqual(plat.category, .dish)
+        XCTAssertEqual(accompagnement.category, .side)
+        XCTAssertEqual(plat.name, accompagnement.name)
+        XCTAssertEqual(plat.kcalPer100g, accompagnement.kcalPer100g)
     }
 }
