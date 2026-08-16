@@ -133,6 +133,15 @@ final class MealEntry {
     var manualKcal: Int?
     var estimatedKcal: Int
     var xpAwarded: Int
+    /// Cible d'un cœur du duo (spec 1.15 §3.4). Défaut sur la DÉCLARATION, comme
+    /// `reminderTimes` et `pantryItemIDs` : c'est ce qui garde la migration légère.
+    ///
+    /// Chaîne vide et NON `UUID().uuidString` : un défaut de déclaration n'est pas
+    /// évalué par ligne de façon garantie, et toutes les entrées d'avant la 1.15
+    /// pourraient hériter du même identifiant. `DuoFeedBuilder` remplit tout
+    /// `publicID` vide qu'il rencontre, une fois pour toutes, à la première
+    /// publication qui croise l'entrée.
+    var publicID: String = ""
 
     init(
         date: Date = .now,
@@ -164,6 +173,12 @@ final class ActivityEntry {
     var durationMinutes: Int
     var estimatedKcal: Int               // indicatif — jamais crédité au budget (spec sport §2)
     var xpAwarded: Int
+    /// Cible d'un cœur du duo (spec 1.15 §3.4). Miroir exact de `MealEntry.publicID`,
+    /// mêmes raisons : défaut sur la déclaration pour une migration légère, et chaîne
+    /// vide plutôt qu'un UUID parce qu'un défaut de déclaration n'est pas évalué par
+    /// ligne de façon garantie. Aucun paramètre d'`init` non plus : une entrée neuve
+    /// naît vide comme les anciennes, et il n'existe qu'UN chemin d'attribution.
+    var publicID: String = ""
 
     init(
         date: Date = .now,

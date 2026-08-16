@@ -80,6 +80,7 @@
 		8EF6D46C5AB6BC94B4B0610E /* ScreenshotSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F84F79AE6532FA5B518716 /* ScreenshotSupport.swift */; };
 		8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */; };
 		8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96415D84EF698197C100E80 /* WeightChart.swift */; };
+		923CE98E8AC08B122EDA6DF2 /* DuoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */; };
 		93AED358242CE2BD999D1419 /* SportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4542B7EDA424C2DF0AF4CD23 /* SportView.swift */; };
 		97E44A016BF5111A29D588FC /* RecipeStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CD04362FFEB97265AB12AB /* RecipeStrip.swift */; };
 		98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABBAD095DB88DF009C167B /* PersistentModels.swift */; };
@@ -252,6 +253,7 @@
 		B501D130466BA533B52476E1 /* WidgetSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSyncTests.swift; sourceTree = "<group>"; };
 		B6BB33F277CCEA2C23BA8D36 /* PantryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PantryTests.swift; sourceTree = "<group>"; };
 		B6F84F79AE6532FA5B518716 /* ScreenshotSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotSupport.swift; sourceTree = "<group>"; };
+		B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoPublisherTests.swift; sourceTree = "<group>"; };
 		B96415D84EF698197C100E80 /* WeightChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightChart.swift; sourceTree = "<group>"; };
 		BC0B698498EEAB91FB65AE03 /* BasketSwipeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasketSwipeTests.swift; sourceTree = "<group>"; };
 		BCBB38120226BC151CACEE2B /* CalorieRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieRing.swift; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 				CD88F18972D8921623E8DFFB /* CelebrationDismissTests.swift */,
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
+				B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */,
 				6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */,
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
 				C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */,
@@ -889,6 +892,7 @@
 				71F256526E0F3D73A7E90F83 /* CelebrationDismissTests.swift in Sources */,
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
+				923CE98E8AC08B122EDA6DF2 /* DuoPublisherTests.swift in Sources */,
 				3BFDE41276406C8417A234F4 /* ExerciseTimerModelTests.swift in Sources */,
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
 				43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */,
