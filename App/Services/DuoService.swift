@@ -192,7 +192,13 @@ final class DuoService {
     /// Les événements à moi qui portent un cœur, pour les journaux Repas et Sport (§3.8).
     /// Lu depuis `DuoIdentity`, donc **persistant** : ils survivent au relancement et au
     /// désappairage, comme la spec l'exige.
-    var likedEventIDs: Set<String> { Set(identity.receivedLikeEventIDs) }
+    ///
+    /// L'union des cœurs de la zone COURANTE et de ceux des duos passés : un cœur reçu reste
+    /// sur l'entrée qu'il a visée, même après un désappairage suivi d'un réappairage (§3.10),
+    /// et c'est ce que les Réglages promettent noir sur blanc sous le bouton de désappairage.
+    var likedEventIDs: Set<String> {
+        Set(identity.receivedLikeEventIDs).union(identity.likeHistoryEventIDs)
+    }
 
     /// La pastille du bouton avatar de l'accueil (§3.9). La décision est celle du lot A1 ;
     /// ce service ne fait que lui apporter le fil et la date de dernière visite.
@@ -215,6 +221,12 @@ final class DuoService {
     /// membres : trois de ses champs sont des cas d'échec distincts, et les confondre est
     /// exactement ce qui rend un état muet.
     struct ZoneDelta {
+        init(failed: Bool = false, tokenExpired: Bool = false, zoneGone: Bool = false) {
+            self.failed = failed
+            self.tokenExpired = tokenExpired
+            self.zoneGone = zoneGone
+        }
+
         var members: [(reference: DuoMemberRef, record: CKRecord)] = []
         var likes: [DuoLike] = []
         /// Les noms d'enregistrement des cœurs SUPPRIMÉS depuis le jeton. Le serveur ne rend
@@ -410,41 +422,71 @@ final class DuoService {
     /// c'est de toute façon elle que le réveil silencieux impose.
     ///
     /// Jeton nil : la zone entière. Jeton présent : ce qui a changé depuis.
+    ///
+    /// **La lecture est PAGINÉE, et la boucle n'est pas une précaution.** Le serveur découpe
+    /// sa réponse comme il l'entend et pose `moreComing` ; s'arrêter à la première page rend
+    /// un fragment que l'appelant prend pour la vérité de la zone, et qui écrase l'historique
+    /// persisté. Les effets sont tous silencieux : les petits cœurs disparaissent des
+    /// journaux, et le compteur de non-lus se recalcule sur un « déjà connu » tronqué, donc
+    /// re-notifie des cœurs déjà annoncés — exactement ce que `unseen` existe pour empêcher.
+    ///
+    /// Le défaut ne se voit pas sur une zone neuve, qui tient en deux enregistrements. Il
+    /// n'apparaît qu'après des centaines de cœurs, c'est-à-dire après des mois d'usage à
+    /// deux : aucune vérification sur appareil ne peut le trouver, par construction.
+    ///
+    /// Une page qui échoue fait ÉCHOUER TOUT LE LOT, pages déjà lues comprises : rendre un
+    /// début de zone en le faisant passer pour son tout serait précisément le défaut qu'on
+    /// ferme. On repartira du même jeton au prochain tour.
     private func fetchZoneChanges(in target: DuoDatabase.Target,
                                   since token: CKServerChangeToken?) async -> ZoneDelta {
         var delta = ZoneDelta()
-        do {
-            let reponse = try await target.database.recordZoneChanges(inZoneWith: target.zoneID,
-                                                                      since: token)
+        var jeton = token
+        var pages = 0
 
-            for (_, resultat) in reponse.modificationResultsByID {
-                guard let record = try? resultat.get().record else { continue }
-                switch record.recordType {
-                case DuoRecord.memberType:
-                    if let reference = DuoRecord.memberRef(from: record) {
-                        delta.members.append((reference, record))
+        while true {
+            do {
+                let reponse = try await target.database.recordZoneChanges(
+                    inZoneWith: target.zoneID, since: jeton)
+
+                for (_, resultat) in reponse.modificationResultsByID {
+                    guard let record = try? resultat.get().record else { continue }
+                    switch record.recordType {
+                    case DuoRecord.memberType:
+                        if let reference = DuoRecord.memberRef(from: record) {
+                            delta.members.append((reference, record))
+                        }
+                    case DuoRecord.likeType:
+                        if let coeur = DuoRecord.like(from: record) { delta.likes.append(coeur) }
+                    default:
+                        continue
                     }
-                case DuoRecord.likeType:
-                    if let coeur = DuoRecord.like(from: record) { delta.likes.append(coeur) }
-                default:
-                    continue
                 }
+                for suppression in reponse.deletions
+                where suppression.recordType == DuoRecord.likeType {
+                    delta.deletedLikeRecordNames.append(suppression.recordID.recordName)
+                }
+
+                jeton = reponse.changeToken
+                delta.token = reponse.changeToken
+                zoneIsGone = false
+                pages += 1
+
+                // Le garde-fou de boucle : un serveur qui redemanderait indéfiniment sans
+                // avancer bloquerait l'app en arrière-plan jusqu'à ce qu'iOS la tue. Vingt
+                // pages sont plusieurs milliers d'enregistrements, très au-delà de ce qu'une
+                // zone à deux peut porter ; on s'arrête là et le tour suivant reprendra au
+                // jeton, qui lui est valide.
+                guard reponse.moreComing, pages < Self.maxZonePages else { return delta }
+            } catch {
+                return ZoneDelta(failed: true,
+                                 tokenExpired: Self.shouldRestartFromScratch(error: error),
+                                 zoneGone: Self.isZoneGone(error: error))
             }
-            for suppression in reponse.deletions where suppression.recordType == DuoRecord.likeType {
-                delta.deletedLikeRecordNames.append(suppression.recordID.recordName)
-            }
-            delta.token = reponse.changeToken
-            zoneIsGone = false
-        } catch {
-            delta.failed = true
-            delta.tokenExpired = Self.shouldRestartFromScratch(error: error)
-            delta.zoneGone = Self.isZoneGone(error: error)
-            // L'erreur est REGARDÉE, et pas seulement avalée : c'est ici, et nulle part
-            // ailleurs, qu'on apprend que la zone a disparu.
-            zoneIsGone = delta.zoneGone
         }
-        return delta
     }
+
+    /// Voir la boucle de `fetchZoneChanges`.
+    private static let maxZonePages = 20
 
     /// Fusionne les cœurs d'un delta avec ceux déjà en main, sans doublon et dans l'ordre
     /// d'affichage. Un delta ne dit rien des cœurs qu'il ne mentionne pas : les écraser

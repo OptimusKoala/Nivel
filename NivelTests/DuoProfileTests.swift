@@ -229,7 +229,7 @@ final class DuoGivenLikesTests: XCTestCase {
         await service.unpair()
 
         XCTAssertTrue(identite.givenLikeEventIDs.isEmpty)
-        XCTAssertEqual(identite.receivedLikeEventIDs, ["R1"], "les reçus, eux, restent")
+        XCTAssertEqual(service.likedEventIDs, ["R1"], "les reçus, eux, restent affichés")
     }
 
     /// Sans duo appairé, un tap sur un cœur ne part pas dans le vide : rien n'est résolu,

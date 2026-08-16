@@ -45,6 +45,7 @@ final class DuoIdentity {
         static let pairedAt = "nivel.duo.pairedAt"
         static let likeNotificationsEnabled = "nivel.duo.likeNotificationsEnabled"
         static let receivedLikeEventIDs = "nivel.duo.receivedLikeEventIDs"
+        static let likeHistoryEventIDs = "nivel.duo.likeHistoryEventIDs"
         static let zoneChangeToken = "nivel.duo.zoneChangeToken"
         static let givenLikeEventIDs = "nivel.duo.givenLikeEventIDs"
         static let zoneSubscriptionInstalled = "nivel.duo.zoneSubscriptionInstalled"
@@ -160,6 +161,22 @@ final class DuoIdentity {
         didSet { defaults.set(zoneSubscriptionInstalled, forKey: Key.zoneSubscriptionInstalled) }
     }
 
+    /// Les cœurs reçus des duos PASSÉS, gelés au désappairage. Ne rétrécit jamais.
+    ///
+    /// Deux listes et non une, parce qu'elles répondent à deux questions différentes :
+    /// `receivedLikeEventIDs` dit ce que la zone COURANTE porte — il est donc remplacé à
+    /// chaque lecture complète, ce qui fait bien disparaître un cœur que son auteur retire —
+    /// et celle-ci dit ce qui a été reçu AVANT, ce qu'aucune zone ne peut plus confirmer.
+    ///
+    /// Sans elle, la promesse du §3.10 cassait un cran plus loin qu'on ne le croyait :
+    /// `unpair()` préservait soigneusement les cœurs reçus, puis la première lecture
+    /// complète du duo SUIVANT les remplaçait par ce que disait sa zone neuve, c'est-à-dire
+    /// rien. Les Réglages promettent pourtant, juste au-dessus du bouton : « les cœurs déjà
+    /// reçus restent sur tes repas et tes activités ».
+    var likeHistoryEventIDs: [String] {
+        didSet { defaults.set(likeHistoryEventIDs, forKey: Key.likeHistoryEventIDs) }
+    }
+
     /// Les événements du PARTENAIRE auxquels j'ai envoyé un cœur. Persistés pour que la
     /// page s'ouvre hors ligne avec ses cœurs allumés (§3.10) : un cœur affiché éteint
     /// donnerait envie de le renvoyer alors qu'il est bien parti.
@@ -206,6 +223,7 @@ final class DuoIdentity {
         likeNotificationsEnabled =
             defaults.object(forKey: Key.likeNotificationsEnabled) as? Bool ?? true
         receivedLikeEventIDs = defaults.stringArray(forKey: Key.receivedLikeEventIDs) ?? []
+        likeHistoryEventIDs = defaults.stringArray(forKey: Key.likeHistoryEventIDs) ?? []
         zoneChangeToken = defaults.data(forKey: Key.zoneChangeToken)
         givenLikeEventIDs = defaults.stringArray(forKey: Key.givenLikeEventIDs) ?? []
         zoneSubscriptionInstalled = defaults.bool(forKey: Key.zoneSubscriptionInstalled)
@@ -236,9 +254,11 @@ final class DuoIdentity {
     /// Chaque affectation passe par son `didSet`, donc l'effacement est écrit sur le
     /// disque et pas seulement dans cette instance — un duo qui réapparaîtrait au
     /// lancement suivant serait le plus déroutant des modes de panne.
-    /// `receivedLikeEventIDs` survit lui aussi, et pour une raison de la même famille : les
-    /// cœurs déjà reçus font partie de l'histoire, pas de la connexion (§3.10). Les effacer
-    /// avec le duo retirerait des journaux ce que quelqu'un vous a dit de gentil.
+    /// Les cœurs déjà reçus survivent, et c'est le §3.10 : ils font partie de l'histoire,
+    /// pas de la connexion. Ils sont VERSÉS dans l'archive plutôt que laissés en place, et
+    /// la nuance est tout le correctif : la liste courante décrit la zone COURANTE, et la
+    /// première lecture complète du duo suivant la remplace légitimement par ce que dit sa
+    /// zone neuve. L'archive, elle, n'est relue par personne d'autre que l'affichage.
     ///
     /// `likeNotificationsEnabled` survit aussi : c'est une préférence d'appareil, comme le
     /// thème, et défaire un duo n'est pas une raison de la remettre à zéro.
@@ -251,6 +271,9 @@ final class DuoIdentity {
         unreadLikeCount = 0
         partnerSnapshot = nil
         pairedAt = nil
+        // Geler ce qui a été reçu : voir `likeHistoryEventIDs`.
+        likeHistoryEventIDs = Array(Set(likeHistoryEventIDs).union(receivedLikeEventIDs)).sorted()
+        receivedLikeEventIDs = []
         // Le jeton et l'abonnement appartiennent à la ZONE, pas à l'appareil. Un jeton
         // survivant ferait repartir un futur duo au milieu de l'histoire d'un autre, et un
         // abonnement cru posé n'en ferait jamais poser de nouveau : plus aucun réveil, sans

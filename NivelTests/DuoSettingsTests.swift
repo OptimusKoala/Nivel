@@ -236,8 +236,11 @@ final class DuoUnpairingTests: XCTestCase {
 
         await service.unpair()
 
+        // La PROMESSE, et non le champ qui la porte : les cœurs sont versés dans l'archive
+        // au désappairage, précisément pour que la zone du duo suivant ne les emporte pas.
         XCTAssertEqual(service.likedEventIDs, ["E1", "E2"])
-        XCTAssertEqual(DuoIdentity(defaults: defaults).receivedLikeEventIDs, ["E1", "E2"])
+        XCTAssertEqual(DuoService(identity: DuoIdentity(defaults: defaults),
+                                  resolveTarget: { _ in nil }).likedEventIDs, ["E1", "E2"])
     }
 
     /// **Le défaut trouvé en revue, et le plus vicieux du lot.** Un invité dont la zone a
@@ -264,7 +267,7 @@ final class DuoUnpairingTests: XCTestCase {
         XCTAssertNil(identite.zoneChangeToken)
         XCTAssertNil(identite.lastPublishedSnapshot, "sinon le prochain duo reste sur du vide")
         XCTAssertTrue(service.zoneIsGone, "l'écran doit pouvoir l'expliquer")
-        XCTAssertEqual(identite.receivedLikeEventIDs, ["E1"], "les cœurs reçus, eux, restent")
+        XCTAssertEqual(service.likedEventIDs, ["E1"], "les cœurs reçus, eux, restent affichés")
         // Et l'état de l'écran suit : on propose de recommencer, on n'affiche plus un duo.
         XCTAssertEqual(DuoSettingsState.current(hasAccount: true, isPaired: service.isPaired,
                                                 zoneIsGone: service.zoneIsGone,

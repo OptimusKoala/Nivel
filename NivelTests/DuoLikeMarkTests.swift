@@ -72,6 +72,39 @@ final class DuoLikeMarkAfterUnpairTests: XCTestCase {
     /// Ce test regarde la chaîne entière exprès. Chacun de ses maillons a déjà le sien, mais
     /// la promesse du §3.10 ne vaut que s'ils tiennent ENSEMBLE, et c'est cette promesse-là
     /// que la première rédaction de la spec annonçait sans que rien ne la porte.
+    /// **Et elle le garde après un RÉAPPAIRAGE**, ce qui est le cas que la chaîne cassait.
+    /// `unpair()` préservait bien les cœurs reçus — deux tests le pinnaient — mais la
+    /// première lecture complète du duo SUIVANT les remplaçait par ce que disait sa zone
+    /// neuve, c'est-à-dire rien. Les tests s'arrêtaient à la frontière de `unpair()` et ne
+    /// suivaient pas la promesse jusqu'au bout.
+    ///
+    /// Ce test-ci va jusqu'au bout : appairer, recevoir, défaire, refaire, puis subir la
+    /// lecture complète de la zone neuve — simulée par ce qu'elle écrit réellement, une
+    /// liste courante vide.
+    func testUneEntreeAimeeGardeSonCoeurApresUnReappairage() async {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.createMemberID()
+        identite.role = .guest
+        identite.receivedLikeEventIDs = ["E1"]
+        let service = DuoService(identity: identite, resolveTarget: { _ in nil })
+
+        await service.unpair()
+        // Le duo suivant : un rôle neuf, une zone neuve.
+        identite.role = .owner
+        identite.zoneName = DuoDatabase.defaultZoneName
+        // Ce que la première lecture complète de cette zone écrit : elle ne porte encore
+        // aucun cœur.
+        identite.receivedLikeEventIDs = []
+
+        XCTAssertTrue(DuoLikeMark.isLiked(publicID: "E1", likedEventIDs: service.likedEventIDs),
+                      "les Réglages promettent que les cœurs déjà reçus restent")
+        XCTAssertTrue(DuoLikeMark.isLiked(
+            publicID: "E1",
+            likedEventIDs: DuoService(identity: DuoIdentity(defaults: defaults),
+                                      resolveTarget: { _ in nil }).likedEventIDs),
+                      "y compris au relancement suivant")
+    }
+
     func testUneEntreeAimeeGardeSonCoeurApresLeDesappairage() async {
         let identite = DuoIdentity(defaults: defaults)
         identite.createMemberID()
