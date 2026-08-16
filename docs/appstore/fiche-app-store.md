@@ -41,10 +41,10 @@ ZÉRO PRESSION, C'EST LA RÈGLE DU JEU
 Pas de rouge, pas de série à ne pas casser, pas de reproche. Un jour « raté » n'existe pas. Nivelito, le petit panda roux qui t'accompagne, encourage — il ne juge pas.
 
 LES REPAS EN TROIS GESTES
-Un catalogue de 122 aliments : plats composés, ingrédients, boissons, encas, desserts. L'estimation des calories s'affiche immédiatement, et tu peux descendre au détail de l'ingrédient et au gramme si tu en as envie — ou simplement saisir un chiffre à la main. Ton objectif quotidien est calculé à partir de ton profil (formule de Mifflin-St Jeor, moins un déficit doux).
+Un catalogue de 153 aliments : plats composés, ingrédients, boissons, encas, desserts. L'estimation des calories s'affiche immédiatement, et tu peux descendre au détail de l'ingrédient et au gramme si tu en as envie — ou simplement saisir un chiffre à la main. Ton objectif quotidien est calculé à partir de ton profil (formule de Mifflin-St Jeor, moins un déficit doux).
 
 DU SPORT TOUT DOUX
-30 activités et 11 séances composées, chacune illustrée par Nivelito, avec des consignes « comment faire » et un rythme suggéré. Marche, danse libre, yoga, gainage, étirements, ménage actif : rien d'intimidant.
+32 activités et 11 séances composées, chacune illustrée par Nivelito, avec des consignes « comment faire » et un rythme suggéré. Marche, danse libre, yoga, gainage, étirements, ménage actif : rien d'intimidant.
 
 UNE SÉANCE DU JOUR GUIDÉE
 Une étape par écran, un minuteur en anneau facultatif que tu lances seulement si tu le veux. Jamais d'avance automatique : c'est un guide, pas un chef.
@@ -61,15 +61,18 @@ Sur l'écran d'accueil et sur l'écran verrouillé : ton objectif du jour, une n
 QUATRE THÈMES COZY
 Crème, Menthe, Océan et Nuit douce. Réglable sur chaque téléphone.
 
-100 % LOCAL, VRAIMENT
-Aucun compte, aucun serveur, aucune publicité, aucune mesure d'audience. Tes données ne quittent pas ton iPhone — nous n'y avons jamais accès. L'app fonctionne entièrement hors connexion.
+À DEUX, SI TU VEUX
+Le duo relie deux iPhone, et deux seulement. Tu vois la journée de l'autre, son anneau, ses repas, sa quête, et tu lui envoies un cœur quand ça te fait plaisir. Ni ton poids, ni ta courbe de poids, ni tes badges ne sont partagés. Aucun message, aucun classement : ce n'est pas un réseau social.
+
+LOCAL PAR DÉFAUT
+Aucun compte, aucun serveur à nous, aucune publicité, aucune mesure d'audience. Sans duo, rien ne sort de ton iPhone et l'app fonctionne entièrement hors connexion. Avec un duo, ta journée passe par ta zone iCloud privée, lisible par cette seule personne, et nous n'y avons jamais accès.
 
 Nivel est en français, conçu et développé en France, et son code est ouvert (licence MIT).
 
 Nivel n'est pas un dispositif médical et ne remplace pas l'avis d'un professionnel de santé.
 ```
 
-**Nouveautés de cette version** (4 000 max — version 1.14)
+**Nouveautés de cette version** (4 000 max — ⚠️ À RÉÉCRIRE POUR LA 1.15 : le texte ci-dessous est celui de la 1.14, et `asc-fiche.py` pousse ce qu'il trouve)
 
 ```
 Des idées de repas de saison, un programme muscu, et une app qui sait ce que tu dépenses.
@@ -144,15 +147,39 @@ https://optimuskoala.github.io/Nivel/privacy.html
 
 **Questionnaire « Pratiques en matière de confidentialité des données »**
 
-> Réponse : **« Non, nous ne collectons aucune donnée de cette application »**.
+> ⚠️ **À REPRENDRE POUR LA 1.15, ET C'EST LE SEUL RISQUE DE REJET DE CETTE VERSION.** La
+> réponse actuellement enregistrée est « Non, nous ne collectons aucune donnée », vraie
+> jusqu'à la 1.14 incluse et fausse dès qu'un duo est appairé. Ce questionnaire ne se
+> remplit que dans l'interface d'App Store Connect : `asc-fiche.py` n'y touche pas, et rien
+> dans le dépôt ne peut le vérifier.
 
-C'est exact et vérifiable : l'app n'a aucun appel réseau, aucun SDK tiers, aucun compte.
-Les données de santé (pas) sont lues depuis HealthKit, affichées, et jamais transmises —
-lire une donnée sur l'appareil sans l'exfiltrer n'est pas une collecte au sens d'Apple.
+Réponse à donner : **« Oui, nous collectons des données de cette application »**, à cause du
+duo et de lui seul. Les trois types ci-dessous sont **liés à l'utilisateur** et **ne servent
+à aucun suivi** (répondre « non » à toutes les questions de suivi publicitaire) :
 
-Le manifeste `PrivacyInfo.xcprivacy` embarqué déclare la même chose, plus l'unique API à
-motif requis utilisée : `NSPrivacyAccessedAPICategoryUserDefaults`, motif `CA92.1`
-(réglages de l'app et pont vers ses widgets).
+| Type de données | Ce que c'est | Usage à cocher |
+|---|---|---|
+| Santé et forme | L'anneau du jour, les pas, les repas et activités publiés pour le partenaire | Fonctionnalité de l'app |
+| Identifiants (identifiant utilisateur) | Le `memberID` qui distingue les deux membres de la zone partagée | Fonctionnalité de l'app |
+| Coordonnées (nom) | Le prénom, affiché chez le partenaire | Fonctionnalité de l'app |
+
+Le reste de l'app n'a pas changé : aucun SDK tiers, aucune régie, aucune analytique, et les
+pas lus depuis HealthKit ne sont transmis à personne tant qu'aucun duo n'existe. Lire une
+donnée sur l'appareil sans l'exfiltrer n'est pas une collecte au sens d'Apple.
+
+Pourquoi déclarer alors que ces données vont dans l'iCloud de l'utilisateur et jamais chez
+nous : Apple définit la collecte comme le fait de transmettre des données hors de l'appareil
+d'une manière qui nous les rende accessibles, ce qui n'est pas le cas ici, mais elles sont
+**partagées avec un autre utilisateur**, et une déclaration trop généreuse ne coûte rien
+alors qu'une déclaration trop maigre est un motif de rejet. En cas de doute au moment de
+cocher, c'est cette asymétrie qui tranche.
+
+Le manifeste `PrivacyInfo.xcprivacy` embarqué déclare toujours `NSPrivacyCollectedDataTypes`
+vide, plus l'unique API à motif requis utilisée :
+`NSPrivacyAccessedAPICategoryUserDefaults`, motif `CA92.1` (réglages de l'app et pont vers
+ses widgets). **Point ouvert :** si la fiche déclare trois types collectés, le manifeste
+devrait les reprendre. Ce n'est pas bloquant (le manifeste sert le rapport de confidentialité,
+la fiche fait foi), mais c'est une divergence à trancher, et elle touche le binaire signé.
 
 ---
 
@@ -195,17 +222,25 @@ description.
 ```
 Bonjour,
 
-Nivel fonctionne entièrement hors connexion : aucun compte à créer, aucun identifiant de
-test nécessaire. Il suffit d'ouvrir l'app et de renseigner le profil demandé au premier
-lancement (prénom, sexe, date de naissance, taille, poids, niveau d'activité) pour accéder
-à toutes les fonctions.
+Nivel fonctionne sans aucun compte à créer et sans identifiant de test : il suffit d'ouvrir
+l'app et de renseigner le profil demandé au premier lancement (prénom, sexe, date de
+naissance, taille, poids, niveau d'activité) pour accéder à toutes les fonctions.
+
+Nouveauté de cette version, le « duo » relie deux iPhone : chacun voit la journée de l'autre
+(calories, pas, repas, activités, quête en cours) et peut lui envoyer un cœur. Il se met en
+place dans Réglages > Duo, en scannant un QR code, et demande donc DEUX appareils et un
+compte iCloud actif ; sur un seul appareil, la section reste accessible et n'affiche aucune
+erreur. Les données du duo transitent par une zone iCloud partagée entre les deux personnes
+(CloudKit, conteneur iCloud.com.elitedangereuse.Nivel), jamais par un serveur à nous. Il n'y
+a ni message, ni texte libre, ni contenu public : uniquement des chiffres, des intitulés
+issus des catalogues de l'app, et un cœur.
 
 L'accès à HealthKit (lecture du nombre de pas uniquement, jamais d'écriture) est facultatif :
 si l'autorisation est refusée, l'app fonctionne normalement, sans compteur de pas.
 
 L'app est en français uniquement et diffusée en France uniquement.
 
-Aucune donnée n'est collectée : pas d'appel réseau, pas de SDK tiers, pas de publicité,
+En dehors du duo, l'app n'émet aucune requête réseau : pas de SDK tiers, pas de publicité,
 pas d'analytique. Le code source est public : https://github.com/OptimusKoala/Nivel
 
 Merci !
