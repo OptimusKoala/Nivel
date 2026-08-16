@@ -173,9 +173,10 @@ recopie donc jamais à deux endroits. Il ne touche pas au questionnaire de confi
 l'interface.
 
 `release.sh` crée au besoin les deux profils App Store via l'API
-(`scripts/asc-profiles.py`), puis **vérifie le binaire signé** : entitlements HealthKit et
-App Group présents, certificat de distribution, manifestes de confidentialité embarqués. Il
-refuse d'envoyer une IPA incomplète — un export mal fait perd les entitlements en silence.
+(`scripts/asc-profiles.py`), puis **vérifie le binaire signé** : entitlements HealthKit,
+App Group, conteneur iCloud du duo et `aps-environment` à `production`, certificat de
+distribution, manifestes de confidentialité embarqués. Il refuse d'envoyer une IPA
+incomplète, parce qu'un export mal fait perd les entitlements en silence.
 
 Deux réglages de cette machine sont contournés dans les scripts et ne doivent pas être
 « simplifiés » : la signature **manuelle** en Release (la team n'a aucun appareil
@@ -186,6 +187,53 @@ Le texte de la fiche, les réponses au questionnaire de confidentialité et l'or
 captures sont dans [`docs/appstore/fiche-app-store.md`](docs/appstore/fiche-app-store.md).
 Les pages publiques (accueil, confidentialité, assistance) sont servies par GitHub Pages
 depuis le dossier `docs/`.
+
+### Ce que la 1.15 demande à la main, avant de soumettre
+
+Le duo est la première fonction de Nivel qui parle au réseau. Quatre choses en découlent,
+qu'aucun script du dépôt ne fait ni ne vérifie. Tant qu'elles ne sont pas faites, la
+version ne part pas.
+
+1. **Ouvrir les capacités, puis régénérer le profil « Nivel App Store ».** Sur le portail
+   développeur, l'App ID `com.elitedangereuse.Nivel` doit gagner **iCloud (CloudKit)** avec
+   le conteneur `iCloud.com.elitedangereuse.Nivel` et **Push Notifications**. Relancer
+   ensuite `python3 scripts/asc-profiles.py`, qui supprime et recrée un profil devenu
+   invalide mais **n'ouvre aucune capacité de lui-même**. La Release signe en **manuel** :
+   sans profil à jour, l'export laisse tomber les nouveaux entitlements sans un mot à la
+   compilation, et l'app se casse à l'exécution, exactement comme elle perdait HealthKit et
+   l'App Group avant la v1.6. Le filet est la vérification du binaire signé par
+   `release.sh`, à lire jusqu'au bout.
+
+2. **Créer le conteneur iCloud et pousser le schéma en production.** Dans le tableau de bord
+   CloudKit : conteneur `iCloud.com.elitedangereuse.Nivel`, types `DuoMember` et `DuoLike`,
+   **index interrogeable sur `DuoLike.ownerID`** (le nettoyage des cœurs orphelins l'exige,
+   et sans lui il échoue en silence, par conception), puis **Deploy Schema Changes** vers la
+   production. Le schéma de développement ne migre pas tout seul : une version soumise sans
+   ce déploiement donne un duo qui ne marche que sur les téléphones de développement.
+
+3. **Corriger la fiche de confidentialité dans App Store Connect.** Elle déclare aujourd'hui
+   qu'aucune donnée n'est collectée, ce qui était vrai jusqu'à la 1.14. Le duo publie des
+   données **liées à l'utilisateur et partagées avec un autre utilisateur** : santé et forme
+   (l'anneau, les pas, les repas et activités), plus un identifiant. Rien n'est utilisé pour
+   du suivi. Les réponses détaillées sont dans
+   [`docs/appstore/fiche-app-store.md`](docs/appstore/fiche-app-store.md) §3. **C'est le seul
+   risque de rejet de cette version**, il se corrige dans l'interface d'App Store Connect, et
+   aucune vérification automatique ne l'attrapera.
+
+4. **Vérifier sur les deux iPhones.** La liste complète est en
+   [spec 1.15 §9](docs/superpowers/specs/2026-08-16-nivel-1.15-design.md) et elle s'est
+   allongée à chaque lot ; les quatre à ne surtout pas sauter sont l'**appairage complet par
+   QR**, la **suppression d'un repas aimé** (constater que le cœur disparaît vraiment chez
+   l'autre est le seul moyen de distinguer un nettoyage qui marche d'un nettoyage qui échoue
+   sans rien dire), les **cœurs de la veille toujours là le lendemain matin** (le seul
+   scénario de la liste qui efface des données s'il retombe) et la **première publication
+   côté invité** (une zone au `ownerName` faux accepte l'écriture, dans le vide, sans la
+   moindre erreur).
+
+Restent les deux gestes habituels de fin de version, qui eux ont leur outil : écrire les
+notes de la 1.15 dans `docs/appstore/fiche-app-store.md` puis lancer
+`python3 scripts/asc-fiche.py`, et rejouer `./scripts/screenshots.sh` si la page du duo doit
+figurer dans les captures.
 
 ## Installer sur ton iPhone (compte Apple gratuit)
 
