@@ -1035,6 +1035,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				NIVEL_APS_ENVIRONMENT = development;
 				PRODUCT_BUNDLE_IDENTIFIER = com.elitedangereuse.Nivel;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1089,6 +1090,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				NIVEL_APS_ENVIRONMENT = production;
 				PRODUCT_BUNDLE_IDENTIFIER = com.elitedangereuse.Nivel;
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Nivel App Store";
 				SDKROOT = iphoneos;

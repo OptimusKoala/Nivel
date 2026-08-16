@@ -106,6 +106,30 @@ check "entitlement App Group"        "com.apple.security.application-groups"   "
 check "identifiant d'application"    "$TEAM_ID.$BUNDLE_ID"                     "$ENTITLEMENTS"
 check "signature Apple Distribution" "Apple Distribution: L'ELITE DANGEREUSE"  "$SIGNATURE"
 
+# Duo de la 1.15. Ces trois lignes ne sont PAS du zèle, ne pas les retirer : ce sont
+# elles qui rendent acceptable le choix d'une variable de configuration pour
+# `aps-environment` (project.yml). La clé y vaut `$(NIVEL_APS_ENVIRONMENT)`, résolu en
+# `production` en Release ; si Xcode ne substituait pas, ou si la configuration dérivait,
+# l'app partirait avec un environnement de DÉVELOPPEMENT et les cœurs du duo
+# n'arriveraient jamais chez personne — sans erreur, sans log, et seulement en
+# production. La vérification se fait ici parce que c'est le seul endroit du dépôt où les
+# entitlements RÉELLEMENT SIGNÉS sont lisibles, et elle échoue avant l'envoi.
+#
+check "entitlement iCloud"           "com.apple.developer.icloud-container-identifiers" "$ENTITLEMENTS"
+check "conteneur iCloud du duo"      "iCloud.$BUNDLE_ID"                                "$ENTITLEMENTS"
+
+# La VALEUR, et pas la seule présence de la clé : `aps-environment` existe aussi avec
+# `development`, qui est exactement la panne recherchée. Extraction plutôt que motif,
+# comme pour UIDeviceFamily plus bas — un `grep production` sur tout le plist matcherait
+# n'importe quelle autre clé portant ce mot.
+APS=$(plutil -extract aps-environment raw -o - - <<< "$ENTITLEMENTS" 2>/dev/null || echo ABSENT)
+if [[ "$APS" == "production" ]]; then
+  echo "   ✓ aps-environment production"
+else
+  echo "   ✗ aps-environment = $APS, attendu production (substitution de"
+  echo "     \$(NIVEL_APS_ENVIRONMENT) non faite ? configuration Debug archivée ?)"; fail=true
+fi
+
 # Les DEUX chaînes HealthKit : la validation Apple (erreur 90683) réclame aussi celle
 # d'écriture dès que HealthKit est lié, alors que Nivel ne demande que la lecture.
 PLIST=$(plutil -convert xml1 -o - "$APP/Info.plist")

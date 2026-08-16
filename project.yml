@@ -19,6 +19,8 @@ targets:
         # en plus des captures iPad 13 pouces.
         TARGETED_DEVICE_FAMILY: "1"
       configs:
+        Debug:
+          NIVEL_APS_ENVIRONMENT: development
         # Signature MANUELLE en Release, appareil uniquement (scripts/release.sh) : la
         # signature automatique choisit un profil de DÉVELOPPEMENT à l'archivage, et la
         # team n'a aucun appareil enregistré — donc aucun profil de dev possible. Archiver
@@ -28,6 +30,7 @@ targets:
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY[sdk=iphoneos*]: Apple Distribution
           PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]: Nivel App Store
+          NIVEL_APS_ENVIRONMENT: production
     dependencies:
       - package: NivelCore
       - target: NivelWidgets
@@ -42,12 +45,24 @@ targets:
         com.apple.developer.icloud-services: [CloudKit]
         # Réveil silencieux pour aller chercher les cœurs (spec §3.7).
         #
-        # ATTENTION, valeur de DÉVELOPPEMENT. Un profil App Store porte
-        # `aps-environment: production`, et la signature étant MANUELLE en Release
-        # (voir configs ci-dessus), rien ne réécrit cette clé à l'archivage comme le
-        # ferait la signature automatique. À vérifier avant la première release qui
-        # embarque le duo.
-        aps-environment: development
+        # La valeur dépend de la CONFIGURATION : `development` en Debug, `production` en
+        # Release (voir `NIVEL_APS_ENVIRONMENT` sous configs). Un profil App Store ne
+        # porte que `production`, et la signature étant MANUELLE, rien ne réécrit cette
+        # clé à l'archivage comme le ferait la signature automatique — un `development`
+        # livré donnerait une app où les cœurs n'arrivent jamais, sans le moindre message.
+        #
+        # UNE variable plutôt que DEUX fichiers d'entitlements, et ce n'est pas un
+        # raccourci : XcodeGen ne génère qu'un fichier par cible et écrit
+        # `CODE_SIGN_ENTITLEMENTS` dans CHAQUE configuration, ce qui écrase toute
+        # surcharge (mesuré). Deux fichiers devraient donc être écrits à la main tous les
+        # deux, et les quatre clés communes y divergeraient un jour en silence. Ici elles
+        # n'existent qu'une fois : la divergence est impossible, pas seulement improbable.
+        #
+        # La substitution elle-même est vérifiée à l'export par `scripts/release.sh`, qui
+        # lit les entitlements du binaire SIGNÉ et refuse l'envoi si cette clé ne vaut pas
+        # `production`. C'est cette vérification qui rend la variable sûre : sans elle on
+        # ferait un pari silencieux.
+        aps-environment: $(NIVEL_APS_ENVIRONMENT)
     info:
       path: App/Info.plist
       properties:
