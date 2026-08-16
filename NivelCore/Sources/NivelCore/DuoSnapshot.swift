@@ -37,6 +37,30 @@ public struct DuoEvent: Codable, Equatable, Identifiable, Sendable {
     /// tous les repas déjà publiés en activités chez qui lit.
     public enum Kind: String, Codable, Sendable {
         case meal, activity
+
+        /// Second volet de la compatibilité ascendante (spec §3.4), et le plus important
+        /// des deux. La règle « tout champ ajouté sera optionnel » ne couvre PAS les cas
+        /// d'énumération, et le défaut qu'elle laisse est bien pire : mesuré, un seul
+        /// `kind` inconnu fait échouer le décodage du TABLEAU ENTIER, pas du seul
+        /// événement fautif. Une 1.16 qui publierait `kind: "weight"` viderait
+        /// entièrement le fil chez un partenaire resté en 1.15, sans le moindre message.
+        ///
+        /// Le repli coûte presque rien, et c'est une conséquence heureuse d'une décision
+        /// prise plus haut : `title` et `subtitle` étant calculés à la publication, un
+        /// événement de genre inconnu reste parfaitement lisible et aimable — seule son
+        /// icône est indéterminée, et l'affichage en prend une neutre. Le laisser tomber
+        /// en silence serait strictement pire que le montrer sans son icône.
+        ///
+        /// Ce cas ne s'obtient qu'au DÉCODAGE : rien ne le publie jamais, puisque le fil
+        /// est construit depuis les entrées locales, qui sont un repas ou une activité et
+        /// rien d'autre. La règle vaut pour toute énumération qui voyagera entre les deux
+        /// appareils.
+        case unknown
+
+        public init(from decoder: any Decoder) throws {
+            let brut = try decoder.singleValueContainer().decode(String.self)
+            self = Kind(rawValue: brut) ?? .unknown
+        }
     }
 
     /// Le `publicID` de l'entrée locale (spec §3.4). C'est LA cible d'un cœur : le

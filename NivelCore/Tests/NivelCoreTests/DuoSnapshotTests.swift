@@ -124,6 +124,43 @@ final class DuoSnapshotTests: XCTestCase {
         XCTAssertEqual(relu, evenement)
     }
 
+    /// LE test du second volet de la compatibilité ascendante (spec §3.4). Ce qui compte
+    /// n'est pas le repli lui-même, c'est qu'un intrus n'emporte pas ses voisins :
+    /// mesuré avant correctif, un seul `kind` inconnu levait un `dataCorrupted` sur
+    /// `[1].kind` et faisait échouer le décodage du TABLEAU ENTIER — un partenaire resté
+    /// en 1.15 n'aurait plus vu AUCUN événement de la journée de l'autre, sans le
+    /// moindre message. L'intrus est donc encadré de deux événements valides, et les
+    /// trois doivent arriver.
+    func testUnGenreInconnuNEmportePasLesEvenementsQuiLEntourent() throws {
+        let json = Data("""
+            [{"id":"E1","kind":"meal","at":5000,"title":"Salade","subtitle":"déjeuner"},
+             {"id":"E2","kind":"weight","at":6000,"title":"Pesée","subtitle":"68,4 kg"},
+             {"id":"E3","kind":"activity","at":7000,"title":"Vélo","subtitle":"20 min"}]
+            """.utf8)
+
+        let fil = try JSONDecoder().decode([DuoEvent].self, from: json)
+
+        XCTAssertEqual(fil.map(\.id), ["E1", "E2", "E3"])
+        XCTAssertEqual(fil.map(\.kind), [.meal, .unknown, .activity])
+        // Et l'intrus lui-même reste affichable : `title` et `subtitle` étant calculés
+        // à la publication, il ne lui manque que son icône.
+        XCTAssertEqual(fil[1].title, "Pesée")
+        XCTAssertEqual(fil[1].subtitle, "68,4 kg")
+    }
+
+    /// Le repli ne doit pas devenir un trou noir : les deux genres connus continuent de
+    /// se décoder pour ce qu'ils sont. Un `init(from:)` trop indulgent (un `try?` mal
+    /// placé, un `rawValue` mal orthographié) rendrait le fil entier `unknown` sans que
+    /// le test ci-dessus s'en aperçoive.
+    func testLesGenresConnusNeRetombentPasSurUnknown() throws {
+        let json = Data("""
+            [{"id":"E1","kind":"meal","at":5000,"title":"T","subtitle":"S"},
+             {"id":"E2","kind":"activity","at":6000,"title":"T","subtitle":"S"}]
+            """.utf8)
+        XCTAssertEqual(try JSONDecoder().decode([DuoEvent].self, from: json).map(\.kind),
+                       [.meal, .activity])
+    }
+
     /// Le genre d'un événement voyage en CHAÎNE, pas en indice : `meal` et `activity`
     /// écrits en clair restent lisibles si un futur cas s'insère entre les deux dans la
     /// déclaration. Un enum sans `String` brut se coderait en 0 / 1 et une insertion
