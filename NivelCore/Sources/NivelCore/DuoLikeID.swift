@@ -9,15 +9,21 @@ import Foundation
 public struct DuoLikeRef: Equatable, Sendable {
     /// L'événement visé, c'est-à-dire le `publicID` d'une entrée locale de QUELQU'UN.
     public let eventID: String
-    /// À qui appartient l'événement aimé.
+    /// À qui appartient l'événement aimé. Le SEUL autre champ nécessaire à la décision :
+    /// on ne juge orphelins que les cœurs posés sur ses propres entrées.
+    ///
+    /// Pas de `giverID` ici, et c'est délibéré. Il y en a eu un, « pour recomposer le nom
+    /// de l'enregistrement à supprimer » — sauf que la suppression passe par les
+    /// `CKRecord.ID` réels, déjà en main après la lecture de la zone. Le champ n'était
+    /// jamais lu, mais il servait de condition de garde au décodage : un `DuoLike`
+    /// dépourvu de `giverID` était écarté du nettoyage par un `continue` silencieux, et
+    /// restait donc orphelin POUR TOUJOURS. Un champ dont on ne fait rien ne doit jamais
+    /// pouvoir faire échouer quoi que ce soit.
     public let ownerID: String
-    /// Qui a envoyé le cœur. Sert à recomposer le nom d'enregistrement à supprimer.
-    public let giverID: String
 
-    public init(eventID: String, ownerID: String, giverID: String) {
+    public init(eventID: String, ownerID: String) {
         self.eventID = eventID
         self.ownerID = ownerID
-        self.giverID = giverID
     }
 }
 

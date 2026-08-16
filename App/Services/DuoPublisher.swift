@@ -150,10 +150,9 @@ extension GameService {
         for (recordID, resultat) in reponse.matchResults {
             guard let record = try? resultat.get(),
                   let eventID = record["eventID"] as? String,
-                  let ownerID = record["ownerID"] as? String,
-                  let giverID = record["giverID"] as? String
+                  let ownerID = record["ownerID"] as? String
             else { continue }
-            coeurs.append(DuoLikeRef(eventID: eventID, ownerID: ownerID, giverID: giverID))
+            coeurs.append(DuoLikeRef(eventID: eventID, ownerID: ownerID))
             enregistrementsParEvenement[eventID, default: []].append(recordID)
         }
 

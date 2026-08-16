@@ -72,9 +72,8 @@ final class DuoLikeIDTests: XCTestCase {
 
     // MARK: - Les cœurs orphelins
 
-    private func coeur(_ evenement: String, de donneur: String = "G1",
-                       chez proprietaire: String = "MOI") -> DuoLikeRef {
-        DuoLikeRef(eventID: evenement, ownerID: proprietaire, giverID: donneur)
+    private func coeur(_ evenement: String, chez proprietaire: String = "MOI") -> DuoLikeRef {
+        DuoLikeRef(eventID: evenement, ownerID: proprietaire)
     }
 
     /// Un cœur posé sur une entrée qui existe toujours n'est pas orphelin.
@@ -119,7 +118,7 @@ final class DuoLikeIDTests: XCTestCase {
     /// publication tous les cœurs qu'il a DONNÉS.
     func testUnCoeurSurUneEntreeDeLAutreEstIgnore() {
         let orphelins = DuoLikeID.orphanEventIDs(
-            likes: [coeur("E-a-lui", de: "MOI", chez: "AUTRE")],
+            likes: [coeur("E-a-lui", chez: "AUTRE")],
             localPublicIDs: ["E1"], me: "MOI")
 
         XCTAssertTrue(orphelins.isEmpty)
@@ -129,8 +128,8 @@ final class DuoLikeIDTests: XCTestCase {
     func testSeulsMesEvenementsDisparusSontDeclaresOrphelins() {
         let orphelins = DuoLikeID.orphanEventIDs(
             likes: [coeur("E-vivant"), coeur("E-mort"),
-                    coeur("E-a-lui", de: "MOI", chez: "AUTRE"),
-                    coeur("E-mort-chez-lui", de: "MOI", chez: "AUTRE")],
+                    coeur("E-a-lui", chez: "AUTRE"),
+                    coeur("E-mort-chez-lui", chez: "AUTRE")],
             localPublicIDs: ["E-vivant"], me: "MOI")
 
         XCTAssertEqual(orphelins, ["E-mort"])
