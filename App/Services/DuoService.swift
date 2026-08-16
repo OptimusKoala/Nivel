@@ -474,9 +474,13 @@ final class DuoService {
                 // Le garde-fou de boucle : un serveur qui redemanderait indéfiniment sans
                 // avancer bloquerait l'app en arrière-plan jusqu'à ce qu'iOS la tue. Vingt
                 // pages sont plusieurs milliers d'enregistrements, très au-delà de ce qu'une
-                // zone à deux peut porter ; on s'arrête là et le tour suivant reprendra au
-                // jeton, qui lui est valide.
-                guard reponse.moreComing, pages < Self.maxZonePages else { return delta }
+                // zone à deux peut porter.
+                //
+                // Les deux façons de sortir d'ici ne rendent PAS la même chose, et c'est
+                // `stoppedDelta` qui en décide : voir sa documentation.
+                guard reponse.moreComing, pages < Self.maxZonePages else {
+                    return Self.stoppedDelta(delta, moreComing: reponse.moreComing)
+                }
             } catch {
                 return ZoneDelta(failed: true,
                                  tokenExpired: Self.shouldRestartFromScratch(error: error),
@@ -487,6 +491,23 @@ final class DuoService {
 
     /// Voir la boucle de `fetchZoneChanges`.
     private static let maxZonePages = 20
+
+    /// Ce que la boucle de lecture rend quand elle s'arrête, et **la distinction est tout**.
+    ///
+    /// Deux sorties très différentes se ressemblaient : le serveur n'a plus rien à dire, ou
+    /// le plafond de pages est atteint alors qu'il en reste. La première rend une zone
+    /// complète, la seconde une zone À MOITIÉ LUE — et `performRefresh` REMPLACE les listes
+    /// de cœurs avec ce qu'on lui donne. Rendre un début de zone en le faisant passer pour
+    /// son tout est précisément le défaut que cette boucle ferme : la phrase valait déjà
+    /// pour une page en erreur, elle vaut mot pour mot pour une lecture tronquée.
+    ///
+    /// Marquée en échec, la lecture n'écrit donc rien du tout, et l'état survit intact.
+    /// C'est aussi pourquoi la troncature ne peut pas se contenter de « le tour suivant
+    /// reprendra au jeton » : une lecture complète part d'un jeton nil et écrase AVANT que
+    /// le tour suivant n'existe.
+    nonisolated static func stoppedDelta(_ delta: ZoneDelta, moreComing: Bool) -> ZoneDelta {
+        moreComing ? ZoneDelta(failed: true) : delta
+    }
 
     /// Fusionne les cœurs d'un delta avec ceux déjà en main, sans doublon et dans l'ordre
     /// d'affichage. Un delta ne dit rien des cœurs qu'il ne mentionne pas : les écraser

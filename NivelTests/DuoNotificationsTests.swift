@@ -263,6 +263,50 @@ final class DuoUnreadCountTests: XCTestCase {
     }
 }
 
+// MARK: - La lecture paginée et sa troncature
+
+/// La lecture d'une zone est PAGINÉE, et la boucle a deux façons de s'arrêter qui se
+/// ressemblaient : le serveur n'a plus rien à dire, ou le plafond de pages est atteint alors
+/// qu'il en reste. La première rend une zone complète, la seconde une zone à moitié lue — et
+/// l'appelant REMPLACE les listes de cœurs avec ce qu'on lui donne.
+///
+/// La boucle elle-même demande une base CloudKit qui pagine, et n'est donc éprouvée par
+/// rien. Ce qu'elle rend en s'arrêtant, en revanche, est une décision pure.
+@MainActor
+final class DuoZonePaginationTests: XCTestCase {
+
+    private func deltaGarni() -> DuoService.ZoneDelta {
+        var delta = DuoService.ZoneDelta()
+        delta.likes = [DuoLike(giverID: "TOI", ownerID: "MOI", eventID: "E1",
+                               eventTitle: "Dîner", createdAt: Date(timeIntervalSince1970: 500))]
+        delta.deletedLikeRecordNames = ["like-TOI-E0"]
+        return delta
+    }
+
+    /// Fin normale : le serveur n'a plus rien, le delta part tel quel.
+    func testUneLectureAlleeAuBoutRendCeQuElleALu() {
+        let rendu = DuoService.stoppedDelta(deltaGarni(), moreComing: false)
+
+        XCTAssertFalse(rendu.failed)
+        XCTAssertEqual(rendu.likes.map(\.eventID), ["E1"])
+        XCTAssertEqual(rendu.deletedLikeRecordNames, ["like-TOI-E0"])
+    }
+
+    /// **Troncature : la lecture est marquée en ÉCHEC, et son contenu jeté.** Sans quoi
+    /// l'appelant écrirait un début de zone en le faisant passer pour son tout — c'est-à-dire
+    /// exactement le défaut que la pagination vient de fermer, déplacé d'une page à vingt.
+    ///
+    /// Et il ne suffit pas de compter sur « le tour suivant reprendra au jeton » : une
+    /// lecture complète part d'un jeton nil et écrase AVANT que le tour suivant n'existe.
+    func testUneLectureTronqueeEchoueEtNEcritRien() {
+        let rendu = DuoService.stoppedDelta(deltaGarni(), moreComing: true)
+
+        XCTAssertTrue(rendu.failed, "un delta partiel doit être refusé, pas affiché")
+        XCTAssertTrue(rendu.likes.isEmpty, "et son contenu ne doit pas fuir jusqu'à l'appelant")
+        XCTAssertTrue(rendu.deletedLikeRecordNames.isEmpty)
+    }
+}
+
 // MARK: - Le jeton de changement
 
 final class DuoChangeTokenTests: XCTestCase {
