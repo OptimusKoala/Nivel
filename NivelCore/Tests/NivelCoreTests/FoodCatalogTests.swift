@@ -494,31 +494,103 @@ final class FoodCatalogTests: XCTestCase {
 
     // MARK: Brasserie (spec 1.15 §6)
 
-    /// Les dix-neuf plats de la spec §6.2, transcrits depuis la table. Garde-fou de
-    /// transcription : ces kcal viennent d'un tableau, et un tableau se recopie mal.
-    func testLesDixNeufPlatsDeBrasserieRetombentSurLaSpec() {
-        let attendu: [String: Double] = [
-            "escargots": 220, "frog_legs": 155, "steak_tartare": 180, "andouillette": 290,
-            "duck_confit": 250, "duck_breast": 230, "veal_blanquette": 130,
-            "beef_bourguignon": 140, "cassoulet": 165, "choucroute": 130,
-            "tartiflette": 180, "raclette": 260, "fondue_savoyarde": 270,
-            "moules_frites": 150, "entrecote_poivre": 230, "onion_soup": 110,
-            "quiche_lorraine": 280, "sole_meuniere": 165, "coq_au_vin": 150,
+    /// Une ligne de la table de la spec §6.2, ses six colonnes. Une structure et non
+    /// six dictionnaires parallèles : une ligne de la spec reste une ligne ici, et se
+    /// relit en regard du document sans compter les colonnes.
+    private struct PlatDeSpec {
+        let id: String
+        let name: String
+        let emoji: String
+        let kcal: Double
+        let portion: Int
+        let slots: [MealSlot]
+    }
+
+    /// La table de la spec §6.2 recopiée à la main DEPUIS LA SPEC, jamais depuis
+    /// `foods.json` : une référence tirée de la sortie qu'elle contrôle ne contrôle
+    /// plus rien. Partagée par les deux tests qui suivent pour qu'aucun ne couvre un
+    /// sous-ensemble des dix-neuf.
+    private static let brasserie: [PlatDeSpec] = {
+        let midiEtSoir: [MealSlot] = [.lunch, .dinner]
+        let soir: [MealSlot] = [.dinner]
+        return [
+            .init(id: "escargots", name: "Escargots de Bourgogne", emoji: "🐌",
+                  kcal: 220, portion: 90, slots: midiEtSoir),
+            .init(id: "frog_legs", name: "Cuisses de grenouilles", emoji: "🐸",
+                  kcal: 155, portion: 200, slots: midiEtSoir),
+            .init(id: "steak_tartare", name: "Steak tartare", emoji: "🥩",
+                  kcal: 180, portion: 200, slots: midiEtSoir),
+            .init(id: "andouillette", name: "Andouillette", emoji: "🌭",
+                  kcal: 290, portion: 200, slots: midiEtSoir),
+            .init(id: "duck_confit", name: "Confit de canard", emoji: "🦆",
+                  kcal: 250, portion: 220, slots: midiEtSoir),
+            .init(id: "duck_breast", name: "Magret de canard", emoji: "🦆",
+                  kcal: 230, portion: 200, slots: midiEtSoir),
+            .init(id: "veal_blanquette", name: "Blanquette de veau", emoji: "🍲",
+                  kcal: 130, portion: 320, slots: midiEtSoir),
+            .init(id: "beef_bourguignon", name: "Bœuf bourguignon", emoji: "🍲",
+                  kcal: 140, portion: 320, slots: midiEtSoir),
+            .init(id: "cassoulet", name: "Cassoulet", emoji: "🫘",
+                  kcal: 165, portion: 400, slots: midiEtSoir),
+            .init(id: "choucroute", name: "Choucroute garnie", emoji: "🥬",
+                  kcal: 130, portion: 400, slots: midiEtSoir),
+            .init(id: "tartiflette", name: "Tartiflette", emoji: "🧀",
+                  kcal: 180, portion: 350, slots: midiEtSoir),
+            .init(id: "raclette", name: "Raclette", emoji: "🧀",
+                  kcal: 260, portion: 300, slots: soir),
+            .init(id: "fondue_savoyarde", name: "Fondue savoyarde", emoji: "🫕",
+                  kcal: 270, portion: 250, slots: soir),
+            .init(id: "moules_frites", name: "Moules-frites", emoji: "🦪",
+                  kcal: 150, portion: 400, slots: midiEtSoir),
+            .init(id: "entrecote_poivre", name: "Entrecôte sauce au poivre", emoji: "🥩",
+                  kcal: 230, portion: 250, slots: midiEtSoir),
+            .init(id: "onion_soup", name: "Soupe à l'oignon gratinée", emoji: "🧅",
+                  kcal: 110, portion: 300, slots: soir),
+            .init(id: "quiche_lorraine", name: "Quiche lorraine", emoji: "🥧",
+                  kcal: 280, portion: 180, slots: midiEtSoir),
+            .init(id: "sole_meuniere", name: "Sole meunière", emoji: "🐟",
+                  kcal: 165, portion: 220, slots: midiEtSoir),
+            .init(id: "coq_au_vin", name: "Coq au vin", emoji: "🍗",
+                  kcal: 150, portion: 300, slots: midiEtSoir),
         ]
-        for (id, kcal) in attendu {
-            let item = catalog.items.first { $0.id == id }
-            XCTAssertEqual(item?.kcalPer100g, kcal, "\(id)")
-            XCTAssertEqual(item?.category, .dish, "\(id)")
+    }()
+
+    /// Les dix-neuf plats de la spec §6.2, transcrits depuis la table. Garde-fou de
+    /// transcription : ces valeurs viennent d'un tableau, et un tableau se recopie mal.
+    /// Les SIX colonnes sont tenues, pas seulement les kcal — un premier jet n'assertait
+    /// que les kcal et la catégorie, et laissait passer une portion à 999 ou un nom
+    /// cassé. Chaque message d'échec nomme l'id ET la colonne : sans quoi on relit
+    /// dix-neuf lignes pour trouver celle qui a bougé.
+    func testLesDixNeufPlatsDeBrasserieRetombentSurLaSpec() {
+        XCTAssertEqual(Self.brasserie.count, 19, "la table de référence n'a plus dix-neuf lignes")
+        for spec in Self.brasserie {
+            guard let item = catalog.items.first(where: { $0.id == spec.id }) else {
+                XCTFail("plat manquant du catalogue : \(spec.id)")
+                continue
+            }
+            XCTAssertEqual(item.name, spec.name, "\(spec.id) : nom")
+            XCTAssertEqual(item.emoji, spec.emoji, "\(spec.id) : emoji")
+            XCTAssertEqual(item.kcalPer100g, spec.kcal, "\(spec.id) : kcal/100 g")
+            XCTAssertEqual(item.defaultGrams, spec.portion, "\(spec.id) : portion")
+            XCTAssertEqual(item.slots, spec.slots, "\(spec.id) : créneaux")
+            XCTAssertEqual(item.category, .dish, "\(spec.id) : catégorie")
+            XCTAssertFalse(item.isRecipe, "\(spec.id) : ce n'est pas une recette")
         }
     }
 
     /// Spec §6.1 : au restaurant on ne pèse rien, et le catalogue n'a ni escargot ni
     /// grenouille à ranger sous une ligne générique. Ces plats fonctionnent au forfait,
     /// comme « Autre ». Ce test existe pour que le choix reste un choix : quelqu'un qui
-    /// leur ajouterait une composition « par cohérence » le verrait ici.
+    /// leur ajouterait une composition « par cohérence » le verrait ici. Les dix-neuf,
+    /// et pas un échantillon de cinq : la composition de trop se poserait précisément
+    /// sur le plat que l'échantillon ne couvre pas.
+    ///
+    /// On interroge le catalogue chargé plutôt que `Catalogs.compositions()`, qui existe
+    /// et conviendrait : c'est la donnée telle que l'app la voit qui décide.
     func testLesPlatsDeBrasserieNOntPasDeComposition() {
-        for id in ["escargots", "frog_legs", "andouillette", "raclette", "moules_frites"] {
-            XCTAssertNil(catalog.compositions[id], "\(id) ne doit pas avoir de composition")
+        for spec in Self.brasserie {
+            XCTAssertNil(catalog.compositions[spec.id],
+                         "\(spec.id) ne doit pas avoir de composition")
         }
     }
 
