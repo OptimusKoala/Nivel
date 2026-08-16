@@ -479,6 +479,307 @@
     "defaultGrams": 400
   },
   {
+    "id": "escargots",
+    "name": "Escargots de Bourgogne",
+    "emoji": "🐌",
+    "kcalPer100g": 220,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 90
+  },
+  {
+    "id": "frog_legs",
+    "name": "Cuisses de grenouilles",
+    "emoji": "🐸",
+    "kcalPer100g": 155,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 200
+  },
+  {
+    "id": "steak_tartare",
+    "name": "Steak tartare",
+    "emoji": "🥩",
+    "kcalPer100g": 180,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 200
+  },
+  {
+    "id": "andouillette",
+    "name": "Andouillette",
+    "emoji": "🌭",
+    "kcalPer100g": 290,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 200
+  },
+  {
+    "id": "duck_confit",
+    "name": "Confit de canard",
+    "emoji": "🦆",
+    "kcalPer100g": 250,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 220
+  },
+  {
+    "id": "duck_breast",
+    "name": "Magret de canard",
+    "emoji": "🦆",
+    "kcalPer100g": 230,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 200
+  },
+  {
+    "id": "veal_blanquette",
+    "name": "Blanquette de veau",
+    "emoji": "🍲",
+    "kcalPer100g": 130,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 320
+  },
+  {
+    "id": "beef_bourguignon",
+    "name": "Bœuf bourguignon",
+    "emoji": "🍲",
+    "kcalPer100g": 140,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 320
+  },
+  {
+    "id": "cassoulet",
+    "name": "Cassoulet",
+    "emoji": "🫘",
+    "kcalPer100g": 165,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 400
+  },
+  {
+    "id": "choucroute",
+    "name": "Choucroute garnie",
+    "emoji": "🥬",
+    "kcalPer100g": 130,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 400
+  },
+  {
+    "id": "tartiflette",
+    "name": "Tartiflette",
+    "emoji": "🧀",
+    "kcalPer100g": 180,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 350
+  },
+  {
+    "id": "raclette",
+    "name": "Raclette",
+    "emoji": "🧀",
+    "kcalPer100g": 260,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 300
+  },
+  {
+    "id": "fondue_savoyarde",
+    "name": "Fondue savoyarde",
+    "emoji": "🫕",
+    "kcalPer100g": 270,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 250
+  },
+  {
+    "id": "moules_frites",
+    "name": "Moules-frites",
+    "emoji": "🦪",
+    "kcalPer100g": 150,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 400
+  },
+  {
+    "id": "entrecote_poivre",
+    "name": "Entrecôte sauce au poivre",
+    "emoji": "🥩",
+    "kcalPer100g": 230,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 250
+  },
+  {
+    "id": "onion_soup",
+    "name": "Soupe à l'oignon gratinée",
+    "emoji": "🧅",
+    "kcalPer100g": 110,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "dinner"
+    ],
+    "defaultGrams": 300
+  },
+  {
+    "id": "quiche_lorraine",
+    "name": "Quiche lorraine",
+    "emoji": "🥧",
+    "kcalPer100g": 280,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 180
+  },
+  {
+    "id": "sole_meuniere",
+    "name": "Sole meunière",
+    "emoji": "🐟",
+    "kcalPer100g": 165,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 220
+  },
+  {
+    "id": "coq_au_vin",
+    "name": "Coq au vin",
+    "emoji": "🍗",
+    "kcalPer100g": 150,
+    "unitLabel": null,
+    "unitLabelPlural": null,
+    "unitGrams": null,
+    "category": "dish",
+    "tags": [],
+    "slots": [
+      "lunch",
+      "dinner"
+    ],
+    "defaultGrams": 300
+  },
+  {
     "id": "cod_papillote",
     "name": "Papillote de cabillaud",
     "emoji": "🐟",

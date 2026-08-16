@@ -91,29 +91,30 @@ final class FoodCatalogTests: XCTestCase {
     /// - un aliment ordinaire ajouté fait monter les DEUX, et avec elles le compte
     ///   par catégorie concerné dans `testChaqueOngletAfficheSonNombreDItems` ;
     /// - une recette ajoutée (§6.1) ne fait monter que la première : elle n'est ni
-    ///   dans un onglet ni parmi les aliments ordinaires, et les 30 plats restent 30.
+    ///   dans un onglet ni parmi les aliments ordinaires, et les 49 plats restent 49.
     ///
     /// C'est la seconde ligne qui tient le lien avec `testChaqueOngletAfficheSonNombreDItems` :
     /// les onglets ne montrant pas les recettes, la somme des cinq catégories doit
     /// faire le compte des aliments ORDINAIRES, pas la taille du fichier.
     func testLaTailleDuCatalogue() {
-        XCTAssertEqual(catalog.items.count, 157, "le catalogue ne compte plus 157 entrées")
-        XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 122,
-                       "les aliments ordinaires ne sont plus 122")
+        XCTAssertEqual(catalog.items.count, 176, "le catalogue ne compte plus 176 entrées")
+        XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 141,
+                       "les aliments ordinaires ne sont plus 141")
     }
 
     // MARK: Catalogue v1 (spec v1.10)
 
     /// Renommé en 1.14 : ce test comptait le catalogue, il compte maintenant les
-    /// ONGLETS. `items(category:slot:)` écarte les recettes (§6.1) — aux tâches
-    /// suivantes du lot D, `foods.json` gagnera des plats sans que le 30 ci-dessous
-    /// bouge. Le garde-fou de transcription est devenu un détecteur de recette qui
+    /// ONGLETS. `items(category:slot:)` écarte les recettes (§6.1) : une recette ajoutée
+    /// à `foods.json` ne fait pas bouger le compte des plats ci-dessous, contrairement
+    /// aux dix-neuf plats de brasserie de la 1.15, qui l'ont porté de 30 à 49.
+    /// Le garde-fou de transcription est devenu un détecteur de recette qui
     /// fuit dans la grille de taps ; la dernière assertion rétablit le lien avec la
     /// taille réelle du fichier.
     func testChaqueOngletAfficheSonNombreDItems() throws {
         XCTAssertEqual(catalog.items(category: .drink, slot: nil).count, 15)
         XCTAssertEqual(catalog.items(category: .snack, slot: nil).count, 9)     // 12 − 3 déménagés
-        XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 30)
+        XCTAssertEqual(catalog.items(category: .dish, slot: nil).count, 49)  // 30 + 19 brasserie
         // Épinglé et non borné par un `>=` : la borne à 40 datait d'un onglet à 42 items
         // et ne gardait plus rien une fois passé à 58. C'est le dernier compte de
         // catégorie du fichier qui n'était pas exact.
@@ -122,7 +123,7 @@ final class FoodCatalogTests: XCTestCase {
         // Le lien avec `testLaTailleDuCatalogue` : ces cinq comptes couvrent tous les
         // aliments ordinaires, et rien d'autre. Un item qui disparaîtrait de son onglet
         // sans être une recette tomberait ici plutôt que nulle part.
-        XCTAssertEqual(15 + 9 + 30 + 58 + 10, catalog.items.filter { !$0.isRecipe }.count)
+        XCTAssertEqual(15 + 9 + 49 + 58 + 10, catalog.items.filter { !$0.isRecipe }.count)
     }
 
     /// Garde-fou de transcription : les kcal par unité des tables de la spec doivent
@@ -430,7 +431,7 @@ final class FoodCatalogTests: XCTestCase {
     func testLesRecettesSontMasqueesDesOngletsDuCatalogue() {
         let shown = catalog.items(category: .dish, slot: nil)
         XCTAssertFalse(shown.contains { $0.isRecipe }, "une recette ne s'affiche pas dans l'onglet Plats")
-        XCTAssertEqual(shown.count, 30, "les trente plats ordinaires, ni plus ni moins")
+        XCTAssertEqual(shown.count, 49, "les quarante-neuf plats ordinaires, ni plus ni moins")
     }
 
     /// Le test ci-dessus ne prouve rien tant que `foods.json` ne porte aucune recette :
@@ -488,6 +489,45 @@ final class FoodCatalogTests: XCTestCase {
         // Et les légers ne le portent pas, sinon la quête devient impossible.
         for id in ["fruit_salad", "skyr", "greek_yogurt", "compote"] {
             XCTAssertFalse(catalog.hasTag("richDessert", itemID: id), "\(id) n'est pas gourmand")
+        }
+    }
+
+    // MARK: Brasserie (spec 1.15 §6)
+
+    /// Les dix-neuf plats de la spec §6.2, transcrits depuis la table. Garde-fou de
+    /// transcription : ces kcal viennent d'un tableau, et un tableau se recopie mal.
+    func testLesDixNeufPlatsDeBrasserieRetombentSurLaSpec() {
+        let attendu: [String: Double] = [
+            "escargots": 220, "frog_legs": 155, "steak_tartare": 180, "andouillette": 290,
+            "duck_confit": 250, "duck_breast": 230, "veal_blanquette": 130,
+            "beef_bourguignon": 140, "cassoulet": 165, "choucroute": 130,
+            "tartiflette": 180, "raclette": 260, "fondue_savoyarde": 270,
+            "moules_frites": 150, "entrecote_poivre": 230, "onion_soup": 110,
+            "quiche_lorraine": 280, "sole_meuniere": 165, "coq_au_vin": 150,
+        ]
+        for (id, kcal) in attendu {
+            let item = catalog.items.first { $0.id == id }
+            XCTAssertEqual(item?.kcalPer100g, kcal, "\(id)")
+            XCTAssertEqual(item?.category, .dish, "\(id)")
+        }
+    }
+
+    /// Spec §6.1 : au restaurant on ne pèse rien, et le catalogue n'a ni escargot ni
+    /// grenouille à ranger sous une ligne générique. Ces plats fonctionnent au forfait,
+    /// comme « Autre ». Ce test existe pour que le choix reste un choix : quelqu'un qui
+    /// leur ajouterait une composition « par cohérence » le verrait ici.
+    func testLesPlatsDeBrasserieNOntPasDeComposition() {
+        for id in ["escargots", "frog_legs", "andouillette", "raclette", "moules_frites"] {
+            XCTAssertNil(catalog.compositions[id], "\(id) ne doit pas avoir de composition")
+        }
+    }
+
+    /// Trois plats du soir seulement. Le catalogue cantonne déjà des plats à un créneau
+    /// dans l'autre sens (petit-déjeuner) : même mécanique.
+    func testLesPlatsDuSoirSontCantonnes() throws {
+        for id in ["raclette", "fondue_savoyarde", "onion_soup"] {
+            let item = try XCTUnwrap(catalog.items.first { $0.id == id })
+            XCTAssertEqual(item.slots, [.dinner], id)
         }
     }
 }
