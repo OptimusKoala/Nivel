@@ -117,9 +117,12 @@ final class PantryTests: XCTestCase {
     func testLeFrigoNeListeQueDesIngredients() throws {
         let catalog = try FoodCatalog.load()
         let ingredients = PantryContent.ingredients(in: catalog)
-        // 58 + les 7 accompagnements de la 1.15 §6.3. Même expression que le compte
-        // d'onglet épinglé dans `FoodCatalogTests` : les deux doivent bouger ensemble.
-        XCTAssertEqual(ingredients.count, 65)
+        // La RELATION que ce commentaire décrivait déjà en prose, et non plus un compte
+        // recopié : le frigo montre l'onglet Ingrédients, tout l'onglet et rien d'autre.
+        // Le littéral périmait à chaque ingrédient ajouté ; celui-ci ne périme pas, et
+        // attrape en prime un ordre ou un item qui divergerait sans changer le compte.
+        XCTAssertEqual(ingredients.map(\.id),
+                       catalog.items(category: .side, slot: nil).map(\.id))
         XCTAssertTrue(ingredients.allSatisfy { $0.category == .side })
         // Les recettes de la 1.14 ne sont pas des ingrédients : elles ont leur bande.
         XCTAssertTrue(ingredients.allSatisfy { !$0.isRecipe })

@@ -12,14 +12,22 @@ final class FoodSearchTests: XCTestCase {
 
     /// Le cas qui a motivé la règle : personne ne tape l'accent grave sur un clavier iOS.
     ///
-    /// Deux résultats depuis la 1.15 §6.3, et non plus un : « Épinards à la crème » est
-    /// arrivé dans les ingrédients. La liste reste épinglée EXACTE, dans l'ordre du
-    /// catalogue — se rabattre sur un `contains` laisserait passer un filtre qui rend
-    /// tout. Les deux noms portent leur accent, donc retirer le rabattage des accents
-    /// vide toujours la liste : la mutation que ce test tue est intacte.
+    /// Fixture LOCALE, comme son jumeau ci-dessous, et non plus le vrai catalogue. Ce
+    /// test épinglait le résultat exact sur les ingrédients, et la 1.15 l'a fait tomber
+    /// en ajoutant « Épinards à la crème » — pour une raison sans rapport avec la
+    /// recherche. Le littéral n'achetait d'ailleurs rien : le filtre qui rend tout est
+    /// déjà tué par `testRequeteSansResultat`. Deux items dont un seul correspond
+    /// suffisent, et rien du catalogue ne peut plus faire tomber ce test.
     func testSansAccentTrouveAvecAccent() throws {
-        let found = FoodSearch.filter(try ingredients(), query: "creme")
-        XCTAssertEqual(found.map(\.id), ["cream", "spinach_cream"])
+        let items = [
+            FoodItem(id: "creme", name: "Crème fraîche", emoji: "🥛", kcalPer100g: 200,
+                     unitLabel: nil, unitLabelPlural: nil, unitGrams: nil,
+                     category: .side, tags: [], slots: [], defaultGrams: 30),
+            FoodItem(id: "autre", name: "Tomates", emoji: "🍅", kcalPer100g: 20,
+                     unitLabel: nil, unitLabelPlural: nil, unitGrams: nil,
+                     category: .side, tags: [], slots: [], defaultGrams: 100),
+        ]
+        XCTAssertEqual(FoodSearch.filter(items, query: "creme").map(\.id), ["creme"])
     }
 
     /// … et l'inverse doit marcher aussi : accent tapé, nom sans accent trouvé quand

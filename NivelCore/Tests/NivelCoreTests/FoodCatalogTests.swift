@@ -405,7 +405,11 @@ final class FoodCatalogTests: XCTestCase {
     /// catalogue à présentation mixte. Pas un échantillon : une erreur de recopie sur une
     /// seule ligne du JSON doit tomber ici. `testUniteEtPoidsVontEnsemble` épingle déjà
     /// l'invariant libellé/grammage par paire ; celui-ci épingle les valeurs, pas la règle.
-    func testLesUnitesDesCinqDessertsRetombentSurLaSpec() {
+    ///
+    /// Renommé en 1.15 : il s'appelait `testLesUnitesDesCinqDesserts…`, à cinq lignes de
+    /// `testLesCinqDessertsDeBrasserieRetombentSurLaSpec` dans les résultats. Ces cinq-ci
+    /// sont cinq UNITÉS parmi les dix desserts de la 1.14, pas cinq desserts.
+    func testLesCinqUnitesDeDessertRetombentSurLaSpec114() {
         let expected: [String: (label: String, grams: Int)] = [
             "skyr": ("pot", 150),
             "greek_yogurt": ("pot", 150),
@@ -441,7 +445,12 @@ final class FoodCatalogTests: XCTestCase {
     func testLesRecettesSontMasqueesDesOngletsDuCatalogue() {
         let shown = catalog.items(category: .dish, slot: nil)
         XCTAssertFalse(shown.contains { $0.isRecipe }, "une recette ne s'affiche pas dans l'onglet Plats")
-        XCTAssertEqual(shown.count, 49, "les quarante-neuf plats ordinaires, ni plus ni moins")
+        // Une RELATION et non le littéral 49, qui recopiait mot pour mot l'épinglage de
+        // `testChaqueOngletAfficheSonNombreDItems` : le même avis écrit deux fois n'est
+        // pas un second avis. Le sujet du test est la ligne au-dessus ; celle-ci vérifie
+        // qu'il ne manque personne d'autre à l'appel.
+        XCTAssertEqual(shown.count,
+                       catalog.items.filter { $0.category == .dish && !$0.isRecipe }.count)
     }
 
     /// Le test ci-dessus ne prouve rien tant que `foods.json` ne porte aucune recette :
@@ -585,6 +594,12 @@ final class FoodCatalogTests: XCTestCase {
             XCTAssertEqual(item.slots, spec.slots, "\(spec.id) : créneaux")
             XCTAssertEqual(item.category, .dish, "\(spec.id) : catégorie")
             XCTAssertFalse(item.isRecipe, "\(spec.id) : ce n'est pas une recette")
+            // Les colonnes que la table §6.2 n'a PAS, et qui doivent donc rester vides.
+            // `testUniteEtPoidsVontEnsemble` ne vérifie que la paire unité/poids : un
+            // plat qui gagnerait « part / 200 g » passerait la suite entière en changeant
+            // la façon dont on le saisit à l'écran, du gramme à la part.
+            XCTAssertNil(item.unitLabel, "\(spec.id) : pas d'unité, la table §6.2 n'a pas cette colonne")
+            XCTAssertTrue(item.tags.isEmpty, "\(spec.id) : pas de tag")
         }
     }
 
@@ -606,6 +621,10 @@ final class FoodCatalogTests: XCTestCase {
 
     /// Trois plats du soir seulement. Le catalogue cantonne déjà des plats à un créneau
     /// dans l'autre sens (petit-déjeuner) : même mécanique.
+    ///
+    /// La colonne `slots` de la table ci-dessus les couvre déjà ; celui-ci les énonce en
+    /// clair, avec leur raison, pour que le cantonnement ne passe pas pour une étourderie
+    /// à la relecture. Même office que `testLIleFlottanteNEstPasUnDessertGourmand`.
     func testLesPlatsDuSoirSontCantonnes() throws {
         for id in ["raclette", "fondue_savoyarde", "onion_soup"] {
             let item = try XCTUnwrap(catalog.items.first { $0.id == id })
@@ -654,7 +673,32 @@ final class FoodCatalogTests: XCTestCase {
             XCTAssertEqual(item.category, .side, "\(spec.id) : catégorie")
             XCTAssertEqual(item.slots, [], "\(spec.id) : créneaux, un accompagnement se sert partout")
             XCTAssertFalse(item.isRecipe, "\(spec.id) : ce n'est pas une recette")
+            // Mêmes colonnes absentes de la table §6.3, même raison qu'aux plats.
+            XCTAssertNil(item.unitLabel, "\(spec.id) : pas d'unité, la table §6.3 n'a pas cette colonne")
+            XCTAssertTrue(item.tags.isEmpty, "\(spec.id) : pas de tag")
         }
+    }
+
+    /// Spec §6.6 : les compositions continuent de citer le GÉNÉRIQUE. Quatre des sept
+    /// arrivent en face d'un générique déjà là — `green_beans` en face de `green_veg`,
+    /// `rice_pilaf` en face de `rice_cooked` — et la règle du cas 3 de `Recipe.swift`,
+    /// qui range un ingrédient précis sous sa ligne générique, avait dès lors deux
+    /// réponses également défendables. Ce test n'en laisse qu'une.
+    ///
+    /// Nécessaire, et pas cosmétique : `RecipeSuggester` apparie sur les IDS. Qui coche
+    /// « Légumes verts » dans son frigo n'obtiendrait aucun crédit pour une recette
+    /// citant « Haricots verts ». Une composition qui s'écarterait du générique casserait
+    /// donc en silence les suggestions de quelqu'un dont le frigo est pourtant plein.
+    func testAucuneCompositionNeCiteLesSeptAccompagnements() {
+        let nouveaux = Set(Self.accompagnementsDeBrasserie.map(\.id))
+        let fautifs = catalog.compositions
+            .flatMap { dishID, composition in
+                composition.map(\.itemID)
+                    .filter(nouveaux.contains)
+                    .map { "\(dishID) cite \($0)" }
+            }
+            .sorted()
+        XCTAssertEqual(fautifs, [], "spec §6.6 : une composition doit citer le générique")
     }
 
     /// Une ligne de la table de la spec §6.4, ses sept colonnes. Ces desserts-ci portent
