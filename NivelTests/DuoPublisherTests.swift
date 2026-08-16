@@ -271,6 +271,30 @@ final class DuoPublishGuardTests: XCTestCase {
         XCTAssertNil(identite.lastPublishedSnapshot)
     }
 
+
+    /// Le pendant côté appelant du test « un cœur de la veille survit ». `orphanEventIDs`
+    /// juge contre l'ensemble qu'on lui donne : c'est donc CETTE fonction qui décide si
+    /// les cœurs de la veille vivent ou meurent, et elle doit couvrir TOUTES les
+    /// journées. La restreindre au jour courant effacerait chaque nuit tout ce que le duo
+    /// s'est envoyé la veille.
+    func testLesIdentifiantsLocauxCouvrentToutesLesJournees() async throws {
+        let hier = Date().addingTimeInterval(-36 * 3_600)
+        let ancien = await service.logMeal(slot: .dinner, lines: [], manualKcal: 500, date: hier)
+        ancien.publicID = "E-hier"
+        let recent = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420)
+        recent.publicID = "E-aujourdhui"
+        // Une entrée jamais identifiée n'est désignée par aucun cœur légitime.
+        _ = await service.logMeal(slot: .snack, lines: [], manualKcal: 100)
+        try context.save()
+
+        let identifiants = service.allLocalPublicIDs()
+
+        XCTAssertTrue(identifiants.contains("E-hier"),
+                      "les entrées d'hier sont absentes : leurs cœurs seraient effacés")
+        XCTAssertTrue(identifiants.contains("E-aujourdhui"))
+        XCTAssertFalse(identifiants.contains(""))
+    }
+
     /// Le désappairage oublie aussi ce qui a été publié. Sans ça, réappairer avec la même
     /// personne ne republierait rien tant qu'un chiffre n'aurait pas bougé, et le
     /// partenaire resterait sur un écran vide.

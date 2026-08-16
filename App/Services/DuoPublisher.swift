@@ -61,8 +61,13 @@ extension GameService {
         // validation, à chaque bascule de minuit, sans qu'un seul chiffre ait changé.
         guard snapshot != identity.lastPublishedSnapshot else { return false }
 
+        // 5 bis. Les cœurs devenus orphelins partent DANS LA MÊME OPÉRATION que
+        // l'instantané : jamais d'état intermédiaire où les chiffres seraient à jour et
+        // les cœurs encore accrochés à des entrées disparues.
+        let orphelins = await orphanLikeRecordIDs(in: target, me: identity.memberID)
+
         do {
-            try await write(snapshot, to: target)
+            try await write(snapshot, deleting: orphelins, to: target)
             // 6. Mémoriser SEULEMENT après une écriture réussie : mémoriser avant ferait
             // qu'un échec réseau serait pris pour un succès, et la journée ne repartirait
             // plus jamais tant qu'un chiffre n'aurait pas rebougé.
@@ -80,7 +85,8 @@ extension GameService {
     /// est le `memberID`, donc déterministe, et `.changedKeys` fait de l'écriture un
     /// upsert. Un aller-retour réseau en moins, et aucun conflit possible puisque chacun
     /// n'écrit que le sien (§3.3).
-    private func write(_ snapshot: DuoSnapshot, to target: DuoDatabase.Target) async throws {
+    private func write(_ snapshot: DuoSnapshot, deleting orphelins: [CKRecord.ID],
+                       to target: DuoDatabase.Target) async throws {
         let recordID = CKRecord.ID(recordName: snapshot.memberID, zoneID: target.zoneID)
         let record = CKRecord(recordType: "DuoMember", recordID: recordID)
 
@@ -109,7 +115,51 @@ extension GameService {
         record["generatedAt"] = snapshot.generatedAt as CKRecordValue
 
         _ = try await target.database.modifyRecords(
-            saving: [record], deleting: [], savePolicy: .changedKeys)
+            saving: [record], deleting: orphelins, savePolicy: .changedKeys)
+    }
+
+    /// Les cœurs qui ne désignent plus rien (spec §3.4). La DÉCISION vit dans
+    /// `DuoLikeID.orphanEventIDs`, pure et testée ; ici il n'y a que la lecture de la
+    /// zone et la traduction en identifiants d'enregistrement.
+    ///
+    /// Deux points que le commentaire de `orphanEventIDs` développe et qu'il faut avoir
+    /// en tête ici :
+    ///
+    /// - la comparaison se fait contre `allLocalPublicIDs()`, TOUT le magasin, et surtout
+    ///   pas contre le fil du jour qu'on vient de construire et qui est sous la main.
+    ///   Le fil ne couvre que la journée courante : à minuit, tous les cœurs de la veille
+    ///   deviendraient orphelins et seraient effacés, y compris ceux qui s'affichent sur
+    ///   les entrées passées des journaux ;
+    /// - la requête ne demande que MES événements (`ownerID == me`), et le filtre est
+    ///   redit dans `orphanEventIDs` : les cœurs que j'ai donnés portent l'`ownerID` de
+    ///   l'autre, leurs entrées ne sont pas dans mon magasin, et je les jugerais tous
+    ///   orphelins.
+    ///
+    /// Un échec de lecture rend une liste vide plutôt que de propager : un nettoyage
+    /// impossible ne doit JAMAIS empêcher la publication des chiffres du jour.
+    private func orphanLikeRecordIDs(in target: DuoDatabase.Target,
+                                     me: String) async -> [CKRecord.ID] {
+        let requete = CKQuery(recordType: "DuoLike",
+                              predicate: NSPredicate(format: "ownerID == %@", me))
+        guard let reponse = try? await target.database.records(matching: requete,
+                                                               inZoneWith: target.zoneID)
+        else { return [] }
+
+        var coeurs: [DuoLikeRef] = []
+        var enregistrementsParEvenement: [String: [CKRecord.ID]] = [:]
+        for (recordID, resultat) in reponse.matchResults {
+            guard let record = try? resultat.get(),
+                  let eventID = record["eventID"] as? String,
+                  let ownerID = record["ownerID"] as? String,
+                  let giverID = record["giverID"] as? String
+            else { continue }
+            coeurs.append(DuoLikeRef(eventID: eventID, ownerID: ownerID, giverID: giverID))
+            enregistrementsParEvenement[eventID, default: []].append(recordID)
+        }
+
+        let orphelins = DuoLikeID.orphanEventIDs(
+            likes: coeurs, localPublicIDs: allLocalPublicIDs(), me: me)
+        return orphelins.flatMap { enregistrementsParEvenement[$0] ?? [] }
     }
 
     /// Remplit et persiste les `publicID` vides des entrées du jour — les entrées

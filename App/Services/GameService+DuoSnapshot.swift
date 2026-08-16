@@ -12,6 +12,7 @@
 // chance.
 
 import Foundation
+import SwiftData
 import NivelCore
 
 extension GameService {
@@ -112,6 +113,22 @@ extension GameService {
                 durationMinutes: activite.durationMinutes,
                 xp: activite.xpAwarded)
         }
+    }
+
+    /// TOUS les `publicID` du magasin, toutes journées confondues. C'est l'ensemble
+    /// contre lequel un cœur est jugé orphelin (spec §3.4).
+    ///
+    /// « Toutes journées confondues » est la propriété, pas un détail d'implémentation :
+    /// le restreindre au jour courant ferait disparaître chaque nuit tous les cœurs reçus
+    /// la veille, y compris ceux qui s'affichent sur les entrées passées des journaux.
+    ///
+    /// Les identifiants vides sont écartés : une entrée d'avant la 1.15 pas encore
+    /// identifiée n'est désignée par aucun cœur légitime.
+    func allLocalPublicIDs() -> Set<String> {
+        let repas = (try? modelContext.fetch(FetchDescriptor<MealEntry>()))?.map(\.publicID) ?? []
+        let activites = (try? modelContext.fetch(FetchDescriptor<ActivityEntry>()))?
+            .map(\.publicID) ?? []
+        return Set((repas + activites).filter { !$0.isEmpty })
     }
 
     /// « AAAA-MM-JJ » dans le calendrier LOCAL. Une chaîne et non une `Date` : c'est une

@@ -69,4 +69,70 @@ final class DuoLikeIDTests: XCTestCase {
                        DuoLikeID.recordName(giver: "G1", event: ""))
         XCTAssertEqual(DuoLikeID.recordName(giver: "G1", event: ""), "like-G1-")
     }
+
+    // MARK: - Les cœurs orphelins
+
+    private func coeur(_ evenement: String, de donneur: String = "G1",
+                       chez proprietaire: String = "MOI") -> DuoLikeRef {
+        DuoLikeRef(eventID: evenement, ownerID: proprietaire, giverID: donneur)
+    }
+
+    /// Un cœur posé sur une entrée qui existe toujours n'est pas orphelin.
+    func testUnCoeurSurUneEntreeExistanteSurvit() {
+        let orphelins = DuoLikeID.orphanEventIDs(
+            likes: [coeur("E1")], localPublicIDs: ["E1", "E2"], me: "MOI")
+
+        XCTAssertTrue(orphelins.isEmpty)
+    }
+
+    /// Un cœur dont l'événement a disparu du magasin ne désigne plus rien : il part.
+    func testUnCoeurSurUneEntreeSupprimeeEstOrphelin() {
+        let orphelins = DuoLikeID.orphanEventIDs(
+            likes: [coeur("E1"), coeur("E-supprime")],
+            localPublicIDs: ["E1"], me: "MOI")
+
+        XCTAssertEqual(orphelins, ["E-supprime"])
+    }
+
+    /// LE test qui compte, et la raison d'être de cette fonction. La première règle
+    /// écrite comparait au FIL PUBLIÉ, qui ne couvre que le jour courant : à la bascule
+    /// de minuit, tous les cœurs reçus la veille seraient devenus orphelins et auraient
+    /// été supprimés — y compris ceux qui s'affichent sur les entrées passées des
+    /// journaux Repas et Sport. On aurait effacé chaque nuit tout ce que le duo s'est
+    /// envoyé la veille.
+    ///
+    /// La comparaison porte donc sur l'ensemble des `publicID` DU MAGASIN, où l'entrée
+    /// d'hier est toujours là. Elle survit.
+    func testUnCoeurSurUneEntreeDHierQuiExisteToujoursSurvit() {
+        let orphelins = DuoLikeID.orphanEventIDs(
+            likes: [coeur("E-hier"), coeur("E-aujourdhui")],
+            // Le magasin contient les deux journées ; le fil du jour, lui, n'aurait
+            // contenu que « E-aujourdhui ».
+            localPublicIDs: ["E-hier", "E-aujourdhui"], me: "MOI")
+
+        XCTAssertTrue(orphelins.isEmpty, "un cœur de la veille a été jugé orphelin")
+    }
+
+    /// Un cœur posé sur une entrée de L'AUTRE ne me regarde pas : je n'ai aucun moyen de
+    /// savoir si son entrée existe encore, mon magasin ne la contient pas. C'est son
+    /// appareil à lui qui en décide. Sans cette règle, chacun supprimerait à chaque
+    /// publication tous les cœurs qu'il a DONNÉS.
+    func testUnCoeurSurUneEntreeDeLAutreEstIgnore() {
+        let orphelins = DuoLikeID.orphanEventIDs(
+            likes: [coeur("E-a-lui", de: "MOI", chez: "AUTRE")],
+            localPublicIDs: ["E1"], me: "MOI")
+
+        XCTAssertTrue(orphelins.isEmpty)
+    }
+
+    /// Les deux règles ensemble, sur un lot mélangé : c'est la forme réelle de l'entrée.
+    func testSeulsMesEvenementsDisparusSontDeclaresOrphelins() {
+        let orphelins = DuoLikeID.orphanEventIDs(
+            likes: [coeur("E-vivant"), coeur("E-mort"),
+                    coeur("E-a-lui", de: "MOI", chez: "AUTRE"),
+                    coeur("E-mort-chez-lui", de: "MOI", chez: "AUTRE")],
+            localPublicIDs: ["E-vivant"], me: "MOI")
+
+        XCTAssertEqual(orphelins, ["E-mort"])
+    }
 }
