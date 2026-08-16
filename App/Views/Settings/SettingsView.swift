@@ -437,4 +437,10 @@ struct SettingsContent: View {
         .modelContainer(container)
         .environment(GameService(modelContext: container.mainContext,
                                  stepsService: FakeStepsService(), widgetDefaults: nil))
+        // La section Duo lit ce service. Domaine dédié et zone jamais résolue : une
+        // prévisualisation n'appaire rien et n'émet aucune requête.
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }

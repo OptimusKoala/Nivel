@@ -208,6 +208,24 @@ enum DuoRecord {
         (try? JSONDecoder().decode([DuoEvent].self, from: Data(json.utf8))) ?? []
     }
 
+    /// Toutes les écritures du lot ont-elles abouti ?
+    ///
+    /// **En mode NON ATOMIQUE, `modifyRecords` ne lève pas sur un échec par
+    /// enregistrement** : il le range dans les résultats et rend la main normalement. Un
+    /// `_ = try await …` qui jette le tuple prend donc un échec pour un succès — ce qui a
+    /// fait mémoriser un instantané jamais publié, et vider la file de rejeu d'un cœur
+    /// jamais parti.
+    ///
+    /// L'atomicité a été coupée exprès (un cœur déjà supprimé ne doit pas emporter la
+    /// publication des chiffres du jour) ; son prix est de devoir REGARDER les résultats, et
+    /// c'est ce que cette fonction rend impossible à oublier.
+    static func allSucceeded<T>(_ results: [CKRecord.ID: Result<T, any Error>]) -> Bool {
+        results.values.allSatisfy { resultat in
+            if case .success = resultat { return true }
+            return false
+        }
+    }
+
     /// Ce qu'il faut d'un `DuoLike` pour décider s'il est orphelin. `nil` seulement si
     /// les DEUX champs dont dépend la décision manquent vraiment.
     ///

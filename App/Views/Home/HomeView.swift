@@ -598,6 +598,10 @@ private func homePreviewFixture(
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }
 
 #Preview("Séance faite") {
@@ -607,6 +611,10 @@ private func homePreviewFixture(
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }
 
 #Preview("Dépense atteinte") {
@@ -619,6 +627,10 @@ private func homePreviewFixture(
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }
 
 #Preview("Dépassé, sans HealthKit") {
@@ -633,4 +645,8 @@ private func homePreviewFixture(
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }

@@ -619,19 +619,27 @@ final class DuoService {
         let recordID = CKRecord.ID(recordName: DuoLikeID.recordName(giver: me, event: event.id),
                                    zoneID: target.zoneID)
         do {
+            let abouti: Bool
             if etaitAime {
                 // Suppression PAR NOM, sans lecture préalable : c'est exactement ce que le
                 // nom déterministe du §3.3 achète.
-                _ = try await target.database.modifyRecords(saving: [], deleting: [recordID],
-                                                            savePolicy: .changedKeys,
-                                                            atomically: false)
+                let ecritures = try await target.database.modifyRecords(
+                    saving: [], deleting: [recordID], savePolicy: .changedKeys,
+                    atomically: false)
+                abouti = DuoRecord.allSucceeded(ecritures.deleteResults)
             } else {
                 let record = DuoRecord.like(giver: me, owner: proprietaire, event: event,
                                             in: target.zoneID)
-                _ = try await target.database.modifyRecords(saving: [record], deleting: [],
-                                                            savePolicy: .changedKeys,
-                                                            atomically: false)
+                let ecritures = try await target.database.modifyRecords(
+                    saving: [record], deleting: [], savePolicy: .changedKeys,
+                    atomically: false)
+                abouti = DuoRecord.allSucceeded(ecritures.saveResults)
             }
+            // ⚠️ En mode non atomique, l'appel ne lève PAS sur un échec par enregistrement.
+            // Sortir de la file de rejeu sans regarder les résultats court-circuitait la
+            // seconde chance que le §3.10 promet : le cœur restait allumé sous le doigt,
+            // n'était jamais parti, et s'éteignait tout seul à la lecture suivante.
+            guard abouti else { pendingLikes[event.id] = !etaitAime; return }
             pendingLikes.removeValue(forKey: event.id)
         } catch {
             pendingLikes[event.id] = !etaitAime
@@ -668,13 +676,14 @@ final class DuoService {
                                                 title: "", subtitle: "")
                 let record = DuoRecord.like(giver: me, owner: proprietaire,
                                             event: evenementMinimal, in: target.zoneID)
-                reussi = (try? await target.database.modifyRecords(saving: [record], deleting: [],
-                                                                   savePolicy: .changedKeys,
-                                                                   atomically: false)) != nil
+                let ecritures = try? await target.database.modifyRecords(
+                    saving: [record], deleting: [], savePolicy: .changedKeys, atomically: false)
+                reussi = ecritures.map { DuoRecord.allSucceeded($0.saveResults) } ?? false
             } else {
-                reussi = (try? await target.database.modifyRecords(saving: [], deleting: [recordID],
-                                                                   savePolicy: .changedKeys,
-                                                                   atomically: false)) != nil
+                let ecritures = try? await target.database.modifyRecords(
+                    saving: [], deleting: [recordID], savePolicy: .changedKeys,
+                    atomically: false)
+                reussi = ecritures.map { DuoRecord.allSucceeded($0.deleteResults) } ?? false
             }
         }
     }

@@ -370,6 +370,49 @@ final class DuoRecordReadingTests: XCTestCase {
     }
 }
 
+// MARK: - Regarder ce qu'on a écrit
+
+/// **En mode non atomique, `modifyRecords` ne lève pas sur un échec par enregistrement** :
+/// il le range dans les résultats et rend la main normalement. Trois appels du duo jetaient
+/// ce tuple, et prenaient donc un échec pour un succès — instantané mémorisé sans avoir été
+/// publié, cœur sorti de la file de rejeu sans être parti.
+final class DuoWriteResultTests: XCTestCase {
+    private let zone = CKRecordZone.ID(zoneName: "duo", ownerName: CKCurrentUserDefaultName)
+
+    private func identifiant(_ nom: String) -> CKRecord.ID {
+        CKRecord.ID(recordName: nom, zoneID: zone)
+    }
+
+    func testUnLotEntierementReussiEstReussi() {
+        let resultats: [CKRecord.ID: Result<CKRecord, any Error>] = [
+            identifiant("A"): .success(CKRecord(recordType: DuoRecord.likeType,
+                                                recordID: identifiant("A"))),
+        ]
+
+        XCTAssertTrue(DuoRecord.allSucceeded(resultats))
+    }
+
+    /// UN seul enregistrement en échec suffit à faire échouer le lot : c'est tout l'intérêt,
+    /// puisque l'appel, lui, n'a rien levé.
+    func testUnSeulEchecSuffitAFaireEchouerLeLot() {
+        let resultats: [CKRecord.ID: Result<CKRecord, any Error>] = [
+            identifiant("A"): .success(CKRecord(recordType: DuoRecord.likeType,
+                                                recordID: identifiant("A"))),
+            identifiant("B"): .failure(CKError(.networkFailure)),
+        ]
+
+        XCTAssertFalse(DuoRecord.allSucceeded(resultats))
+    }
+
+    /// Un lot vide est réussi : c'est le cas d'une publication sans aucun cœur orphelin à
+    /// supprimer, et il ne doit surtout pas passer pour un échec.
+    func testUnLotVideEstReussi() {
+        let vide: [CKRecord.ID: Result<Void, any Error>] = [:]
+
+        XCTAssertTrue(DuoRecord.allSucceeded(vide))
+    }
+}
+
 // MARK: - L'état observable
 
 /// La seule suite qui construise un `DuoService`. Domaine de réglages dédié, jeté au

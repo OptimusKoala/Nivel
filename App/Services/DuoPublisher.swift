@@ -93,7 +93,13 @@ extension GameService {
         let orphelins = orphanLikeRecordIDs(in: target.zoneID, identity: identity, me: memberID)
 
         do {
-            try await write(snapshot, deleting: orphelins, to: target)
+            let ecritures = try await write(snapshot, deleting: orphelins, to: target)
+            // ⚠️ En mode non atomique, un enregistrement peut échouer SANS que l'appel lève.
+            // Ne regarder que l'absence d'erreur levée reviendrait à faire exactement ce que
+            // le commentaire ci-dessous dit éviter. Seules les SAUVEGARDES comptent : les
+            // suppressions sont le nettoyage des cœurs orphelins, un à-côté qui n'a pas le
+            // droit d'invalider la publication des chiffres du jour.
+            guard DuoRecord.allSucceeded(ecritures.saveResults) else { return false }
             // Mémoriser SEULEMENT après une écriture réussie : mémoriser avant ferait
             // qu'un échec réseau serait pris pour un succès, et la journée ne repartirait
             // plus jamais tant qu'un chiffre n'aurait pas rebougé.
@@ -145,9 +151,12 @@ extension GameService {
     /// déjà parti, ou dont le donneur a changé, ferait échouer TOUT le lot en mode atomique,
     /// et les chiffres du jour ne seraient plus publiés du tout. Le nettoyage est un
     /// à-côté ; il n'a pas le droit d'emporter l'essentiel avec lui.
-    private func write(_ snapshot: DuoSnapshot, deleting orphelins: [CKRecord.ID],
-                       to target: DuoDatabase.Target) async throws {
-        _ = try await target.database.modifyRecords(
+    private func write(
+        _ snapshot: DuoSnapshot, deleting orphelins: [CKRecord.ID],
+        to target: DuoDatabase.Target
+    ) async throws -> (saveResults: [CKRecord.ID: Result<CKRecord, any Error>],
+                       deleteResults: [CKRecord.ID: Result<Void, any Error>]) {
+        try await target.database.modifyRecords(
             saving: [DuoRecord.member(from: snapshot, in: target.zoneID)],
             deleting: orphelins, savePolicy: .changedKeys, atomically: false)
     }
