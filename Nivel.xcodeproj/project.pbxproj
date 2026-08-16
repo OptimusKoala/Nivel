@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0185ED5CBF4E4F62BDFFDD64 /* IconAssetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D23EC46E843C0AB08C1D436 /* IconAssetsTests.swift */; };
+		026F42C380BFC389F547201D /* CalorieRingCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C0F56F1A62FCBEDEE362D5 /* CalorieRingCenterTests.swift */; };
 		0375D5C747818288487770AE /* ReminderSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */; };
 		03AAB3EA20253F25A45A4199 /* ScreenshotIdeasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C83E7CFF76D5CC970B5615 /* ScreenshotIdeasTests.swift */; };
 		059EE6DBE7DF77207ED03B69 /* OnboardingIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213BA90A0D04CBB6102E11CA /* OnboardingIdentityTests.swift */; };
@@ -230,6 +231,7 @@
 		88FEA7C46036F1ADDA99FDAE /* PlanSessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSessionCard.swift; sourceTree = "<group>"; };
 		89A915194925D9D5C1194AFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8E2385787BD003A25BF9AC5C /* NivelWidgetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelWidgetProvider.swift; sourceTree = "<group>"; };
+		95C0F56F1A62FCBEDEE362D5 /* CalorieRingCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieRingCenterTests.swift; sourceTree = "<group>"; };
 		9782153DD5F0B9BABA5132F1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridge.swift; sourceTree = "<group>"; };
 		9B7103DE4BB6248F4D667947 /* MuscuSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscuSection.swift; sourceTree = "<group>"; };
@@ -528,6 +530,7 @@
 				46AB1204E0C482A88E0531BA /* ActivityLogSheetTests.swift */,
 				67EB506351740B5EC992E309 /* AppSmokeTests.swift */,
 				5F7AE44E873A5E75C6C02C21 /* ButtonAssetsTests.swift */,
+				95C0F56F1A62FCBEDEE362D5 /* CalorieRingCenterTests.swift */,
 				58745FD6BEB8B0440906A071 /* CalorieRingLegendTests.swift */,
 				CD88F18972D8921623E8DFFB /* CelebrationDismissTests.swift */,
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
@@ -881,6 +884,7 @@
 				74773DF87BFEED9D9D9908E4 /* ActivityLogSheetTests.swift in Sources */,
 				5B9E24C6742A771CA6A2B008 /* AppSmokeTests.swift in Sources */,
 				9A1DB333325B365795E4052C /* ButtonAssetsTests.swift in Sources */,
+				026F42C380BFC389F547201D /* CalorieRingCenterTests.swift in Sources */,
 				354FB8F1743FA91CC23CA9E8 /* CalorieRingLegendTests.swift in Sources */,
 				71F256526E0F3D73A7E90F83 /* CelebrationDismissTests.swift in Sources */,
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,

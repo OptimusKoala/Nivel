@@ -60,6 +60,20 @@ struct CalorieRingCard: View {
     /// ne touche que le rendu graphique.
     static let centerTypeSizeCap: DynamicTypeSize = .large
 
+    /// Largeur plafond de l'anneau. Déjà appliquée par le `.frame(maxWidth:maxHeight:)`
+    /// de `ring` ; nommée ici pour que le test de géométrie puisse la lire.
+    static let ringMaxWidth: CGFloat = 130
+
+    /// Taille du gros chiffre. 26 pt jusqu'à la 1.14 : « ~1 240 » y mordait le tracé.
+    /// La borne assumée est QUATRE chiffres (spec 1.15 §4), pas davantage.
+    static let centerFontSize: CGFloat = 22
+
+    /// Rembourrage horizontal du bloc central. 14 pt jusqu'à la 1.14, ce qui laissait
+    /// 102 pt de large à un texte dont le disque blanc n'en offre que 87 à la hauteur
+    /// du gros chiffre. C'est LA cause du débordement, la taille de police ne faisait
+    /// qu'en retarder l'apparition. Voir CalorieRingCenterTests pour la géométrie.
+    static let centerHorizontalPadding: CGFloat = 24
+
     private var isOver: Bool { target > 0 && eaten > target }
     private var fraction: Double {
         guard target > 0 else { return 0 }
@@ -113,7 +127,7 @@ struct CalorieRingCard: View {
             VStack(spacing: 2) {
                 // "~" : le total mangé est une somme d'estimations (spec §13).
                 Text("~\(eaten.frFormatted)")
-                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .font(.system(size: Self.centerFontSize, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.text)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
@@ -124,7 +138,7 @@ struct CalorieRingCard: View {
                     .font(.caption2)
                     .foregroundStyle(Theme.subtext)
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, Self.centerHorizontalPadding)
             .dynamicTypeSize(...Self.centerTypeSizeCap)
         }
         // Un log/édition de repas anime l'anneau et fait défiler le compteur
@@ -135,7 +149,7 @@ struct CalorieRingCard: View {
         // sauter d'un coup.
         .animation(.snappy, value: burned)
         .padding(6) // le trait (12 pt) déborde du cercle géométrique
-        .frame(maxWidth: 130, maxHeight: 130)
+        .frame(maxWidth: Self.ringMaxWidth, maxHeight: Self.ringMaxWidth)
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Calories : environ \(eaten) sur \(target). Dépensé : environ \(burned) sur \(burnTarget)")
@@ -186,6 +200,21 @@ struct CalorieRingCard: View {
     // Dépassement des DEUX objectifs : l'anneau extérieur passe à `Theme.accent`,
     // c'est le cas où l'intérieur ne doit surtout pas prendre la même couleur.
     CalorieRingCard(eaten: 2350, target: 2000, burned: 520, burnTarget: 400)
+        .frame(width: 210, height: 210)
+        .padding()
+        .background(Theme.background)
+}
+
+#Preview("Pire cas, 4 chiffres") {
+    // La BORNE de la spec 1.15 §4, figée pour qu'on la voie au lieu de la supposer :
+    // quatre chiffres aux quatre valeurs, soit la combinaison la plus large que le
+    // centre puisse avoir à afficher.
+    //
+    // L'anneau extérieur y reste VERT et non `accent` : `isOver` est `eaten > target`,
+    // donc l'égalité n'est pas un dépassement. C'est voulu — le cas `accent` a déjà sa
+    // prévisualisation juste au-dessus, et le pousser ici coûterait le cinquième
+    // chiffre qu'on refuse justement de promettre.
+    CalorieRingCard(eaten: 9_999, target: 9_999, burned: 9_999, burnTarget: 9_999)
         .frame(width: 210, height: 210)
         .padding()
         .background(Theme.background)
