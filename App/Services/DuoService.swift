@@ -160,6 +160,18 @@ final class DuoService {
         set { identity.likeNotificationsEnabled = newValue }
     }
 
+    /// Les cœurs que j'ai ENVOYÉS, par événement du partenaire. Persistés, plus les attentes
+    /// locales posées par-dessus : un cœur donné hors ligne reste allumé sous le doigt.
+    var givenLikeEventIDs: Set<String> {
+        Self.applying(pendingLikes, to: Set(identity.givenLikeEventIDs))
+    }
+
+    /// Les cœurs partis, ou retirés, dont l'écriture n'a pas abouti. `true` = à poser,
+    /// `false` = à retirer. Retentés au prochain rafraîchissement, puis ABANDONNÉS
+    /// silencieusement (§3.10) : un cœur n'a pas d'importance au point de mériter une file
+    /// persistante et des messages d'échec.
+    private var pendingLikes: [String: Bool] = [:]
+
     /// Les événements à moi qui portent un cœur, pour les journaux Repas et Sport (§3.8).
     /// Lu depuis `DuoIdentity`, donc **persistant** : ils survivent au relancement et au
     /// désappairage, comme la spec l'exige.
@@ -230,6 +242,10 @@ final class DuoService {
         // du partage et la première écriture de l'autre. On garde le cache et on n'affiche
         // aucun échec, surtout pas pendant l'appairage où tout va bien.
 
+        // Les cœurs que j'ai donnés voyagent dans le même lot : c'est ce qui allume les
+        // cœurs pleins de la page du partenaire, y compris après un relancement.
+        identity.givenLikeEventIDs = delta.likes.filter { $0.giverID == me }.map(\.eventID)
+
         receivedLikes = Self.incomingLikes(from: delta.likes, me: me)
         // Recopiés dans l'état d'appareil pour survivre au relancement ET au désappairage
         // (§3.10). La liste REMPLACE la précédente : un cœur retiré par son auteur est une
@@ -242,6 +258,7 @@ final class DuoService {
         // sait sans payer une requête de plus. Sans effet dans tous les autres cas.
         await closeShareIfSeatTaken()
         await installSubscriptionIfNeeded(in: target)
+        await retryPendingLikes(in: target, me: me)
     }
 
     /// Le réveil silencieux (§3.7) : lit ce qui a changé DEPUIS le dernier jeton, range, et
@@ -391,6 +408,108 @@ final class DuoService {
     /// Identifiant fixe : reposer le même abonnement le remplace au lieu d'en empiler un
     /// second, donc un appareil ne peut pas se retrouver réveillé deux fois par changement.
     static let subscriptionID = "nivel.duo.zone"
+
+    // MARK: - Les cœurs
+
+    /// Allume ou éteint le cœur d'un événement du partenaire (spec §3.8). Un tap l'allume,
+    /// un second le retire ; pas de compteur, à deux « aimé » ou « pas aimé » suffit.
+    ///
+    /// **Optimiste** : l'écran répond tout de suite, avant l'aller-retour réseau. Un cœur
+    /// qui attendrait la confirmation du serveur donnerait un bouton mou, et on taperait
+    /// deux fois.
+    ///
+    /// Aucun message d'erreur, jamais : l'écriture ratée est retentée au prochain
+    /// rafraîchissement, puis abandonnée. C'est un cœur, pas un virement.
+    func toggleLike(on event: DuoEvent) async {
+        guard identity.isPaired, let me = identity.memberID,
+              // Le propriétaire de l'événement est le partenaire, et on ne l'invente pas :
+              // sans son identifiant, l'enregistrement du cœur désignerait n'importe qui.
+              let proprietaire = identity.partnerSnapshot?.memberID, !proprietaire.isEmpty,
+              // Un événement sans identifiant ne s'aime pas : `like-G1-` se confondrait avec
+              // le cœur d'une autre entrée non identifiée (§3.4). `DuoFeedBuilder` ne publie
+              // déjà que des événements identifiés ; ceci est le filet.
+              !event.id.isEmpty,
+              let target = resolveTarget(identity) else { return }
+
+        let etaitAime = givenLikeEventIDs.contains(event.id)
+        setGiven(event.id, liked: !etaitAime)
+
+        let recordID = CKRecord.ID(recordName: DuoLikeID.recordName(giver: me, event: event.id),
+                                   zoneID: target.zoneID)
+        do {
+            if etaitAime {
+                // Suppression PAR NOM, sans lecture préalable : c'est exactement ce que le
+                // nom déterministe du §3.3 achète.
+                _ = try await target.database.modifyRecords(saving: [], deleting: [recordID],
+                                                            savePolicy: .changedKeys,
+                                                            atomically: false)
+            } else {
+                let record = DuoRecord.like(giver: me, owner: proprietaire, event: event,
+                                            in: target.zoneID)
+                _ = try await target.database.modifyRecords(saving: [record], deleting: [],
+                                                            savePolicy: .changedKeys,
+                                                            atomically: false)
+            }
+            pendingLikes.removeValue(forKey: event.id)
+        } catch {
+            pendingLikes[event.id] = !etaitAime
+        }
+    }
+
+    /// Retente ce qui n'est pas passé, UNE fois, puis oublie (§3.10). La file est vidée quoi
+    /// qu'il arrive : la garder ferait revivre indéfiniment un geste d'il y a trois jours,
+    /// sur un fil qui n'existe plus.
+    private func retryPendingLikes(in target: DuoDatabase.Target, me: String) async {
+        guard !pendingLikes.isEmpty,
+              let proprietaire = identity.partnerSnapshot?.memberID, !proprietaire.isEmpty
+        else { pendingLikes.removeAll(); return }
+
+        let aRejouer = pendingLikes
+        pendingLikes.removeAll()
+        for (evenement, aimer) in aRejouer {
+            let recordID = CKRecord.ID(recordName: DuoLikeID.recordName(giver: me,
+                                                                        event: evenement),
+                                       zoneID: target.zoneID)
+            if aimer {
+                // Le titre n'est plus sous la main : l'événement du fil a pu changer. On
+                // republie ce qu'on sait, et le partenaire lira son propre libellé faute de
+                // mieux — mieux vaut un cœur sans titre qu'un cœur perdu.
+                let evenementMinimal = DuoEvent(id: evenement, kind: .unknown, at: .now,
+                                                title: "", subtitle: "")
+                let record = DuoRecord.like(giver: me, owner: proprietaire,
+                                            event: evenementMinimal, in: target.zoneID)
+                _ = try? await target.database.modifyRecords(saving: [record], deleting: [],
+                                                             savePolicy: .changedKeys,
+                                                             atomically: false)
+            } else {
+                _ = try? await target.database.modifyRecords(saving: [], deleting: [recordID],
+                                                             savePolicy: .changedKeys,
+                                                             atomically: false)
+            }
+        }
+    }
+
+    /// Écrit l'état local d'un cœur donné, tout de suite : c'est ce que l'écran lit.
+    private func setGiven(_ eventID: String, liked: Bool) {
+        var donnes = Set(identity.givenLikeEventIDs)
+        if liked { donnes.insert(eventID) } else { donnes.remove(eventID) }
+        identity.givenLikeEventIDs = donnes.sorted()
+        // L'attente locale prime jusqu'à la prochaine lecture réussie de la zone : sans
+        // elle, un rafraîchissement arrivé entre le tap et l'écriture rallumerait ou
+        // éteindrait le cœur sous le doigt.
+        pendingLikes[eventID] = liked
+    }
+
+    /// Les cœurs donnés tels qu'on les AFFICHE : ce que la zone dit, corrigé de ce qu'on
+    /// vient de faire et qui n'est pas encore parti.
+    nonisolated static func applying(_ pending: [String: Bool],
+                                     to given: Set<String>) -> Set<String> {
+        var affiches = given
+        for (evenement, aime) in pending {
+            if aime { affiches.insert(evenement) } else { affiches.remove(evenement) }
+        }
+        return affiches
+    }
 
     // MARK: - Les décisions
 

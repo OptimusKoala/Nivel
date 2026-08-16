@@ -177,6 +177,28 @@ enum DuoRecord {
             createdAt: record[Field.createdAt] as? Date ?? record.creationDate ?? .distantPast)
     }
 
+    /// L'enregistrement d'un cœur (spec §3.3), écrit par celui qui l'envoie.
+    ///
+    /// Son `recordName` est DÉTERMINISTE, `like-<donneur>-<événement>`, et tout en découle :
+    /// aimer deux fois réécrit le même enregistrement au lieu d'en créer un second, et
+    /// retirer un cœur est une suppression par nom, sans lecture préalable.
+    ///
+    /// `eventTitle` est recopié ici exprès : c'est lui qui donnera son texte à la
+    /// notification chez l'autre, sans qu'il ait à relire son propre fil au réveil (§3.7).
+    static func like(giver: String, owner: String, event: DuoEvent,
+                     in zoneID: CKRecordZone.ID, now: Date = .now) -> CKRecord {
+        let record = CKRecord(
+            recordType: likeType,
+            recordID: CKRecord.ID(recordName: DuoLikeID.recordName(giver: giver, event: event.id),
+                                  zoneID: zoneID))
+        record[Field.giverID] = giver as CKRecordValue
+        record[Field.ownerID] = owner as CKRecordValue
+        record[Field.eventID] = event.id as CKRecordValue
+        record[Field.eventTitle] = event.title as CKRecordValue
+        record[Field.createdAt] = now as CKRecordValue
+        return record
+    }
+
     static func encodedFeed(_ events: [DuoEvent]) -> String? {
         guard let data = try? JSONEncoder().encode(events) else { return nil }
         return String(data: data, encoding: .utf8)

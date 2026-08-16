@@ -12,6 +12,14 @@ struct CalorieRingCard: View {
     /// elle n'est jamais créditée au budget alimentaire (règle v1 §2).
     let burned: Int
     let burnTarget: Int
+    /// Prénom à mettre en tête du libellé d'accessibilité. `nil` sur l'accueil, où l'anneau
+    /// parle de SOI et n'a personne à nommer ; renseigné sur la page du duo (spec 1.15
+    /// §3.9), où VoiceOver doit dire « Marion, calories… » et non « Calories… ».
+    ///
+    /// Un paramètre plutôt qu'une seconde carte : la géométrie de cet anneau est mesurée au
+    /// dixième de point et tenue par quatre constantes (lot B). En redessiner une divergerait
+    /// au premier ajustement, et c'est justement l'anneau que les deux personnes comparent.
+    var accessibilityOwner: String?
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -191,7 +199,15 @@ struct CalorieRingCard: View {
         .frame(maxWidth: Self.ringMaxWidth, maxHeight: Self.ringMaxWidth)
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Calories : environ \(eaten) sur \(target). Dépensé : environ \(burned) sur \(burnTarget)")
+        .accessibilityLabel(accessibilityLabelText)
+    }
+
+    /// Le libellé lu par VoiceOver, préfixé du prénom quand l'anneau parle de quelqu'un
+    /// d'autre. La ponctuation change avec : « Marion, calories : … ».
+    private var accessibilityLabelText: String {
+        let chiffres = "Calories : environ \(eaten) sur \(target). Dépensé : environ \(burned) sur \(burnTarget)"
+        guard let accessibilityOwner, !accessibilityOwner.isEmpty else { return chiffres }
+        return "\(accessibilityOwner), " + chiffres.prefix(1).lowercased() + chiffres.dropFirst()
     }
 
     /// Le sous-titre porte les DEUX lignes (reste à manger + dépense) : la légende de

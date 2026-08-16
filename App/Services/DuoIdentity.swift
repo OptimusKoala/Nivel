@@ -46,6 +46,7 @@ final class DuoIdentity {
         static let likeNotificationsEnabled = "nivel.duo.likeNotificationsEnabled"
         static let receivedLikeEventIDs = "nivel.duo.receivedLikeEventIDs"
         static let zoneChangeToken = "nivel.duo.zoneChangeToken"
+        static let givenLikeEventIDs = "nivel.duo.givenLikeEventIDs"
         static let zoneSubscriptionInstalled = "nivel.duo.zoneSubscriptionInstalled"
     }
 
@@ -159,6 +160,16 @@ final class DuoIdentity {
         didSet { defaults.set(zoneSubscriptionInstalled, forKey: Key.zoneSubscriptionInstalled) }
     }
 
+    /// Les événements du PARTENAIRE auxquels j'ai envoyé un cœur. Persistés pour que la
+    /// page s'ouvre hors ligne avec ses cœurs allumés (§3.10) : un cœur affiché éteint
+    /// donnerait envie de le renvoyer alors qu'il est bien parti.
+    ///
+    /// Contrairement aux cœurs REÇUS, ceux-là partent au désappairage : ils vivent sur des
+    /// entrées de l'autre, qu'on ne reverra jamais. Les garder n'afficherait rien nulle part.
+    var givenLikeEventIDs: [String] {
+        didSet { defaults.set(givenLikeEventIDs, forKey: Key.givenLikeEventIDs) }
+    }
+
     var isPaired: Bool { role != nil }
 
     private let defaults: UserDefaults
@@ -196,6 +207,7 @@ final class DuoIdentity {
             defaults.object(forKey: Key.likeNotificationsEnabled) as? Bool ?? true
         receivedLikeEventIDs = defaults.stringArray(forKey: Key.receivedLikeEventIDs) ?? []
         zoneChangeToken = defaults.data(forKey: Key.zoneChangeToken)
+        givenLikeEventIDs = defaults.stringArray(forKey: Key.givenLikeEventIDs) ?? []
         zoneSubscriptionInstalled = defaults.bool(forKey: Key.zoneSubscriptionInstalled)
     }
 
@@ -245,6 +257,7 @@ final class DuoIdentity {
         // le moindre signe.
         zoneChangeToken = nil
         zoneSubscriptionInstalled = false
+        givenLikeEventIDs = []
         // Sans cette ligne, réappairer avec la même personne ne republierait RIEN tant
         // que la journée n'a pas changé : l'instantané construit serait égal à celui
         // d'avant le désappairage, et le partenaire n'aurait jamais rien à afficher.
