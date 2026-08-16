@@ -36,8 +36,13 @@ enum DuoSettingsState: Equatable {
     static func current(hasAccount: Bool, isPaired: Bool, zoneIsGone: Bool,
                         partnerName: String?, pairedAt: Date?) -> DuoSettingsState {
         guard hasAccount else { return .noAccount }
-        guard isPaired else { return .unpaired }
+        // La zone perdue passe AVANT l'appairage local, dans les deux sens : quand il vaut
+        // encore vrai (l'état d'appareil n'a pas encore été effacé) comme quand il vient de
+        // tomber (le service s'est désappairé en constatant la perte). Sans cette place,
+        // l'écran retomberait sur le muet « aucun duo » à l'instant précis où il a quelque
+        // chose à expliquer.
         guard !zoneIsGone else { return .zoneGone }
+        guard isPaired else { return .unpaired }
         return .paired(name: partnerName, since: pairedAt)
     }
 

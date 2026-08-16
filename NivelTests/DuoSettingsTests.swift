@@ -37,14 +37,19 @@ final class DuoSettingsStateTests: XCTestCase {
         XCTAssertEqual(etat, .noAccount)
     }
 
-    /// La zone disparue prime sur l'appairage local : l'état d'appareil dit encore
-    /// « appairé » alors qu'il n'y a plus rien en face, et c'est exactement le moment où il
-    /// faut proposer de recommencer plutôt que d'afficher un duo qui n'existe plus.
+    /// La zone disparue prime sur l'appairage local, DANS LES DEUX SENS : quand il vaut
+    /// encore vrai, et quand il vient de tomber parce que le service s'est désappairé en
+    /// constatant la perte. Sans le second cas, l'écran retomberait sur le muet « aucun
+    /// duo » à l'instant précis où il a quelque chose à expliquer.
     func testUneZoneDisparuePrimeSurLAppairageLocal() {
-        let etat = DuoSettingsState.current(hasAccount: true, isPaired: true, zoneIsGone: true,
-                                            partnerName: "Marion", pairedAt: seizeAout)
-
-        XCTAssertEqual(etat, .zoneGone)
+        XCTAssertEqual(
+            DuoSettingsState.current(hasAccount: true, isPaired: true, zoneIsGone: true,
+                                     partnerName: "Marion", pairedAt: seizeAout),
+            .zoneGone)
+        XCTAssertEqual(
+            DuoSettingsState.current(hasAccount: true, isPaired: false, zoneIsGone: true,
+                                     partnerName: nil, pairedAt: nil),
+            .zoneGone)
     }
 
     func testUnDuoNormalEstAppaireAvecSonNomEtSaDate() {
@@ -197,6 +202,46 @@ final class DuoUnpairingTests: XCTestCase {
 
         XCTAssertEqual(service.likedEventIDs, ["E1", "E2"])
         XCTAssertEqual(DuoIdentity(defaults: defaults).receivedLikeEventIDs, ["E1", "E2"])
+    }
+
+    /// **Le défaut trouvé en revue, et le plus vicieux du lot.** Un invité dont la zone a
+    /// disparu restait « appairé » localement ; s'il réinvitait alors quelqu'un, il gardait
+    /// `zoneSubscriptionInstalled` à vrai — donc aucun abonnement n'était posé sur la
+    /// nouvelle zone, donc plus jamais un seul réveil, sans le moindre signe. Il gardait
+    /// aussi le dernier instantané publié de l'ancien duo, ce qui laissait son nouveau
+    /// partenaire sur une page vide.
+    ///
+    /// Constater la perte DÉSAPPAIRE donc pour de bon, et ne laisse derrière que la marque
+    /// qui fait dire à l'écran « ce duo n'existe plus, tu peux en créer un nouveau ».
+    func testConstaterLaPerteDeLaZoneDesappairePourDeBon() {
+        let identite = identiteAppairee()
+        identite.zoneChangeToken = Data("un jeton".utf8)
+        identite.zoneSubscriptionInstalled = true
+        identite.lastPublishedSnapshot = instantaneDuJour()
+        identite.receivedLikeEventIDs = ["E1"]
+        let service = DuoService(identity: identite, resolveTarget: { _ in nil })
+
+        service.handleZoneLoss()
+
+        XCTAssertFalse(service.isPaired)
+        XCTAssertFalse(identite.zoneSubscriptionInstalled, "sinon plus jamais un seul réveil")
+        XCTAssertNil(identite.zoneChangeToken)
+        XCTAssertNil(identite.lastPublishedSnapshot, "sinon le prochain duo reste sur du vide")
+        XCTAssertTrue(service.zoneIsGone, "l'écran doit pouvoir l'expliquer")
+        XCTAssertEqual(identite.receivedLikeEventIDs, ["E1"], "les cœurs reçus, eux, restent")
+        // Et l'état de l'écran suit : on propose de recommencer, on n'affiche plus un duo.
+        XCTAssertEqual(DuoSettingsState.current(hasAccount: true, isPaired: service.isPaired,
+                                                zoneIsGone: service.zoneIsGone,
+                                                partnerName: nil, pairedAt: nil),
+                       .zoneGone)
+    }
+
+    private func instantaneDuJour() -> DuoSnapshot {
+        DuoSnapshot(memberID: "M1", name: "Michaël", sexRaw: "male",
+                    level: 3, totalXP: 300, xpIntoLevel: 10, xpForNextLevel: 100,
+                    dayKey: "2026-08-16", kcalEaten: 1_000, kcalTarget: 1_800,
+                    burned: 100, burnTarget: 400, steps: 5_000,
+                    quest: nil, events: [], generatedAt: Date(timeIntervalSince1970: 2_000))
     }
 
     /// L'annonce des cœurs est allumée par défaut, y compris sur un appareil qui n'a jamais

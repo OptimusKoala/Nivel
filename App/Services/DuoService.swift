@@ -233,6 +233,9 @@ final class DuoService {
         // et donc juste quoi qu'il se soit passé entre deux appels. Le jeton rendu est
         // gardé pour que le prochain RÉVEIL ne voie que ce qui est arrivé après.
         let delta = await fetchZoneChanges(in: target, since: nil)
+        // La zone a disparu : on se désappaire ici et maintenant, plutôt que d'afficher un
+        // duo qui n'existe plus et de laisser un réappairage hériter de son état.
+        if delta.zoneGone { handleZoneLoss(); return }
         guard !delta.failed else { return }
 
         memberCount = delta.members.count
@@ -292,6 +295,7 @@ final class DuoService {
             identity.zoneChangeToken = nil
             delta = await fetchZoneChanges(in: target, since: nil)
         }
+        if delta.zoneGone { handleZoneLoss(); return [] }
         guard !delta.failed else { return [] }
 
         // L'instantané du partenaire voyage dans le même lot : le prendre au passage évite
@@ -727,6 +731,7 @@ extension DuoService {
             // fois, à la création : rouvrir l'écran ne le repousse pas, la garde
             // d'idempotence étant sortie bien avant.
             identity.pairedAt = .now
+            zoneIsGone = false
             return .ready(url)
         } catch {
             return .failed(Self.message(for: error))
@@ -784,6 +789,7 @@ extension DuoService {
             // L'invité n'a pas de lien à montrer : le QR est l'affaire de celui qui invite.
             identity.shareURL = nil
             identity.pairedAt = .now
+            zoneIsGone = false
             return .joined
         } catch {
             return .failed(Self.message(for: error))
@@ -852,12 +858,37 @@ extension DuoService {
         if let target = resolveTarget(identity) {
             _ = try? await target.database.modifyRecordZones(saving: [], deleting: [target.zoneID])
         }
+        wipeLocalPairing()
+    }
 
+    /// La zone n'existe plus en face (spec §3.10) : le partenaire a désinstallé, ou l'autre
+    /// a défait le duo de son côté. **On se désappaire pour de bon**, et l'écran propose de
+    /// recommencer.
+    ///
+    /// Ce n'est pas un raffinement d'affichage, c'est ce qui empêche un mode de panne
+    /// silencieux et définitif : en restant « appairé » sur une zone morte, un invité qui
+    /// réinvitait ensuite gardait `zoneSubscriptionInstalled` à vrai, donc n'obtenait
+    /// AUCUN abonnement sur sa nouvelle zone, donc plus jamais un seul réveil. Il gardait
+    /// aussi le dernier instantané publié de l'ancien duo, si bien que son nouveau
+    /// partenaire restait sur une page vide tant qu'un chiffre n'avait pas bougé. Le
+    /// commentaire de `unpair()` décrivait déjà ces deux pièges ; ce chemin-ci ne passait
+    /// simplement pas par lui.
+    ///
+    /// `zoneIsGone` est repositionné APRÈS l'effacement, exprès : c'est lui qui fait dire à
+    /// l'écran « ce duo n'existe plus » au lieu du muet « aucun duo », le temps que
+    /// l'utilisateur en refasse un.
+    func handleZoneLoss() {
+        wipeLocalPairing()
+        zoneIsGone = true
+    }
+
+    /// L'effacement local, partagé par le désappairage volontaire et la perte de zone. Il
+    /// ne touche PAS aux cœurs déjà reçus : ils font partie de l'histoire, pas de la
+    /// connexion (§3.10).
+    private func wipeLocalPairing() {
         identity.unpair()
         memberCount = nil
         zoneIsGone = false
-        // `receivedLikes` n'est PAS vidé : les cœurs de la session restent affichés, comme
-        // leur trace persistée. Ils font partie de l'histoire, pas de la connexion.
     }
 
     /// Le repli quand aucun cas ne correspond, et le plus fréquent en vrai : CloudKit a une
