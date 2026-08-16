@@ -78,6 +78,67 @@ final class MessageBankTests: XCTestCase {
         }
     }
 
+    /// Douze textes pour le cœur reçu (spec 1.15 §3.9), chacun portant {name} et aucun
+    /// {value}.
+    ///
+    /// {name} est EXIGÉ ici, ce que les rappels de programme ne demandent pas, et pour
+    /// une raison propre au duo : c'est le seul contexte du dépôt où {name} désigne le
+    /// PARTENAIRE et non l'utilisateur. Un message sans lui dirait « quelqu'un a aimé ta
+    /// journée » sans jamais nommer qui, ce qui vide la bulle de son sens.
+    ///
+    /// L'absence de {value} n'est pas cosmétique, c'est le même garde-fou que pour les
+    /// rappels de programme : le chemin d'appel passe `value: nil`, donc un {value}
+    /// glissé un jour dans un de ces textes partirait TEL QUEL dans la bulle, avec un
+    /// assert en debug seulement.
+    func testLesMessagesDeCoeurRecuOntDouzeTextesAvecLePrenomEtSansValeur() throws {
+        let bank = try MessageBank.load()
+        let messages = bank.messages(for: .duoLikeReceived)
+
+        XCTAssertEqual(messages.count, 12)
+        for msg in messages {
+            XCTAssertTrue(msg.text.contains("{name}"),
+                          "\(msg.id) ne nomme pas le partenaire")
+            XCTAssertFalse(msg.text.contains("{value}"), msg.id)
+        }
+
+        // Et le chemin réel : rien ne doit survivre à la substitution avec value nil.
+        for _ in 0..<20 {
+            let msg = bank.pick(context: .duoLikeReceived, excluding: nil,
+                                name: "Marion", value: nil)
+            XCTAssertFalse(msg.text.contains("{name}"))
+            XCTAssertFalse(msg.text.contains("{value}"))
+            XCTAssertTrue(msg.text.contains("Marion"), msg.id)
+        }
+    }
+
+    /// Le ton, et deux règles du dépôt sur des textes qui seront lus des dizaines de
+    /// fois par deux personnes vivant ensemble : jamais de reproche ni d'injonction, et
+    /// aucun tiret cadratin dans ce qui s'affiche.
+    ///
+    /// S'y ajoute une contrainte que seul le duo connaît : le partenaire peut être un
+    /// homme ou une femme, et ces textes parlent de LUI. Toute forme accordée au genre
+    /// (« passée », « contente », « ravi ») rendrait un message faux une fois sur deux.
+    /// Le repli ci-dessous attrape les participes construits avec être, qui sont le
+    /// piège le plus facile à écrire sans y penser.
+    func testLeTonEtLesFormesDesMessagesDeCoeurRecu() throws {
+        let bank = try MessageBank.load()
+        let interdits = ["tu n'as pas", "tu dois", "il faut", "tu n'as rien fait", "oublié"]
+        let accordes = ["est passé", "est venu", "est resté", "ravi", "content", "fier"]
+
+        for msg in bank.messages(for: .duoLikeReceived) {
+            let minuscule = msg.text.lowercased()
+            for phrase in interdits {
+                XCTAssertFalse(minuscule.contains(phrase),
+                               "\(msg.id) : « \(phrase) » ressemble à un reproche")
+            }
+            for forme in accordes {
+                XCTAssertFalse(minuscule.contains(forme),
+                               "\(msg.id) : « \(forme) » s'accorde au genre du partenaire")
+            }
+            XCTAssertFalse(msg.text.contains("—"), "\(msg.id) : tiret cadratin")
+        }
+    }
+
     /// Règle de langage explicite (spec §1.1) : l'app ne nomme jamais la zone par le
     /// terme familier, seulement "Posture" / "Nuque et haut du dos".
     func testAucunMessageNeDitLeMotBanni() throws {

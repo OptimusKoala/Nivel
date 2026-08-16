@@ -15,6 +15,14 @@ public enum MessageContext: String, Codable, CaseIterable, Sendable {
     /// déclenche `assertionFailure` en debug (silencieux en release) — les deux
     /// s'ajoutent ensemble.
     case muscuReminder
+    /// Un cœur reçu du duo (spec 1.15 §3.9). ATTENTION, seul endroit du dépôt où
+    /// `{name}` désigne le PARTENAIRE et non l'utilisateur : `pick(name:)` reçoit ici
+    /// le prénom de l'autre. Le nom du repas ou de l'activité n'est PAS dans le
+    /// message, il s'affiche sur la ligne du dessous de la bulle. Comme pour les
+    /// rappels de programme, la clé JSON DOIT exister, sinon `MessageBank.load`
+    /// déclenche `assertionFailure` en debug et retombe silencieusement sur
+    /// « Salut {name} ! » en release.
+    case duoLikeReceived
 }
 
 public struct NivelitoMessage: Codable, Identifiable, Sendable {

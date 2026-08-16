@@ -814,5 +814,55 @@
       "id": "mr12",
       "text": "Quelques minutes de muscu ce soir, si le moment s'y prête ?"
     }
+  ],
+  "duoLikeReceived": [
+    {
+      "id": "dlr1",
+      "text": "{name} vient de t'envoyer un cœur 💛"
+    },
+    {
+      "id": "dlr2",
+      "text": "Un cœur de {name} vient d'arriver."
+    },
+    {
+      "id": "dlr3",
+      "text": "{name} a aimé ça."
+    },
+    {
+      "id": "dlr4",
+      "text": "{name} a suivi ta journée de près aujourd'hui."
+    },
+    {
+      "id": "dlr5",
+      "text": "Quelqu'un regarde ta journée avec tendresse : {name}."
+    },
+    {
+      "id": "dlr6",
+      "text": "{name} a jeté un œil à ta journée, et ça lui a plu."
+    },
+    {
+      "id": "dlr7",
+      "text": "Vous êtes deux sur ce chemin, et {name} vient de te le rappeler."
+    },
+    {
+      "id": "dlr8",
+      "text": "Ce cœur vient de {name}. Le genre de détail qui fait une journée."
+    },
+    {
+      "id": "dlr9",
+      "text": "Ça n'a pas échappé à {name} 💛"
+    },
+    {
+      "id": "dlr10",
+      "text": "Petit cœur de {name}, livré à l'instant."
+    },
+    {
+      "id": "dlr11",
+      "text": "{name} a appuyé sur le cœur. C'est tout, et c'est déjà beaucoup."
+    },
+    {
+      "id": "dlr12",
+      "text": "Un signe de {name} : ta journée lui a plu."
+    }
   ]
 }
