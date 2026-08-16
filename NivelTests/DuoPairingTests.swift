@@ -203,6 +203,163 @@ final class DuoInvitationTests: XCTestCase {
     }
 }
 
+// MARK: - L'abonnement est posé au bout de l'appairage
+
+/// **Le second défaut trouvé sur deux vrais iPhones.** `installSubscriptionIfNeeded`
+/// n'était appelé que depuis `refresh()`, et `refresh()` n'est déclenché que par les
+/// Réglages, la page de profil, la boucle d'appairage et le retour au premier plan. Qui
+/// appairait puis rentrait à l'accueil n'avait donc **aucun abonnement de zone**, donc
+/// aucun réveil silencieux, donc aucune notification, jusqu'à rouvrir les Réglages par
+/// hasard.
+///
+/// Chaque maillon avait pourtant son test : la pose de l'abonnement, l'appairage, le
+/// désappairage qui l'efface. Aucun ne suivait la CHAÎNE, et c'est par là que le défaut est
+/// passé. Ces tests-ci la suivent, des deux côtés, de `startInvitation()` et de `join()`
+/// jusqu'à l'abonnement réellement remis au nuage.
+///
+/// Les deux gestes CloudKit de l'appairage sont injectés — c'est la seule façon de tenir
+/// cette chaîne sans deux comptes iCloud, que ni le simulateur ni la CI ne savent jouer.
+@MainActor
+final class DuoPairingSubscriptionTests: XCTestCase {
+
+    private var suiteName: String!
+    private var defaults: UserDefaults!
+
+    override func setUp() {
+        super.setUp()
+        suiteName = "nivel.tests.duosub.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+    }
+
+    override func tearDown() {
+        defaults.removePersistentDomain(forName: suiteName)
+        defaults = nil
+        suiteName = nil
+        super.tearDown()
+    }
+
+    private let lien = URL(string: "https://www.icloud.com/share/0aB1cD2eF3")!
+
+    /// Celui qui INVITE : le partage créé, l'abonnement est posé dans la foulée, sans
+    /// qu'aucun `refresh()` n'ait à passer par là.
+    func testInviterPoseLAbonnementSansAttendreUnRafraichissement() async {
+        var poses: [CKRecordZoneSubscription] = []
+        let identite = DuoIdentity(defaults: defaults)
+        let service = DuoService(
+            identity: identite,
+            createShare: { _ in
+                (CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName,
+                                 ownerName: CKCurrentUserDefaultName), self.lien)
+            },
+            saveSubscription: { _, abonnement in poses.append(abonnement); return true })
+
+        let resultat = await service.startInvitation()
+
+        XCTAssertEqual(resultat, .ready(lien))
+        XCTAssertEqual(poses.count, 1, "sans abonnement, plus jamais un seul réveil")
+        XCTAssertTrue(identite.zoneSubscriptionInstalled)
+        XCTAssertEqual(poses.first?.zoneID.zoneName, DuoDatabase.defaultZoneName)
+    }
+
+    /// Celui qui REJOINT, et c'est le côté qui comptait le plus : l'invité n'a aucune raison
+    /// de rouvrir les Réglages après avoir scanné, il rentre à l'accueil.
+    ///
+    /// L'abonnement porte le `ownerName` du PROPRIÉTAIRE : posé sur une zone à soi, il
+    /// existerait, ne réveillerait jamais rien, et rien ne le dirait.
+    func testRejoindrePoseLAbonnementSurLaZoneDuProprietaire() async {
+        var poses: [CKRecordZoneSubscription] = []
+        let identite = DuoIdentity(defaults: defaults)
+        let service = DuoService(
+            identity: identite,
+            acceptShare: { _, _ in
+                CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName, ownerName: "PROPRIO")
+            },
+            saveSubscription: { _, abonnement in poses.append(abonnement); return true })
+
+        let resultat = await service.join(shareURL: lien.absoluteString)
+
+        XCTAssertEqual(resultat, .joined)
+        XCTAssertEqual(poses.count, 1, "sans abonnement, plus jamais un seul réveil")
+        XCTAssertTrue(identite.zoneSubscriptionInstalled)
+        XCTAssertEqual(poses.first?.zoneID.ownerName, "PROPRIO")
+    }
+
+    /// L'abonnement posé est SILENCIEUX (§3.7) : le système réveille l'app sans rien
+    /// montrer, et c'est elle qui décide s'il y a lieu de dire quelque chose. Un
+    /// `alertBody` alerterait à chaque mise à jour d'anneau, plusieurs fois par jour.
+    func testLAbonnementPoseEstSilencieux() async {
+        var poses: [CKRecordZoneSubscription] = []
+        let service = DuoService(
+            identity: DuoIdentity(defaults: defaults),
+            acceptShare: { _, _ in
+                CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName, ownerName: "PROPRIO")
+            },
+            saveSubscription: { _, abonnement in poses.append(abonnement); return true })
+
+        _ = await service.join(shareURL: lien.absoluteString)
+
+        let info = poses.first?.notificationInfo
+        XCTAssertEqual(info?.shouldSendContentAvailable, true)
+        XCTAssertNil(info?.alertBody, "sinon une alerte à chaque chiffre qui bouge")
+        XCTAssertEqual(poses.first?.subscriptionID, DuoService.subscriptionID)
+    }
+
+    /// Un appairage qui rate ne pose rien : sans zone, l'abonnement partirait sur une
+    /// identité qui n'existe pas, et le marquerait posé pour toujours.
+    func testUnAppairageQuiRateNePoseAucunAbonnement() async {
+        var poses = 0
+        let identite = DuoIdentity(defaults: defaults)
+        let service = DuoService(
+            identity: identite,
+            createShare: { _ in throw CKError(.networkUnavailable) },
+            acceptShare: { _, _ in throw CKError(.networkUnavailable) },
+            saveSubscription: { _, _ in poses += 1; return true })
+
+        _ = await service.startInvitation()
+        _ = await service.join(shareURL: lien.absoluteString)
+
+        XCTAssertEqual(poses, 0)
+        XCTAssertFalse(identite.zoneSubscriptionInstalled)
+        XCTAssertFalse(service.isPaired)
+    }
+
+    /// La garde d'idempotence est ce qui rend l'appel de l'appairage sans coût : le FILET
+    /// gardé dans `refresh()` ne repose pas un abonnement déjà en place, et l'appairage ne
+    /// le repose pas non plus après une reprise.
+    func testUnAbonnementDejaPoseNEstPasRepose() async {
+        var poses = 0
+        let identite = DuoIdentity(defaults: defaults)
+        identite.zoneSubscriptionInstalled = true
+        let service = DuoService(
+            identity: identite,
+            acceptShare: { _, _ in
+                CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName, ownerName: "PROPRIO")
+            },
+            saveSubscription: { _, _ in poses += 1; return true })
+
+        _ = await service.join(shareURL: lien.absoluteString)
+
+        XCTAssertEqual(poses, 0)
+    }
+
+    /// Le nuage a refusé : on ne marque SURTOUT pas l'abonnement comme posé, sinon plus
+    /// rien ne le retentera jamais. C'est le filet de `refresh()` qui reprendra la main.
+    func testUnAbonnementRefuseResteARetenter() async {
+        let identite = DuoIdentity(defaults: defaults)
+        let service = DuoService(
+            identity: identite,
+            acceptShare: { _, _ in
+                CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName, ownerName: "PROPRIO")
+            },
+            saveSubscription: { _, _ in false })
+
+        _ = await service.join(shareURL: lien.absoluteString)
+
+        XCTAssertTrue(service.isPaired, "l'appairage, lui, a bien eu lieu")
+        XCTAssertFalse(identite.zoneSubscriptionInstalled)
+    }
+}
+
 // MARK: - Le scanner et son repli
 
 final class DuoScannerAvailabilityTests: XCTestCase {

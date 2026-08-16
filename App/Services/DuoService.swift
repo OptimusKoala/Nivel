@@ -137,16 +137,44 @@ final class DuoService {
     /// Le travail de zone en cours, quel qu'il soit. Voir `serialized`.
     private var zoneWork: Task<Void, Never>?
 
+    /// Les TROIS coutures de l'appairage, et elles ne sont pas là par goût de l'abstraction.
+    ///
+    /// Créer un partage, en accepter un, poser un abonnement : trois gestes qui exigent deux
+    /// comptes iCloud, que ni le simulateur ni la CI ne savent jouer. Tant qu'ils étaient
+    /// écrits en dur dans le corps de `startInvitation` et de `accept`, **tout ce qui SUIT
+    /// un appairage réussi était hors d'atteinte de tout test** — et c'est précisément par
+    /// là qu'est passé le défaut le plus coûteux de la 1.15 : l'abonnement n'était posé que
+    /// depuis `refresh()`, donc quelqu'un qui appairait puis rentrait à l'accueil ne
+    /// recevait plus jamais rien.
+    ///
+    /// Remplacées en test, elles laissent suivre la chaîne entière, des deux côtés. En
+    /// production ce sont les fonctions juste en dessous, et rien d'autre.
+    private let createShare: @MainActor (CKContainer) async throws
+        -> (zoneID: CKRecordZone.ID, url: URL)
+    private let acceptShare: @MainActor (CKContainer, URL) async throws -> CKRecordZone.ID
+    private let saveSubscription: @MainActor (DuoDatabase.Target, CKRecordZoneSubscription)
+        async -> Bool
+
     init(identity: DuoIdentity,
          resolveTarget: @escaping (DuoIdentity) -> DuoDatabase.Target? = {
              DuoDatabase.target(for: $0)
          },
          makeContainer: @escaping () -> CKContainer = {
              CKContainer(identifier: DuoDatabase.containerID)
-         }) {
+         },
+         createShare: @escaping @MainActor (CKContainer) async throws
+             -> (zoneID: CKRecordZone.ID, url: URL) = { try await DuoService.createShare(in: $0) },
+         acceptShare: @escaping @MainActor (CKContainer, URL) async throws -> CKRecordZone.ID = {
+             try await DuoService.acceptShare($1, in: $0)
+         },
+         saveSubscription: @escaping @MainActor (DuoDatabase.Target, CKRecordZoneSubscription)
+             async -> Bool = { await DuoService.saveSubscription($1, in: $0) }) {
         self.identity = identity
         self.resolveTarget = resolveTarget
         self.makeContainer = makeContainer
+        self.createShare = createShare
+        self.acceptShare = acceptShare
+        self.saveSubscription = saveSubscription
     }
 
     // MARK: - Ce que les écrans lisent
@@ -306,7 +334,7 @@ final class DuoService {
         // Le FILET de l'abonnement : il est posé à la fin de l'appairage, des deux côtés,
         // mais un appairage dont l'abonnement aurait raté doit pouvoir se rattraper. La
         // garde d'idempotence rend cet appel sans coût le reste du temps.
-        await installSubscriptionIfNeeded(in: target)
+        await installSubscriptionIfNeeded()
         await retryPendingLikes(in: target, me: me)
     }
 
@@ -596,8 +624,19 @@ final class DuoService {
     /// `CKQuerySubscription`, qui filtrerait sur les seuls `DuoLike`, n'existe pas dans la
     /// base partagée : l'invité n'a droit qu'à un abonnement de zone. On prend donc le même
     /// des deux côtés, pour n'avoir qu'un seul comportement à comprendre.
-    private func installSubscriptionIfNeeded(in target: DuoDatabase.Target) async {
-        guard !identity.zoneSubscriptionInstalled else { return }
+    ///
+    /// **Deux appelants, et il faut les deux.** La FIN DE L'APPAIRAGE, des deux côtés, parce
+    /// que quelqu'un qui appaire puis rentre à l'accueil n'a aucune raison de rouvrir les
+    /// Réglages — et n'avait donc, jusqu'ici, aucun abonnement et aucune notification. Et
+    /// `refresh()`, qui reste le FILET : un appairage dont l'abonnement a raté doit pouvoir
+    /// se rattraper, et la garde d'idempotence ci-dessous rend l'appel sans coût.
+    ///
+    /// La zone est résolue ici plutôt que passée en argument : les deux appelants n'ont pas
+    /// les mêmes informations sous la main, et c'est la résolution qui sait quoi faire de la
+    /// dissymétrie propriétaire / invité.
+    func installSubscriptionIfNeeded() async {
+        guard !identity.zoneSubscriptionInstalled, let target = resolveTarget(identity)
+        else { return }
 
         let abonnement = CKRecordZoneSubscription(zoneID: target.zoneID,
                                                   subscriptionID: Self.subscriptionID)
@@ -605,10 +644,17 @@ final class DuoService {
         info.shouldSendContentAvailable = true
         abonnement.notificationInfo = info
 
-        guard (try? await target.database.modifySubscriptions(saving: [abonnement],
-                                                              deleting: [])) != nil
-        else { return }
+        // Marqué posé SEULEMENT après un succès : le marquer d'avance ferait d'un échec
+        // réseau un appareil qui ne retentera plus jamais, en silence et pour toujours.
+        guard await saveSubscription(target, abonnement) else { return }
         identity.zoneSubscriptionInstalled = true
+    }
+
+    /// La pose réelle, celle de la production. Voir les trois coutures en tête de fichier.
+    private static func saveSubscription(_ subscription: CKRecordZoneSubscription,
+                                         in target: DuoDatabase.Target) async -> Bool {
+        (try? await target.database.modifySubscriptions(saving: [subscription],
+                                                        deleting: [])) != nil
     }
 
     /// Identifiant fixe : reposer le même abonnement le remplace au lieu d'en empiler un
@@ -897,30 +943,8 @@ extension DuoService {
 
         if identity.role == .owner, let url = identity.shareURL { return .ready(url) }
 
-        let base = makeContainer().privateCloudDatabase
-        let zoneID = CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName,
-                                     ownerName: CKCurrentUserDefaultName)
         do {
-            // Sauver une zone qui existe déjà est sans effet et sans erreur : c'est ce qui
-            // rend ce chemin rejouable après un échec réseau au milieu.
-            _ = try await base.modifyRecordZones(saving: [CKRecordZone(zoneID: zoneID)],
-                                                 deleting: [])
-
-            // Partage de ZONE, pas d'enregistrement : tout ce qui entre dans `duo` est
-            // partagé, y compris les enregistrements que l'autre y écrira. Un partage
-            // accroché à un enregistrement racine ne couvrirait que sa hiérarchie, et le
-            // `DuoMember` de l'invité n'en ferait pas partie.
-            let partage = CKShare(recordZoneID: zoneID)
-            partage.publicPermission = .readWrite
-            // Ce titre est ce que le système affiche dans la feuille de partage et dans
-            // les réglages iCloud du partenaire. Il n'est lu par personne d'autre.
-            partage[CKShare.SystemFieldKey.title] = "Nivel, à deux"
-
-            let (ecritures, _) = try await base.modifyRecords(saving: [partage], deleting: [],
-                                                              savePolicy: .changedKeys)
-            guard let sauve = ecritures.values.compactMap({ (try? $0.get()) as? CKShare }).first,
-                  let url = sauve.url
-            else { return .failed(Self.genericFailureMessage) }
+            let (zoneID, url) = try await createShare(makeContainer())
 
             // Le rôle n'est posé qu'ICI, après le succès. Le poser avant rendrait
             // `isPaired` vrai sans zone, et toute l'app se mettrait à publier dans le vide.
@@ -936,10 +960,51 @@ extension DuoService {
             // d'idempotence étant sortie bien avant.
             identity.pairedAt = .now
             zoneIsGone = false
+            // L'abonnement de zone, ICI et pas au premier `refresh()` : celui qui invite
+            // referme la feuille et rentre à l'accueil, où rien ne rafraîchit. Sans cette
+            // ligne, il n'avait aucun réveil silencieux tant qu'il n'avait pas rouvert les
+            // Réglages par hasard, donc aucune notification de cœur.
+            await installSubscriptionIfNeeded()
             return .ready(url)
         } catch {
             return .failed(Self.message(for: error))
         }
+    }
+
+    /// La création réelle de la zone et de son partage, celle de la production. Voir les
+    /// trois coutures en tête de fichier pour la raison d'être de cette séparation.
+    private static func createShare(in container: CKContainer) async throws
+        -> (zoneID: CKRecordZone.ID, url: URL) {
+        let base = container.privateCloudDatabase
+        let zoneID = CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName,
+                                     ownerName: CKCurrentUserDefaultName)
+
+        // Sauver une zone qui existe déjà est sans effet et sans erreur : c'est ce qui rend
+        // ce chemin rejouable après un échec réseau au milieu.
+        _ = try await base.modifyRecordZones(saving: [CKRecordZone(zoneID: zoneID)],
+                                             deleting: [])
+
+        // Partage de ZONE, pas d'enregistrement : tout ce qui entre dans `duo` est partagé,
+        // y compris les enregistrements que l'autre y écrira. Un partage accroché à un
+        // enregistrement racine ne couvrirait que sa hiérarchie, et le `DuoMember` de
+        // l'invité n'en ferait pas partie.
+        let partage = CKShare(recordZoneID: zoneID)
+        // Le mode « toute personne disposant du lien ». Il n'est JAMAIS révoqué ensuite :
+        // l'invité y entre comme participant public, et le lui retirer le mettrait dehors.
+        // Voir `forgetInvitationLinkIfSeatTaken`.
+        partage.publicPermission = .readWrite
+        // Ce titre est ce que le système affiche dans la feuille de partage et dans les
+        // réglages iCloud du partenaire. Il n'est lu par personne d'autre.
+        partage[CKShare.SystemFieldKey.title] = "Nivel, à deux"
+
+        let (ecritures, _) = try await base.modifyRecords(saving: [partage], deleting: [],
+                                                          savePolicy: .changedKeys)
+        guard let sauve = ecritures.values.compactMap({ (try? $0.get()) as? CKShare }).first,
+              let url = sauve.url
+        // Un partage écrit sans URL n'est pas un cas nommé : `message(for:)` retombe sur la
+        // phrase générique, exactement comme avant.
+        else { throw CKError(.internalError) }
+        return (zoneID, url)
     }
 
     /// Ce que l'écran « Rejoindre » affiche.
@@ -975,18 +1040,12 @@ extension DuoService {
         // publier. C'est la seconde et dernière porte d'entrée de `createMemberID()`.
         identity.createMemberID()
 
-        let conteneur = makeContainer()
         do {
-            // Les deux opérations que la spec nomme, sous leur forme asynchrone :
-            // `CKFetchShareMetadataOperation` puis `CKAcceptSharesOperation`.
-            let metadonnees = try await conteneur.shareMetadata(for: url)
-            let partage = try await conteneur.accept(metadonnees)
-
             // La zone de l'invité porte le `ownerName` du PROPRIÉTAIRE, jamais
             // `__defaultOwner__` : sans lui, `DuoDatabase` reconstruirait une zone à soi,
             // où l'on écrirait tranquillement des chiffres que personne ne lit. C'est le
             // seul endroit du dépôt où cette valeur est obtenue.
-            let zoneID = partage.recordID.zoneID
+            let zoneID = try await acceptShare(makeContainer(), url)
             identity.role = .guest
             identity.zoneName = zoneID.zoneName
             identity.zoneOwnerName = zoneID.ownerName
@@ -994,10 +1053,25 @@ extension DuoService {
             identity.shareURL = nil
             identity.pairedAt = .now
             zoneIsGone = false
+            // L'abonnement de zone, ICI et pas au premier `refresh()`, et c'est le côté qui
+            // comptait le plus : l'invité vient de scanner, il referme et rentre à
+            // l'accueil. Il n'a aucune raison d'ouvrir les Réglages, donc il n'avait aucun
+            // réveil, donc aucune notification de cœur, sans le moindre signe.
+            await installSubscriptionIfNeeded()
             return .joined
         } catch {
             return .failed(Self.message(for: error))
         }
+    }
+
+    /// L'acceptation réelle, celle de la production : les deux opérations que la spec nomme
+    /// au §3.6, sous leur forme asynchrone — `CKFetchShareMetadataOperation` puis
+    /// `CKAcceptSharesOperation`. Voir les trois coutures en tête de fichier.
+    private static func acceptShare(_ url: URL, in container: CKContainer) async throws
+        -> CKRecordZone.ID {
+        let metadonnees = try await container.shareMetadata(for: url)
+        let partage = try await container.accept(metadonnees)
+        return partage.recordID.zoneID
     }
 
     /// Oublie l'URL d'invitation dès que la place est prise (spec §3.6). Purement LOCAL :
