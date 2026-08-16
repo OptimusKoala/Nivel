@@ -214,28 +214,7 @@ struct SportView: View {
     }
 
     private func doneRow(_ entry: ActivityEntry) -> some View {
-        let name: String = {
-            switch entry.kind {
-            case .activity:
-                return game.activitiesByID[entry.refID]?.name ?? entry.refID
-            case .dailySession:
-                return game.sessionCatalog.first { $0.id == entry.refID }?.title ?? entry.refID
-            case .posture:
-                // Une entrée posture porte un id de SÉANCE, comme .dailySession, et non
-                // un id d'exercice : `logPostureSession` est le miroir de
-                // `logDailySession`. Chercher dans le catalogue d'exercices retomberait
-                // silencieusement sur l'id brut (« posture_evening ») dans la liste du jour.
-                return game.postureCatalog.sessions.first { $0.id == entry.refID }?.title
-                    ?? game.activitiesByID[entry.refID]?.name
-                    ?? entry.refID
-            case .muscu:
-                // Même piège que .posture — un id de SÉANCE, jamais d'exercice — mais
-                // SANS le repli par `activitiesByID` : le programme muscu n'a pas
-                // d'exercices à lui, aucun id `muscu_*` n'existe dans cette table, et
-                // le maillon serait donc du code mort qui retomberait toujours sur l'id brut.
-                return game.muscuCatalog.sessions.first { $0.id == entry.refID }?.title ?? entry.refID
-            }
-        }()
+        let name = game.activityTitle(for: entry)
         return HStack(spacing: 12) {
             SportIllustration(name: entry.refID)
             VStack(alignment: .leading, spacing: 2) {

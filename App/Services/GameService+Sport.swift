@@ -260,3 +260,36 @@ extension GameService {
         return (try? modelContext.fetchCount(FetchDescriptor(predicate: predicate))) ?? 0
     }
 }
+
+extension GameService {
+    /// Le nom lisible d'une activité validée : « Vélo tranquille », « Nuque et haut du
+    /// dos ». Vivait inline dans `SportView.doneRow` jusqu'à la 1.15 ; extrait ici parce
+    /// que le fil du duo en a besoin lui aussi (spec §3.4) et que ce `switch` porte deux
+    /// pièges qu'il serait absurde de dupliquer — un second exemplaire divergerait un
+    /// jour, et l'un des deux écrans afficherait des identifiants bruts.
+    ///
+    /// Le repli sur `refID` n'est jamais joli, mais il est volontaire : une entrée dont
+    /// le catalogue a perdu la référence reste affichable plutôt que de disparaître.
+    func activityTitle(for entry: ActivityEntry) -> String {
+        switch entry.kind {
+        case .activity:
+            return activitiesByID[entry.refID]?.name ?? entry.refID
+        case .dailySession:
+            return sessionCatalog.first { $0.id == entry.refID }?.title ?? entry.refID
+        case .posture:
+            // Une entrée posture porte un id de SÉANCE, comme .dailySession, et non
+            // un id d'exercice : `logPostureSession` est le miroir de
+            // `logDailySession`. Chercher dans le catalogue d'exercices retomberait
+            // silencieusement sur l'id brut (« posture_evening ») dans la liste du jour.
+            return postureCatalog.sessions.first { $0.id == entry.refID }?.title
+                ?? activitiesByID[entry.refID]?.name
+                ?? entry.refID
+        case .muscu:
+            // Même piège que .posture — un id de SÉANCE, jamais d'exercice — mais
+            // SANS le repli par `activitiesByID` : le programme muscu n'a pas
+            // d'exercices à lui, aucun id `muscu_*` n'existe dans cette table, et
+            // le maillon serait donc du code mort qui retomberait toujours sur l'id brut.
+            return muscuCatalog.sessions.first { $0.id == entry.refID }?.title ?? entry.refID
+        }
+    }
+}

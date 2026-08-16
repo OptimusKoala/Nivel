@@ -2,6 +2,7 @@
 // L'identité publique d'une entrée (spec 1.15 §3.4) : `MealEntry` et `ActivityEntry`
 // gagnent un `publicID`, seule cible possible d'un cœur du duo.
 import XCTest
+import SwiftData
 import NivelCore
 @testable import Nivel
 
@@ -27,5 +28,170 @@ final class DuoPublisherTests: XCTestCase {
         let activite = ActivityEntry(kind: .activity, refID: "bike",
                                      durationMinutes: 20, estimatedKcal: 120)
         XCTAssertEqual(activite.publicID, "")
+    }
+}
+
+/// La moitié PROUVABLE de la publication (spec §3.5) : `makeDuoSnapshot` est synchrone,
+/// n'émet aucune requête et ne touche à rien. Ce qui parle à CloudKit viendra à part et
+/// n'aura pas cette chance.
+@MainActor
+final class DuoSnapshotBuildingTests: XCTestCase {
+    private var context: ModelContext!
+    private var service: GameService!
+    private let midi = Date(timeIntervalSince1970: 1_755_338_400)  // 2025-08-16 12:00 UTC
+
+    override func setUp() async throws {
+        let schema = Schema([
+            UserProfile.self, MealEntry.self, WeightEntry.self,
+            DayLog.self, GamificationState.self, ActivityEntry.self
+        ])
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true,
+                                               cloudKitDatabase: .none)
+        context = ModelContext(try ModelContainer(for: schema, configurations: [configuration]))
+        service = GameService(modelContext: context,
+                              stepsService: FakeStepsService(authorized: false),
+                              widgetDefaults: nil)
+    }
+
+    private func creerProfil(cible: Int = 1_800) {
+        context.insert(UserProfile(
+            name: "Marion", sex: .female, birthDate: Date(timeIntervalSince1970: 0),
+            heightCm: 165, initialWeightKg: 70, activity: .moderate, dailyCalorieTarget: cible))
+        context.insert(GamificationState())
+        try? context.save()
+    }
+
+    private func construire(steps: Int? = 7_240) -> DuoSnapshot? {
+        service.makeDuoSnapshot(memberID: "M1", steps: steps, now: midi)
+    }
+
+    /// Rien à publier tant qu'il n'y a pas de profil, exactement comme
+    /// `makeWidgetSnapshot` : sans onboarding il n'y a ni prénom ni cible, et publier
+    /// une coquille ferait apparaître un partenaire sans nom chez l'autre.
+    func testAucunInstantaneTantQueLOnboardingNEstPasFini() {
+        XCTAssertNil(construire())
+    }
+
+    func testLesChiffresDuJourSontRepris() async throws {
+        creerProfil(cible: 1_800)
+        _ = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420, date: midi)
+
+        let instantane = try XCTUnwrap(construire())
+
+        XCTAssertEqual(instantane.memberID, "M1")
+        XCTAssertEqual(instantane.name, "Marion")
+        XCTAssertEqual(instantane.sexRaw, Sex.female.rawValue)
+        XCTAssertEqual(instantane.kcalEaten, 420)
+        XCTAssertEqual(instantane.kcalTarget, 1_800)
+        XCTAssertEqual(instantane.burnTarget, service.burnTarget())
+        XCTAssertEqual(instantane.steps, 7_240)
+        XCTAssertEqual(instantane.dayKey, GameService.duoDayKey(for: midi))
+        XCTAssertEqual(instantane.generatedAt, midi)
+    }
+
+    /// Les pas indisponibles se publient en sentinelle, jamais en zéro : un `0` ferait
+    /// afficher « 0 pas » au partenaire de quelqu'un qui a marché toute la journée.
+    func testLesPasNonLusSePublientEnSentinelle() throws {
+        creerProfil()
+
+        let instantane = try XCTUnwrap(construire(steps: nil))
+
+        XCTAssertEqual(instantane.steps, DuoSnapshot.stepsUnavailable)
+        XCTAssertEqual(instantane.steps, -1)
+    }
+
+    /// Le niveau part DÉJÀ CALCULÉ (spec §3.4). Le test le confronte à `LevelSystem`
+    /// plutôt qu'à des nombres écrits à la main : c'est la COHÉRENCE avec la courbe
+    /// locale qui est la propriété, et elle doit survivre à un changement de barème.
+    func testLeNiveauEstPublieDejaCalculeEtCoherentAvecLaCourbe() throws {
+        creerProfil()
+        let etat = service.fetchOrCreateState()
+        etat.totalXP = 2_340
+        try context.save()
+
+        let instantane = try XCTUnwrap(construire())
+        let attendu = LevelSystem.progress(forXP: 2_340)
+
+        XCTAssertEqual(instantane.totalXP, 2_340)
+        XCTAssertEqual(instantane.level, LevelSystem.level(forXP: 2_340))
+        XCTAssertEqual(instantane.xpIntoLevel, attendu.current)
+        XCTAssertEqual(instantane.xpForNextLevel, attendu.needed)
+    }
+
+    /// La quête publiée est la plus AVANCÉE non terminée, via `HomeView.featuredQuest` —
+    /// la fonction même de la carte de l'accueil. Le partenaire voit donc exactement la
+    /// quête que l'autre a sous les yeux, ce qu'une seconde règle écrite dans le
+    /// publieur ne garantirait plus le jour où l'une des deux changerait.
+    ///
+    /// Les quêtes sont posées à la main plutôt que tirées par le rollover hebdomadaire :
+    /// un tirage rendrait le test dépendant de la date, et la version précédente de ce
+    /// test se contentait d'un `XCTSkipIf` quand la liste était vide, c'est-à-dire
+    /// qu'elle ne vérifiait rien du tout.
+    func testLaQuetePublieeEstLaPlusAvanceeNonTerminee() throws {
+        creerProfil()
+        let catalogue = service.questCatalog
+        let peuAvancee = try XCTUnwrap(catalogue.first)
+        let bienAvancee = try XCTUnwrap(catalogue.dropFirst().first)
+        let etat = service.fetchOrCreateState()
+        etat.activeQuestIDs = [peuAvancee.id, bienAvancee.id]
+        etat.questProgress = [peuAvancee.id: 0, bienAvancee.id: max(1, bienAvancee.target - 1)]
+        try context.save()
+
+        let quete = try XCTUnwrap(try XCTUnwrap(construire()).quest)
+
+        XCTAssertEqual(quete.title, bienAvancee.title)
+        XCTAssertEqual(quete.done, max(1, bienAvancee.target - 1))
+        XCTAssertEqual(quete.total, bienAvancee.target)
+    }
+
+    /// Une quête TERMINÉE ne se publie pas, même si c'est la plus avancée : c'est la
+    /// moitié « non terminée » de la règle, et elle tomberait en silence si `featuredQuest`
+    /// était un jour remplacé par un simple `max(fraction)`.
+    func testUneQueteTermineeNEstPasCellePubliee() throws {
+        creerProfil()
+        let catalogue = service.questCatalog
+        let terminee = try XCTUnwrap(catalogue.first)
+        let enCours = try XCTUnwrap(catalogue.dropFirst().first)
+        let etat = service.fetchOrCreateState()
+        etat.activeQuestIDs = [terminee.id, enCours.id]
+        etat.questProgress = [terminee.id: terminee.target, enCours.id: 1]
+        etat.completedThisWeekQuestIDs = [terminee.id]
+        try context.save()
+
+        let quete = try XCTUnwrap(try XCTUnwrap(construire()).quest)
+
+        XCTAssertEqual(quete.title, enCours.title)
+    }
+
+    /// Et rien plutôt qu'une ligne vide quand il n'y a aucune quête à montrer.
+    func testAucuneQueteDonneUnChampVide() throws {
+        creerProfil()
+        let etat = service.fetchOrCreateState()
+        etat.activeQuestIDs = []
+        try context.save()
+
+        XCTAssertNil(try XCTUnwrap(construire()).quest)
+    }
+
+    /// Le fil est trié, et il ne contient QUE des événements identifiés : une entrée
+    /// d'avant la 1.15 dont le `publicID` est resté vide manque au fil plutôt que d'y
+    /// figurer, parce que deux entrées non identifiées partageraient leur cœur.
+    func testLeFilEstTrieEtSansEvenementNonIdentifie() async throws {
+        creerProfil()
+        let soir = midi.addingTimeInterval(6 * 3_600)
+        let matin = midi.addingTimeInterval(-3 * 3_600)
+
+        let tardif = await service.logMeal(slot: .dinner, lines: [], manualKcal: 700, date: soir)
+        tardif.publicID = "R-soir"
+        let matinal = await service.logMeal(slot: .breakfast, lines: [], manualKcal: 300, date: matin)
+        matinal.publicID = "R-matin"
+        // Celui-ci reste sans identifiant, comme toute entrée d'avant la 1.15.
+        _ = await service.logMeal(slot: .snack, lines: [], manualKcal: 100, date: midi)
+        try context.save()
+
+        let fil = try XCTUnwrap(construire()).events
+
+        XCTAssertEqual(fil.map(\.id), ["R-matin", "R-soir"])
+        XCTAssertEqual(fil.first?.subtitle, "petit-déjeuner, 300 kcal")
     }
 }
