@@ -4,6 +4,10 @@ import SwiftData
 
 @main
 struct NivelApp: App {
+    /// Le strict minimum d'UIKit qu'exige le réveil silencieux du duo (spec 1.15 §3.7) :
+    /// `application(_:didReceiveRemoteNotification:)` n'a aucun équivalent SwiftUI. Voir
+    /// `NivelAppDelegate`, qui ne fait que cela.
+    @UIApplicationDelegateAdaptor(NivelAppDelegate.self) private var appDelegate
     private let container: ModelContainer
     /// Instance UNIQUE partagée par toute l'app (la file des célébrations vit dedans).
     @State private var gameService: GameService
@@ -67,11 +71,15 @@ struct NivelApp: App {
             // dans les vrais réglages.
             duoIdentity: .shared
         ))
-        // LA MÊME instance que celle passée à `GameService` ci-dessus : l'écran d'appairage
+        // `DuoService.shared`, et pas une instance à part : le réveil silencieux arrive par
+        // le délégué d'application, qui n'a aucun environnement SwiftUI où aller chercher
+        // celle des écrans. Deux instances rangeraient les cœurs chacune de leur côté.
+        //
+        // Elle porte LA MÊME `DuoIdentity` que `GameService` ci-dessus : l'écran d'appairage
         // écrit le rôle et la zone, et la publication doit les voir immédiatement. Deux
         // `DuoIdentity` distincts liraient le même disque mais pas la même mémoire, et le
         // duo tout juste créé ne publierait rien jusqu'au prochain lancement.
-        _duoService = State(initialValue: DuoService(identity: .shared))
+        _duoService = State(initialValue: .shared)
     }
 
     var body: some Scene {

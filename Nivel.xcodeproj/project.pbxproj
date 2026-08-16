@@ -14,6 +14,7 @@
 		0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */; };
 		059EE6DBE7DF77207ED03B69 /* OnboardingIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213BA90A0D04CBB6102E11CA /* OnboardingIdentityTests.swift */; };
 		085EF23B75C84D733EE86136 /* ActionCardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A386F7B198F3FB996AF79B /* ActionCardButton.swift */; };
+		08E7E367068E84C7597BFB3D /* NivelAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 325817C993AE42AECF913F73 /* NivelAppDelegate.swift */; };
 		095D03B9F4DFEDE000996FA1 /* RecipeStripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF87114F87B380EA8346D082 /* RecipeStripTests.swift */; };
 		0C26B3C24DAA2E3C25572C08 /* PosturePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CEF612545C16E3249D319E7 /* PosturePlanTests.swift */; };
 		0E3F3E145790081DBCB96DFC /* StepsChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = E59866C500AE8AE430E9AE18 /* StepsChart.swift */; };
@@ -28,6 +29,7 @@
 		229BF4CEFB8B9929D59ED697 /* WidgetSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B501D130466BA533B52476E1 /* WidgetSyncTests.swift */; };
 		23F4B4B11B463C4A2AEA60F1 /* GameService+LevelMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */; };
 		291CD5438E6A3A57272E0D3D /* WidgetNivelito.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */; };
+		292FD42BD69AF06F8B5823C5 /* DuoNotificationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F5A1A9F80DAACD0ED4A950D /* DuoNotificationsTests.swift */; };
 		2E84FFC862B46AF4F65B9EC0 /* SettingsView+DevicePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D6B63A9C04FD9C8F04CD75 /* SettingsView+DevicePreferences.swift */; };
 		354FB8F1743FA91CC23CA9E8 /* CalorieRingLegendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58745FD6BEB8B0440906A071 /* CalorieRingLegendTests.swift */; };
 		3823F2CEF73FE2E0AF8B05D6 /* AccessoryWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDC8767D0FD08A6F1C258C5 /* AccessoryWidgetViews.swift */; };
@@ -41,6 +43,7 @@
 		47D1F1E2047D2DEB932E8BBF /* IdeasJourneyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5C1B7BBD4E5939392380700 /* IdeasJourneyTests.swift */; };
 		4CE4E454AA136D82709CEB76 /* ActivityLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98388DCCE812FDB6EB3F5D5 /* ActivityLogSheet.swift */; };
 		4D8808457DFA6F3A174B20C3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848BA4571516E35FCEA2402D /* SettingsView.swift */; };
+		4E36A75A73AD172DEE432D4B /* DuoNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70F5778E2A4B2394AD766D1F /* DuoNotifications.swift */; };
 		4E7AE9FDA9DA5EBB0BAD876E /* TimerChime+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7115C94A90C02E4FB6B9B24 /* TimerChime+App.swift */; };
 		4E8C2BBA3CC86D6E72F06955 /* NivelWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2385787BD003A25BF9AC5C /* NivelWidgetProvider.swift */; };
 		5250E4B0045E3F3A037708F2 /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4AF60C635E23219D03138E /* ThemePalette.swift */; };
@@ -209,11 +212,13 @@
 		2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportServiceTests.swift; sourceTree = "<group>"; };
 		2EABBAD095DB88DF009C167B /* PersistentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentModels.swift; sourceTree = "<group>"; };
 		2F5C481B082D4CC3692BC8FB /* SoundSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettings.swift; sourceTree = "<group>"; };
+		325817C993AE42AECF913F73 /* NivelAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelAppDelegate.swift; sourceTree = "<group>"; };
 		32DDA69A9E12CB1E08764404 /* ReminderPlan+Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReminderPlan+Device.swift"; sourceTree = "<group>"; };
 		34F99A2EA3F3B3FD6B5FB4AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderSettingsTests.swift; sourceTree = "<group>"; };
 		3B3412AFA14494C601193A76 /* MealBasketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealBasketView.swift; sourceTree = "<group>"; };
 		3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNivelito.swift; sourceTree = "<group>"; };
+		3F5A1A9F80DAACD0ED4A950D /* DuoNotificationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoNotificationsTests.swift; sourceTree = "<group>"; };
 		415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoPublisher.swift; sourceTree = "<group>"; };
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -242,6 +247,7 @@
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
 		6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseTimerModelTests.swift; sourceTree = "<group>"; };
 		6B7D4D8A285248E85550E0DB /* MuscuPlanSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscuPlanSettings.swift; sourceTree = "<group>"; };
+		70F5778E2A4B2394AD766D1F /* DuoNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoNotifications.swift; sourceTree = "<group>"; };
 		726318FF4C63560ED6D99D48 /* DuoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoServiceTests.swift; sourceTree = "<group>"; };
 		72F3A5D90E2C0EA2F2101C4B /* DuoScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoScannerView.swift; sourceTree = "<group>"; };
 		7900354E6B00D231F84DEFD2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
@@ -448,6 +454,7 @@
 				4C4CF000EF99C1C649915C18 /* DeepLink.swift */,
 				5A042BC332EE095BA342951D /* DuoDatabase.swift */,
 				E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */,
+				70F5778E2A4B2394AD766D1F /* DuoNotifications.swift */,
 				415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */,
 				568DF03A309F8A29F3025AD4 /* DuoRecord.swift */,
 				0194780399BE21D4AB280F37 /* DuoService.swift */,
@@ -482,6 +489,7 @@
 				34F99A2EA3F3B3FD6B5FB4AB /* Info.plist */,
 				1B870793FACF92E8A3EC300C /* Nivel.entitlements */,
 				252E585F67D7801561AA6A8A /* NivelApp.swift */,
+				325817C993AE42AECF913F73 /* NivelAppDelegate.swift */,
 				0BB4765E6D2A577C375E88A8 /* PrivacyInfo.xcprivacy */,
 				671D6B6E3581A479FFED40C2 /* RootView.swift */,
 				9782153DD5F0B9BABA5132F1 /* Theme.swift */,
@@ -584,6 +592,7 @@
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
 				A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */,
+				3F5A1A9F80DAACD0ED4A950D /* DuoNotificationsTests.swift */,
 				D57EEA0C75E83F471DC06E63 /* DuoPairingTests.swift */,
 				B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */,
 				726318FF4C63560ED6D99D48 /* DuoServiceTests.swift */,
@@ -848,6 +857,7 @@
 				8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */,
 				1B20AAF9C5BD09A929E4ACF3 /* DuoDatabase.swift in Sources */,
 				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
+				4E36A75A73AD172DEE432D4B /* DuoNotifications.swift in Sources */,
 				E15E5B8B4E5A0118F5A7DEC8 /* DuoPairingView.swift in Sources */,
 				66BCDAEC3C06B9E5EEB146D0 /* DuoPublisher.swift in Sources */,
 				6B676BE54884897DCA76FA89 /* DuoQRCode.swift in Sources */,
@@ -872,6 +882,7 @@
 				6419A77FA992ED4F11701FB2 /* MuscuPlanSettings.swift in Sources */,
 				5FB197C22C4807F48D4C9C43 /* MuscuSection.swift in Sources */,
 				6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */,
+				08E7E367068E84C7597BFB3D /* NivelAppDelegate.swift in Sources */,
 				1D1E36C74A9B09A9D1678F59 /* NivelitoShapes.swift in Sources */,
 				5A40096E1BB5A7713251D5C1 /* NivelitoView.swift in Sources */,
 				D4DBCCCBE3F53C8F8882CC95 /* NotificationService.swift in Sources */,
@@ -953,6 +964,7 @@
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
 				92A5342A30BBFF472BC7BFFE /* DuoIdentityTests.swift in Sources */,
+				292FD42BD69AF06F8B5823C5 /* DuoNotificationsTests.swift in Sources */,
 				DC552D7BA1E1A2FDC62BD56B /* DuoPairingTests.swift in Sources */,
 				923CE98E8AC08B122EDA6DF2 /* DuoPublisherTests.swift in Sources */,
 				FA7D46CC8FA1F8D3D0E4FC7E /* DuoServiceTests.swift in Sources */,

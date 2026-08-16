@@ -19,8 +19,10 @@
 // fichier. Aucun écran ne peut ainsi pousser lui-même un rôle ou une zone dans les
 // réglages, et l'état d'appairage n'a qu'un seul auteur.
 //
-// Ce que ce fichier ne fait PAS, et qui viendra dans les tâches suivantes du lot : poser
-// l'abonnement de zone, envoyer ou retirer un cœur.
+// Ce que ce fichier ne fait PAS, et qui viendra dans les tâches suivantes du lot : envoyer
+// ou retirer un cœur. Le TEXTE des notifications ne vit pas ici non plus, mais dans
+// `DuoNotifications` : ce service rend les cœurs nouvellement arrivés, un autre décide de
+// ce qu'on en dit.
 
 import CloudKit
 import Foundation
@@ -65,6 +67,13 @@ struct DuoLike: Equatable, Sendable, Identifiable {
 
 @Observable @MainActor
 final class DuoService {
+
+    /// L'instance de l'app, et la seule que le réveil silencieux puisse atteindre : le
+    /// délégué d'application n'a pas d'environnement SwiftUI où aller chercher quoi que ce
+    /// soit. Même motif que `DuoIdentity.shared`, et même précaution — la construire ne lit
+    /// rien, n'écrit rien et n'émet aucune requête, donc elle n'a pas d'effet de bord à
+    /// naître. Les prévisualisations et les tests construisent la leur.
+    static let shared = DuoService(identity: .shared)
 
     /// L'appairage de CET appareil. INJECTÉ, jamais `.shared` convoqué ici : c'est la
     /// règle posée en v1.6 pour `widgetDefaults` et reprise au lot A1 pour `duoIdentity`,
@@ -173,10 +182,26 @@ final class DuoService {
 
     // MARK: - La lecture de la zone
 
-    /// Relit la zone : les membres, donc le partenaire et son instantané, puis les cœurs
-    /// qui me visent. Ne rend rien et ne lève rien — comme la publication, aucune erreur
-    /// de duo n'interrompt l'utilisateur (§3.5). Un échec laisse simplement le cache en
-    /// place, et la ligne de fraîcheur dit son âge.
+    /// Ce qu'une lecture de changements a rendu. Un type nommé plutôt qu'un tuple de cinq
+    /// membres : trois de ses champs sont des cas d'échec distincts, et les confondre est
+    /// exactement ce qui rend un état muet.
+    struct ZoneDelta {
+        var members: [(reference: DuoMemberRef, record: CKRecord)] = []
+        var likes: [DuoLike] = []
+        var token: CKServerChangeToken?
+        /// La lecture n'a rien donné : réseau, service occupé, compte parti. On garde tout
+        /// ce qu'on sait et on ne conclut rien.
+        var failed = false
+        /// Le jeton est périmé : ce n'est pas une panne, c'est CloudKit qui demande de
+        /// repartir d'une lecture complète.
+        var tokenExpired = false
+        var zoneGone = false
+    }
+
+    /// Relit la zone en ENTIER et reconstruit l'état : le partenaire, son instantané, les
+    /// cœurs. Ne rend rien et ne lève rien — comme la publication, aucune erreur de duo
+    /// n'interrompt l'utilisateur (§3.5). Un échec laisse le cache en place, et la ligne de
+    /// fraîcheur dit son âge.
     func refresh() async {
         // La garde d'appairage est la PREMIÈRE ligne, avant même la résolution de la
         // zone : sans duo, le §3.1 promet qu'aucune requête n'est émise et que l'app se
@@ -188,96 +213,184 @@ final class DuoService {
 
         guard let target = resolveTarget(identity) else { return }
 
-        // Membres et cœurs se lisent dans le même passage : la page a besoin des deux, et
-        // les séparer doublerait le nombre de réveils réseau pour rien.
-        //
-        // Les deux lectures rendent un OPTIONNEL, et rien de ce qui suit ne s'exécute sur
-        // un échec. La nuance est tout sauf cosmétique : une lecture ratée qui rendrait un
-        // tableau vide effacerait les cœurs déjà affichés dans les journaux Repas et Sport,
-        // et annoncerait une zone sans personne. Un passage en mode avion suffirait à faire
-        // disparaître ce que le duo s'est envoyé. Hors ligne, on garde ce qu'on sait.
-        if let membres = await fetchMembers(in: target) {
-            memberCount = membres.count
+        // Jeton NIL, donc lecture complète : c'est ce qui rend cette fonction sans mémoire,
+        // et donc juste quoi qu'il se soit passé entre deux appels. Le jeton rendu est
+        // gardé pour que le prochain RÉVEIL ne voie que ce qui est arrivé après.
+        let delta = await fetchZoneChanges(in: target, since: nil)
+        guard !delta.failed else { return }
 
-            if let partenaire = Self.partner(among: membres.map(\.reference), excluding: me),
-               let record = membres.first(where: { $0.reference.memberID == partenaire.memberID })?
-                   .record,
-               let instantane = DuoRecord.snapshot(from: record) {
-                identity.partnerSnapshot = instantane
-            }
-            // Être SEUL dans la zone n'est pas une erreur : c'est l'instant entre
-            // l'acceptation du partage et la première écriture de l'autre. On garde le
-            // cache et on n'affiche aucun échec, surtout pas pendant l'appairage où tout
-            // va bien.
+        memberCount = delta.members.count
+        if let partenaire = Self.partner(among: delta.members.map(\.reference), excluding: me),
+           let record = delta.members.first(where: { $0.reference.memberID == partenaire.memberID })?
+               .record,
+           let instantane = DuoRecord.snapshot(from: record) {
+            identity.partnerSnapshot = instantane
         }
+        // Être SEUL dans la zone n'est pas une erreur : c'est l'instant entre l'acceptation
+        // du partage et la première écriture de l'autre. On garde le cache et on n'affiche
+        // aucun échec, surtout pas pendant l'appairage où tout va bien.
 
-        if let coeurs = await fetchLikes(in: target, me: me) {
-            receivedLikes = Self.incomingLikes(from: coeurs, me: me)
-            // Recopiés dans l'état d'appareil pour survivre au relancement ET au
-            // désappairage (§3.10). La liste REMPLACE la précédente : un cœur retiré par son
-            // auteur est une suppression d'enregistrement, et il doit disparaître aussi ici.
-            identity.receivedLikeEventIDs = receivedLikes.map(\.eventID)
-        }
+        receivedLikes = Self.incomingLikes(from: delta.likes, me: me)
+        // Recopiés dans l'état d'appareil pour survivre au relancement ET au désappairage
+        // (§3.10). La liste REMPLACE la précédente : un cœur retiré par son auteur est une
+        // suppression d'enregistrement, et il doit disparaître aussi ici. C'est précisément
+        // ce que la lecture complète permet et qu'un delta ne permettrait pas.
+        identity.receivedLikeEventIDs = receivedLikes.map(\.eventID)
+        identity.zoneChangeToken = Self.archive(delta.token)
 
-        // La place vient peut-être d'être prise. C'est ici, et nulle part ailleurs, qu'on
-        // le sait sans payer une requête de plus : le compte de membres date de la ligne
-        // du dessus. Sans effet dans tous les autres cas.
+        // La place vient peut-être d'être prise. C'est ici, et nulle part ailleurs, qu'on le
+        // sait sans payer une requête de plus. Sans effet dans tous les autres cas.
         await closeShareIfSeatTaken()
+        await installSubscriptionIfNeeded(in: target)
     }
 
-    /// Les enregistrements `DuoMember` de la zone, avec leur référence déjà parsée.
+    /// Le réveil silencieux (§3.7) : lit ce qui a changé DEPUIS le dernier jeton, range, et
+    /// rend les cœurs qui viennent d'arriver — c'est l'appelant qui notifie.
     ///
-    /// ⚠️ Cette requête suppose l'index `recordName` QUERYABLE sur `DuoMember` dans le
-    /// schéma CloudKit. C'est le même pari que la requête de nettoyage du lot A1 ; à
-    /// deux membres, l'alternative sans index est le `CKFetchRecordZoneChangesOperation`
-    /// de la tâche des notifications, qui n'en demande aucun.
+    /// Rend une liste vide dans tous les cas où il n'y a rien à annoncer, y compris sans duo
+    /// appairé : un abonnement peut survivre quelques minutes côté serveur après un
+    /// désappairage, et ce réveil-là ne doit rien faire du tout.
+    @discardableResult
+    func handleRemoteWake() async -> [DuoLike] {
+        guard identity.isPaired, let me = identity.memberID,
+              let target = resolveTarget(identity) else { return [] }
+
+        var delta = await fetchZoneChanges(in: target,
+                                           since: Self.unarchive(identity.zoneChangeToken))
+
+        // Jeton périmé : CloudKit demande de repartir de zéro. Le confondre avec une panne
+        // laisserait l'appareil coincé sur un jeton mort, à ne plus jamais rien recevoir, en
+        // silence et pour toujours.
+        if delta.tokenExpired {
+            identity.zoneChangeToken = nil
+            delta = await fetchZoneChanges(in: target, since: nil)
+        }
+        guard !delta.failed else { return [] }
+
+        // L'instantané du partenaire voyage dans le même lot : le prendre au passage évite
+        // une lecture de plus à l'ouverture de sa page.
+        if let partenaire = Self.partner(among: delta.members.map(\.reference), excluding: me),
+           let record = delta.members.first(where: { $0.reference.memberID == partenaire.memberID })?
+               .record,
+           let instantane = DuoRecord.snapshot(from: record) {
+            identity.partnerSnapshot = instantane
+        }
+
+        // Nouveaux = qui me visent, et dont on n'a pas déjà parlé. Le filtrage du donneur
+        // est CÔTÉ CLIENT (§3.7) : on ne s'en remet pas au fait que CloudKit épargnerait
+        // l'appareil d'origine, sous peine de se notifier son propre cœur.
+        let miens = Self.incomingLikes(from: delta.likes, me: me)
+        let nouveaux = DuoNotifications.unseen(miens, knownEventIDs: likedEventIDs)
+
+        receivedLikes = Self.merge(receivedLikes, with: miens)
+        identity.receivedLikeEventIDs = receivedLikes.map(\.eventID)
+        identity.unreadLikeCount += nouveaux.count
+        identity.zoneChangeToken = Self.archive(delta.token)
+
+        return nouveaux
+    }
+
+    /// La lecture de changements de zone, et le SEUL chemin de lecture du duo.
     ///
-    /// `nil` sur échec, et surtout PAS une liste vide : « je n'ai pas pu lire » et « la zone
-    /// est vide » mènent à des décisions opposées, l'une garde le cache et l'autre le jette.
-    private func fetchMembers(
-        in target: DuoDatabase.Target
-    ) async -> [(reference: DuoMemberRef, record: CKRecord)]? {
-        let requete = CKQuery(recordType: DuoRecord.memberType, predicate: NSPredicate(value: true))
-        let reponse: (matchResults: [(CKRecord.ID, Result<CKRecord, any Error>)],
-                      queryCursor: CKQueryOperation.Cursor?)
+    /// `CKFetchRecordZoneChangesOperation` plutôt que `CKQuery`, et ce n'est pas une
+    /// élégance : une requête exige un index QUERYABLE posé à la main dans le tableau de
+    /// bord CloudKit. S'il manque, la lecture ne lève pas — elle rend zéro résultat. Le
+    /// symptôme serait un appairage réussi qui reste éternellement « en attente de l'autre
+    /// iPhone », sans le moindre message. La lecture de changements n'exige aucun index, et
+    /// c'est de toute façon elle que le réveil silencieux impose.
+    ///
+    /// Jeton nil : la zone entière. Jeton présent : ce qui a changé depuis.
+    private func fetchZoneChanges(in target: DuoDatabase.Target,
+                                  since token: CKServerChangeToken?) async -> ZoneDelta {
+        var delta = ZoneDelta()
         do {
-            reponse = try await target.database.records(matching: requete,
-                                                        inZoneWith: target.zoneID)
+            let reponse = try await target.database.recordZoneChanges(inZoneWith: target.zoneID,
+                                                                      since: token)
+
+            for (_, resultat) in reponse.modificationResultsByID {
+                guard let record = try? resultat.get().record else { continue }
+                switch record.recordType {
+                case DuoRecord.memberType:
+                    if let reference = DuoRecord.memberRef(from: record) {
+                        delta.members.append((reference, record))
+                    }
+                case DuoRecord.likeType:
+                    if let coeur = DuoRecord.like(from: record) { delta.likes.append(coeur) }
+                default:
+                    continue
+                }
+            }
+            delta.token = reponse.changeToken
             zoneIsGone = false
         } catch {
-            // L'erreur est REGARDÉE, et pas seulement avalée par un `try?` : c'est ici, et
-            // nulle part ailleurs, qu'on apprend que la zone a disparu.
-            zoneIsGone = Self.isZoneGone(error: error)
-            return nil
+            delta.failed = true
+            delta.tokenExpired = Self.shouldRestartFromScratch(error: error)
+            delta.zoneGone = Self.isZoneGone(error: error)
+            // L'erreur est REGARDÉE, et pas seulement avalée : c'est ici, et nulle part
+            // ailleurs, qu'on apprend que la zone a disparu.
+            zoneIsGone = delta.zoneGone
         }
-
-        return reponse.matchResults.compactMap { _, resultat in
-            guard let record = try? resultat.get(),
-                  let reference = DuoRecord.memberRef(from: record) else { return nil }
-            return (reference, record)
-        }
+        return delta
     }
 
-    /// Les cœurs posés sur MES entrées. Le prédicat filtre déjà côté serveur, et
-    /// `incomingLikes` refiltre côté client : ceinture et bretelles, comme le nettoyage du
-    /// lot A1. Le nom du champ vient de `DuoRecord.Field` et non d'un littéral, sans quoi
-    /// une faute de frappe rendrait une liste vide en silence.
+    /// Fusionne les cœurs d'un delta avec ceux déjà en main, sans doublon et dans l'ordre
+    /// d'affichage. Un delta ne dit rien des cœurs qu'il ne mentionne pas : les écraser
+    /// ferait disparaître de l'écran tout ce qui n'a pas bougé depuis le dernier jeton.
+    nonisolated static func merge(_ existants: [DuoLike], with arrivants: [DuoLike]) -> [DuoLike] {
+        var parIdentifiant: [String: DuoLike] = [:]
+        for coeur in existants + arrivants { parIdentifiant[coeur.id] = coeur }
+        return parIdentifiant.values.sorted { ($0.createdAt, $0.id) < ($1.createdAt, $1.id) }
+    }
+
+    /// Ce jeton est-il périmé ? (§3.7) Un seul code le dit, et il ne veut PAS dire « panne » :
+    /// il veut dire « recommence depuis le début ».
+    nonisolated static func shouldRestartFromScratch(error: Error) -> Bool {
+        (error as? CKError)?.code == .changeTokenExpired
+    }
+
+    /// Le jeton voyage en `Data` jusqu'à `DuoIdentity`, qui n'importe pas CloudKit : c'est de
+    /// l'état d'appareil, pas du transport. `try?` des deux côtés — un jeton illisible fait
+    /// repartir d'une lecture complète, ce qui est toujours correct, jamais un blocage.
+    private nonisolated static func archive(_ token: CKServerChangeToken?) -> Data? {
+        guard let token else { return nil }
+        return try? NSKeyedArchiver.archivedData(withRootObject: token,
+                                                 requiringSecureCoding: true)
+    }
+
+    private nonisolated static func unarchive(_ data: Data?) -> CKServerChangeToken? {
+        guard let data else { return nil }
+        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: CKServerChangeToken.self,
+                                                       from: data)
+    }
+
+    /// Pose l'abonnement de zone SILENCIEUX (§3.7), une fois par appareil et par duo.
     ///
-    /// `nil` sur échec, pour la même raison que ci-dessus : un cœur reçu ne doit pas
-    /// disparaître d'un journal parce que le réseau manquait à cet instant.
-    private func fetchLikes(in target: DuoDatabase.Target, me: String) async -> [DuoLike]? {
-        let requete = CKQuery(recordType: DuoRecord.likeType,
-                              predicate: NSPredicate(format: "%K == %@",
-                                                     DuoRecord.Field.ownerID, me))
-        guard let reponse = try? await target.database.records(matching: requete,
-                                                               inZoneWith: target.zoneID)
-        else { return nil }
+    /// `shouldSendContentAvailable = true` et AUCUN `alertBody` : le système réveille l'app
+    /// sans rien montrer, et c'est l'app qui décide s'il y a lieu de dire quelque chose. Un
+    /// abonnement bavard alerterait à chaque mise à jour d'anneau, plusieurs fois par jour,
+    /// pour des chiffres que personne n'a demandé à voir.
+    ///
+    /// `CKQuerySubscription`, qui filtrerait sur les seuls `DuoLike`, n'existe pas dans la
+    /// base partagée : l'invité n'a droit qu'à un abonnement de zone. On prend donc le même
+    /// des deux côtés, pour n'avoir qu'un seul comportement à comprendre.
+    private func installSubscriptionIfNeeded(in target: DuoDatabase.Target) async {
+        guard !identity.zoneSubscriptionInstalled else { return }
 
-        return reponse.matchResults.compactMap { _, resultat in
-            guard let record = try? resultat.get() else { return nil }
-            return DuoRecord.like(from: record)
-        }
+        let abonnement = CKRecordZoneSubscription(zoneID: target.zoneID,
+                                                  subscriptionID: Self.subscriptionID)
+        let info = CKSubscription.NotificationInfo()
+        info.shouldSendContentAvailable = true
+        abonnement.notificationInfo = info
+
+        guard (try? await target.database.modifySubscriptions(saving: [abonnement],
+                                                              deleting: [])) != nil
+        else { return }
+        identity.zoneSubscriptionInstalled = true
     }
+
+    /// Identifiant fixe : reposer le même abonnement le remplace au lieu d'en empiler un
+    /// second, donc un appareil ne peut pas se retrouver réveillé deux fois par changement.
+    static let subscriptionID = "nivel.duo.zone"
 
     // MARK: - Les décisions
 

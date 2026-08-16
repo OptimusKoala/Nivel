@@ -45,6 +45,8 @@ final class DuoIdentity {
         static let pairedAt = "nivel.duo.pairedAt"
         static let likeNotificationsEnabled = "nivel.duo.likeNotificationsEnabled"
         static let receivedLikeEventIDs = "nivel.duo.receivedLikeEventIDs"
+        static let zoneChangeToken = "nivel.duo.zoneChangeToken"
+        static let zoneSubscriptionInstalled = "nivel.duo.zoneSubscriptionInstalled"
     }
 
     /// L'identité de CET appareil dans le duo. `nil` tant qu'aucun duo n'a jamais été
@@ -139,6 +141,24 @@ final class DuoIdentity {
         didSet { defaults.set(receivedLikeEventIDs, forKey: Key.receivedLikeEventIDs) }
     }
 
+    /// Le jeton de changement de la zone (`CKServerChangeToken`), archivé en `Data`.
+    ///
+    /// En `Data` et non typé, pour que ce fichier n'importe pas CloudKit : il décrit l'état
+    /// de CET appareil, pas le transport. `DuoService` l'archive et le désarchive, et lui
+    /// seul sait ce qu'il y a dedans.
+    ///
+    /// Persisté parce que c'est tout son intérêt : au réveil suivant, il dit au serveur
+    /// « donne-moi ce qui a changé depuis », ce qui rend un réveil silencieux presque
+    /// gratuit et, surtout, permet de savoir quels cœurs sont NOUVEAUX.
+    var zoneChangeToken: Data? { didSet { defaults.set(zoneChangeToken, forKey: Key.zoneChangeToken) } }
+
+    /// L'abonnement de zone est posé sur ce téléphone. Un booléen plutôt qu'une écriture à
+    /// chaque lancement : `modifySubscriptions` est une requête réseau, et la reposer à
+    /// chaque ouverture coûterait sans rien apporter.
+    var zoneSubscriptionInstalled: Bool {
+        didSet { defaults.set(zoneSubscriptionInstalled, forKey: Key.zoneSubscriptionInstalled) }
+    }
+
     var isPaired: Bool { role != nil }
 
     private let defaults: UserDefaults
@@ -175,6 +195,8 @@ final class DuoIdentity {
         likeNotificationsEnabled =
             defaults.object(forKey: Key.likeNotificationsEnabled) as? Bool ?? true
         receivedLikeEventIDs = defaults.stringArray(forKey: Key.receivedLikeEventIDs) ?? []
+        zoneChangeToken = defaults.data(forKey: Key.zoneChangeToken)
+        zoneSubscriptionInstalled = defaults.bool(forKey: Key.zoneSubscriptionInstalled)
     }
 
     /// Crée l'identité de cet appareil et la persiste. **Un seul appelant légitime : le
@@ -217,6 +239,12 @@ final class DuoIdentity {
         unreadLikeCount = 0
         partnerSnapshot = nil
         pairedAt = nil
+        // Le jeton et l'abonnement appartiennent à la ZONE, pas à l'appareil. Un jeton
+        // survivant ferait repartir un futur duo au milieu de l'histoire d'un autre, et un
+        // abonnement cru posé n'en ferait jamais poser de nouveau : plus aucun réveil, sans
+        // le moindre signe.
+        zoneChangeToken = nil
+        zoneSubscriptionInstalled = false
         // Sans cette ligne, réappairer avec la même personne ne republierait RIEN tant
         // que la journée n'a pas changé : l'instantané construit serait égal à celui
         // d'avant le désappairage, et le partenaire n'aurait jamais rien à afficher.
