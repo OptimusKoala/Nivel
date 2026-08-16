@@ -72,32 +72,26 @@ Nivel est en français, conçu et développé en France, et son code est ouvert 
 Nivel n'est pas un dispositif médical et ne remplace pas l'avis d'un professionnel de santé.
 ```
 
-**Nouveautés de cette version** (4 000 max — ⚠️ À RÉÉCRIRE POUR LA 1.15 : le texte ci-dessous est celui de la 1.14, et `asc-fiche.py` pousse ce qu'il trouve)
+**Nouveautés de cette version** (4 000 max — celles de la 1.15)
 
 ```
-Des idées de repas de saison, un programme muscu, et une app qui sait ce que tu dépenses.
+Nivel se fait à deux, si tu veux.
 
-• Chaque jour, trois idées de repas légers de saison dans l'onglet Repas. Coche ce que tu as dans le frigo, elles se classent toutes seules — et se notent en un geste, ingrédients compris.
-• 35 recettes, de la papillote d'été à la soupe d'hiver, avec la préparation en trois ou quatre lignes.
-• 37 aliments de plus au catalogue, dont une nouvelle catégorie Desserts.
-• Un anneau de dépense sur l'accueil : les pas et le sport du jour, à côté de ce que tu as mangé. Indicatif, jamais crédité à ton budget.
-• Dix mouvements de plus côté Sport, et un programme muscu de cinq séances qui tourne sur la semaine, si tu veux pousser un peu.
-• 14 trophées et 4 quêtes de plus, et une courbe de niveaux qui garde du souffle sur la durée.
+• Relie ton iPhone à celui de la personne qui compte, d'un QR code scanné côte à côte. Tu vois sa journée, elle voit la tienne.
+• Sa page à elle : son anneau du jour, son niveau, sa quête en cours, et ce qu'elle a noté depuis ce matin.
+• Un cœur, envoyé d'un tap sur un repas ou une activité. Pas de commentaire, pas de note, pas de classement : juste « bien joué ».
+• Une notification quand un cœur arrive, et Nivelito qui te le dit à l'ouverture si tu l'as manquée.
+• Ni ton poids, ni ta courbe, ni tes badges ne sont partagés. Ta journée passe par ta zone iCloud privée, lisible par cette seule personne.
+• Un seul duo à la fois, défait d'un tap. Les cœurs déjà reçus restent sur tes repas : ils sont à toi.
 
-Et les six retours d'usage de la 1.13, si tu ne l'as pas eue :
+Sans duo, rien ne change : l'app reste exactement celle que tu connais, et rien ne sort de ton iPhone.
 
-• Le widget reste lisible quand l'écran d'accueil est en mode transparent ou teinté.
-• Un bouton « Noter une activité » sur l'accueil, pour déclarer ce que tu viens de faire sans passer par l'onglet Sport.
-• « Logger un repas » devient « Noter un repas », et le bouton est aussi dans l'onglet Repas.
-• Dans un repas en cours, un élément se retire d'un glissement vers la gauche.
-• Les annonces de trophée s'écartent d'un glissement vers le haut, quand tu n'as pas envie de les lire.
+Et trois retouches qui n'ont rien à voir :
+
+• 31 entrées de brasserie au catalogue, des moules-frites à la tarte Tatin, avec leurs accompagnements et leurs desserts.
+• La piscine et le ping-pong rejoignent les activités douces, et le filtre « Dehors » cesse d'oublier celles qui se pratiquent des deux côtés.
+• Le compteur de l'anneau tient enfin les quatre chiffres sans mordre le tracé.
 ```
-
-> **Le second bloc n'est là que si la 1.13 est remplacée sans jamais sortir.** Elle est en
-> `WAITING_FOR_REVIEW` au moment où ceci est écrit : si elle est publiée avant la 1.14, ses
-> notes ont déjà été lues et ce bloc fait doublon — le retirer. Si elle est annulée au profit
-> de la 1.14, le garder : les utilisateurs passeront de la 1.12 à la 1.14 sans jamais voir ces
-> cinq points autrement.
 
 **Mots-clés** (100 max — 94 utilisés, séparés par des virgules sans espace)
 
