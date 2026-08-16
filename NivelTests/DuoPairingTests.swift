@@ -163,4 +163,57 @@ final class DuoInvitationTests: XCTestCase {
                        "et il est persisté, sinon le membre de la zone changerait d'identité")
     }
 
+    // MARK: - Rejoindre
+
+    /// Le scanner lit N'IMPORTE QUEL QR code, et le champ accepte n'importe quel texte : un
+    /// contenu qui n'est pas une invitation ne doit jamais partir vers CloudKit. La
+    /// validation du §3.6 tranche avant, et c'est son message qui s'affiche, pas une erreur
+    /// de nuage sur une URL que le nuage n'avait aucune raison de recevoir.
+    func testRejoindreAvecUnTexteQuelconqueNAppellePasLeNuage() async {
+        var conteneurs = 0
+        let service = DuoService(identity: DuoIdentity(defaults: defaults),
+                                 resolveTarget: { _ in nil },
+                                 makeContainer: {
+                                     conteneurs += 1
+                                     return CKContainer(identifier: DuoDatabase.containerID)
+                                 })
+
+        let resultat = await service.join(shareURL: "bonjour, c'est moi")
+
+        XCTAssertEqual(conteneurs, 0)
+        XCTAssertEqual(resultat, .failed(DuoService.invalidShareMessage))
+        XCTAssertFalse(service.isPaired, "rien n'a été appairé au passage")
+    }
+
+    /// Champ vide : le message dit quoi faire, et rien ne part non plus. C'est l'état du
+    /// champ à l'ouverture de l'écran, donc le cas le plus fréquent de tous.
+    func testRejoindreAvecUnChampVideDitQuoiFaire() async {
+        var conteneurs = 0
+        let service = DuoService(identity: DuoIdentity(defaults: defaults),
+                                 resolveTarget: { _ in nil },
+                                 makeContainer: {
+                                     conteneurs += 1
+                                     return CKContainer(identifier: DuoDatabase.containerID)
+                                 })
+
+        let resultat = await service.join(shareURL: "   ")
+
+        XCTAssertEqual(conteneurs, 0)
+        XCTAssertEqual(resultat, .failed(DuoService.emptyShareMessage))
+    }
+}
+
+// MARK: - Le scanner et son repli
+
+final class DuoScannerAvailabilityTests: XCTestCase {
+
+    /// Caméra refusée, ou appareil qui ne sait pas scanner : on tombe sur le champ
+    /// « coller un lien », JAMAIS sur une impasse (spec §3.10). Le champ est d'ailleurs
+    /// toujours affiché, même quand la caméra marche : on n'est pas forcément côte à côte.
+    func testSansCameraOnTombeSurLeChampEtJamaisSurUneImpasse() {
+        XCTAssertTrue(DuoJoinView.showsScanner(isSupported: true, isAvailable: true))
+        XCTAssertFalse(DuoJoinView.showsScanner(isSupported: true, isAvailable: false))
+        XCTAssertFalse(DuoJoinView.showsScanner(isSupported: false, isAvailable: true))
+        XCTAssertFalse(DuoJoinView.showsScanner(isSupported: false, isAvailable: false))
+    }
 }

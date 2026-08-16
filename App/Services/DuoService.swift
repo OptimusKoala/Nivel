@@ -6,16 +6,21 @@
 // simulateur ni la CI ne savent jouer deux comptes iCloud. La parade est la même qu'au
 // lot A1 et qu'en v1 avec `HomeView.bubbleDecision` : **toute décision est extraite en
 // statique pure**, éprouvée par un test, et le reste est de la plomberie mince, écrite
-// sans astuce. Quatre décisions vivent ici :
+// sans astuce. Cinq décisions vivent ici :
 //
 // 1. qui est mon partenaire parmi les membres de la zone (§3.6) ;
 // 2. le partage doit-il rester ouvert (§3.6) ;
 // 3. quels cœurs me visent (§3.7) ;
-// 4. ce texte scanné est-il une invitation (§3.6).
+// 4. ce texte scanné est-il une invitation (§3.6) ;
+// 5. que dit-on quand ça rate (§3.10).
 //
-// Ce que ce fichier ne fait PAS, et qui viendra dans les tâches suivantes du lot : créer
-// la zone et le `CKShare`, accepter une invitation, poser l'abonnement de zone, envoyer
-// ou retirer un cœur. Il lit, il range, il décide.
+// L'appairage est en fin de fichier, et il y est plutôt que dans un `+Pairing.swift` pour
+// une raison précise : `identity` est `private`, donc visible des seules extensions de CE
+// fichier. Aucun écran ne peut ainsi pousser lui-même un rôle ou une zone dans les
+// réglages, et l'état d'appairage n'a qu'un seul auteur.
+//
+// Ce que ce fichier ne fait PAS, et qui viendra dans les tâches suivantes du lot : poser
+// l'abonnement de zone, envoyer ou retirer un cœur.
 
 import CloudKit
 import Foundation
@@ -185,6 +190,11 @@ final class DuoService {
         if let coeurs = await fetchLikes(in: target, me: me) {
             receivedLikes = Self.incomingLikes(from: coeurs, me: me)
         }
+
+        // La place vient peut-être d'être prise. C'est ici, et nulle part ailleurs, qu'on
+        // le sait sans payer une requête de plus : le compte de membres date de la ligne
+        // du dessus. Sans effet dans tous les autres cas.
+        await closeShareIfSeatTaken()
     }
 
     /// Les enregistrements `DuoMember` de la zone, avec leur référence déjà parsée.
@@ -421,6 +431,91 @@ extension DuoService {
         } catch {
             return .failed(Self.message(for: error))
         }
+    }
+
+    /// Ce que l'écran « Rejoindre » affiche.
+    enum JoinResult: Equatable {
+        case joined
+        case failed(String)
+    }
+
+    /// Accepte l'invitation lue au QR code ou collée dans le champ (spec §3.6).
+    ///
+    /// **La validation tranche AVANT toute requête**, et c'est le cas courant, pas le cas
+    /// tordu : un scanner lit n'importe quel carré noir, une étiquette de colis comme une
+    /// affiche. Envoyer ce texte à `CKFetchShareMetadataOperation` rendrait une erreur
+    /// CloudKit brute, illisible pour qui vient simplement de viser à côté.
+    ///
+    /// On n'implémente PAS le rappel système d'acceptation de partage
+    /// (`windowScene(_:userDidAcceptCloudKitShareWith:)`) : il exigerait un `SceneDelegate`
+    /// dans une app qui n'en a pas, et l'URL nous arrive toujours par notre propre scanner
+    /// ou par notre propre champ. Contrepartie assumée : ouvrir le lien depuis Messages
+    /// proposera d'ouvrir Nivel sans rien appairer, et l'écran dit que le chemin sûr est de
+    /// coller le lien ici.
+    func join(shareURL raw: String) async -> JoinResult {
+        switch Self.shareURL(from: raw) {
+        case .invalid(let message):
+            return .failed(message)
+        case .valid(let url):
+            return await accept(url)
+        }
+    }
+
+    private func accept(_ url: URL) async -> JoinResult {
+        // Comme à l'invitation : sans identifiant, le duo s'appairerait sans jamais rien
+        // publier. C'est la seconde et dernière porte d'entrée de `createMemberID()`.
+        identity.createMemberID()
+
+        let conteneur = makeContainer()
+        do {
+            // Les deux opérations que la spec nomme, sous leur forme asynchrone :
+            // `CKFetchShareMetadataOperation` puis `CKAcceptSharesOperation`.
+            let metadonnees = try await conteneur.shareMetadata(for: url)
+            let partage = try await conteneur.accept(metadonnees)
+
+            // La zone de l'invité porte le `ownerName` du PROPRIÉTAIRE, jamais
+            // `__defaultOwner__` : sans lui, `DuoDatabase` reconstruirait une zone à soi,
+            // où l'on écrirait tranquillement des chiffres que personne ne lit. C'est le
+            // seul endroit du dépôt où cette valeur est obtenue.
+            let zoneID = partage.recordID.zoneID
+            identity.role = .guest
+            identity.zoneName = zoneID.zoneName
+            identity.zoneOwnerName = zoneID.ownerName
+            // L'invité n'a pas de lien à montrer : le QR est l'affaire de celui qui invite.
+            identity.shareURL = nil
+            return .joined
+        } catch {
+            return .failed(Self.message(for: error))
+        }
+    }
+
+    /// Referme le partage derrière le premier arrivé (spec §3.6). Sans effet chez l'invité,
+    /// qui ne possède pas le partage, et sans effet tant que la place est libre.
+    ///
+    /// Appelé depuis `refresh()`, donc au moment exact où le compte de membres vient d'être
+    /// relu : c'est le seul instant où l'on sait, sans requête supplémentaire, que la place
+    /// est prise. Un échec est silencieux et sera retenté au rafraîchissement suivant ; le
+    /// pire cas est un lien qui reste ouvert quelques minutes de plus.
+    func closeShareIfSeatTaken() async {
+        guard identity.role == .owner, let compte = memberCount,
+              !Self.shouldKeepShareOpen(memberCount: compte),
+              let target = resolveTarget(identity) else { return }
+
+        // Le partage d'une zone entière porte ce nom d'enregistrement réservé. Le relire
+        // plutôt que garder le nôtre en mémoire évite d'écrire par-dessus une version que
+        // le serveur aurait fait évoluer entre-temps.
+        let partageID = CKRecord.ID(recordName: CKRecordNameZoneWideShare, zoneID: target.zoneID)
+        guard let partage = try? await target.database.record(for: partageID) as? CKShare,
+              partage.publicPermission != .none else { return }
+
+        partage.publicPermission = .none
+        guard (try? await target.database.modifyRecords(saving: [partage], deleting: [],
+                                                        savePolicy: .changedKeys)) != nil
+        else { return }
+
+        // Le lien ne mène plus nulle part : ne plus le garder, c'est aussi ne plus pouvoir
+        // l'afficher en QR code par mégarde.
+        identity.shareURL = nil
     }
 
     /// Le repli quand aucun cas ne correspond, et le plus fréquent en vrai : CloudKit a une
