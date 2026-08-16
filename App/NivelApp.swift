@@ -7,6 +7,10 @@ struct NivelApp: App {
     private let container: ModelContainer
     /// Instance UNIQUE partagée par toute l'app (la file des célébrations vit dedans).
     @State private var gameService: GameService
+    /// L'état du duo (spec 1.15), lui aussi unique : les écrans du duo lisent le même
+    /// cache et le même compte de cœurs. Sans duo appairé il ne fait rien du tout, et
+    /// n'émet aucune requête (§3.1).
+    @State private var duoService: DuoService
 
     init() {
         #if DEBUG
@@ -21,6 +25,11 @@ struct NivelApp: App {
                 stepsService: ScreenshotMode.makeStepsService(),
                 widgetDefaults: nil
             ))
+            // Domaine de réglages jetable : les captures ne montrent JAMAIS de duo, et
+            // surtout n'en appairent aucun. Sans rôle, le service est inerte.
+            _duoService = State(initialValue: DuoService(
+                identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.screenshots.duo")
+                    ?? .standard)))
             return
         }
         #endif
@@ -58,6 +67,11 @@ struct NivelApp: App {
             // dans les vrais réglages.
             duoIdentity: .shared
         ))
+        // LA MÊME instance que celle passée à `GameService` ci-dessus : l'écran d'appairage
+        // écrit le rôle et la zone, et la publication doit les voir immédiatement. Deux
+        // `DuoIdentity` distincts liraient le même disque mais pas la même mémoire, et le
+        // duo tout juste créé ne publierait rien jusqu'au prochain lancement.
+        _duoService = State(initialValue: DuoService(identity: .shared))
     }
 
     var body: some Scene {
@@ -66,6 +80,7 @@ struct NivelApp: App {
                 .fontDesign(.rounded)
                 .modelContainer(container)
                 .environment(gameService)
+                .environment(duoService)
         }
     }
 }

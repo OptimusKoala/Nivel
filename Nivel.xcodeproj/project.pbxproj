@@ -59,6 +59,7 @@
 		66BCDAEC3C06B9E5EEB146D0 /* DuoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */; };
 		68FC7AB0B8348D9985A35645 /* ProfileNameSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0A25ADDD52927515408A2F /* ProfileNameSettingsTests.swift */; };
 		6AA7C1B691686E85F81AB3ED /* SoundSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C19036F8CCE4109F70DE13 /* SoundSettingsTests.swift */; };
+		6B676BE54884897DCA76FA89 /* DuoQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178F1A448834CBB44EAA6775 /* DuoQRCode.swift */; };
 		6BB5B3818639E1B3256D9368 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0BB4765E6D2A577C375E88A8 /* PrivacyInfo.xcprivacy */; };
 		6C70C4250E9621D0CEB183BB /* SessionPlayerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */; };
 		6E6D79EE6AB41491A6FAEEA8 /* NivelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252E585F67D7801561AA6A8A /* NivelApp.swift */; };
@@ -116,6 +117,8 @@
 		D83B5EF71AE830A0DACABC6B /* NivelWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C658D5A942C3A751271B8BBD /* NivelWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DAAD239CC8C1DACA809A05DF /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */; };
 		DBA75C60C34D6D51CBD43CF2 /* CalorieRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBB38120226BC151CACEE2B /* CalorieRing.swift */; };
+		DC552D7BA1E1A2FDC62BD56B /* DuoPairingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57EEA0C75E83F471DC06E63 /* DuoPairingTests.swift */; };
+		E15E5B8B4E5A0118F5A7DEC8 /* DuoPairingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA34DD31A2E8072BB2E3AEE3 /* DuoPairingView.swift */; };
 		E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */; };
 		E25C6AEB1505C0C69F8CB630 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
 		E3B6801717F7DF059E2DD29C /* MealLoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DF803E54753D174CB0E654 /* MealLoggingTests.swift */; };
@@ -186,6 +189,7 @@
 		0F0A25ADDD52927515408A2F /* ProfileNameSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileNameSettingsTests.swift; sourceTree = "<group>"; };
 		0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelWidgets.swift; sourceTree = "<group>"; };
 		16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
+		178F1A448834CBB44EAA6775 /* DuoQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoQRCode.swift; sourceTree = "<group>"; };
 		1B870793FACF92E8A3EC300C /* Nivel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nivel.entitlements; sourceTree = "<group>"; };
 		1B9B9196CD68143267D66D54 /* timer_step.caf */ = {isa = PBXFileReference; path = timer_step.caf; sourceTree = "<group>"; };
 		1CEF612545C16E3249D319E7 /* PosturePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosturePlanTests.swift; sourceTree = "<group>"; };
@@ -286,8 +290,10 @@
 		D009F36F650CE2DC1B51ADCD /* MuscuPlanSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscuPlanSettingsTests.swift; sourceTree = "<group>"; };
 		D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCalorieRing.swift; sourceTree = "<group>"; };
 		D4C83E7CFF76D5CC970B5615 /* ScreenshotIdeasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotIdeasTests.swift; sourceTree = "<group>"; };
+		D57EEA0C75E83F471DC06E63 /* DuoPairingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoPairingTests.swift; sourceTree = "<group>"; };
 		D5C1B7BBD4E5939392380700 /* IdeasJourneyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdeasJourneyTests.swift; sourceTree = "<group>"; };
 		D9245CF3C47048DB9D88C2E5 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
+		DA34DD31A2E8072BB2E3AEE3 /* DuoPairingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoPairingView.swift; sourceTree = "<group>"; };
 		DC2CFCDDF307B46E6407F604 /* MealLineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLineDetailView.swift; sourceTree = "<group>"; };
 		DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkTests.swift; sourceTree = "<group>"; };
 		DD295983A2E9FAD0CADE2529 /* ScreenshotSportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotSportTests.swift; sourceTree = "<group>"; };
@@ -377,6 +383,7 @@
 				49A386F7B198F3FB996AF79B /* ActionCardButton.swift */,
 				0DFE3142B4FCF840E98BE4C6 /* CozyIcon.swift */,
 				8EC26C277A243F8A9AFC391B /* Celebrations */,
+				8730323766E830B937E89D33 /* Duo */,
 				D6279C142D197187DA27FC89 /* Home */,
 				F0105491AB027C5B9444D071 /* Meals */,
 				C11BEB0DAAA03380C6ACF16B /* Onboarding */,
@@ -497,6 +504,15 @@
 			path = Support;
 			sourceTree = "<group>";
 		};
+		8730323766E830B937E89D33 /* Duo */ = {
+			isa = PBXGroup;
+			children = (
+				DA34DD31A2E8072BB2E3AEE3 /* DuoPairingView.swift */,
+				178F1A448834CBB44EAA6775 /* DuoQRCode.swift */,
+			);
+			path = Duo;
+			sourceTree = "<group>";
+		};
 		8EC26C277A243F8A9AFC391B /* Celebrations */ = {
 			isa = PBXGroup;
 			children = (
@@ -560,6 +576,7 @@
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
 				A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */,
+				D57EEA0C75E83F471DC06E63 /* DuoPairingTests.swift */,
 				B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */,
 				726318FF4C63560ED6D99D48 /* DuoServiceTests.swift */,
 				6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */,
@@ -822,7 +839,9 @@
 				8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */,
 				1B20AAF9C5BD09A929E4ACF3 /* DuoDatabase.swift in Sources */,
 				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
+				E15E5B8B4E5A0118F5A7DEC8 /* DuoPairingView.swift in Sources */,
 				66BCDAEC3C06B9E5EEB146D0 /* DuoPublisher.swift in Sources */,
+				6B676BE54884897DCA76FA89 /* DuoQRCode.swift in Sources */,
 				CF98AAF6E3E169E62DEAC6F7 /* DuoRecord.swift in Sources */,
 				79CCBD1665AE1BCF9AAFABBF /* DuoService.swift in Sources */,
 				B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */,
@@ -923,6 +942,7 @@
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
 				92A5342A30BBFF472BC7BFFE /* DuoIdentityTests.swift in Sources */,
+				DC552D7BA1E1A2FDC62BD56B /* DuoPairingTests.swift in Sources */,
 				923CE98E8AC08B122EDA6DF2 /* DuoPublisherTests.swift in Sources */,
 				FA7D46CC8FA1F8D3D0E4FC7E /* DuoServiceTests.swift in Sources */,
 				3BFDE41276406C8417A234F4 /* ExerciseTimerModelTests.swift in Sources */,

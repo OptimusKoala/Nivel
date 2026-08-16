@@ -78,6 +78,15 @@ final class DuoService {
     ///   exactement cette erreur avec `publishDuo(identity: .shared)`.
     private let resolveTarget: (DuoIdentity) -> DuoDatabase.Target?
 
+    /// Le conteneur iCloud, injecté comme une fabrique et pour les mêmes deux raisons que
+    /// ci-dessus. L'appairage en a besoin AVANT qu'aucune zone n'existe, là où
+    /// `resolveTarget` ne peut encore rien résoudre : créer la zone, créer le partage,
+    /// accepter celui d'en face.
+    ///
+    /// Une fabrique et non un conteneur : appelée seulement quand une requête part
+    /// vraiment, elle laisse les tests prouver qu'une garde a bien coupé le chemin avant.
+    private let makeContainer: () -> CKContainer
+
     /// Les cœurs reçus, du plus ancien au plus récent. Alimente les petits cœurs des
     /// journaux Repas et Sport (§3.8), qui s'affichent sur ses PROPRES entrées.
     private(set) var receivedLikes: [DuoLike] = []
@@ -96,9 +105,13 @@ final class DuoService {
     init(identity: DuoIdentity,
          resolveTarget: @escaping (DuoIdentity) -> DuoDatabase.Target? = {
              DuoDatabase.target(for: $0)
+         },
+         makeContainer: @escaping () -> CKContainer = {
+             CKContainer(identifier: DuoDatabase.containerID)
          }) {
         self.identity = identity
         self.resolveTarget = resolveTarget
+        self.makeContainer = makeContainer
     }
 
     // MARK: - Ce que les écrans lisent
@@ -331,5 +344,119 @@ final class DuoService {
         let composants = url.pathComponents.filter { $0 != "/" }
         guard composants.first == "share" else { return false }
         return composants.count > 1 || !(url.fragment() ?? "").isEmpty
+    }
+}
+
+// MARK: - L'appairage
+
+// Dans le MÊME fichier, et pas dans un `DuoService+Pairing.swift` : `identity` est
+// `private`, donc visible des seules extensions de ce fichier. C'est ce qui garde
+// l'écriture de l'état d'appairage ici et empêche un écran d'aller pousser lui-même un
+// rôle ou une zone dans les réglages.
+extension DuoService {
+
+    /// Ce que l'écran d'invitation affiche : le QR, ou une phrase.
+    enum InvitationResult: Equatable {
+        case ready(URL)
+        /// Message affichable tel quel. **Jamais une alerte modale par-dessus l'accueil** :
+        /// un échec d'appairage se raconte dans l'écran qui l'a demandé.
+        case failed(String)
+    }
+
+    /// Crée la zone `duo`, la partage, et rend l'URL à mettre en QR code (spec §3.6).
+    ///
+    /// **Idempotente**, et ce n'est pas une commodité : rouvrir l'écran d'invitation
+    /// tenterait autrement un second `CKShare` sur la même zone, ce que le serveur refuse.
+    /// L'écran montrerait alors un message d'échec sous un QR code parfaitement valide.
+    ///
+    /// `publicPermission = .readWrite` est le mode « toute personne disposant du lien » : il
+    /// n'exige pas de connaître l'Apple ID de l'autre, ce qui est tout l'intérêt du QR. Sa
+    /// contrepartie est le §3.6 : le lien reste valide tant qu'on ne le révoque pas, donc il
+    /// se referme dès qu'un second membre apparaît, et l'écran le dit.
+    func startInvitation() async -> InvitationResult {
+        // L'identité de cet appareil naît ICI, et l'appairage est son seul appelant
+        // légitime (lot A1). L'oublier appairerait un duo qui ne publierait JAMAIS rien :
+        // `publishDuoNow` sort sur `guard let memberID`, en silence et pour toujours.
+        // Avant la garde d'idempotence, donc : un appareil qui a déjà son partage mais pas
+        // son identifiant est exactement le cas qu'une version antérieure a pu laisser.
+        identity.createMemberID()
+
+        if identity.role == .owner, let url = identity.shareURL { return .ready(url) }
+
+        let base = makeContainer().privateCloudDatabase
+        let zoneID = CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName,
+                                     ownerName: CKCurrentUserDefaultName)
+        do {
+            // Sauver une zone qui existe déjà est sans effet et sans erreur : c'est ce qui
+            // rend ce chemin rejouable après un échec réseau au milieu.
+            _ = try await base.modifyRecordZones(saving: [CKRecordZone(zoneID: zoneID)],
+                                                 deleting: [])
+
+            // Partage de ZONE, pas d'enregistrement : tout ce qui entre dans `duo` est
+            // partagé, y compris les enregistrements que l'autre y écrira. Un partage
+            // accroché à un enregistrement racine ne couvrirait que sa hiérarchie, et le
+            // `DuoMember` de l'invité n'en ferait pas partie.
+            let partage = CKShare(recordZoneID: zoneID)
+            partage.publicPermission = .readWrite
+            // Ce titre est ce que le système affiche dans la feuille de partage et dans
+            // les réglages iCloud du partenaire. Il n'est lu par personne d'autre.
+            partage[CKShare.SystemFieldKey.title] = "Nivel, à deux"
+
+            let (ecritures, _) = try await base.modifyRecords(saving: [partage], deleting: [],
+                                                              savePolicy: .changedKeys)
+            guard let sauve = ecritures.values.compactMap({ (try? $0.get()) as? CKShare }).first,
+                  let url = sauve.url
+            else { return .failed(Self.genericFailureMessage) }
+
+            // Le rôle n'est posé qu'ICI, après le succès. Le poser avant rendrait
+            // `isPaired` vrai sans zone, et toute l'app se mettrait à publier dans le vide.
+            identity.role = .owner
+            identity.zoneName = zoneID.zoneName
+            // Le propriétaire n'a pas de `zoneOwnerName` : sa zone est la sienne, et une
+            // valeur restée d'un appairage précédent enverrait `DuoDatabase` chercher la
+            // zone de quelqu'un d'autre.
+            identity.zoneOwnerName = nil
+            identity.shareURL = url
+            return .ready(url)
+        } catch {
+            return .failed(Self.message(for: error))
+        }
+    }
+
+    /// Le repli quand aucun cas ne correspond, et le plus fréquent en vrai : CloudKit a une
+    /// quarantaine de codes, on ne prétend pas les nommer tous.
+    nonisolated static let genericFailureMessage =
+        "Le duo n'a pas pu être mis en place pour l'instant, réessaie dans un moment"
+
+    /// Ce qu'on montre quand une opération d'appairage rate (spec §3.10).
+    ///
+    /// Une phrase, jamais un code ni un type : la personne qui lit vient de scanner un QR
+    /// code, elle n'a que faire d'un `CKError 9`. Et quand il y a une suite à donner, la
+    /// phrase la donne — c'est le cas du compte iCloud absent, le seul où quelque chose se
+    /// règle ailleurs que dans Nivel.
+    ///
+    /// Aucune ne reproche quoi que ce soit : la règle zéro culpabilisation de la v1 vaut
+    /// aussi pour les pannes, qui ne sont jamais la faute de celui qui les subit.
+    nonisolated static func message(for error: Error) -> String {
+        guard let ck = error as? CKError else { return genericFailureMessage }
+
+        switch ck.code {
+        case .notAuthenticated:
+            return "Connecte-toi à iCloud dans les réglages de l'iPhone pour créer un duo"
+        case .networkUnavailable, .networkFailure:
+            return "Pas de connexion pour l'instant, réessaie dans un moment"
+        case .quotaExceeded:
+            return "Ton espace iCloud est plein, la zone du duo n'a pas pu y être créée"
+        case .permissionFailure:
+            return "Le partage n'est pas autorisé sur ce compte iCloud"
+        case .serviceUnavailable, .requestRateLimited, .zoneBusy:
+            return "iCloud est occupé pour l'instant, réessaie dans un moment"
+        case .unknownItem:
+            // Le cas d'une invitation révoquée ou déjà refermée : la zone existe toujours
+            // chez l'autre, mais ce lien-ci ne mène plus à rien.
+            return "Cette invitation n'est plus valable, demande à l'autre de t'en renvoyer une"
+        default:
+            return genericFailureMessage
+        }
     }
 }

@@ -151,8 +151,12 @@ extension GameService {
     /// impossible ne doit JAMAIS empêcher la publication des chiffres du jour.
     private func orphanLikeRecordIDs(in target: DuoDatabase.Target,
                                      me: String) async -> [CKRecord.ID] {
-        let requete = CKQuery(recordType: "DuoLike",
-                              predicate: NSPredicate(format: "ownerID == %@", me))
+        // Type et champ pris dans `DuoRecord`, jamais écrits à la main : une faute de
+        // frappe dans un prédicat ne lève rien, elle rend une liste vide, et le nettoyage
+        // des cœurs orphelins cesserait de faire quoi que ce soit en silence.
+        let requete = CKQuery(recordType: DuoRecord.likeType,
+                              predicate: NSPredicate(format: "%K == %@",
+                                                     DuoRecord.Field.ownerID, me))
         guard let reponse = try? await target.database.records(matching: requete,
                                                                inZoneWith: target.zoneID)
         else { return [] }
