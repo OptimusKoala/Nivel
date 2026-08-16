@@ -136,6 +136,43 @@ final class DuoLikeMergeTests: XCTestCase {
     }
 }
 
+// MARK: - La comptabilité des cœurs non lus
+
+/// Le compteur qui allume la bulle de l'accueil. Il a un défaut de conception derrière lui,
+/// trouvé en revue : la lecture complète rangeait les cœurs reçus SANS les compter, si bien
+/// qu'un cœur découvert en ouvrant les Réglages devenait « déjà vu » pour le réveil suivant.
+/// Ni bulle, ni notification, jamais. Les deux chemins comptent maintenant de la même façon,
+/// et cette fonction est le seul endroit où ça se décide.
+final class DuoUnreadCountTests: XCTestCase {
+
+    private func coeur(_ event: String) -> DuoLike {
+        DuoLike(giverID: "TOI", ownerID: "MOI", eventID: event, eventTitle: "Dîner",
+                createdAt: Date(timeIntervalSince1970: 500))
+    }
+
+    func testUnCoeurInéditIncrementeLeCompteur() {
+        XCTAssertEqual(DuoService.unreadCount(current: 0, known: [], incoming: [coeur("E1")]), 1)
+        XCTAssertEqual(DuoService.unreadCount(current: 2, known: ["E1"],
+                                              incoming: [coeur("E1"), coeur("E2")]), 3)
+    }
+
+    /// Revoir les mêmes cœurs ne compte pas deux fois. C'est ce qui permet aux deux chemins
+    /// — lecture complète et réveil — de tourner l'un après l'autre sans doubler le signal.
+    func testRevoirLesMemesCoeursNeCompteRien() {
+        XCTAssertEqual(DuoService.unreadCount(current: 1, known: ["E1"],
+                                              incoming: [coeur("E1")]), 1)
+        XCTAssertEqual(DuoService.unreadCount(current: 0, known: ["E1", "E2"],
+                                              incoming: [coeur("E1"), coeur("E2")]), 0)
+    }
+
+    /// Aucun cœur reçu : le compteur ne bouge pas non plus. Un rafraîchissement à vide ne
+    /// doit jamais allumer la bulle.
+    func testUnRafraichissementAVideNAllumeRien() {
+        XCTAssertEqual(DuoService.unreadCount(current: 0, known: [], incoming: []), 0)
+        XCTAssertEqual(DuoService.unreadCount(current: 3, known: [], incoming: []), 3)
+    }
+}
+
 // MARK: - Le jeton de changement
 
 final class DuoChangeTokenTests: XCTestCase {

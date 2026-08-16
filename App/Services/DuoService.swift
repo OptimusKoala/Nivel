@@ -251,6 +251,12 @@ final class DuoService {
         identity.givenLikeEventIDs = delta.likes.filter { $0.giverID == me }.map(\.eventID)
 
         receivedLikes = Self.incomingLikes(from: delta.likes, me: me)
+        // Compter AVANT d'écrire la nouvelle liste : c'est l'ancienne qui dit ce qu'on
+        // connaissait déjà. Une lecture complète qui rangerait sans compter rendrait tout
+        // cœur découvert ici invisible pour le réveil suivant, et donc pour toujours.
+        identity.unreadLikeCount = Self.unreadCount(current: identity.unreadLikeCount,
+                                                    known: likedEventIDs,
+                                                    incoming: receivedLikes)
         // Recopiés dans l'état d'appareil pour survivre au relancement ET au désappairage
         // (§3.10). La liste REMPLACE la précédente : un cœur retiré par son auteur est une
         // suppression d'enregistrement, et il doit disparaître aussi ici. C'est précisément
@@ -304,8 +310,9 @@ final class DuoService {
         let nouveaux = DuoNotifications.unseen(miens, knownEventIDs: likedEventIDs)
 
         receivedLikes = Self.merge(receivedLikes, with: miens)
+        identity.unreadLikeCount = Self.unreadCount(current: identity.unreadLikeCount,
+                                                    known: likedEventIDs, incoming: miens)
         identity.receivedLikeEventIDs = receivedLikes.map(\.eventID)
-        identity.unreadLikeCount += nouveaux.count
         identity.zoneChangeToken = Self.archive(delta.token)
 
         return nouveaux
@@ -361,6 +368,22 @@ final class DuoService {
         var parIdentifiant: [String: DuoLike] = [:]
         for coeur in existants + arrivants { parIdentifiant[coeur.id] = coeur }
         return parIdentifiant.values.sorted { ($0.createdAt, $0.id) < ($1.createdAt, $1.id) }
+    }
+
+    /// Le compteur de cœurs non lus après avoir vu passer `incoming`, sachant `known`.
+    ///
+    /// **Les deux chemins de lecture passent par ici, et c'est le point.** La lecture
+    /// complète rangeait auparavant les cœurs reçus sans jamais les compter : un cœur
+    /// découvert en ouvrant les Réglages devenait « déjà vu » pour le réveil suivant, donc
+    /// ni bulle ni notification, jamais. Deux chemins qui écrivent le même état doivent le
+    /// compter de la même façon, ou l'un efface le travail de l'autre.
+    ///
+    /// Qui incrémente : les deux lectures, sur ce qu'elles découvrent d'inédit. Qui remet à
+    /// zéro : `markProfileSeen`, et lui seul — c'est-à-dire l'ouverture de la page, qui est
+    /// le seul moment où l'utilisateur a réellement VU les cœurs.
+    nonisolated static func unreadCount(current: Int, known: Set<String>,
+                                        incoming: [DuoLike]) -> Int {
+        current + DuoNotifications.unseen(incoming, knownEventIDs: known).count
     }
 
     /// Ce jeton est-il périmé ? (§3.7) Un seul code le dit, et il ne veut PAS dire « panne » :

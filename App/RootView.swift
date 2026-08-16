@@ -81,6 +81,9 @@ private struct MainTabView: View {
     }
 
     @Environment(\.scenePhase) private var scenePhase
+    /// Le duo, pour le rattrapage au premier plan (§3.7). Injecté par `NivelApp`, comme
+    /// `GameService` : c'est la même instance que celle des écrans.
+    @Environment(DuoService.self) private var duoService
     @Environment(GameService.self) private var gameService
     @Query private var profiles: [UserProfile]
 
@@ -170,6 +173,16 @@ private struct MainTabView: View {
             // n'y avait rien à clôturer, donc le hook de saveOrAssert ne suffit pas.
             gameService.syncWidget()
             gameService.publishDuo()
+            // 4. RATTRAPAGE DU DUO (spec 1.15 §3.7). Sans lui, la promesse la plus explicite
+            // du duo tombe : « aucun réveil n'est envoyé si l'app a été tuée depuis le
+            // sélecteur, le rattrapage se fait alors à l'ouverture ». C'est ici que ce
+            // rattrapage a lieu, et nulle part ailleurs — la bulle bordée de Nivelito ne se
+            // levait jamais dans le cas précis pour lequel elle a été dessinée.
+            //
+            // C'est aussi ce passage qui retente les cœurs envoyés hors ligne, que le §3.10
+            // place « au prochain passage au premier plan ». Sans duo appairé, l'appel sort
+            // à sa première ligne et n'émet rien.
+            await duoService.refresh()
             rescheduleReminders()
         }
     }
