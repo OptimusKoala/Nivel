@@ -114,13 +114,25 @@ public enum SportSection: String, CaseIterable, Sendable {
         }
     }
 
-    /// Les activités de la section. Les trois partitionnent le catalogue : `.both`
-    /// (les escaliers) n'est pas `.outdoor`, donc elle part avec « À la maison » —
-    /// une fois, et une seule.
+    /// Les activités de la section. Les trois COUVRENT le catalogue, mais ne le
+    /// partitionnent pas : depuis la 1.15 §5.2, une activité `.both` est montrée dans
+    /// les DEUX listes douces, et c'est le seul recouvrement qui existe (« Ça pousse »
+    /// ignore `location`, donc elle ne croise ni l'une ni l'autre).
+    ///
+    /// Les deux filtres doux se lisent en négatif, et c'est volontaire : chacun exclut
+    /// le lieu qui n'est pas le sien plutôt que d'exiger le sien, de sorte que `.both`
+    /// passe des deux côtés. Écrire « Dehors » en `== .outdoor` — ce qu'il était
+    /// jusqu'ici — revient à dire que `.both` signifie « chez soi », et cachait les
+    /// montées d'escaliers de cette section depuis la v1. La piscine et le ping-pong
+    /// auraient hérité du même sort : on y va aussi bien chez soi que chez des amis.
+    ///
+    /// Un même id peut donc apparaître dans deux sections. Les vues n'en souffrent pas :
+    /// `SportView` et `ActivityPickerSheet` font une `ForEach` PAR section, donc les
+    /// identités restent uniques à l'intérieur de chaque liste.
     public func activities(in activities: [Activity]) -> [Activity] {
         switch self {
         case .gentleHome: activities.filter { $0.intensity == .gentle && $0.location != .outdoor }
-        case .gentleOutdoor: activities.filter { $0.intensity == .gentle && $0.location == .outdoor }
+        case .gentleOutdoor: activities.filter { $0.intensity == .gentle && $0.location != .home }
         case .strong: activities.filter { $0.intensity == .strong }
         }
     }

@@ -179,41 +179,80 @@ final class ActivityCatalogTests: XCTestCase {
         XCTAssertEqual(menages.first?.kcalPerMin, 3.5)
     }
 
-    /// Les sections de l'onglet Sport (spec §4.3) forment une partition STRICTE du
-    /// catalogue : aucune activité perdue, aucune montrée deux fois. La boucle est sur
-    /// `allCases` et non sur trois noms écrits à la main : une quatrième section
-    /// ajoutée un jour entre d'office dans la vérification.
-    func testLesSectionsPartitionnentLeCatalogue() throws {
+    /// Les sections de l'onglet Sport (spec §4.3) COUVRENT tout le catalogue : aucune
+    /// activité perdue. Ce n'est plus une partition stricte depuis la 1.15 §5.2 : une
+    /// douce `both` se montre dans les deux listes douces, et c'est voulu. Le
+    /// recouvrement toléré est donc fixé à l'ensemble EXACT des douces mixtes, pas
+    /// laissé libre : un filtre qui déraperait vers « tout, partout » serait rattrapé.
+    ///
+    /// La couverture est vérifiée sur `allCases` et non sur trois noms écrits à la
+    /// main : une quatrième section ajoutée un jour entre d'office dans le contrôle.
+    func testLesSectionsCouvrentLeCatalogueEtNeSeRecouvrentQueSurLesMixtes() throws {
         let activities = try Catalogs.activities()
+        let tousLesIDs = Set(activities.map(\.id))
         let parSection = SportSection.allCases.map { Set($0.activities(in: activities).map(\.id)) }
 
-        let somme = parSection.reduce(0) { $0 + $1.count }
-        XCTAssertEqual(somme, activities.count, "des activités manquent ou sont en trop")
-        XCTAssertEqual(parSection.reduce(into: Set<String>()) { $0.formUnion($1) }.count, somme,
-                       "une activité apparaît dans deux sections")
+        XCTAssertEqual(parSection.reduce(into: Set<String>()) { $0.formUnion($1) }, tousLesIDs,
+                       "des activités ne sont dans aucune section")
 
-        // Les ancres ci-dessous ne sont pas décoratives : la partition est INVARIANTE
+        // Les ancres ci-dessous ne sont pas décoratives : la couverture est INVARIANTE
         // par permutation des étiquettes, et elle reste vraie si une section est vidée
         // au profit d'une autre. Vérifié par mutation : intervertir `gentleHome` et
-        // `gentleOutdoor`, ou vider « Dehors » dans « À la maison », laisse les deux
-        // égalités ci-dessus intactes. Seuls ces ids rattachent chaque section à un
-        // contenu.
-        let home = SportSection.gentleHome.activities(in: activities)
-        let outdoor = SportSection.gentleOutdoor.activities(in: activities)
-        let strong = SportSection.strong.activities(in: activities)
+        // `gentleOutdoor`, ou vider « Dehors » dans « À la maison », laisse l'égalité
+        // ci-dessus intacte. Seuls ces ids rattachent chaque section à un contenu.
+        let home = Set(SportSection.gentleHome.activities(in: activities).map(\.id))
+        let outdoor = Set(SportSection.gentleOutdoor.activities(in: activities).map(\.id))
+        let strong = Set(SportSection.strong.activities(in: activities).map(\.id))
 
-        // `stairs` est la seule `location == .both` : le découpage la range sous
-        // « À la maison », comme avant la section intense.
-        XCTAssertTrue(home.contains { $0.id == "stairs" })
+        // Le seul recouvrement autorisé, et il est nommé : les douces `both`.
+        let mixtesDouces = Set(activities.filter { $0.intensity == .gentle && $0.location == .both }.map(\.id))
+        XCTAssertEqual(mixtesDouces, ["stairs", "swimming", "table_tennis"])
+        XCTAssertEqual(home.intersection(outdoor), mixtesDouces,
+                       "le recouvrement des deux listes douces n'est plus exactement les mixtes")
+
+        // « Ça pousse » ignore `location` : elle ne partage donc rien avec les douces,
+        // et cela vaut dans les deux sens.
+        XCTAssertTrue(strong.isDisjoint(with: home))
+        XCTAssertTrue(strong.isDisjoint(with: outdoor))
 
         // « Dehors » n'est pas qu'un en-tête : sans cette ancre, une section vidée
-        // passerait la partition et l'écran afficherait un titre sans rien dessous.
-        XCTAssertTrue(outdoor.contains { $0.id == "walk" })
+        // passerait la couverture et l'écran afficherait un titre sans rien dessous.
+        XCTAssertTrue(outdoor.contains("walk"))
+        XCTAssertTrue(home.contains("squats"))
 
         // « Ça pousse » mélange maison et dehors : la course y côtoie les pompes.
-        XCTAssertTrue(strong.contains { $0.id == "running" })
-        XCTAssertTrue(strong.contains { $0.id == "pushups" })
-        XCTAssertFalse(home.contains { $0.id == "pushups" })
+        XCTAssertTrue(strong.contains("running"))
+        XCTAssertTrue(strong.contains("pushups"))
+    }
+
+    /// `both` veut enfin dire « les deux » (spec 1.15 §5.2). Avant ce changement,
+    /// « Dehors » filtrait sur `== .outdoor` et ne montrait donc AUCUNE mixte : les
+    /// montées d'escaliers étaient introuvables sous cet en-tête depuis la v1, alors
+    /// qu'un escalier est le plus souvent dehors.
+    func testUneActiviteMixteApparaitDansLesDeuxSections() throws {
+        let activities = try Catalogs.activities()
+        let chezSoi = Set(SportSection.gentleHome.activities(in: activities).map(\.id))
+        let dehors = Set(SportSection.gentleOutdoor.activities(in: activities).map(\.id))
+
+        for id in ["swimming", "table_tennis", "stairs"] {
+            XCTAssertTrue(chezSoi.contains(id), "\(id) absente de « À la maison »")
+            XCTAssertTrue(dehors.contains(id), "\(id) absente de « Dehors »")
+        }
+    }
+
+    /// La contrepartie, pour que le filtre ne devienne pas « tout, partout » : une
+    /// activité strictement à la maison ne doit JAMAIS apparaître dans « Dehors », et
+    /// une activité strictement dehors jamais dans « À la maison ». Sans ces deux
+    /// bornes, un filtre réduit à `intensity == .gentle` passerait le test ci-dessus.
+    func testUneActiviteDUnSeulLieuResteDansSaSection() throws {
+        let activities = try Catalogs.activities()
+        let chezSoi = SportSection.gentleHome.activities(in: activities)
+        let dehors = SportSection.gentleOutdoor.activities(in: activities)
+
+        XCTAssertTrue(dehors.allSatisfy { $0.location != .home }, "une activité de maison est passée dehors")
+        XCTAssertFalse(dehors.contains { $0.id == "squats" })
+        XCTAssertTrue(chezSoi.allSatisfy { $0.location != .outdoor }, "une activité de plein air est passée à la maison")
+        XCTAssertFalse(chezSoi.contains { $0.id == "walk" })
     }
 
     /// Garde-fou : une section ajoutée à l'enum sans être rangée dans `displayOrder`
