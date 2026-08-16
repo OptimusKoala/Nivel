@@ -90,7 +90,7 @@ extension GameService {
         // à CHAQUE passage au premier plan, y compris quand rien n'a bougé — ce que
         // toute cette fonction est faite d'éviter. Un cœur orphelin de quelques heures
         // est le moindre mal.
-        let orphelins = await orphanLikeRecordIDs(in: target, me: memberID)
+        let orphelins = orphanLikeRecordIDs(in: target.zoneID, identity: identity, me: memberID)
 
         do {
             try await write(snapshot, deleting: orphelins, to: target)
@@ -98,6 +98,16 @@ extension GameService {
             // qu'un échec réseau serait pris pour un succès, et la journée ne repartirait
             // plus jamais tant qu'un chiffre n'aurait pas rebougé.
             identity.lastPublishedSnapshot = snapshot
+            // Les cœurs qu'on vient de supprimer ne sont plus à supprimer. Sans cette
+            // ligne, chaque publication redemanderait les mêmes suppressions jusqu'à la
+            // prochaine relecture de la zone : sans dégât, mais pour rien.
+            if !orphelins.isEmpty {
+                let partis = Set(orphelins.map(\.recordName))
+                identity.receivedLikeEventIDs = identity.receivedLikeEventIDs.filter {
+                    !partis.contains(DuoLikeID.recordName(
+                        giver: identity.partnerSnapshot?.memberID ?? "", event: $0))
+                }
+            }
             return true
         } catch {
             return false
@@ -129,50 +139,57 @@ extension GameService {
     /// est le `memberID`, donc déterministe, et `.changedKeys` fait de l'écriture un
     /// upsert. Un aller-retour réseau en moins, et aucun conflit possible puisque chacun
     /// n'écrit que le sien (§3.3).
+    ///
+    /// `atomically: false`, et c'est devenu indispensable depuis que les suppressions sont
+    /// déduites d'une liste locale plutôt que d'une lecture fraîche de la zone : un cœur
+    /// déjà parti, ou dont le donneur a changé, ferait échouer TOUT le lot en mode atomique,
+    /// et les chiffres du jour ne seraient plus publiés du tout. Le nettoyage est un
+    /// à-côté ; il n'a pas le droit d'emporter l'essentiel avec lui.
     private func write(_ snapshot: DuoSnapshot, deleting orphelins: [CKRecord.ID],
                        to target: DuoDatabase.Target) async throws {
         _ = try await target.database.modifyRecords(
             saving: [DuoRecord.member(from: snapshot, in: target.zoneID)],
-            deleting: orphelins, savePolicy: .changedKeys)
+            deleting: orphelins, savePolicy: .changedKeys, atomically: false)
     }
 
-    /// Les cœurs qui ne désignent plus rien (spec §3.4). La DÉCISION vit dans
-    /// `DuoLikeID.orphanEventIDs`, pure et testée ; ici il n'y a que la lecture de la
-    /// zone et la traduction en identifiants d'enregistrement.
+    /// Les cœurs qui ne désignent plus rien (spec §3.4), et l'endroit où le lot A2 a fait
+    /// disparaître la dernière requête indexée du dépôt.
     ///
-    /// Les deux règles qui gouvernent ce nettoyage — comparer au MAGASIN et non au fil,
-    /// et ne juger que ses PROPRES événements — sont écrites une seule fois, sur
-    /// `DuoLikeID.orphanEventIDs`, avec ce que chacune évite. Les recopier ici en ferait
-    /// un troisième exemplaire à faire diverger, ce que ce lot refuse partout ailleurs.
-    /// La requête filtre déjà sur `ownerID`, et `orphanEventIDs` le redit : ceinture et
-    /// bretelles, l'une côté réseau, l'autre côté décision.
+    /// **Plus aucune lecture de la zone ici.** Les cœurs reçus sont déjà en main, persistés
+    /// par `DuoService` dans `DuoIdentity.receivedLikeEventIDs` : cette fonction est donc
+    /// devenue synchrone, gratuite en réseau, et — ce qui vaut mieux que les deux — enfin
+    /// éprouvable par des tests, ce qu'elle n'était pas tant qu'elle exigeait un compte
+    /// iCloud. L'ancienne requête filtrait sur `ownerID`, donc supposait un index QUERYABLE
+    /// posé à la main dans le tableau de bord CloudKit : s'il manquait, elle ne levait pas,
+    /// elle rendait zéro résultat, et le nettoyage ne faisait plus rien en silence.
     ///
-    /// Un échec de lecture rend une liste vide plutôt que de propager : un nettoyage
-    /// impossible ne doit JAMAIS empêcher la publication des chiffres du jour.
-    private func orphanLikeRecordIDs(in target: DuoDatabase.Target,
-                                     me: String) async -> [CKRecord.ID] {
-        // Type et champ pris dans `DuoRecord`, jamais écrits à la main : une faute de
-        // frappe dans un prédicat ne lève rien, elle rend une liste vide, et le nettoyage
-        // des cœurs orphelins cesserait de faire quoi que ce soit en silence.
-        let requete = CKQuery(recordType: DuoRecord.likeType,
-                              predicate: NSPredicate(format: "%K == %@",
-                                                     DuoRecord.Field.ownerID, me))
-        guard let reponse = try? await target.database.records(matching: requete,
-                                                               inZoneWith: target.zoneID)
-        else { return [] }
+    /// La DÉCISION reste dans `DuoLikeID.orphanEventIDs`, pure et testée, avec les deux
+    /// règles qui la gouvernent : comparer au MAGASIN et non au fil, et ne juger que ses
+    /// PROPRES événements. Tous les identifiants d'ici sont des cœurs posés sur mes entrées,
+    /// `DuoService.incomingLikes` n'ayant retenu que ceux-là ; `ownerID: me` le redit, et la
+    /// fonction pure le revérifie.
+    ///
+    /// Le nom d'enregistrement est RECOMPOSÉ plutôt que retenu, et c'est l'usage prévu du
+    /// §3.3 : `like-<donneur>-<événement>` est déterministe précisément pour que retirer un
+    /// cœur soit une suppression par nom, sans requête préalable. Sans partenaire connu, on
+    /// ne suppose pas un donneur : on ne supprime rien, et la publication suivante s'en
+    /// chargera.
+    ///
+    /// Conséquence assumée : un cœur arrivé depuis la dernière relecture de la zone n'est pas
+    /// encore dans cette liste, donc pas encore nettoyable. Il le sera au prochain tour.
+    func orphanLikeRecordIDs(in zoneID: CKRecordZone.ID, identity: DuoIdentity,
+                             me: String) -> [CKRecord.ID] {
+        guard let donneur = identity.partnerSnapshot?.memberID, !donneur.isEmpty else { return [] }
 
-        var coeurs: [DuoLikeRef] = []
-        var enregistrementsParEvenement: [String: [CKRecord.ID]] = [:]
-        for (recordID, resultat) in reponse.matchResults {
-            guard let record = try? resultat.get(),
-                  let coeur = DuoRecord.likeRef(from: record) else { continue }
-            coeurs.append(coeur)
-            enregistrementsParEvenement[coeur.eventID, default: []].append(recordID)
+        let coeurs = identity.receivedLikeEventIDs.map { DuoLikeRef(eventID: $0, ownerID: me) }
+        let orphelins = DuoLikeID.orphanEventIDs(likes: coeurs,
+                                                 localPublicIDs: allLocalPublicIDs(), me: me)
+        // Trié : deux exécutions sur le même magasin rendent la même liste, ce qu'un `Set`
+        // ne promet pas et ce dont les tests ont besoin pour dire quoi que ce soit.
+        return orphelins.sorted().map {
+            CKRecord.ID(recordName: DuoLikeID.recordName(giver: donneur, event: $0),
+                        zoneID: zoneID)
         }
-
-        let orphelins = DuoLikeID.orphanEventIDs(
-            likes: coeurs, localPublicIDs: allLocalPublicIDs(), me: me)
-        return orphelins.flatMap { enregistrementsParEvenement[$0] ?? [] }
     }
 
     /// Remplit et persiste les `publicID` vides des entrées du jour — les entrées

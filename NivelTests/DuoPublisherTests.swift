@@ -233,6 +233,68 @@ final class DuoPublishGuardTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - Le nettoyage des cœurs orphelins
+
+    /// Un cœur posé sur une entrée SUPPRIMÉE doit partir, et ce test n'était pas écrivable
+    /// avant : le nettoyage interrogeait la zone, donc exigeait un compte iCloud. Il lit
+    /// désormais les cœurs déjà en main, ce qui le rend synchrone, gratuit en réseau, et
+    /// enfin éprouvable.
+    func testUnCoeurSurUneEntreeDisparueEstDesigneALaSuppression() async throws {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.role = .owner
+        identite.partnerSnapshot = instantanePartenaire(memberID: "P1")
+        // Le premier cœur vise un repas qui existe ; le second, une entrée effacée depuis.
+        let repas = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420)
+        repas.publicID = "E1"
+        try context.save()
+        identite.receivedLikeEventIDs = ["E1", "E2"]
+
+        let aSupprimer = service.orphanLikeRecordIDs(in: zoneDeTest, identity: identite, me: "M1")
+
+        XCTAssertEqual(aSupprimer.map(\.recordName),
+                       [DuoLikeID.recordName(giver: "P1", event: "E2")])
+    }
+
+    /// Partenaire encore inconnu : on ne SUPPOSE pas qui a donné le cœur. Le nom de
+    /// l'enregistrement vaut `like-<donneur>-<événement>` (§3.3) ; le fabriquer avec un
+    /// donneur inventé désignerait un enregistrement qui n'existe pas, et le nettoyage
+    /// deviendrait une suppression à l'aveugle.
+    func testSansPartenaireConnuOnNeSupprimeRien() {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.role = .owner
+        identite.receivedLikeEventIDs = ["E2"]
+
+        XCTAssertTrue(service.orphanLikeRecordIDs(in: zoneDeTest, identity: identite,
+                                                  me: "M1").isEmpty)
+    }
+
+    /// Et un cœur qui désigne encore quelque chose reste : c'est la règle du §3.4, qui a
+    /// déjà coûté un effacement de données à la rédaction de la spec.
+    func testUnCoeurQuiDesigneEncoreUneEntreeNEstPasTouche() async throws {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.role = .owner
+        identite.partnerSnapshot = instantanePartenaire(memberID: "P1")
+        let repas = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420)
+        repas.publicID = "E1"
+        try context.save()
+        identite.receivedLikeEventIDs = ["E1"]
+
+        XCTAssertTrue(service.orphanLikeRecordIDs(in: zoneDeTest, identity: identite,
+                                                  me: "M1").isEmpty)
+    }
+
+    private var zoneDeTest: CKRecordZone.ID {
+        CKRecordZone.ID(zoneName: "duo", ownerName: CKCurrentUserDefaultName)
+    }
+
+    private func instantanePartenaire(memberID: String) -> DuoSnapshot {
+        DuoSnapshot(memberID: memberID, name: "Marion", sexRaw: "female",
+                    level: 1, totalXP: 0, xpIntoLevel: 0, xpForNextLevel: 100,
+                    dayKey: "2026-08-16", kcalEaten: 0, kcalTarget: 1_800,
+                    burned: 0, burnTarget: 400, steps: -1,
+                    quest: nil, events: [], generatedAt: Date(timeIntervalSince1970: 1_000))
+    }
+
     /// Sans duo appairé, la publication ne fait RIEN. La spec §3.1 le promet
     /// explicitement : aucune requête réseau, aucun enregistrement, l'app se comporte
     /// exactement comme la 1.14.
