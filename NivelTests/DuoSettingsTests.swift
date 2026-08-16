@@ -9,6 +9,7 @@
 
 import XCTest
 import CloudKit
+import UserNotifications
 import NivelCore
 @testable import Nivel
 
@@ -133,6 +134,64 @@ final class DuoSettingsStateTests: XCTestCase {
                 XCTAssertFalse(texte.lowercased().contains(reproche), texte)
             }
         }
+    }
+
+    // MARK: - L'interrupteur des cœurs ne ment plus
+
+    /// **Le troisième défaut trouvé sur deux vrais iPhones.** L'autorisation système des
+    /// notifications n'est demandée qu'une fois, à l'onboarding, et il n'existe aucun autre
+    /// chemin pour l'accorder. Qui avait refusé ce jour-là ne recevait donc plus jamais rien,
+    /// pendant que la section Duo affichait un interrupteur « Cœurs reçus » allumé et que
+    /// `DuoNotifications.post` sortait en silence sur cette même autorisation.
+    ///
+    /// La PROMESSE éprouvée ici : **l'écran dit vrai exactement quand la notification
+    /// passerait**. Les deux consultent la même règle, et ce test la suit des deux côtés
+    /// pour chaque état possible de l'autorisation. Chacun avait son test avant ; aucun ne
+    /// comparait les deux, et c'est par là que le mensonge est passé.
+    func testLEcranDitVraiExactementQuandLaNotificationPasserait() {
+        let passent: [UNAuthorizationStatus] = [.authorized, .provisional]
+        let bloquent: [UNAuthorizationStatus] = [.notDetermined, .denied, .ephemeral]
+
+        for statut in passent {
+            XCTAssertEqual(DuoLikeNoticeRow.current(status: statut), .toggle, "\(statut)")
+            XCTAssertTrue(DuoNotifications.willNotify(newLikes: 1, enabled: true, status: statut),
+                          "\(statut)")
+        }
+        for statut in bloquent {
+            XCTAssertEqual(DuoLikeNoticeRow.current(status: statut), .systemOff, "\(statut)")
+            XCTAssertFalse(DuoNotifications.willNotify(newLikes: 1, enabled: true, status: statut),
+                           "\(statut)")
+        }
+    }
+
+    /// L'interrupteur de l'app garde son mot à dire quand le système, lui, laisse passer :
+    /// éteint, on ne notifie pas, mais l'écran a bien le droit d'afficher son interrupteur.
+    /// Les deux réglages sont distincts et le restent.
+    func testLInterrupteurDeLAppEtLAutorisationSystemeRestentDeuxChosesDifferentes() {
+        XCTAssertEqual(DuoLikeNoticeRow.current(status: .authorized), .toggle,
+                       "l'écran ne dépend que du système")
+        XCTAssertFalse(DuoNotifications.willNotify(newLikes: 1, enabled: false,
+                                                   status: .authorized),
+                       "et l'interrupteur coupe quand même l'annonce")
+        XCTAssertFalse(DuoNotifications.willNotify(newLikes: 0, enabled: true,
+                                                   status: .authorized),
+                       "aucun cœur, aucun bruit")
+    }
+
+    /// Le ton, et c'est ce qui compte le plus ici : ce n'est pas une erreur de l'utilisateur,
+    /// c'est un réglage à connaître. On explique, on dit ce qui continue de marcher, et on
+    /// ouvre la porte. Même règle que « pas de compte iCloud », juste au-dessus.
+    func testLeMessageDesNotificationsRefuseesNeReprocheRien() {
+        for texte in [DuoLikeNoticeRow.systemOffLabel, DuoLikeNoticeRow.systemOffDetail] {
+            XCTAssertFalse(texte.contains("—"), texte)
+            for reproche in ["erreur", "échec", "impossible", "tu n'as", "tu as refusé",
+                             "invalide", "attention"] {
+                XCTAssertFalse(texte.lowercased().contains(reproche), texte)
+            }
+        }
+        // Et il dit ce qui continue de marcher, sans quoi il laisserait croire à une perte.
+        XCTAssertTrue(DuoLikeNoticeRow.systemOffDetail.contains("arrivent quand même"),
+                      DuoLikeNoticeRow.systemOffDetail)
     }
 
     // MARK: - Reconnaître une zone disparue

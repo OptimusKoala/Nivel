@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UserNotifications
 import NivelCore
 
 struct SettingsView: View {
@@ -42,6 +43,13 @@ struct SettingsContent: View {
     /// Optimiste par défaut, voir `duoSection` : afficher « connecte-toi à iCloud » pendant
     /// la fraction de seconde que met le système à répondre serait un mensonge clignotant.
     @State var duoHasICloudAccount = true
+    /// L'autorisation système des notifications, relue à l'apparition de la section ET au
+    /// retour des réglages système (spec 1.15 §3.7). Optimiste par défaut, même motif que
+    /// `duoHasICloudAccount` : le cas courant est qu'elle soit accordée.
+    @State var duoNoticeStatus: UNAuthorizationStatus = .authorized
+    /// Le retour du premier plan, qui est aussi le retour des réglages système : c'est là
+    /// que l'autorisation ci-dessus vient peut-être de changer.
+    @Environment(\.scenePhase) var scenePhase
 
     @State private var kcalText = ""
     /// Nouvel objectif proposé par "Recalculer" — non nil = alerte de confirmation visible.

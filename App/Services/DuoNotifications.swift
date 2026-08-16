@@ -90,6 +90,41 @@ enum DuoNotifications {
         newLikes > 0 && enabled
     }
 
+    /// L'autorisation système laisse-t-elle passer quelque chose ? **La règle est ici et
+    /// nulle part ailleurs**, et c'est tout l'objet de cette fonction : l'interrupteur
+    /// « Cœurs reçus » des Réglages disait que tout allait bien pendant que `post` sortait
+    /// en silence sur cette même condition. Quelqu'un qui avait refusé les notifications à
+    /// l'onboarding ne recevait donc jamais rien, avec un interrupteur allumé sous les yeux.
+    ///
+    /// `.provisional` compte : une notification provisoire est livrée discrètement, sans son
+    /// ni bandeau, mais elle est livrée. La refuser ici ferait mentir l'écran dans l'autre
+    /// sens.
+    ///
+    /// `.ephemeral` ne compte pas : il n'existe que pour les App Clips, et Nivel n'en a pas.
+    nonisolated static func systemAllows(_ status: UNAuthorizationStatus) -> Bool {
+        status == .authorized || status == .provisional
+    }
+
+    /// Un cœur arrivé fera-t-il VRAIMENT du bruit ? Les trois conditions réunies, et c'est
+    /// exactement la garde de `post` : le réglage de l'app, et l'autorisation du système.
+    ///
+    /// Réunies ici parce que les deux se relisaient à deux endroits qui ne se parlaient pas.
+    nonisolated static func willNotify(newLikes: Int, enabled: Bool,
+                                       status: UNAuthorizationStatus) -> Bool {
+        shouldNotify(newLikes: newLikes, enabled: enabled) && systemAllows(status)
+    }
+
+    /// L'autorisation système, telle qu'elle est en ce moment. Elle ne se lit QUE de façon
+    /// asynchrone, d'où ce détour : la section Duo la demande à son apparition, comme elle
+    /// demande le compte iCloud, et de nouveau au retour du premier plan — c'est-à-dire au
+    /// retour des réglages système, où elle vient peut-être de changer.
+    ///
+    /// Rend le statut brut et non un booléen : c'est `systemAllows` qui tranche, à un seul
+    /// endroit, et un second verdict fabriqué en route est exactement ce qu'on répare ici.
+    static func systemStatus() async -> UNAuthorizationStatus {
+        await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
     /// Les cœurs qu'on n'a pas encore annoncés. Un réveil rend les enregistrements CHANGÉS,
     /// et un cœur peut revenir dans un lot pour une raison qui ne nous regarde pas : sans ce
     /// tri, le téléphone sonnerait deux fois pour le même geste.
@@ -113,8 +148,12 @@ enum DuoNotifications {
 
         let center = UNUserNotificationCenter.current()
         let reglages = await center.notificationSettings()
-        guard reglages.authorizationStatus == .authorized
-                || reglages.authorizationStatus == .provisional else { return }
+        // `willNotify` et pas un `== .authorized` écrit à la main : c'est la MÊME règle que
+        // la section Duo des Réglages consulte pour décider si elle a le droit d'afficher un
+        // interrupteur. Les deux ont divergé une fois, l'écran promettant des cœurs que ce
+        // silence-ci n'a jamais livrés.
+        guard willNotify(newLikes: likes.count, enabled: enabled,
+                         status: reglages.authorizationStatus) else { return }
 
         let contenu = UNMutableNotificationContent()
         contenu.title = titre

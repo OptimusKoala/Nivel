@@ -12,6 +12,7 @@
 
 import SwiftUI
 import UIKit
+import UserNotifications
 import NivelCore
 
 /// Les quatre états de la section, et rien d'autre : un état de plus serait un état qu'aucun
@@ -90,6 +91,42 @@ enum DuoSettingsState: Equatable {
     }
 }
 
+/// Ce que la ligne « Cœurs reçus » a le droit d'afficher.
+///
+/// L'interrupteur seul MENTAIT. L'autorisation système des notifications n'est demandée
+/// qu'une fois, à l'onboarding, et il n'existe aucun autre chemin pour l'accorder : qui a
+/// refusé ce jour-là ne recevait plus jamais rien, avec un interrupteur allumé sous les yeux
+/// et `DuoNotifications.post` qui sortait en silence.
+///
+/// Deux cas et pas trois : quand le système dit non, ce que vaut le réglage de l'app n'a
+/// aucune importance, et prétendre le contraire est exactement l'erreur qu'on répare.
+enum DuoLikeNoticeRow: Equatable {
+    /// Le système laisse passer : l'interrupteur dit vrai, on le montre.
+    case toggle
+    /// Le système ne laisse rien passer. On explique, et on ouvre la porte.
+    case systemOff
+
+    /// **La même règle que `DuoNotifications.post`**, consultée à la source plutôt que
+    /// recopiée : c'est leur divergence qui a fait le défaut, pas l'une ou l'autre.
+    static func current(status: UNAuthorizationStatus) -> DuoLikeNoticeRow {
+        DuoNotifications.systemAllows(status) ? .toggle : .systemOff
+    }
+
+    /// Ce qu'on dit quand le système ne laisse rien passer.
+    ///
+    /// Le ton est celui de « pas de compte iCloud », juste au-dessus dans le même écran, et
+    /// pour la même raison : ce n'est pas une erreur de l'utilisateur, c'est un réglage à
+    /// connaître. On explique, on dit ce qui continue de marcher, et on ouvre la porte.
+    /// Aucun rouge, aucun reproche, aucune alerte.
+    static let systemOffLabel =
+        "Les notifications de Nivel sont désactivées dans les réglages de l'iPhone."
+
+    /// Ce qui continue de marcher, et c'est vrai : un cœur reçu se range et s'affiche, seule
+    /// l'annonce se tait. Le dire évite de laisser croire qu'on perd quelque chose.
+    static let systemOffDetail =
+        "Les cœurs de ton duo arrivent quand même, tu les retrouves sur tes repas, tes activités et sur l'accueil."
+}
+
 /// Les deux feuilles d'appairage, ouvertes depuis cette section et de nulle part ailleurs.
 enum DuoPairingSheet: String, Identifiable {
     case invite, join
@@ -135,17 +172,27 @@ extension SettingsContent {
             case .join: DuoJoinView()
             }
         }
-        // L'état du compte se demande au système, donc en asynchrone. Optimiste par défaut
-        // (`duoHasICloudAccount` naît à `true`) : afficher « connecte-toi à iCloud » pendant
-        // la fraction de seconde de la réponse serait un mensonge clignotant.
+        // Les deux états système se demandent au système, donc en asynchrone. Optimistes par
+        // défaut (`duoHasICloudAccount` naît à `true`, `duoNoticeStatus` à `.authorized`) :
+        // afficher « connecte-toi à iCloud » ou « les notifications sont désactivées »
+        // pendant la fraction de seconde de la réponse serait un mensonge clignotant.
         .task {
             duoHasICloudAccount = await duo.accountIsAvailable()
+            duoNoticeStatus = await DuoNotifications.systemStatus()
             // Relire la zone en ouvrant les réglages, et c'est le seul crochet de
             // rafraîchissement du dépôt tant que l'accueil n'en a pas (tâche à venir) :
             // sans lui, un invité resterait indéfiniment « en attente de l'autre iPhone »
             // alors que le partenaire a publié depuis longtemps. Sans duo appairé, l'appel
             // sort à sa première ligne et n'émet rien (§3.1).
             await duo.refresh()
+        }
+        // Le retour des réglages système. C'est la moitié qui manquerait sans quoi : on
+        // propose d'aller accorder l'autorisation, la personne le fait, revient, et
+        // trouverait le même message qu'avant son départ. `.task` ne rejoue pas, la vue
+        // n'ayant jamais disparu.
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { duoNoticeStatus = await DuoNotifications.systemStatus() }
         }
     }
 
@@ -171,12 +218,37 @@ extension SettingsContent {
         }
     }
 
+    @ViewBuilder
     private var interrupteurDesCoeurs: some View {
-        Toggle(isOn: coeursBinding) {
-            VStack(alignment: .leading, spacing: 2) {
+        switch DuoLikeNoticeRow.current(status: duoNoticeStatus) {
+        case .toggle:
+            Toggle(isOn: coeursBinding) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Cœurs reçus").font(.subheadline.weight(.semibold))
+                    Text("être prévenu quand ton duo aime un repas ou une activité")
+                        .font(.caption).foregroundStyle(Theme.subtext)
+                }
+            }
+
+        case .systemOff:
+            // Pas d'interrupteur du tout : en montrer un désactivé laisserait croire que le
+            // réglage de l'app y est pour quelque chose, alors que rien de ce qu'on peut
+            // toucher ici ne changera quoi que ce soit.
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Cœurs reçus").font(.subheadline.weight(.semibold))
-                Text("être prévenu quand ton duo aime un repas ou une activité")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(DuoLikeNoticeRow.systemOffLabel)
                     .font(.caption).foregroundStyle(Theme.subtext)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(DuoLikeNoticeRow.systemOffDetail)
+                    .font(.caption).foregroundStyle(Theme.subtext)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button("Ouvrir les Réglages") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        openURL(url)
+                    }
+                }
+                .buttonStyle(SecondaryButtonStyle())
             }
         }
     }
