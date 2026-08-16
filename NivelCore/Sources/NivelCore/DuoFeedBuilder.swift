@@ -90,11 +90,23 @@ public enum DuoFeedBuilder {
                              + MealFormatting.frKcal(repas.kcal, isManual: repas.isManual))
             }
             + activities.map { activite in
-                DuoEvent(id: activite.publicID, kind: .activity, at: activite.date,
-                         title: activite.title,
-                         // Pas de tiret cadratin dans ce qui part chez le partenaire :
-                         // c'est du texte affiché, et la virgule fait le travail.
-                         subtitle: "\(activite.durationMinutes) min, +\(activite.xp) XP")
+                // Une activité qui ne rapporte rien ne l'annonce pas : le sous-titre
+                // s'arrête à la durée. `XPEngine.award` plafonne `activityDone` à deux
+                // fois par jour, donc la TROISIÈME marche d'une journée vaut réellement
+                // 0 XP — le cas n'a rien de théorique. Publier « +0 XP » reviendrait à
+                // annoncer à l'autre, sur sa page de profil, que ce qu'il vient de faire
+                // n'a rien valu. Le plafond est un garde-fou d'économie de jeu, pas un
+                // jugement sur l'effort, et la règle zéro culpabilisation de la v1 pèse
+                // ici plus lourd qu'ailleurs puisque le reproche serait lu par quelqu'un
+                // d'autre que soi.
+                //
+                // Pas de tiret cadratin non plus : c'est du texte affiché, et la virgule
+                // fait le travail.
+                let duree = "\(activite.durationMinutes) min"
+                return DuoEvent(id: activite.publicID, kind: .activity, at: activite.date,
+                                title: activite.title,
+                                subtitle: activite.xp == 0 ? duree
+                                    : "\(duree), +\(activite.xp) XP")
             }
 
         // Tri chronologique croissant : c'est une JOURNÉE qu'on relit du matin au soir,

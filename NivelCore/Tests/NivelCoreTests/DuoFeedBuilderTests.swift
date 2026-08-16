@@ -112,6 +112,32 @@ final class DuoFeedBuilderTests: XCTestCase {
         XCTAssertEqual(fil.first?.kind, .activity)
     }
 
+    /// Une activité qui ne rapporte rien ne l'annonce pas. Ce n'est pas un cas
+    /// théorique : `XPEngine.award` plafonne `activityDone` à deux fois par jour, donc
+    /// la TROISIÈME marche d'une journée vaut réellement 0 XP, et le sous-titre
+    /// s'afficherait régulièrement.
+    ///
+    /// Publier « +0 XP » reviendrait à annoncer à l'autre, sur sa page de profil, que ce
+    /// qu'il vient de faire n'a rien valu. Le plafond est un garde-fou d'économie de
+    /// jeu, pas un jugement sur l'effort. La règle zéro culpabilisation de la v1
+    /// s'applique ici avec une force particulière, puisque le reproche serait lu par
+    /// quelqu'un d'autre que soi (spec 1.15 §3.4).
+    func testUneActiviteQuiNeRapporteRienNeLAnnoncePas() {
+        let fil = DuoFeedBuilder.build(
+            meals: [], activities: [activite(a: heure(18), minutes: 20, xp: 0)])
+
+        XCTAssertEqual(fil.first?.subtitle, "20 min")
+    }
+
+    /// Le pendant : la virgule et la mention ne disparaissent QUE sur un zéro. Sans ce
+    /// test, une condition trop large (`xp <= 0`, ou pire) passerait inaperçue.
+    func testUneActiviteQuiRapporteLAnnonceToujours() {
+        let fil = DuoFeedBuilder.build(
+            meals: [], activities: [activite(a: heure(18), minutes: 20, xp: 30)])
+
+        XCTAssertEqual(fil.first?.subtitle, "20 min, +30 XP")
+    }
+
     /// Aucun tiret cadratin dans ce qui part chez le partenaire : c'est du texte
     /// affiché, la règle du projet s'y applique, et la virgule fait le travail.
     func testAucunSousTitreNeContientDeTiretCadratin() {
