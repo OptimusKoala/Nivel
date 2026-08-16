@@ -1,8 +1,10 @@
 // NivelTests/CalorieRingLegendTests.swift
-// Réglages de mise à l'échelle de la carte calories (spec v1.14 §5.5) : la légende de
-// dépense s'efface aux tailles d'accessibilité, où elle passait à trois lignes et
-// faisait presque doubler la hauteur de la carte ; le contenu central de l'anneau est
-// plafonné, faute de quoi il se dessine par-dessus le tracé.
+// La légende de dépense de la carte calories (spec v1.14 §5.5) : elle s'efface aux
+// tailles d'accessibilité, où elle passait à trois lignes et faisait presque doubler la
+// hauteur de la carte.
+//
+// Le contenu central de l'anneau — son plafond de taille compris — vit dans
+// CalorieRingCenterTests depuis la 1.15, avec le reste de la géométrie du centre.
 //
 // Ce que ces tests couvrent, et ce qu'ils NE couvrent PAS. Comme MealLogSheetDismissTests,
 // ils épinglent des décisions pures (une frontière, un plafond) extraites de la vue. Ils
@@ -45,27 +47,5 @@ final class CalorieRingLegendTests: XCTestCase {
     func testSeulesLesSeptTaillesOrdinairesAffichentLaLegende() {
         let affichent = DynamicTypeSize.allCases.filter { CalorieRingCard.showsBurnLegend(at: $0) }
         XCTAssertEqual(affichent, [.xSmall, .small, .medium, .large, .xLarge, .xxLarge, .xxxLarge])
-    }
-
-    // MARK: - Plafond du contenu central
-
-    /// Le plafond exact, épinglé : l'anneau ne s'agrandit pas avec le texte, son centre
-    /// non plus. `.large` a été retenu à l'image, pas déduit.
-    func testLePlafondDuCentreEstLarge() {
-        XCTAssertEqual(CalorieRingCard.centerTypeSizeCap, .large)
-    }
-
-    /// La raison du plafond, dite en termes de comportement : `.xLarge` est la première
-    /// taille où le gros chiffre mord le tracé de l'anneau, donc le plafond doit rester
-    /// STRICTEMENT en dessous. C'est cette borne-là qui l'a fixé — et non `.xxxLarge`,
-    /// où c'est la seconde ligne qui traverse le tracé.
-    func testLePlafondDuCentreResteSousLaTailleQuiMordLeTrace() {
-        XCTAssertLessThan(CalorieRingCard.centerTypeSizeCap, .xLarge)
-    }
-
-    /// Un plafond au-delà des tailles ordinaires ne plafonnerait plus rien : c'est le
-    /// sens même du réglage, et ça interdit de le « détendre » sans y penser.
-    func testLePlafondDuCentreNEstPasUneTailleAccessibilite() {
-        XCTAssertFalse(CalorieRingCard.centerTypeSizeCap.isAccessibilitySize)
     }
 }

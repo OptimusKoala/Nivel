@@ -65,25 +65,51 @@ struct CalorieRingCard: View {
     /// c'est la largeur du CADRE, pas celle du `ZStack` — voir `ringOuterPadding`.
     static let ringMaxWidth: CGFloat = 130
 
-    /// Marge extérieure de l'anneau : le trait de 12 pt est centré sur le cercle, il
-    /// déborde donc de 6 pt du cercle géométrique, qui serait rogné par le cadre.
+    /// Épaisseur du trait de l'anneau extérieur (mangé / objectif).
+    static let outerRingLineWidth: CGFloat = 12
+
+    /// Épaisseur du trait de l'anneau intérieur (dépense). Plus fin que l'extérieur :
+    /// c'est l'information secondaire de la carte.
+    static let innerRingLineWidth: CGFloat = 8
+
+    /// Écart entre les deux anneaux. Il pilote le diamètre du disque blanc central,
+    /// donc la place réellement offerte au texte : l'augmenter RÉTRÉCIT le centre.
+    static let innerRingPadding: CGFloat = 14
+
+    /// Marge extérieure de l'anneau. Le trait est centré sur le cercle géométrique, il
+    /// déborde donc de sa moitié — d'où la dérivation plutôt qu'un 6 recopié : si un
+    /// jour le trait change d'épaisseur, la marge suit toute seule.
     ///
     /// Mais elle est posée AVANT le `.frame(maxWidth:)`, donc elle ne s'ajoute pas
     /// autour des 130 pt : elle les RETRANCHE. Le `ZStack` ne reçoit que 118 pt, et
     /// tout ce qui se calcule à l'intérieur (le cercle de dépense, le disque blanc,
     /// la place du texte) part de 118 et non de 130. C'est le piège de ce bloc : la
     /// 1.15 s'est trompée de 12 pt en le lisant, et la 1.14 avant elle.
-    static let ringOuterPadding: CGFloat = 6
+    static let ringOuterPadding: CGFloat = outerRingLineWidth / 2
 
     /// Taille du gros chiffre. 26 pt jusqu'à la 1.14 : « ~1 240 » y mordait le tracé.
     /// La borne assumée est QUATRE chiffres (spec 1.15 §4), pas davantage.
+    ///
+    /// Ce que la descente à 22 achète exactement : à quatre chiffres le texte est de
+    /// toute façon RÉDUIT par `centerMinimumScaleFactor` (voir plus bas), et à 26 pt il
+    /// tenait déjà. Elle n'évite donc pas la réduction, elle éloigne du PLANCHER de
+    /// réduction — 0,88 de facteur requis au lieu de 0,74, contre un plancher à 0,70.
+    /// C'est cette réserve qui la justifie, et c'est elle que teste
+    /// `CalorieRingCenterTests`, pas la taille elle-même.
     static let centerFontSize: CGFloat = 22
 
     /// Rembourrage horizontal du bloc central. 14 pt jusqu'à la 1.14, ce qui laissait
-    /// 90 pt de large à un texte dont le disque blanc n'en offre que 74 à la hauteur
-    /// du gros chiffre. C'est LA cause du débordement, la taille de police ne faisait
-    /// qu'en retarder l'apparition. Voir CalorieRingCenterTests pour la géométrie.
+    /// 90 pt de large à un texte dont le disque blanc n'en offre que 73,6 à la hauteur
+    /// du gros chiffre. C'est LA cause du débordement : le texte avait le droit d'être
+    /// plus large que le cercle censé le contenir. Voir CalorieRingCenterTests pour la
+    /// géométrie.
     static let centerHorizontalPadding: CGFloat = 24
+
+    /// Plancher de réduction du texte central. À quatre chiffres il travaille pour de
+    /// bon (le gros chiffre est rendu autour de 19 pt, pas 22) : ce n'est pas un filet
+    /// de secours, c'est le mécanisme qui fait tenir le texte. Descendre plus bas
+    /// rendrait le chiffre illisible, donc on garde de la réserve au-dessus.
+    static let centerMinimumScaleFactor: CGFloat = 0.7
 
     private var isOver: Bool { target > 0 && eaten > target }
     private var fraction: Double {
@@ -112,11 +138,11 @@ struct CalorieRingCard: View {
     private var ring: some View {
         ZStack {
             Circle()
-                .stroke(Theme.track, lineWidth: 12)
+                .stroke(Theme.track, lineWidth: Self.outerRingLineWidth)
             Circle()
                 .trim(from: 0, to: fraction)
                 .stroke(isOver ? Theme.accent : Theme.green,
-                        style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                        style: StrokeStyle(lineWidth: Self.outerRingLineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             // Anneau de dépense (spec §5.5), rayon de tracé 45 contre 59 à l'extérieur
             // (le padding de 14 sur les 118 pt du ZStack — le plafond de 130 moins
@@ -127,13 +153,14 @@ struct CalorieRingCard: View {
             // (La façade `Theme` n'expose pas `primary` : c'est `Theme.orange` qui
             // porte `palette.primary`.)
             Circle()
-                .stroke(Theme.track, lineWidth: 8)
-                .padding(14)
+                .stroke(Theme.track, lineWidth: Self.innerRingLineWidth)
+                .padding(Self.innerRingPadding)
             Circle()
                 .trim(from: 0, to: burnFraction)
-                .stroke(Theme.orange, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .stroke(Theme.orange,
+                        style: StrokeStyle(lineWidth: Self.innerRingLineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-                .padding(14)
+                .padding(Self.innerRingPadding)
             // Le centre ne change pas : le chiffre qu'on vient chercher reste le mangé,
             // en grand (spec §5.5).
             VStack(spacing: 2) {
@@ -141,7 +168,7 @@ struct CalorieRingCard: View {
                 Text("~\(eaten.frFormatted)")
                     .font(.system(size: Self.centerFontSize, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.text)
-                    .minimumScaleFactor(0.7)
+                    .minimumScaleFactor(Self.centerMinimumScaleFactor)
                     .lineLimit(1)
                     .contentTransition(.numericText())
                 // Pas de "~" sur l'objectif : c'est un budget fixé, pas une estimation
