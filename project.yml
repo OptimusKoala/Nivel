@@ -19,8 +19,18 @@ targets:
         # en plus des captures iPad 13 pouces.
         TARGETED_DEVICE_FAMILY: "1"
       configs:
+        # Debug est EXPLICITEMENT en signature automatique. Sans ces trois lignes, Xcode
+        # « répare » le projet dès qu'on ouvre Signing & Capabilities et propage le profil
+        # App Store de Release dans Debug. L'installation échoue alors sur l'appareil avec
+        # « Attempted to install a Beta profile without the proper entitlement » (0xe800801f),
+        # message qui ne dit rien de sa vraie cause. Le projet étant généré, la réparation
+        # d'Xcode n'est jamais committée : elle disparaît au prochain xcodegen, ce qui rend
+        # le défaut intermittent et d'autant plus pénible à diagnostiquer.
         Debug:
           NIVEL_APS_ENVIRONMENT: development
+          CODE_SIGN_STYLE: Automatic
+          CODE_SIGN_IDENTITY[sdk=iphoneos*]: Apple Development
+          PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]: ""
         # Signature MANUELLE en Release, appareil uniquement (scripts/release.sh) : la
         # signature automatique choisit un profil de DÉVELOPPEMENT à l'archivage, et la
         # team n'a aucun appareil enregistré — donc aucun profil de dev possible. Archiver
@@ -104,6 +114,13 @@ targets:
         # Une extension DOIT être préfixée par le bundle id de l'app.
         PRODUCT_BUNDLE_IDENTIFIER: com.elitedangereuse.Nivel.Widgets
       configs:
+        # Debug explicitement automatique, pour la même raison que la cible Nivel : une
+        # extension signée avec le profil App Store fait échouer l'installation de l'app
+        # entière sur l'appareil, et le message d'erreur ne nomme que l'app.
+        Debug:
+          CODE_SIGN_STYLE: Automatic
+          CODE_SIGN_IDENTITY[sdk=iphoneos*]: Apple Development
+          PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]: ""
         # Même signature manuelle que l'app, avec le profil de l'extension.
         Release:
           CODE_SIGN_STYLE: Manual
