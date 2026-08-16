@@ -38,21 +38,10 @@ extension GameService {
     func publishDuoNow(identity: DuoIdentity = .shared, now: Date = .now) async -> Bool {
         guard identity.isPaired, let target = DuoDatabase.target(for: identity) else { return false }
 
-        // 1 et 2. Attribuer les identifiants manquants et LES PERSISTER, avant de
-        // construire quoi que ce soit.
-        //
-        // Cet ordre est le cœur de cette fonction, et il n'est pas une question de
-        // propreté. `DuoFeedBuilder.build` écarte tout événement dont le `publicID` est
-        // vide, parce que le nom d'enregistrement d'un cœur vaut
-        // `like-<donneur>-<événement>` (voir `DuoLikeID.recordName`) : deux entrées non
-        // identifiées produiraient toutes deux `like-G1-`, et un cœur posé sur l'une
-        // apparaîtrait sur l'autre. Construire AVANT d'attribuer publierait donc une
-        // journée amputée de ses entrées d'avant la 1.15, indéfiniment.
-        assignMissingDuoIDs(on: now)
-
-        // 3. L'instantané, construit par la moitié qui se teste (8a).
+        // 1, 2 et 3. Attribuer, persister, PUIS construire — dans cet ordre, tenu par
+        // `prepareDuoSnapshot` et éprouvé par un test qui rougit si on l'inverse.
         let steps = await todaySteps()
-        guard let snapshot = makeDuoSnapshot(memberID: identity.memberID, steps: steps, now: now)
+        guard let snapshot = prepareDuoSnapshot(memberID: identity.memberID, steps: steps, now: now)
         else { return false }
 
         // 4. Sortir si rien n'a bougé. L'égalité de `DuoSnapshot` ignore `generatedAt`
@@ -76,6 +65,24 @@ extension GameService {
         } catch {
             return false
         }
+    }
+
+    /// Les étapes 1 à 3, réunies ICI et pas dans `publishDuoNow`, pour une raison
+    /// précise : l'ordre est le cœur de la publication, et il n'était protégé par aucun
+    /// test tant qu'il vivait au milieu d'une fonction que rien ne peut appeler sans
+    /// CloudKit. Réuni dans une fonction qui REND l'instantané, il devient observable —
+    /// inverser les deux lignes ci-dessous fait virer
+    /// `testLaPreparationAttribueLesIdentifiantsAvantDeConstruireLeFil` au rouge.
+    ///
+    /// Pourquoi l'ordre : `DuoFeedBuilder.build` écarte tout événement dont le `publicID`
+    /// est vide, parce que le nom d'enregistrement d'un cœur vaut
+    /// `like-<donneur>-<événement>` (voir `DuoLikeID.recordName`) — deux entrées non
+    /// identifiées produiraient toutes deux `like-G1-`, et un cœur posé sur l'une
+    /// apparaîtrait sur l'autre. Construire AVANT d'attribuer publierait donc une journée
+    /// amputée de toutes ses entrées d'avant la 1.15, indéfiniment et en silence.
+    func prepareDuoSnapshot(memberID: String, steps: Int?, now: Date = .now) -> DuoSnapshot? {
+        assignMissingDuoIDs(on: now)
+        return makeDuoSnapshot(memberID: memberID, steps: steps, now: now)
     }
 
     /// 5. L'écriture. `savePolicy = .changedKeys` : on n'écrase que ce qu'on a posé, ce

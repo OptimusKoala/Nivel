@@ -272,6 +272,39 @@ final class DuoPublishGuardTests: XCTestCase {
     }
 
 
+
+    /// L'ORDRE de la publication, et c'est le seul test qui le garde. Attribuer et
+    /// persister les identifiants doit précéder la construction du fil : `build` écarte
+    /// tout événement dont le `publicID` est vide, si bien qu'inverser les deux
+    /// publierait une journée amputée de TOUTES ses entrées d'avant la 1.15, à chaque
+    /// fois, sans que rien ne s'allume.
+    ///
+    /// La preuve tient à ce que la fonction rend l'instantané : les entrées naissent
+    /// sans identifiant, et pourtant les trois sont dans le fil. Si la construction
+    /// passait la première, le fil serait vide alors même que les `publicID` seraient
+    /// remplis à la fin de l'appel — c'est pourquoi vérifier les seuls `publicID` ne
+    /// suffirait pas.
+    func testLaPreparationAttribueLesIdentifiantsAvantDeConstruireLeFil() async throws {
+        let matin = await service.logMeal(slot: .breakfast, lines: [], manualKcal: 300)
+        let midi = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420)
+        let sport = await service.logActivity(
+            activity: try XCTUnwrap(service.activityCatalog.first), durationMinutes: 20)
+        for entree in [matin.publicID, midi.publicID] { XCTAssertEqual(entree, "") }
+        XCTAssertEqual(sport.publicID, "")
+
+        let instantane = try XCTUnwrap(
+            service.prepareDuoSnapshot(memberID: "M1", steps: nil))
+
+        XCTAssertFalse(matin.publicID.isEmpty)
+        XCTAssertFalse(midi.publicID.isEmpty)
+        XCTAssertFalse(sport.publicID.isEmpty)
+        XCTAssertEqual(Set(instantane.events.map(\.id)),
+                       Set([matin.publicID, midi.publicID, sport.publicID]),
+                       "le fil ne contient pas toutes les entrées du jour : la "
+                           + "construction a-t-elle précédé l'attribution ?")
+        XCTAssertEqual(instantane.events.count, 3)
+    }
+
     /// Le pendant côté appelant du test « un cœur de la veille survit ». `orphanEventIDs`
     /// juge contre l'ensemble qu'on lui donne : c'est donc CETTE fonction qui décide si
     /// les cœurs de la veille vivent ou meurent, et elle doit couvrir TOUTES les
