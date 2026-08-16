@@ -1,5 +1,5 @@
 // App/Views/Meals/PantryView.swift
-// Le frigo (spec v1.14 §6.3) : les 58 ingrédients du catalogue en cases à cocher,
+// Le frigo (spec v1.14 §6.3) : les 65 ingrédients du catalogue en cases à cocher,
 // une recherche, un bouton « Vider ». Ce que l'utilisateur coche ici ne sert qu'à
 // CLASSER les idées de repas — d'où le sous-titre, imposé au mot près par la spec :
 // c'est le seul écran de Nivel qui ressemble à un formulaire, il doit dire tout de
