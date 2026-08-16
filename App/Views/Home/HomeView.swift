@@ -10,6 +10,9 @@ import NivelCore
 
 struct HomeView: View {
     @Environment(GameService.self) private var game
+    /// L'état du duo (spec 1.15). Sans duo appairé il ne rend que des valeurs neutres, et
+    /// l'accueil se comporte alors exactement comme celui de la 1.14.
+    @Environment(DuoService.self) private var duo
     @Query private var profiles: [UserProfile]
     @Query private var states: [GamificationState]
     @Query private var todayMeals: [MealEntry]
@@ -42,6 +45,7 @@ struct HomeView: View {
     @State private var showMealLog = false
     @State private var showActivityPicker = false
     @State private var showSettings = false
+    @State private var showDuoProfile = false
     @State private var sessionStatus: (session: ActivitySession, done: Bool)?
     @State private var showSessionPlayer = false
 
@@ -93,14 +97,33 @@ struct HomeView: View {
         case context(MessageContext, Int?)
     }
 
+    /// L'ordre des trois cas EST la décision, et le cœur s'insère au milieu :
+    ///
+    /// - une récompense passe d'abord. Nivelito ne coupe pas un « +20 XP » pour annoncer un
+    ///   cœur : ce qu'on vient de faire soi-même prime sur ce que l'autre en a pensé ;
+    /// - un cœur non lu passe ensuite, avant l'humeur horaire. C'est le RATTRAPAGE promis
+    ///   par le §3.7 : quand le réveil silencieux n'est pas passé — batterie, app tuée
+    ///   depuis le sélecteur, notifications refusées — c'est ce signal-là qui reste, et
+    ///   c'est sa seule raison d'être ;
+    /// - l'humeur du moment en dernier, comme depuis la v1.
+    ///
+    /// `unreadDuoLikes` porte une valeur par défaut : les appelants et les tests de la 1.14
+    /// n'ont pas à connaître le duo, et ce défaut est ce qui garantit que l'accueil de
+    /// quelqu'un sans duo se décide EXACTEMENT comme avant.
     static func bubbleDecision(
-        mealXP: Int?, activityXP: Int?,
+        mealXP: Int?, activityXP: Int?, unreadDuoLikes: Int = 0,
         fallback: MessageContext, fallbackValue: Int?
     ) -> BubbleDecision {
         if let mealXP, mealXP > 0 { return .reward(.afterMealLog, mealXP) }
         if let activityXP, activityXP > 0 { return .reward(.afterActivity, activityXP) }
         return .context(fallback, fallbackValue)
     }
+
+    /// Le bouton du duo n'existe QUE s'il y a quelqu'un en face (§3.9). Une fonction pour
+    /// une condition d'une ligne, parce que c'est une promesse : sans duo, l'en-tête est
+    /// rigoureusement celui de la 1.14.
+    static func showsDuoButton(hasPartner: Bool) -> Bool { hasPartner }
+
 
     /// Expression de Nivelito sur l'accueil — logique PURE, testable (HomeDashboardTests).
     /// Les événements transitoires priment sur l'humeur horaire : une célébration
@@ -183,6 +206,11 @@ struct HomeView: View {
         }
         .sheet(isPresented: $showSettings, onDismiss: refreshBurnAndBubble) {
             SettingsView()
+        }
+        // Ouvrir la page éteint la pastille ET les cœurs non lus (`markProfileSeen`, appelé
+        // par la page elle-même) ; au retour, la bulle repasse donc à l'humeur du moment.
+        .sheet(isPresented: $showDuoProfile, onDismiss: updateBubble) {
+            DuoProfileView()
         }
         .sheet(isPresented: $showSessionPlayer, onDismiss: refreshSessionStatus) {
             if let status = sessionStatus {
@@ -305,9 +333,23 @@ struct HomeView: View {
                 Text("Salut \(profile?.name ?? "") 👋")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.text)
+                    // Un troisième élément entre sur cette ligne quand un duo est appairé,
+                    // et l'en-tête est le bloc le plus contraint de l'app. Sur le plus
+                    // petit iPhone, un prénom long tronquerait ; il rétrécit plutôt.
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
-            Spacer()
+            Spacer(minLength: 4)
             levelPill
+            // Le bouton du duo, à gauche de l'engrenage. Construit seulement s'il y a
+            // quelqu'un en face : sans duo, cette ligne n'ajoute RIEN à l'en-tête.
+            if Self.showsDuoButton(hasPartner: duo.partnerSnapshot != nil),
+               let partenaire = duo.partnerSnapshot {
+                DuoAvatarButton(sexRaw: partenaire.sexRaw, partnerName: partenaire.name,
+                                hasNews: duo.hasNewActivity) {
+                    showDuoProfile = true
+                }
+            }
             Button {
                 showSettings = true
             } label: {

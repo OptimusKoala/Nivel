@@ -149,6 +149,10 @@ final class DuoService {
     /// diverger le cache persisté de ce qui est affiché.
     var partnerSnapshot: DuoSnapshot? { identity.partnerSnapshot }
 
+    /// Les cœurs arrivés dont on n'a pas encore parlé à l'utilisateur. Alimente la bulle de
+    /// l'accueil (§3.9) ; remis à zéro par `markProfileSeen`.
+    var unreadLikeCount: Int { identity.unreadLikeCount }
+
     /// Depuis quand ce duo existe, pour la ligne d'état des réglages (§3.9).
     var pairedAt: Date? { identity.pairedAt }
 

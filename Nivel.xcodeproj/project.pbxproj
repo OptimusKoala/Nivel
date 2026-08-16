@@ -111,6 +111,7 @@
 		B9A5B5B06733A504CD4FDEEF /* DuoProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E544ECD03E5AE09A6198D87 /* DuoProfileTests.swift */; };
 		BF2B37358A89A407B1136563 /* PosturePlanSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CFA32802959F33180BCCFD /* PosturePlanSettings.swift */; };
 		C10EAB401C8D872A4C2BCAD0 /* MealLogSheetDismissTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFC2D67F033E3B820DEE3AAC /* MealLogSheetDismissTests.swift */; };
+		C37946A250E2431BB894B4AF /* DuoAvatarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ABBDFE2E71135CED49C8819 /* DuoAvatarButton.swift */; };
 		C4741F7A70E605F1FC308D14 /* WidgetCalorieRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49A890D862F2479B8A7C2E0 /* WidgetCalorieRing.swift */; };
 		C57910A2F19CC7C8B8FC2E4E /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A75857CFA83CD2BBC7B811A /* WidgetBridge.swift */; };
 		C5F456A98B8DC00057306084 /* SettingsView+Reminders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2876B0755FAF9E69C37EECFF /* SettingsView+Reminders.swift */; };
@@ -142,6 +143,7 @@
 		F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E840C37923218C1DC6C0614D /* Formatting.swift */; };
 		FA7D46CC8FA1F8D3D0E4FC7E /* DuoServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726318FF4C63560ED6D99D48 /* DuoServiceTests.swift */; };
 		FB9F1654D2AFF306E24D59CF /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4AF60C635E23219D03138E /* ThemePalette.swift */; };
+		FD76C77A0233F3F9385F4B77 /* DuoHomeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0B1BA69E8293EBFD22BF1D /* DuoHomeTests.swift */; };
 		FDCB8202104609DE46003A7A /* GameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A1F6969B88BCA1A9BE77195 /* GameService.swift */; };
 		FE4A11B0B48A1B381C926EC7 /* TimerRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79570BB8A6B99B6D9314323 /* TimerRingView.swift */; };
 		FF12E9FD2218E9B1A09DFA9A /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2749E47DBFD2A5D89042A89E /* HealthKitService.swift */; };
@@ -199,6 +201,7 @@
 		0F1E6C3704AFDDD3972C4384 /* NivelWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelWidgets.swift; sourceTree = "<group>"; };
 		16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		178F1A448834CBB44EAA6775 /* DuoQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoQRCode.swift; sourceTree = "<group>"; };
+		1ABBDFE2E71135CED49C8819 /* DuoAvatarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoAvatarButton.swift; sourceTree = "<group>"; };
 		1B870793FACF92E8A3EC300C /* Nivel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nivel.entitlements; sourceTree = "<group>"; };
 		1B9B9196CD68143267D66D54 /* timer_step.caf */ = {isa = PBXFileReference; path = timer_step.caf; sourceTree = "<group>"; };
 		1CEF612545C16E3249D319E7 /* PosturePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosturePlanTests.swift; sourceTree = "<group>"; };
@@ -221,6 +224,7 @@
 		37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderSettingsTests.swift; sourceTree = "<group>"; };
 		3B3412AFA14494C601193A76 /* MealBasketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealBasketView.swift; sourceTree = "<group>"; };
 		3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNivelito.swift; sourceTree = "<group>"; };
+		3D0B1BA69E8293EBFD22BF1D /* DuoHomeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoHomeTests.swift; sourceTree = "<group>"; };
 		3F5A1A9F80DAACD0ED4A950D /* DuoNotificationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoNotificationsTests.swift; sourceTree = "<group>"; };
 		415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoPublisher.swift; sourceTree = "<group>"; };
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
@@ -528,6 +532,7 @@
 		8730323766E830B937E89D33 /* Duo */ = {
 			isa = PBXGroup;
 			children = (
+				1ABBDFE2E71135CED49C8819 /* DuoAvatarButton.swift */,
 				B788BEC7F6C4179624DB69E9 /* DuoFeedRow.swift */,
 				DA34DD31A2E8072BB2E3AEE3 /* DuoPairingView.swift */,
 				E648194BFD857516B4659609 /* DuoProfileView.swift */,
@@ -599,6 +604,7 @@
 				CD88F18972D8921623E8DFFB /* CelebrationDismissTests.swift */,
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
+				3D0B1BA69E8293EBFD22BF1D /* DuoHomeTests.swift */,
 				A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */,
 				3F5A1A9F80DAACD0ED4A950D /* DuoNotificationsTests.swift */,
 				D57EEA0C75E83F471DC06E63 /* DuoPairingTests.swift */,
@@ -864,6 +870,7 @@
 				ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */,
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */,
+				C37946A250E2431BB894B4AF /* DuoAvatarButton.swift in Sources */,
 				1B20AAF9C5BD09A929E4ACF3 /* DuoDatabase.swift in Sources */,
 				D0AA74260EAAADF8031C4653 /* DuoFeedRow.swift in Sources */,
 				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
@@ -974,6 +981,7 @@
 				71F256526E0F3D73A7E90F83 /* CelebrationDismissTests.swift in Sources */,
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
+				FD76C77A0233F3F9385F4B77 /* DuoHomeTests.swift in Sources */,
 				92A5342A30BBFF472BC7BFFE /* DuoIdentityTests.swift in Sources */,
 				292FD42BD69AF06F8B5823C5 /* DuoNotificationsTests.swift in Sources */,
 				DC552D7BA1E1A2FDC62BD56B /* DuoPairingTests.swift in Sources */,
