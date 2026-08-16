@@ -26,7 +26,7 @@ final class SportServiceTests: XCTestCase {
         try context.save()
 
         service = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
-                              widgetDefaults: nil)
+                              widgetDefaults: nil, duoIdentity: nil)
         walk = try XCTUnwrap(service.activityCatalog.first { $0.id == "walk" })
         session = try XCTUnwrap(service.sessionCatalog.first { $0.id == "wake_up" })
     }
@@ -42,7 +42,7 @@ final class SportServiceTests: XCTestCase {
 
         // Le plafond est dérivé des ActivityEntry persistées → tient à la "relance".
         let restarted = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
-                                    widgetDefaults: nil)
+                                    widgetDefaults: nil, duoIdentity: nil)
         let fourth = await restarted.logActivity(activity: walk, durationMinutes: 10)
         XCTAssertEqual(fourth.xpAwarded, 0)
 
@@ -148,7 +148,7 @@ final class SportServiceTests: XCTestCase {
     func testConcurrentLogActivityRespectsCapEvenWhileSuspended() async throws {
         let slowSteps = SlowStepsService()
         let concurrentService = GameService(modelContext: context, stepsService: slowSteps,
-                                            widgetDefaults: nil)
+                                            widgetDefaults: nil, duoIdentity: nil)
         let state = try XCTUnwrap(try context.fetch(FetchDescriptor<GamificationState>()).first)
         state.questWeekID = QuestEngine.weekID(for: .now, calendar: GameService.calendar)
         state.activeQuestIDs = ["steps_25k"]

@@ -45,6 +45,10 @@ final class GameService {
     /// Destination du snapshot widget — injectable pour les tests (suite dédiée,
     /// pas de pollution du vrai App Group), comme ThemeStore(defaults:).
     let widgetDefaults: UserDefaults?
+    /// L'état d'appairage du duo, INJECTÉ comme `widgetDefaults` et pour la même raison :
+    /// les tests passent `nil` et ne touchent jamais les vrais réglages. `nil` veut dire
+    /// « cet appareil ne publie rien », ce qui est aussi l'état d'un utilisateur sans duo.
+    let duoIdentity: DuoIdentity?
 
     /// Catalogues embarqués (chargés une fois ; vides si le bundle est corrompu — jamais de crash).
     let questCatalog: [Quest]
@@ -142,10 +146,12 @@ final class GameService {
     }
 
     init(modelContext: ModelContext, stepsService: StepsProviding,
-         widgetDefaults: UserDefaults? = WidgetBridge.sharedDefaults) {
+         widgetDefaults: UserDefaults? = WidgetBridge.sharedDefaults,
+         duoIdentity: DuoIdentity? = nil) {
         self.modelContext = modelContext
         self.stepsService = stepsService
         self.widgetDefaults = widgetDefaults
+        self.duoIdentity = duoIdentity
         self.questCatalog = Self.loadOrAssert({ try Catalogs.quests() }, fallback: [])
         self.badgeCatalog = Self.loadOrAssert({ try Catalogs.badges() }, fallback: [])
         self.messageBank = Self.loadOrAssert({ try MessageBank.load() }, fallback: nil)

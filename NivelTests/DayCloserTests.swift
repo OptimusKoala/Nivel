@@ -59,7 +59,7 @@ final class DayCloserTests: XCTestCase {
     }
 
     private func makeService(steps: FakeStepsService) -> GameService {
-        GameService(modelContext: context, stepsService: steps, widgetDefaults: nil)
+        GameService(modelContext: context, stepsService: steps, widgetDefaults: nil, duoIdentity: nil)
     }
 
     /// Repas inséré directement (sans XP) à midi du jour donné : la clôture doit

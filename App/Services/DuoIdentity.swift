@@ -44,12 +44,21 @@ final class DuoIdentity {
         static let lastPublishedSnapshot = "nivel.duo.lastPublishedSnapshot"
     }
 
-    /// L'identité de CET appareil dans le duo, créée une fois à la première lecture et
-    /// jamais régénérée. `let` et non `var` : aucun chemin de code ne peut donc la
-    /// changer, et `unpair()` ne la touche pas. Un `memberID` qui bougerait laisserait
-    /// un membre fantôme dans la zone partagée et détacherait tous les cœurs déjà
-    /// reçus, puisqu'un `DuoLike` désigne son donneur par cet identifiant.
-    let memberID: String
+    /// L'identité de CET appareil dans le duo. `nil` tant qu'aucun duo n'a jamais été
+    /// appairé, et c'est le point important : **naître ne la crée pas**.
+    ///
+    /// La version précédente le fabriquait à la première lecture, dans `init`. Mesuré,
+    /// l'effet était bien pire qu'une inélégance : `saveOrAssert()` appelle
+    /// `publishDuo()`, dont l'argument par défaut `.shared` était évalué au site
+    /// d'appel, donc à CHAQUE sauvegarde — et des suites de tests qui n'ont jamais
+    /// entendu parler du duo laissaient une identité dans les vrais réglages de l'hôte
+    /// de test. Un type qui écrit en naissant n'a aucun endroit sûr où être lu.
+    ///
+    /// `private(set)` : seul `createMemberID()` l'attribue, et `unpair()` n'y touche pas.
+    /// Un `memberID` qui bougerait laisserait un membre fantôme dans la zone partagée et
+    /// détacherait tous les cœurs déjà reçus, un `DuoLike` désignant son donneur par cet
+    /// identifiant.
+    private(set) var memberID: String?
 
     /// Nil tant qu'aucun duo n'est appairé, et c'est ce nil qui garantit la promesse du
     /// §3.1 : sans duo, aucune requête réseau n'est émise et l'app se comporte comme la
@@ -109,16 +118,11 @@ final class DuoIdentity {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
 
-        // Créé ici, et ici seulement. Un identifiant absent OU vide est regénéré : la
-        // chaîne vide serait un identifiant accepté partout ailleurs sans l'être
-        // vraiment, exactement le piège que `publicID` évite de son côté (§3.4).
+        // LECTURE SEULE, comme tout ce qui suit. Une chaîne vide vaut absence : elle
+        // serait un identifiant accepté partout ailleurs sans en être un, exactement le
+        // piège que `publicID` évite de son côté (§3.4).
         let stocke = defaults.string(forKey: Key.memberID)
-        if let stocke, !stocke.isEmpty {
-            memberID = stocke
-        } else {
-            memberID = UUID().uuidString
-            defaults.set(memberID, forKey: Key.memberID)
-        }
+        memberID = (stocke?.isEmpty == false) ? stocke : nil
 
         role = defaults.string(forKey: Key.role).flatMap(DuoRole.init(rawValue:))
         zoneName = defaults.string(forKey: Key.zoneName)
@@ -134,6 +138,21 @@ final class DuoIdentity {
             .flatMap { try? JSONDecoder().decode(DuoSnapshot.self, from: $0) }
         lastPublishedSnapshot = (defaults.data(forKey: Key.lastPublishedSnapshot))
             .flatMap { try? JSONDecoder().decode(DuoSnapshot.self, from: $0) }
+    }
+
+    /// Crée l'identité de cet appareil et la persiste. **Un seul appelant légitime : le
+    /// flux d'appairage**, seul moment où une identité est réellement nécessaire. La
+    /// convoquer ailleurs ferait renaître le défaut que l'optionnel ci-dessus ferme.
+    ///
+    /// Idempotente : si une identité existe déjà, elle est rendue telle quelle. En
+    /// fabriquer une seconde laisserait la première en fantôme dans la zone partagée.
+    @discardableResult
+    func createMemberID() -> String {
+        if let memberID, !memberID.isEmpty { return memberID }
+        let neuf = UUID().uuidString
+        memberID = neuf
+        defaults.set(neuf, forKey: Key.memberID)
+        return neuf
     }
 
     /// Défait le duo sur CET appareil : rôle, zone, partage, cache et compteurs.

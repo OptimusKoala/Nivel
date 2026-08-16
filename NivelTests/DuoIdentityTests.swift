@@ -57,10 +57,35 @@ final class DuoIdentityTests: XCTestCase {
     /// domaine voient le même, parce que la première l'a écrit en naissant.
     func testLeMemberIDEstStableEntreDeuxInstancesEtNonVide() {
         let premiere = DuoIdentity(defaults: defaults)
+        premiere.createMemberID()
         let seconde = DuoIdentity(defaults: defaults)
 
-        XCTAssertFalse(premiere.memberID.isEmpty)
+        XCTAssertEqual(premiere.memberID?.isEmpty, false)
         XCTAssertEqual(premiere.memberID, seconde.memberID)
+    }
+
+    /// LE test de la correction : naître ne crée RIEN. Un `DuoIdentity` construit sur un
+    /// domaine vierge ne doit y écrire aucune clé — sans quoi la moindre lecture, sur un
+    /// chemin aussi chaud que `saveOrAssert`, sème une identité de duo dans les réglages.
+    func testNaitreNEcritRienDansLesReglages() {
+        _ = DuoIdentity(defaults: defaults)
+
+        XCTAssertNil(defaults.string(forKey: DuoIdentity.Key.memberID))
+        XCTAssertTrue(defaults.dictionaryRepresentation()
+            .keys.filter { $0.hasPrefix("nivel.duo") }.isEmpty)
+    }
+
+    /// La création est explicite et idempotente : en fabriquer une seconde laisserait la
+    /// première en fantôme dans la zone partagée.
+    func testLaCreationEstExpliciteEtIdempotente() {
+        let identite = DuoIdentity(defaults: defaults)
+
+        let premier = identite.createMemberID()
+        let second = identite.createMemberID()
+
+        XCTAssertEqual(premier, second)
+        XCTAssertFalse(premier.isEmpty)
+        XCTAssertEqual(defaults.string(forKey: DuoIdentity.Key.memberID), premier)
     }
 
     /// Deux appareils, deux domaines, deux identités : sans quoi les deux membres du
@@ -71,8 +96,8 @@ final class DuoIdentityTests: XCTestCase {
         let autreDomaine = UserDefaults(suiteName: autreNom)!
         defer { autreDomaine.removePersistentDomain(forName: autreNom) }
 
-        XCTAssertNotEqual(DuoIdentity(defaults: defaults).memberID,
-                          DuoIdentity(defaults: autreDomaine).memberID)
+        XCTAssertNotEqual(DuoIdentity(defaults: defaults).createMemberID(),
+                          DuoIdentity(defaults: autreDomaine).createMemberID())
     }
 
     // MARK: - Persistance
@@ -124,7 +149,6 @@ final class DuoIdentityTests: XCTestCase {
         let identite = DuoIdentity(defaults: defaults)
 
         XCTAssertNil(identite.partnerSnapshot)
-        XCTAssertFalse(identite.memberID.isEmpty)
     }
 
     // MARK: - Le désappairage
@@ -135,7 +159,7 @@ final class DuoIdentityTests: XCTestCase {
     /// peine de laisser un membre fantôme dans la zone et de perdre ses cœurs.
     func testLeDesappairageEffaceLeDuoMaisGardeLeMemberID() {
         let identite = DuoIdentity(defaults: defaults)
-        let identifiantDAvant = identite.memberID
+        let identifiantDAvant = identite.createMemberID()
         identite.role = .owner
         identite.zoneName = "duo"
         identite.zoneOwnerName = "_abc123"
@@ -162,7 +186,7 @@ final class DuoIdentityTests: XCTestCase {
     /// déroutant possible pour quelqu'un qui vient de désappairer.
     func testLeDesappairageEstPersisteEtNonSeulementEnMemoire() {
         let identite = DuoIdentity(defaults: defaults)
-        let identifiantDAvant = identite.memberID
+        let identifiantDAvant = identite.createMemberID()
         identite.role = .owner
         identite.zoneName = "duo"
         identite.partnerSnapshot = instantane()

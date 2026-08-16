@@ -23,7 +23,7 @@ final class HomeDashboardTests: XCTestCase {
         context.insert(GamificationState())
         try context.save()
         service = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
-                              widgetDefaults: nil)
+                              widgetDefaults: nil, duoIdentity: nil)
     }
 
     private func date(hour: Int) throws -> Date {

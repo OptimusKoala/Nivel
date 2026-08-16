@@ -46,7 +46,7 @@ final class LevelMigrationTests: XCTestCase {
         let context = container.mainContext
         let service = GameService(modelContext: context,
                                   stepsService: FakeStepsService(authorized: false),
-                                  widgetDefaults: nil)
+                                  widgetDefaults: nil, duoIdentity: nil)
         let state = GamificationState(totalXP: totalXP)
         state.levelCurveVersion = curveVersion
         context.insert(state)
@@ -114,7 +114,7 @@ final class LevelMigrationTests: XCTestCase {
         // l'onboarding, donc avant que l'état existe (même ordre que `makeService`).
         let service = GameService(modelContext: context,
                                   stepsService: FakeStepsService(authorized: false),
-                                  widgetDefaults: nil)
+                                  widgetDefaults: nil, duoIdentity: nil)
         let state = GamificationState()          // comme l'onboarding le crée
         context.insert(state)
         state.totalXP = 3000                     // trois semaines de jeu, nouvelle courbe
@@ -131,7 +131,7 @@ final class LevelMigrationTests: XCTestCase {
         let context = container.mainContext
         let service = GameService(modelContext: context,
                                   stepsService: FakeStepsService(authorized: false),
-                                  widgetDefaults: nil)
+                                  widgetDefaults: nil, duoIdentity: nil)
         service.migrateLevelCurveIfNeeded()
         let etats = (try? context.fetch(FetchDescriptor<GamificationState>())) ?? []
         XCTAssertTrue(etats.isEmpty, "la migration ne crée jamais d'état de gamification")
@@ -178,7 +178,7 @@ final class LevelMigrationTests: XCTestCase {
         let context = container.mainContext
         let service = GameService(modelContext: context,
                                   stepsService: FakeStepsService(authorized: false),
-                                  widgetDefaults: nil)
+                                  widgetDefaults: nil, duoIdentity: nil)
         let obtenuLe = Date(timeIntervalSince1970: 1_700_000_000)
         let state = GamificationState(totalXP: 3000,
                                       badgeUnlocks: ["level_10": obtenuLe],
@@ -212,7 +212,7 @@ final class LevelMigrationTests: XCTestCase {
         try? context.save()
         _ = GameService(modelContext: context,
                         stepsService: FakeStepsService(authorized: false),
-                        widgetDefaults: nil)
+                        widgetDefaults: nil, duoIdentity: nil)
         XCTAssertEqual(state.totalXP, LevelSystem.xpRequired(forLevel: 13))
         XCTAssertEqual(state.levelCurveVersion, 2)
     }

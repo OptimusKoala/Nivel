@@ -8,8 +8,8 @@
 //
 // Ce fichier ne contient QUE la moitié qui se prouve : `makeDuoSnapshot` est synchrone,
 // n'émet aucune requête, ne touche à rien, et se teste sur un conteneur en mémoire.
-// L'écriture CloudKit (`DuoPublisher.publish`) viendra à part, et elle n'aura pas cette
-// chance.
+// L'écriture CloudKit vit dans `DuoPublisher.swift` (`publishDuo` / `publishDuoNow`), et
+// elle n'a pas cette chance.
 
 import Foundation
 import SwiftData
@@ -74,10 +74,10 @@ extension GameService {
     /// ne connaît pas s'affiche quand même correctement chez lui (spec §3.4).
     ///
     /// Les entrées sans `publicID` sont écartées par `DuoFeedBuilder.build`, et ce n'est
-    /// pas un oubli à réparer ici : c'est `publish()` qui devra appeler
-    /// `assignMissingIDs` et persister AVANT de construire. Tant que ce chaînage n'existe
-    /// pas, une entrée d'avant la 1.15 manque simplement au fil, ce qui est le bon
-    /// comportement dégradé — bien préférable à deux entrées partageant un cœur.
+    /// pas un oubli à réparer ici : le chaînage attribuer-persister-PUIS-construire vit
+    /// dans `prepareDuoSnapshot` (DuoPublisher), et un test le garde. Appelée seule,
+    /// cette fonction rend donc un fil amputé des entrées non encore identifiées — le bon
+    /// comportement dégradé, bien préférable à deux entrées partageant un cœur.
     private func duoFeed(on now: Date) -> [DuoEvent] {
         guard let (debut, fin) = dayBounds(for: now) else { return [] }
         return DuoFeedBuilder.build(

@@ -59,7 +59,7 @@ final class GameServiceTests: XCTestCase {
         try context.save()
 
         service = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
-                              widgetDefaults: nil)
+                              widgetDefaults: nil, duoIdentity: nil)
         catalog = try FoodCatalog.load()
     }
 
@@ -110,7 +110,7 @@ final class GameServiceTests: XCTestCase {
         // Le plafond est dérivé des MealEntry persistés → il tient aussi après "relance"
         // (nouvelle instance de service sur le même store).
         let restarted = GameService(modelContext: context, stepsService: FakeStepsService(authorized: false),
-                                    widgetDefaults: nil)
+                                    widgetDefaults: nil, duoIdentity: nil)
         let sixth = await restarted.logMeal(slot: .snack, lines: pastaLines)
         XCTAssertEqual(sixth.xpAwarded, 0)
     }

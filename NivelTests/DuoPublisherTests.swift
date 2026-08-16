@@ -50,7 +50,7 @@ final class DuoSnapshotBuildingTests: XCTestCase {
         context = ModelContext(try ModelContainer(for: schema, configurations: [configuration]))
         service = GameService(modelContext: context,
                               stepsService: FakeStepsService(authorized: false),
-                              widgetDefaults: nil)
+                              widgetDefaults: nil, duoIdentity: nil)
     }
 
     private func creerProfil(cible: Int = 1_800) {
@@ -222,7 +222,7 @@ final class DuoPublishGuardTests: XCTestCase {
         try context.save()
         service = GameService(modelContext: context,
                               stepsService: FakeStepsService(authorized: false),
-                              widgetDefaults: nil)
+                              widgetDefaults: nil, duoIdentity: DuoIdentity(defaults: defaults))
     }
 
     override func tearDown() {

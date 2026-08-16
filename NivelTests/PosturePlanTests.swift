@@ -130,7 +130,7 @@ final class PosturePlanTests: XCTestCase {
         container.mainContext.insert(GamificationState())
         try container.mainContext.save()
         return GameService(modelContext: container.mainContext,
-                           stepsService: FakeStepsService(authorized: false), widgetDefaults: nil)
+                           stepsService: FakeStepsService(authorized: false), widgetDefaults: nil, duoIdentity: nil)
     }
 
     /// Plafonds INDÉPENDANTS au niveau du SERVICE (pas seulement de XPEngine) : faire

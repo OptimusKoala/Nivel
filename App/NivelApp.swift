@@ -52,7 +52,11 @@ struct NivelApp: App {
         self.container = container
         _gameService = State(initialValue: GameService(
             modelContext: container.mainContext,
-            stepsService: HealthKitService()
+            stepsService: HealthKitService(),
+            // Le SEUL endroit du dépôt qui convoque le singleton. Partout ailleurs il est
+            // injecté, et `nil` en test : c'est ce qui garantit qu'aucune suite n'écrit
+            // dans les vrais réglages.
+            duoIdentity: .shared
         ))
     }
 

@@ -24,8 +24,13 @@ extension GameService {
     /// §3.1 promet qu'aucune requête réseau n'est émise et que l'app se comporte
     /// exactement comme la 1.14. Rien n'est créé, rien n'est demandé, rien n'est écrit —
     /// pas même un identifiant public sur un repas.
-    func publishDuo(identity: DuoIdentity = .shared) {
-        guard identity.isPaired else { return }
+    func publishDuo() {
+        // `duoIdentity` est injecté, jamais `.shared` évalué ici : un argument par défaut
+        // est évalué AU SITE D'APPEL, donc à chaque sauvegarde, ce qui instanciait le
+        // singleton et lisait neuf clés de réglages pour un utilisateur sans duo. La
+        // promesse du §3.1 — sans duo, l'app se comporte exactement comme la 1.14 — se
+        // tient ici, avant tout le reste.
+        guard let identity = duoIdentity, identity.isPaired else { return }
         Task { @MainActor in await publishDuoNow(identity: identity) }
     }
 
@@ -35,13 +40,18 @@ extension GameService {
     /// Rend `true` quand une écriture est réellement partie, ce qui ne sert qu'aux tests
     /// et au débogage — surtout pas à afficher quoi que ce soit.
     @discardableResult
-    func publishDuoNow(identity: DuoIdentity = .shared, now: Date = .now) async -> Bool {
-        guard identity.isPaired, let target = DuoDatabase.target(for: identity) else { return false }
+    func publishDuoNow(identity: DuoIdentity, now: Date = .now) async -> Bool {
+        // `memberID` non nil est un état IMPOSSIBLE derrière `isPaired` — on n'appaire
+        // pas sans identité — mais l'optionnel doit bien être ouvert quelque part, et
+        // c'est le seul endroit qui en a besoin. Aucune branche nouvelle, juste le
+        // dépliage d'un état que l'appairage garantit.
+        guard identity.isPaired, let memberID = identity.memberID,
+              let target = DuoDatabase.target(for: identity) else { return false }
 
         // 1, 2 et 3. Attribuer, persister, PUIS construire — dans cet ordre, tenu par
         // `prepareDuoSnapshot` et éprouvé par un test qui rougit si on l'inverse.
         let steps = await todaySteps()
-        guard let snapshot = prepareDuoSnapshot(memberID: identity.memberID, steps: steps, now: now)
+        guard let snapshot = prepareDuoSnapshot(memberID: memberID, steps: steps, now: now)
         else { return false }
 
         // 4. Sortir si rien n'a bougé. L'égalité de `DuoSnapshot` ignore `generatedAt`
@@ -53,7 +63,7 @@ extension GameService {
         // 5 bis. Les cœurs devenus orphelins partent DANS LA MÊME OPÉRATION que
         // l'instantané : jamais d'état intermédiaire où les chiffres seraient à jour et
         // les cœurs encore accrochés à des entrées disparues.
-        let orphelins = await orphanLikeRecordIDs(in: target, me: identity.memberID)
+        let orphelins = await orphanLikeRecordIDs(in: target, me: memberID)
 
         do {
             try await write(snapshot, deleting: orphelins, to: target)
