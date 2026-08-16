@@ -66,6 +66,23 @@ final class DuoFeedBuilderTests: XCTestCase {
         XCTAssertEqual(DuoFeedBuilder.build(meals: [], activities: []), [])
     }
 
+    /// Un événement sans identifiant n'est JAMAIS publié (spec §3.4). Ce n'est pas de la
+    /// propreté : le nom d'enregistrement d'un cœur est `like-<donneur>-<événement>`, si
+    /// bien que deux entrées d'avant la 1.15 dont l'identifiant n'a pas encore été
+    /// rempli produiraient toutes deux `like-G1-`, et un cœur posé sur l'une
+    /// apparaîtrait sur l'autre. Voir le commentaire de `DuoLikeID.recordName`.
+    ///
+    /// Le filtre est sans effet en pratique — `assignMissingIDs` tourne dans la même
+    /// passe, juste avant — et c'est exactement pourquoi il faut un test : sans lui,
+    /// rien ne signalerait sa disparition.
+    func testUnEvenementSansIdentifiantNEstJamaisPublie() {
+        let fil = DuoFeedBuilder.build(
+            meals: [repas("", a: heure(8)), repas("R-ok", a: heure(9))],
+            activities: [activite("", a: heure(18)), activite("A-ok", a: heure(19))])
+
+        XCTAssertEqual(fil.map(\.id), ["R-ok", "A-ok"])
+    }
+
     // MARK: - Les sous-titres
 
     /// Mot pour mot, parce que c'est ce que le partenaire lit et que rien chez lui ne

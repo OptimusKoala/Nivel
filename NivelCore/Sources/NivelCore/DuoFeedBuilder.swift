@@ -80,16 +80,29 @@ public struct MissingIDAssignment: Equatable, Sendable {
 public enum DuoFeedBuilder {
 
     /// Le fil du jour, repas et activités entremêlés, du matin au soir.
+    ///
+    /// **Un événement sans identifiant n'est jamais émis.** Ce filtre ferme une
+    /// CORRUPTION, pas une inélégance, et il ne doit donc pas être retiré comme une
+    /// garde défensive gratuite : le nom d'enregistrement d'un cœur est
+    /// `like-<donneur>-<événement>`, si bien que deux entrées d'avant la 1.15 dont
+    /// l'identifiant n'a pas encore été rempli produiraient toutes deux `like-G1-` — et
+    /// un cœur posé sur l'une apparaîtrait sur l'autre. Le commentaire de
+    /// `DuoLikeID.recordName` dit pourquoi la découpe de ce nom n'est sans ambiguïté que
+    /// sur des identifiants de longueur fixe ; les deux se répondent.
+    ///
+    /// Il est sans effet en pratique : `assignMissingIDs` tourne dans la même passe,
+    /// juste avant, donc un événement écarté ici réapparaît à la publication suivante,
+    /// une fois son identifiant persisté. C'est le filet, pas le mécanisme.
     public static func build(meals: [MealFeedInput],
                              activities: [ActivityFeedInput]) -> [DuoEvent] {
         let evenements =
-            meals.map { repas in
+            meals.filter { !$0.publicID.isEmpty }.map { repas in
                 DuoEvent(id: repas.publicID, kind: .meal, at: repas.date,
                          title: repas.title,
                          subtitle: "\(repas.slot.frLabel), "
                              + MealFormatting.frKcal(repas.kcal, isManual: repas.isManual))
             }
-            + activities.map { activite in
+            + activities.filter { !$0.publicID.isEmpty }.map { activite in
                 // Une activité qui ne rapporte rien ne l'annonce pas : le sous-titre
                 // s'arrête à la durée. `XPEngine.award` plafonne `activityDone` à deux
                 // fois par jour, donc la TROISIÈME marche d'une journée vaut réellement
