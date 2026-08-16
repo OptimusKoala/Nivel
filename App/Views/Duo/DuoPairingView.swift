@@ -62,7 +62,11 @@ struct DuoPairingView: View {
                 Text("C'est fait, vous êtes appairés 💛")
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                Text("Le lien vient de se refermer : la place est prise.")
+                // Ce que l'écran promet est ce qui se passe VRAIMENT : le code cesse d'être
+                // affiché. Il a dit « le lien vient de se refermer » tant qu'on révoquait la
+                // permission publique du partage, et cette révocation retirait son accès à
+                // l'invité (voir `DuoService.forgetInvitationLinkIfSeatTaken`).
+                Text("Le code n'est plus affiché : la place est prise.")
                     .font(.footnote)
                     .foregroundStyle(Theme.subtext)
                     .multilineTextAlignment(.center)
@@ -122,10 +126,12 @@ struct DuoPairingView: View {
             Text("Sur l'autre iPhone, ouvre Nivel, va dans les réglages et choisis Rejoindre, puis scanne ce code.")
                 .font(.subheadline)
             Rectangle().fill(Theme.track).frame(height: 1)
-            // Le §3.6 exige que l'écran le dise : le partage se referme dès qu'un second
-            // membre apparaît. Quelqu'un qui garde ce QR en capture d'écran croirait
-            // pouvoir s'en resservir, et il n'aurait aucun moyen de comprendre le refus.
-            Text("Ce code ne vaut que le temps de l'appairage. Dès que ton duo l'a scanné, le lien se referme et ne sert plus à personne.")
+            // Le §3.6 exige que l'écran dise la valeur du code, et le §11.6 nomme le risque
+            // assumé : ce code est un secret tant qu'il est affiché. La phrase dit donc la
+            // vérité d'aujourd'hui, qui n'est plus « le lien se referme » mais « une seule
+            // place, et le code disparaît ». Promettre une fermeture qui n'a plus lieu
+            // serait la pire des deux erreurs.
+            Text("Ce code ne vaut que le temps de l'appairage. Il n'y a qu'une place dans un duo : dès que ton duo l'a scanné, le code disparaît et personne d'autre ne peut prendre la sienne.")
                 .font(.footnote)
                 .foregroundStyle(Theme.subtext)
         }
@@ -152,8 +158,8 @@ struct DuoPairingView: View {
     ///
     /// C'est le seul moment de la vie de l'app où l'on interroge iCloud en boucle, et il se
     /// justifie : les deux téléphones sont côte à côte, l'un vient de scanner, et c'est
-    /// exactement là qu'il faut le dire. `refresh()` referme le partage au passage (§3.6),
-    /// donc l'attente n'est pas décorative : c'est elle qui claque la porte.
+    /// exactement là qu'il faut le dire. `refresh()` fait oublier l'URL au passage (§3.6),
+    /// donc l'attente n'est pas décorative : c'est elle qui range le code.
     ///
     /// La boucle meurt avec l'écran, `.task` annulant sa tâche à la disparition.
     private func attendreLePartenaire() async {
@@ -164,8 +170,7 @@ struct DuoPairingView: View {
             guard !Task.isCancelled else { return }
 
             await duo.refresh()
-            if let compte = duo.memberCount,
-               !DuoService.shouldKeepShareOpen(memberCount: compte) {
+            if let compte = duo.memberCount, !DuoService.seatIsFree(memberCount: compte) {
                 partenaireArrive = true
             }
         }

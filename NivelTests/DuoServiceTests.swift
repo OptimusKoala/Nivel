@@ -75,16 +75,122 @@ final class DuoPartnerChoiceTests: XCTestCase {
         XCTAssertEqual(DuoService.partner(among: [b, a], excluding: "MOI")?.memberID, "AAA")
     }
 
-    // MARK: - Le partage se referme derrière le premier arrivé
+    // MARK: - La place est-elle encore libre
 
-    /// Dès qu'un second membre apparaît, la place est prise et le lien ne vaut plus rien
-    /// (spec §3.6) : un QR photographié par-dessus l'épaule suffirait autrement à faire
-    /// entrer un tiers dans la zone.
-    func testLePartageSeFermeDesQuUnSecondMembreApparait() {
-        XCTAssertTrue(DuoService.shouldKeepShareOpen(memberCount: 0))
-        XCTAssertTrue(DuoService.shouldKeepShareOpen(memberCount: 1))
-        XCTAssertFalse(DuoService.shouldKeepShareOpen(memberCount: 2))
-        XCTAssertFalse(DuoService.shouldKeepShareOpen(memberCount: 3))
+    /// Zéro ou un membre, la place attend quelqu'un ; deux, elle est prise (spec §3.6).
+    /// C'est ce qui décide de montrer le QR ou non, et de distinguer « personne n'a encore
+    /// rejoint » de « quelqu'un est là et rien n'arrive » dans les réglages.
+    func testLaPlaceEstPriseDesQuUnSecondMembreApparait() {
+        XCTAssertTrue(DuoService.seatIsFree(memberCount: 0))
+        XCTAssertTrue(DuoService.seatIsFree(memberCount: 1))
+        XCTAssertFalse(DuoService.seatIsFree(memberCount: 2))
+        XCTAssertFalse(DuoService.seatIsFree(memberCount: 3))
+    }
+}
+
+// MARK: - Ce que la place prise déclenche, et ce qu'elle ne déclenche PLUS
+
+/// **Le défaut trouvé sur deux vrais iPhones, et le plus coûteux de la 1.15.**
+///
+/// La place prise repassait le `CKShare` en `publicPermission = .none`. Or l'invité a
+/// rejoint PAR LE LIEN : dans CloudKit il est un participant *public*, et couper la
+/// permission publique lui retire son accès. Ses lectures partaient alors en zone
+/// introuvable, `handleZoneLoss()` effaçait son appairage, il cessait de publier — le duo
+/// disparaissait de son côté, ses repas n'arrivaient jamais chez le propriétaire, et plus
+/// aucun réveil ne lui parvenait. Les trois symptômes rapportés, d'une seule cause.
+///
+/// Ce qui reste est purement LOCAL : on oublie l'URL, donc on cesse de pouvoir l'afficher.
+/// Ces tests épinglent les deux moitiés — l'oubli a bien lieu, et **plus rien ne part vers
+/// le nuage**. La seconde est celle qui compte : c'est elle qui rougit si quelqu'un remet
+/// la révocation en croyant boucher un trou.
+@MainActor
+final class DuoSeatTakenTests: XCTestCase {
+
+    private var suiteName: String!
+    private var defaults: UserDefaults!
+
+    override func setUp() {
+        super.setUp()
+        suiteName = "nivel.tests.duoseat.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+    }
+
+    override func tearDown() {
+        defaults.removePersistentDomain(forName: suiteName)
+        defaults = nil
+        suiteName = nil
+        super.tearDown()
+    }
+
+    private func proprietaireAvecSonLien() -> DuoIdentity {
+        let identite = DuoIdentity(defaults: defaults)
+        _ = identite.createMemberID()
+        identite.role = .owner
+        identite.zoneName = DuoDatabase.defaultZoneName
+        identite.shareURL = URL(string: "https://www.icloud.com/share/0aB1cD2eF3")
+        return identite
+    }
+
+    /// La place prise fait disparaître le QR, et ne parle à personne pour cela. Les deux
+    /// compteurs à zéro sont la PROMESSE de ce test : aucune résolution de zone, aucun
+    /// conteneur, donc aucune permission touchée, donc l'invité garde l'accès qu'il a obtenu
+    /// par le lien. C'est cette ligne qui rougira si la révocation revient.
+    func testLaPlacePriseOublieLeLienSansToucherAuNuage() {
+        let identite = proprietaireAvecSonLien()
+        var resolutions = 0
+        var conteneurs = 0
+        let service = DuoService(identity: identite,
+                                 resolveTarget: { _ in resolutions += 1; return nil },
+                                 makeContainer: {
+                                     conteneurs += 1
+                                     return CKContainer(identifier: DuoDatabase.containerID)
+                                 })
+
+        service.forgetInvitationLinkIfSeatTaken(memberCount: 2)
+
+        XCTAssertNil(identite.shareURL, "le QR ne doit plus pouvoir être affiché")
+        XCTAssertEqual(resolutions, 0,
+                       "révoquer la permission publique retirait son accès à l'invité")
+        XCTAssertEqual(conteneurs, 0)
+    }
+
+    /// Tant que la place est libre, le lien reste : c'est lui que le QR affiche, et l'effacer
+    /// pendant que l'écran d'invitation tourne ferait disparaître le code sous les yeux de
+    /// celui qui le montre.
+    func testTantQueLaPlaceEstLibreLeLienReste() {
+        let identite = proprietaireAvecSonLien()
+        let service = DuoService(identity: identite, resolveTarget: { _ in nil })
+
+        service.forgetInvitationLinkIfSeatTaken(memberCount: 1)
+
+        XCTAssertNotNil(identite.shareURL)
+    }
+
+    /// Compte de membres inconnu — aucune lecture n'a encore abouti — n'est PAS « la zone est
+    /// vide ». On ne touche à rien tant qu'on ne sait pas.
+    func testUnCompteInconnuNeDecideDeRien() {
+        let identite = proprietaireAvecSonLien()
+        let service = DuoService(identity: identite, resolveTarget: { _ in nil })
+
+        service.forgetInvitationLinkIfSeatTaken(memberCount: nil)
+
+        XCTAssertNotNil(identite.shareURL)
+    }
+
+    /// L'invité n'a pas de lien à oublier, et n'est pas propriétaire du partage. On ne va
+    /// surtout pas effacer chez lui une URL qui, chez le propriétaire, sert encore.
+    func testChezLInviteIlNYARien() {
+        let identite = DuoIdentity(defaults: defaults)
+        _ = identite.createMemberID()
+        identite.role = .guest
+        identite.zoneName = DuoDatabase.defaultZoneName
+        identite.zoneOwnerName = "AUTRE"
+        identite.shareURL = URL(string: "https://www.icloud.com/share/0aB1cD2eF3")
+        let service = DuoService(identity: identite, resolveTarget: { _ in nil })
+
+        service.forgetInvitationLinkIfSeatTaken(memberCount: 2)
+
+        XCTAssertNotNil(identite.shareURL)
     }
 }
 

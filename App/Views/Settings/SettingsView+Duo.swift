@@ -52,7 +52,7 @@ enum DuoSettingsState: Equatable {
         // chose n'est pas passé. On le dit autrement que l'attente des premières secondes,
         // sans inventer de délai — c'est le compte de membres qui fait la différence, et il
         // vient de la dernière lecture réussie.
-        if partnerName == nil, let memberCount, !DuoService.shouldKeepShareOpen(memberCount: memberCount) {
+        if partnerName == nil, let memberCount, !DuoService.seatIsFree(memberCount: memberCount) {
             return .partnerSilent(since: pairedAt)
         }
         return .paired(name: partnerName, since: pairedAt)

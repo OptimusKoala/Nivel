@@ -114,9 +114,9 @@ final class DuoService {
     private(set) var receivedLikes: [DuoLike] = []
 
     /// Combien de membres la zone portait à la dernière lecture réussie, `nil` tant
-    /// qu'aucune n'a abouti. C'est ce que `shouldKeepShareOpen` interroge pour refermer le
-    /// lien derrière le premier arrivé. `nil` plutôt que `0` après un échec : « je ne sais
-    /// pas » et « la zone est vide » ne mènent pas à la même décision.
+    /// qu'aucune n'a abouti. C'est ce que `seatIsFree` interroge pour ranger le QR derrière
+    /// le premier arrivé. `nil` plutôt que `0` après un échec : « je ne sais pas » et « la
+    /// zone est vide » ne mènent pas à la même décision.
     private(set) var memberCount: Int?
 
     /// La zone n'existe plus en face : le partenaire a désinstallé, ou le propriétaire a
@@ -302,7 +302,10 @@ final class DuoService {
 
         // La place vient peut-être d'être prise. C'est ici, et nulle part ailleurs, qu'on le
         // sait sans payer une requête de plus. Sans effet dans tous les autres cas.
-        await closeShareIfSeatTaken()
+        forgetInvitationLinkIfSeatTaken(memberCount: memberCount)
+        // Le FILET de l'abonnement : il est posé à la fin de l'appairage, des deux côtés,
+        // mais un appairage dont l'abonnement aurait raté doit pouvoir se rattraper. La
+        // garde d'idempotence rend cet appel sans coût le reste du temps.
         await installSubscriptionIfNeeded(in: target)
         await retryPendingLikes(in: target, me: me)
     }
@@ -767,11 +770,17 @@ final class DuoService {
             .min { ($0.createdAt, $0.memberID) < ($1.createdAt, $1.memberID) }
     }
 
-    /// Le lien se referme derrière le premier arrivé (§3.6). Un `CKShare` en
-    /// `publicPermission = .readWrite` reste valide tant qu'on ne le révoque pas : un QR
-    /// photographié par-dessus l'épaule, ou une capture d'écran qui traîne, suffirait à
-    /// faire entrer un tiers. Dès qu'un second membre est là, la place est prise.
-    nonisolated static func shouldKeepShareOpen(memberCount: Int) -> Bool { memberCount < 2 }
+    /// La place du duo est-elle encore libre ? Zéro ou un membre, elle attend quelqu'un ;
+    /// deux, elle est prise (§3.6).
+    ///
+    /// Trois lecteurs, et aucun ne touche au nuage : l'écran d'invitation cesse d'afficher
+    /// le QR, `forgetInvitationLinkIfSeatTaken` oublie l'URL, et les réglages distinguent
+    /// « personne n'a encore rejoint » de « quelqu'un est là et sa journée n'arrive pas ».
+    ///
+    /// Elle s'appelait `shouldKeepShareOpen` tant qu'on révoquait la permission publique du
+    /// `CKShare` ; ce n'est plus le cas, voir `forgetInvitationLinkIfSeatTaken`, et un nom
+    /// qui parlait de refermer un partage aurait fait croire qu'il se referme.
+    nonisolated static func seatIsFree(memberCount: Int) -> Bool { memberCount < 2 }
 
     /// Les cœurs qui me visent : ceux dont je ne suis pas le donneur et dont je possède
     /// l'événement (§3.7).
@@ -991,32 +1000,43 @@ extension DuoService {
         }
     }
 
-    /// Referme le partage derrière le premier arrivé (spec §3.6). Sans effet chez l'invité,
+    /// Oublie l'URL d'invitation dès que la place est prise (spec §3.6). Purement LOCAL :
+    /// plus rien à afficher, donc plus de QR montré par mégarde. Sans effet chez l'invité,
     /// qui ne possède pas le partage, et sans effet tant que la place est libre.
     ///
-    /// Appelé depuis `refresh()`, donc au moment exact où le compte de membres vient d'être
-    /// relu : c'est le seul instant où l'on sait, sans requête supplémentaire, que la place
-    /// est prise. Un échec est silencieux et sera retenté au rafraîchissement suivant ; le
-    /// pire cas est un lien qui reste ouvert quelques minutes de plus.
-    func closeShareIfSeatTaken() async {
-        guard identity.role == .owner, let compte = memberCount,
-              !Self.shouldKeepShareOpen(memberCount: compte),
-              let target = resolveTarget(identity) else { return }
+    /// ⚠️ **Cette fonction repassait aussi le `CKShare` en `publicPermission = .none`, et
+    /// c'est retiré. Ne le remets pas.** Le symptôme, observé sur deux vrais iPhones à
+    /// l'essai de la 1.15 : l'appairage réussissait, puis le duo disparaissait côté invité
+    /// quelques instants plus tard, ses repas n'arrivaient jamais chez le propriétaire, et
+    /// il ne recevait plus aucune notification.
+    ///
+    /// La cause tient en une phrase : **l'invité a rejoint PAR LE LIEN**, il entre donc dans
+    /// la zone comme participant *public*, et `publicPermission = .none` convertit le
+    /// partage en partage privé en retirant tous les participants publics — c'est-à-dire
+    /// lui. Ses lectures repartaient en zone introuvable, `handleZoneLoss()` effaçait son
+    /// appairage local, il cessait de publier. Une seule cause, les trois symptômes.
+    ///
+    /// On ne peut PAS le convertir en participant privé à la place : cela exigerait de
+    /// connaître son identité Apple, ce que le mode « toute personne disposant du lien » a
+    /// justement été choisi pour éviter.
+    ///
+    /// Ce qui couvre l'essentiel du risque, et qui reste :
+    ///
+    /// - l'app **refuse un troisième membre** — le premier `DuoMember` écrit gagne, voir
+    ///   `partner(among:excluding:)` ;
+    /// - le **QR cesse d'être affiché** dès la place prise, ce que fait cette fonction.
+    ///
+    /// Reste que le lien demeure techniquement utilisable jusqu'au désappairage. C'est un
+    /// risque assumé, nommé au §11.6 de la spec : le QR est un secret le temps qu'il est
+    /// affiché, à deux et dans la même pièce.
+    ///
+    /// Le compte est passé en argument plutôt que lu sur `memberCount` : cette décision
+    /// n'appartient plus au cycle de lecture de la zone, et un argument explicite se prouve
+    /// sans avoir à faire semblant d'avoir lu le nuage.
+    func forgetInvitationLinkIfSeatTaken(memberCount: Int?) {
+        guard identity.role == .owner, let memberCount,
+              !Self.seatIsFree(memberCount: memberCount) else { return }
 
-        // Le partage d'une zone entière porte ce nom d'enregistrement réservé. Le relire
-        // plutôt que garder le nôtre en mémoire évite d'écrire par-dessus une version que
-        // le serveur aurait fait évoluer entre-temps.
-        let partageID = CKRecord.ID(recordName: CKRecordNameZoneWideShare, zoneID: target.zoneID)
-        guard let partage = try? await target.database.record(for: partageID) as? CKShare,
-              partage.publicPermission != .none else { return }
-
-        partage.publicPermission = .none
-        guard (try? await target.database.modifyRecords(saving: [partage], deleting: [],
-                                                        savePolicy: .changedKeys)) != nil
-        else { return }
-
-        // Le lien ne mène plus nulle part : ne plus le garder, c'est aussi ne plus pouvoir
-        // l'afficher en QR code par mégarde.
         identity.shareURL = nil
     }
 
