@@ -340,7 +340,7 @@ struct MealLogSheet: View {
                          DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
-        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
     )
     return MealLogSheet()
         .fontDesign(.rounded)
@@ -354,7 +354,7 @@ struct MealLogSheet: View {
                          DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
-        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
     )
     let catalog = try! FoodCatalog.load()
     let lines: [MealLine] = [

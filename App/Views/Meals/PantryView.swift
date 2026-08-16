@@ -333,7 +333,7 @@ struct PantryContent: View {
                          DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
-        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
     )
     let profile = UserProfile(name: "Marion", sex: .female,
                               birthDate: Date(timeIntervalSince1970: 0),

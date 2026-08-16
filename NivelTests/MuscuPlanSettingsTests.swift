@@ -22,7 +22,7 @@ final class MuscuPlanSettingsTests: XCTestCase {
                              DayLog.self, GamificationState.self, ActivityEntry.self])
         container = try ModelContainer(
             for: schema,
-            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
         )
     }
 

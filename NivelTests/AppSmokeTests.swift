@@ -5,12 +5,22 @@ import NivelCore
 @testable import Nivel
 
 final class AppSmokeTests: XCTestCase {
+    /// `cloudKitDatabase: .none` accompagne DÉSORMAIS chaque `ModelConfiguration` du
+    /// dépôt, tests et prévisualisations compris, et ce n'est pas décoratif : depuis que
+    /// la 1.15 a ajouté l'entitlement iCloud, le défaut `.automatic` réclame le miroir
+    /// CloudKit, que ce schéma ne peut pas satisfaire (attributs non optionnels sans
+    /// défaut, et l'unicité de `DayLog.day`). Le store refuse alors de charger, MÊME en
+    /// mémoire. Le pourquoi complet est sur le conteneur réel, dans `NivelApp.init`.
+    ///
+    /// En copiant ce motif ailleurs, garde le paramètre. L'oublier ne passe pas
+    /// inaperçu — le test échoue bruyamment — mais l'erreur CoreData ne dit pas d'où
+    /// elle vient.
     func testInMemoryContainerInsertsAndFetchesModels() throws {
         let schema = Schema([
             UserProfile.self, MealEntry.self, WeightEntry.self,
             DayLog.self, GamificationState.self, ActivityEntry.self
         ])
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         let context = ModelContext(container)
 

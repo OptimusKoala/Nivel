@@ -36,6 +36,18 @@ targets:
       properties:
         com.apple.developer.healthkit: true
         com.apple.security.application-groups: [group.com.elitedangereuse.nivel.data]
+        # Duo de la 1.15 (spec §3.2) : la zone partagée vit dans ce conteneur, et rien
+        # d'autre n'y va. Sans duo appairé, aucune requête n'est émise.
+        com.apple.developer.icloud-container-identifiers: [iCloud.com.elitedangereuse.Nivel]
+        com.apple.developer.icloud-services: [CloudKit]
+        # Réveil silencieux pour aller chercher les cœurs (spec §3.7).
+        #
+        # ATTENTION, valeur de DÉVELOPPEMENT. Un profil App Store porte
+        # `aps-environment: production`, et la signature étant MANUELLE en Release
+        # (voir configs ci-dessus), rien ne réécrit cette clé à l'archivage comme le
+        # ferait la signature automatique. À vérifier avant la première release qui
+        # embarque le duo.
+        aps-environment: development
     info:
       path: App/Info.plist
       properties:
@@ -56,6 +68,13 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # Scanner de QR code de l'appairage (spec 1.15 §3.6). Un champ « coller un
+        # lien » sert de repli quand la caméra est refusée : la permission n'est jamais
+        # un passage obligé.
+        NSCameraUsageDescription: "Nivel utilise l'appareil photo pour scanner le QR code de ton duo."
+        # Réveil silencieux à l'arrivée d'un cœur (spec §3.7). L'app poste ensuite
+        # elle-même la notification locale, ce qui lui donne le texte exact.
+        UIBackgroundModes: [remote-notification]
         # Deep link des widgets : nivel://log-meal (spec widgets §7).
         CFBundleURLTypes:
           - CFBundleURLName: com.elitedangereuse.Nivel

@@ -327,7 +327,7 @@ private func sessionPlayerPreviewFixture() -> (container: ModelContainer, game: 
                          DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
-        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
     )
     let game = GameService(modelContext: container.mainContext, stepsService: FakeStepsService(),
                            widgetDefaults: nil)

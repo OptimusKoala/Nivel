@@ -185,7 +185,7 @@ enum ScreenshotMode {
                             DayLog.self, GamificationState.self, ActivityEntry.self])
         return try! ModelContainer(
             for: schema,
-            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
         )
     }
 

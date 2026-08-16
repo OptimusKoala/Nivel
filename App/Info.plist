@@ -35,10 +35,16 @@
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.healthcare-fitness</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Nivel utilise l'appareil photo pour scanner le QR code de ton duo.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Nivel lit tes pas pour suivre ton activité quotidienne.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Nivel n'écrit rien dans Santé : il se contente de lire tes pas.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

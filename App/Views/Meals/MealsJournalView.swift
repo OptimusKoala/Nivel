@@ -444,7 +444,7 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
                          DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
-        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
     )
     let context = container.mainContext
 
@@ -492,7 +492,7 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
                          DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
-        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
     )
     return MealsJournalView()
         .fontDesign(.rounded)

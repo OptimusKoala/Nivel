@@ -18,7 +18,7 @@ final class PantryTests: XCTestCase {
     override func setUpWithError() throws {
         container = try ModelContainer(
             for: Self.schema,
-            configurations: [ModelConfiguration(schema: Self.schema, isStoredInMemoryOnly: true)]
+            configurations: [ModelConfiguration(schema: Self.schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
         )
     }
 

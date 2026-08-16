@@ -69,7 +69,7 @@ private func muscuPreviewFixture() -> (container: ModelContainer, game: GameServ
                          DayLog.self, GamificationState.self, ActivityEntry.self])
     let container = try! ModelContainer(
         for: schema,
-        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
+        configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
     )
     let context = container.mainContext
     context.insert(UserProfile(

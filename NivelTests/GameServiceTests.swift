@@ -41,7 +41,7 @@ final class GameServiceTests: XCTestCase {
             UserProfile.self, MealEntry.self, WeightEntry.self,
             DayLog.self, GamificationState.self, ActivityEntry.self
         ])
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         context = ModelContext(container)
 

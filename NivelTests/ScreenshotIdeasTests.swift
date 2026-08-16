@@ -36,7 +36,7 @@ final class ScreenshotIdeasTests: XCTestCase {
     func testLeFrigoDeDemonstrationResteVideHorsDesEcransDIdees() throws {
         let container = try ModelContainer(
             for: Self.schema,
-            configurations: [ModelConfiguration(schema: Self.schema, isStoredInMemoryOnly: true)]
+            configurations: [ModelConfiguration(schema: Self.schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]
         )
         ScreenshotMode.seed(into: container.mainContext)
 
