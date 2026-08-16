@@ -147,39 +147,53 @@ https://optimuskoala.github.io/Nivel/privacy.html
 
 **Questionnaire « Pratiques en matière de confidentialité des données »**
 
-> ⚠️ **À REPRENDRE POUR LA 1.15, ET C'EST LE SEUL RISQUE DE REJET DE CETTE VERSION.** La
-> réponse actuellement enregistrée est « Non, nous ne collectons aucune donnée », vraie
-> jusqu'à la 1.14 incluse et fausse dès qu'un duo est appairé. Ce questionnaire ne se
-> remplit que dans l'interface d'App Store Connect : `asc-fiche.py` n'y touche pas, et rien
-> dans le dépôt ne peut le vérifier.
+> Réponse : **« Non, nous ne collectons aucune donnée de cette application »**, inchangée
+> pour la 1.15. Ce questionnaire ne se remplit que dans l'interface d'App Store Connect :
+> `asc-fiche.py` n'y touche pas.
 
-Réponse à donner : **« Oui, nous collectons des données de cette application »**, à cause du
-duo et de lui seul. Les trois types ci-dessous sont **liés à l'utilisateur** et **ne servent
-à aucun suivi** (répondre « non » à toutes les questions de suivi publicitaire) :
+C'était évident jusqu'à la 1.14, où l'app n'émettait aucune requête. Le duo de la 1.15 fait
+sortir des données de l'appareil : la réponse reste la même, mais elle demande maintenant à
+être défendue, et voici de quoi le faire en trois phrases devant un examinateur.
 
-| Type de données | Ce que c'est | Usage à cocher |
-|---|---|---|
-| Santé et forme | L'anneau du jour, les pas, les repas et activités publiés pour le partenaire | Fonctionnalité de l'app |
-| Identifiants (identifiant utilisateur) | Le `memberID` qui distingue les deux membres de la zone partagée | Fonctionnalité de l'app |
-| Coordonnées (nom) | Le prénom, affiché chez le partenaire | Fonctionnalité de l'app |
+**Ce qui sort de l'appareil, et seulement quand un duo est appairé** : un prénom, le
+personnage garçon ou fille du profil, un niveau et un total d'XP, les quatre nombres de
+l'anneau du jour, un compte de pas, l'intitulé d'une quête, et la liste des repas et
+activités du jour avec leurs heures et leurs kcal. Ni le poids, ni la courbe de poids, ni
+les badges. Sans duo, rien ne part, et aucune requête n'est même émise.
 
-Le reste de l'app n'a pas changé : aucun SDK tiers, aucune régie, aucune analytique, et les
-pas lus depuis HealthKit ne sont transmis à personne tant qu'aucun duo n'existe. Lire une
-donnée sur l'appareil sans l'exfiltrer n'est pas une collecte au sens d'Apple.
+**Où ça va** : dans une zone personnalisée d'une base **privée** CloudKit
+(`iCloud.com.elitedangereuse.Nivel`), partagée par `CKShare` avec un seul autre
+participant. La zone est décomptée sur le stockage iCloud de celui qui invite. Il n'existe
+aucun serveur de l'éditeur, aucun SDK tiers, aucune régie, aucune analytique, et l'app
+n'ouvre aucune autre connexion.
 
-Pourquoi déclarer alors que ces données vont dans l'iCloud de l'utilisateur et jamais chez
-nous : Apple définit la collecte comme le fait de transmettre des données hors de l'appareil
-d'une manière qui nous les rende accessibles, ce qui n'est pas le cas ici, mais elles sont
-**partagées avec un autre utilisateur**, et une déclaration trop généreuse ne coûte rien
-alors qu'une déclaration trop maigre est un motif de rejet. En cas de doute au moment de
-cocher, c'est cette asymétrie qui tranche.
+**Pourquoi ce n'est pas une collecte au sens d'Apple** : Apple définit « collecter » comme
+transmettre des données hors de l'appareil **d'une manière qui les rende accessibles à
+l'éditeur ou à ses partenaires**. Une base privée CloudKit ne donne à l'éditeur aucun accès
+aux enregistrements : le tableau de bord ne montre que le schéma, jamais les données des
+utilisateurs. Nous ne pouvons ni les lire, ni les exporter, ni les conserver. C'est la même
+lecture que celle des apps qui n'utilisent que CloudKit privé et déclarent l'absence de
+collecte, et c'est le même raisonnement que pour HealthKit : lire une donnée sur l'appareil,
+ou la ranger dans l'iCloud de la personne, n'est pas la collecter.
 
-Le manifeste `PrivacyInfo.xcprivacy` embarqué déclare toujours `NSPrivacyCollectedDataTypes`
-vide, plus l'unique API à motif requis utilisée :
-`NSPrivacyAccessedAPICategoryUserDefaults`, motif `CA92.1` (réglages de l'app et pont vers
-ses widgets). **Point ouvert :** si la fiche déclare trois types collectés, le manifeste
-devrait les reprendre. Ce n'est pas bloquant (le manifeste sert le rapport de confidentialité,
-la fiche fait foi), mais c'est une divergence à trancher, et elle touche le binaire signé.
+**L'argument contraire, pour qu'il ne soit pas une surprise** : ces données sont bel et bien
+**partagées avec un autre utilisateur**, et l'entitlement iCloud est visible dans le binaire.
+Un examinateur peut s'arrêter là, considérer qu'un partage entre deux personnes est une
+transmission à déclarer, et demander une fiche « données liées à l'utilisateur » (santé et
+forme, plus un identifiant, plus le prénom). **C'est un pari assumé, pas une certitude, et un
+rejet coûte un cycle de validation.** Le pari est pris parce que la réponse inverse
+déclarerait une collecte qui n'a pas lieu, sur une app qui n'en fait aucune. S'il est perdu,
+la marche à suivre est courte : répondre « oui » au questionnaire, cocher **Santé et forme**,
+**Identifiants** et **Coordonnées (nom)**, tous **liés à l'utilisateur**, tous en usage
+« Fonctionnalité de l'app », et **aucun** en suivi publicitaire. Le §7, notes pour l'équipe de
+validation, explique déjà le duo et son fonctionnement : c'est là qu'il faut regarder d'abord
+si une question arrive.
+
+Le manifeste `PrivacyInfo.xcprivacy` embarqué déclare `NSPrivacyCollectedDataTypes` **vide**,
+ce qui **dit exactement la même chose que la fiche** : les deux sont cohérents, et le
+resteront tant que cette réponse ne change pas. Il déclare aussi l'unique API à motif requis
+utilisée : `NSPrivacyAccessedAPICategoryUserDefaults`, motif `CA92.1` (réglages de l'app et
+pont vers ses widgets).
 
 ---
 

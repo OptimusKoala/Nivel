@@ -211,14 +211,14 @@ version ne part pas.
    production. Le schéma de développement ne migre pas tout seul : une version soumise sans
    ce déploiement donne un duo qui ne marche que sur les téléphones de développement.
 
-3. **Corriger la fiche de confidentialité dans App Store Connect.** Elle déclare aujourd'hui
-   qu'aucune donnée n'est collectée, ce qui était vrai jusqu'à la 1.14. Le duo publie des
-   données **liées à l'utilisateur et partagées avec un autre utilisateur** : santé et forme
-   (l'anneau, les pas, les repas et activités), plus un identifiant. Rien n'est utilisé pour
-   du suivi. Les réponses détaillées sont dans
+3. **Savoir défendre la fiche de confidentialité.** Elle continue de déclarer qu'**aucune
+   donnée n'est collectée**, y compris avec le duo : une base privée CloudKit ne rend rien
+   accessible à l'éditeur, et c'est précisément ce qu'Apple appelle collecter. La position et
+   ce qui la fonde, l'argument contraire, et la marche à suivre si un examinateur ne la suit
+   pas, sont écrits dans
    [`docs/appstore/fiche-app-store.md`](docs/appstore/fiche-app-store.md) §3. **C'est le seul
-   risque de rejet de cette version**, il se corrige dans l'interface d'App Store Connect, et
-   aucune vérification automatique ne l'attrapera.
+   risque de rejet de cette version** : un pari raisonné, pas une certitude, que rien dans le
+   dépôt ne peut vérifier à ta place.
 
 4. **Vérifier sur les deux iPhones.** La liste complète est en
    [spec 1.15 §9](docs/superpowers/specs/2026-08-16-nivel-1.15-design.md) et elle s'est
@@ -230,10 +230,13 @@ version ne part pas.
    côté invité** (une zone au `ownerName` faux accepte l'écriture, dans le vide, sans la
    moindre erreur).
 
-Restent les deux gestes habituels de fin de version, qui eux ont leur outil : écrire les
-notes de la 1.15 dans `docs/appstore/fiche-app-store.md` puis lancer
-`python3 scripts/asc-fiche.py`, et rejouer `./scripts/screenshots.sh` si la page du duo doit
-figurer dans les captures.
+Reste le geste habituel de fin de version, qui lui a son outil : écrire les notes de la 1.15
+dans `docs/appstore/fiche-app-store.md`, puis lancer `python3 scripts/asc-fiche.py`.
+
+Les captures, elles, ne sont pas à refaire : sans duo appairé, l'accueil est rigoureusement
+celui de la 1.14, donc la série actuelle ne ment pas, elle montre l'app avant appairage.
+Rejouer `./scripts/screenshots.sh` pour y faire figurer le bouton du duo et sa page est un
+choix de vitrine, pas une correction.
 
 ## Installer sur ton iPhone (compte Apple gratuit)
 
