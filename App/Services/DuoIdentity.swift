@@ -41,6 +41,7 @@ final class DuoIdentity {
         static let profileLastSeenAt = "nivel.duo.profileLastSeenAt"
         static let unreadLikeCount = "nivel.duo.unreadLikeCount"
         static let partnerSnapshot = "nivel.duo.partnerSnapshot"
+        static let lastPublishedSnapshot = "nivel.duo.lastPublishedSnapshot"
     }
 
     /// L'identité de CET appareil dans le duo, créée une fois à la première lecture et
@@ -82,6 +83,22 @@ final class DuoIdentity {
         }
     }
 
+    /// Le dernier instantané que CET appareil a publié. C'est à lui que la publication
+    /// compare ce qu'elle vient de construire pour décider d'écrire (spec §3.5), et
+    /// l'égalité de `DuoSnapshot` ignore `generatedAt` exprès — sans quoi chaque passage
+    /// au premier plan écrirait dans iCloud sans qu'un seul chiffre ait bougé.
+    ///
+    /// Persisté plutôt que gardé en mémoire : au relancement, un cache vide ferait
+    /// republier une journée identique, une écriture réseau pour rien à chaque
+    /// démarrage. Le §3.6 n'énumère pas cette valeur, mais elle est de la même nature
+    /// que les autres — de l'état de CET appareil, sans intérêt pour le partenaire.
+    var lastPublishedSnapshot: DuoSnapshot? {
+        didSet {
+            defaults.set(lastPublishedSnapshot.flatMap { try? JSONEncoder().encode($0) },
+                         forKey: Key.lastPublishedSnapshot)
+        }
+    }
+
     var isPaired: Bool { role != nil }
 
     private let defaults: UserDefaults
@@ -115,6 +132,8 @@ final class DuoIdentity {
         // réponse d'iCloud.
         partnerSnapshot = (defaults.data(forKey: Key.partnerSnapshot))
             .flatMap { try? JSONDecoder().decode(DuoSnapshot.self, from: $0) }
+        lastPublishedSnapshot = (defaults.data(forKey: Key.lastPublishedSnapshot))
+            .flatMap { try? JSONDecoder().decode(DuoSnapshot.self, from: $0) }
     }
 
     /// Défait le duo sur CET appareil : rôle, zone, partage, cache et compteurs.
@@ -135,5 +154,9 @@ final class DuoIdentity {
         profileLastSeenAt = nil
         unreadLikeCount = 0
         partnerSnapshot = nil
+        // Sans cette ligne, réappairer avec la même personne ne republierait RIEN tant
+        // que la journée n'a pas changé : l'instantané construit serait égal à celui
+        // d'avant le désappairage, et le partenaire n'aurait jamais rien à afficher.
+        lastPublishedSnapshot = nil
     }
 }

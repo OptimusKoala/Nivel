@@ -80,25 +80,38 @@ extension GameService {
     private func duoFeed(on now: Date) -> [DuoEvent] {
         guard let (debut, fin) = dayBounds(for: now) else { return [] }
         return DuoFeedBuilder.build(
-            meals: fetchMeals(from: debut, to: fin).map { repas in
-                MealFeedInput(
-                    publicID: repas.publicID,
-                    date: repas.date,
-                    slot: repas.slot,
-                    title: MealFormatting.frSummary(lines: repas.lines, catalog: foodCatalog),
-                    kcal: repas.estimatedKcal,
-                    // `manualKcal` non nil veut dire « chiffre saisi à la main », donc
-                    // pas de tilde : la règle du journal depuis la 1.10, telle quelle.
-                    isManual: repas.manualKcal != nil)
-            },
-            activities: activities(on: now).map { activite in
-                ActivityFeedInput(
-                    publicID: activite.publicID,
-                    date: activite.date,
-                    title: activityTitle(for: activite),
-                    durationMinutes: activite.durationMinutes,
-                    xp: activite.xpAwarded)
-            })
+            meals: duoMealInputs(fetchMeals(from: debut, to: fin)),
+            activities: duoActivityInputs(activities(on: now)))
+    }
+
+    /// Les deux projections vers NivelCore, partagées avec `assignMissingDuoIDs`
+    /// (DuoPublisher). Un seul exemplaire, et ce n'est pas qu'une économie : ces
+    /// tableaux sont désignés PAR RANG par `MissingIDAssignment`, donc les deux
+    /// appelants doivent projeter exactement de la même façon. Deux mappings jumeaux
+    /// finiraient par différer, et un identifiant atterrirait sur la mauvaise entrée.
+    func duoMealInputs(_ repas: [MealEntry]) -> [MealFeedInput] {
+        repas.map { repas in
+            MealFeedInput(
+                publicID: repas.publicID,
+                date: repas.date,
+                slot: repas.slot,
+                title: MealFormatting.frSummary(lines: repas.lines, catalog: foodCatalog),
+                kcal: repas.estimatedKcal,
+                // `manualKcal` non nil veut dire « chiffre saisi à la main », donc pas de
+                // tilde : la règle du journal depuis la 1.10, telle quelle.
+                isManual: repas.manualKcal != nil)
+        }
+    }
+
+    func duoActivityInputs(_ activites: [ActivityEntry]) -> [ActivityFeedInput] {
+        activites.map { activite in
+            ActivityFeedInput(
+                publicID: activite.publicID,
+                date: activite.date,
+                title: activityTitle(for: activite),
+                durationMinutes: activite.durationMinutes,
+                xp: activite.xpAwarded)
+        }
     }
 
     /// « AAAA-MM-JJ » dans le calendrier LOCAL. Une chaîne et non une `Date` : c'est une

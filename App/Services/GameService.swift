@@ -196,6 +196,9 @@ final class GameService {
             // Chaque état persisté part vers le widget (spec widgets §5) —
             // couvre repas, pesées, activités, clôture de journée, quêtes.
             syncWidget()
+            // Et vers le partenaire, s'il y en a un (spec 1.15 §3.5). Sans duo appairé,
+            // `publishDuo` sort immédiatement : aucune requête n'est émise.
+            publishDuo()
         } catch {
             assertionFailure("SwiftData save failed: \(error)")
         }

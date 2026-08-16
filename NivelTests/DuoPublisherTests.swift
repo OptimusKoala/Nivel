@@ -195,3 +195,98 @@ final class DuoSnapshotBuildingTests: XCTestCase {
         XCTAssertEqual(fil.first?.subtitle, "petit-déjeuner, 300 kcal")
     }
 }
+
+/// La seule partie de `publishDuoNow` qui s'éprouve sans nuage : la garde d'appairage.
+/// Tout ce qui suit parle à CloudKit et ne se vérifie que sur deux appareils.
+@MainActor
+final class DuoPublishGuardTests: XCTestCase {
+    private var suiteName: String!
+    private var defaults: UserDefaults!
+    private var context: ModelContext!
+    private var service: GameService!
+
+    override func setUp() async throws {
+        suiteName = "nivel.tests.duo.publish.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+        let schema = Schema([
+            UserProfile.self, MealEntry.self, WeightEntry.self,
+            DayLog.self, GamificationState.self, ActivityEntry.self
+        ])
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true,
+                                               cloudKitDatabase: .none)
+        context = ModelContext(try ModelContainer(for: schema, configurations: [configuration]))
+        context.insert(UserProfile(
+            name: "Marion", sex: .female, birthDate: Date(timeIntervalSince1970: 0),
+            heightCm: 165, initialWeightKg: 70, activity: .moderate, dailyCalorieTarget: 1_800))
+        context.insert(GamificationState())
+        try context.save()
+        service = GameService(modelContext: context,
+                              stepsService: FakeStepsService(authorized: false),
+                              widgetDefaults: nil)
+    }
+
+    override func tearDown() {
+        defaults.removePersistentDomain(forName: suiteName)
+        defaults = nil
+        suiteName = nil
+        super.tearDown()
+    }
+
+    /// Sans duo appairé, la publication ne fait RIEN. La spec §3.1 le promet
+    /// explicitement : aucune requête réseau, aucun enregistrement, l'app se comporte
+    /// exactement comme la 1.14.
+    ///
+    /// La preuve ne porte pas sur le réseau, qu'aucun test ne peut observer ici, mais sur
+    /// sa CONSÉQUENCE OBSERVABLE : la publication commence par attribuer et persister les
+    /// identifiants publics manquants. Si elle est allée jusque-là, le repas porterait un
+    /// `publicID`. Il reste vide, donc elle s'est arrêtée à la garde — avant la
+    /// résolution de la zone, donc avant tout contact avec CloudKit.
+    func testSansDuoAppairreLaPublicationNeFaitRien() async throws {
+        let identite = DuoIdentity(defaults: defaults)
+        XCTAssertFalse(identite.isPaired)
+        let repas = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420)
+
+        let aPublie = await service.publishDuoNow(identity: identite)
+
+        XCTAssertFalse(aPublie)
+        XCTAssertEqual(repas.publicID, "", "la publication a attribué un identifiant, "
+                       + "donc elle a dépassé la garde d'appairage")
+        XCTAssertNil(identite.lastPublishedSnapshot)
+    }
+
+    /// Et un rôle sans identité de zone ne suffit pas : un invité privé de `zoneOwnerName`
+    /// écrirait dans une zone à LUI, que personne ne lit. `DuoDatabase.target` rend alors
+    /// nil, et la publication s'arrête là.
+    func testUnInviteSansProprietaireDeZoneNePubliePasDansLeVide() async throws {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.role = .guest
+        identite.zoneName = "duo"
+        // zoneOwnerName volontairement absent.
+        let repas = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420)
+
+        let aPublie = await service.publishDuoNow(identity: identite)
+
+        XCTAssertFalse(aPublie)
+        XCTAssertEqual(repas.publicID, "")
+        XCTAssertNil(identite.lastPublishedSnapshot)
+    }
+
+    /// Le désappairage oublie aussi ce qui a été publié. Sans ça, réappairer avec la même
+    /// personne ne republierait rien tant qu'un chiffre n'aurait pas bougé, et le
+    /// partenaire resterait sur un écran vide.
+    func testLeDesappairageOublieLeDernierInstantanePublie() throws {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.role = .owner
+        identite.lastPublishedSnapshot = DuoSnapshot(
+            memberID: "M1", name: "Marion", sexRaw: "female",
+            level: 1, totalXP: 0, xpIntoLevel: 0, xpForNextLevel: 100,
+            dayKey: "2026-08-16", kcalEaten: 0, kcalTarget: 1_800, burned: 0, burnTarget: 0,
+            steps: DuoSnapshot.stepsUnavailable, quest: nil, events: [],
+            generatedAt: Date(timeIntervalSince1970: 1_000))
+
+        identite.unpair()
+
+        XCTAssertNil(identite.lastPublishedSnapshot)
+        XCTAssertNil(DuoIdentity(defaults: defaults).lastPublishedSnapshot)
+    }
+}

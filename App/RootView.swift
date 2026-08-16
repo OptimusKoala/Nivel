@@ -169,6 +169,7 @@ private struct MainTabView: View {
             // Rattrape minuit passé app fermée : aucune sauvegarde n'a lieu s'il
             // n'y avait rien à clôturer, donc le hook de saveOrAssert ne suffit pas.
             gameService.syncWidget()
+            gameService.publishDuo()
             rescheduleReminders()
         }
     }

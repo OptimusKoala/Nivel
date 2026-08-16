@@ -394,6 +394,8 @@ struct SettingsContent: View {
             // Ce chemin ne passe pas par GameService.saveOrAssert : prénom et
             // objectif kcal sont dans le snapshot, on synchronise donc ici aussi.
             game.syncWidget()
+            // Le prénom et la cible kcal sont AUSSI dans l'instantané du duo.
+            game.publishDuo()
         } catch {
             assertionFailure("SwiftData save failed in SettingsView: \(error)")
         }

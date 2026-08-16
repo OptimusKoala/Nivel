@@ -20,6 +20,7 @@
 		0FAF06974700B656604E7BA8 /* SystemWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61A0C215E7AF8D8BAB3D8A4 /* SystemWidgetViews.swift */; };
 		13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD0D49D1E0B2314767BA85A /* DayCloser.swift */; };
 		14F556A70B62A3FEF06A6AC2 /* ReminderPlan+Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32DDA69A9E12CB1E08764404 /* ReminderPlan+Device.swift */; };
+		1B20AAF9C5BD09A929E4ACF3 /* DuoDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A042BC332EE095BA342951D /* DuoDatabase.swift */; };
 		1B36CC033AB07BEB581D664D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9782153DD5F0B9BABA5132F1 /* Theme.swift */; };
 		1D1E36C74A9B09A9D1678F59 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
 		1F43357BA9FC3C15EC018C56 /* MealBasketView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3412AFA14494C601193A76 /* MealBasketView.swift */; };
@@ -55,6 +56,7 @@
 		61E2605647D0942C07D4ED9D /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7900354E6B00D231F84DEFD2 /* SplashView.swift */; };
 		62E2A32DB59E32A84762589F /* TintedWidgetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C895B4580426B4ADFB95F /* TintedWidgetTests.swift */; };
 		6419A77FA992ED4F11701FB2 /* MuscuPlanSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7D4D8A285248E85550E0DB /* MuscuPlanSettings.swift */; };
+		66BCDAEC3C06B9E5EEB146D0 /* DuoPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */; };
 		68FC7AB0B8348D9985A35645 /* ProfileNameSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F0A25ADDD52927515408A2F /* ProfileNameSettingsTests.swift */; };
 		6AA7C1B691686E85F81AB3ED /* SoundSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C19036F8CCE4109F70DE13 /* SoundSettingsTests.swift */; };
 		6BB5B3818639E1B3256D9368 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0BB4765E6D2A577C375E88A8 /* PrivacyInfo.xcprivacy */; };
@@ -200,6 +202,7 @@
 		37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderSettingsTests.swift; sourceTree = "<group>"; };
 		3B3412AFA14494C601193A76 /* MealBasketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealBasketView.swift; sourceTree = "<group>"; };
 		3BF872BC4E82BD67550D3584 /* WidgetNivelito.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetNivelito.swift; sourceTree = "<group>"; };
+		415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoPublisher.swift; sourceTree = "<group>"; };
 		4542B7EDA424C2DF0AF4CD23 /* SportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportView.swift; sourceTree = "<group>"; };
 		458C2EFDE5A8833EB80D2F5C /* Nivel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Nivel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		46AB1204E0C482A88E0531BA /* ActivityLogSheetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogSheetTests.swift; sourceTree = "<group>"; };
@@ -214,6 +217,7 @@
 		57C19036F8CCE4109F70DE13 /* SoundSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettingsTests.swift; sourceTree = "<group>"; };
 		586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAssetsTests.swift; sourceTree = "<group>"; };
 		58745FD6BEB8B0440906A071 /* CalorieRingLegendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieRingLegendTests.swift; sourceTree = "<group>"; };
+		5A042BC332EE095BA342951D /* DuoDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoDatabase.swift; sourceTree = "<group>"; };
 		5A3D92F71CC93D99201C361E /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
 		5EB2E2BB7C09EE5FBA96D57C /* PostureSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostureSection.swift; sourceTree = "<group>"; };
 		5F7AE44E873A5E75C6C02C21 /* ButtonAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonAssetsTests.swift; sourceTree = "<group>"; };
@@ -422,7 +426,9 @@
 			children = (
 				7FD0D49D1E0B2314767BA85A /* DayCloser.swift */,
 				4C4CF000EF99C1C649915C18 /* DeepLink.swift */,
+				5A042BC332EE095BA342951D /* DuoDatabase.swift */,
 				E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */,
+				415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */,
 				6A1F6969B88BCA1A9BE77195 /* GameService.swift */,
 				A8BA727D821343C1F38EF2D9 /* GameService+DuoSnapshot.swift */,
 				FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */,
@@ -805,7 +811,9 @@
 				ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */,
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */,
+				1B20AAF9C5BD09A929E4ACF3 /* DuoDatabase.swift in Sources */,
 				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
+				66BCDAEC3C06B9E5EEB146D0 /* DuoPublisher.swift in Sources */,
 				B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */,
 				5D4D67FBBA062126EF9E6359 /* FoodCatalogView.swift in Sources */,
 				F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */,
