@@ -88,6 +88,95 @@ enum DuoRecord {
         return record
     }
 
+    /// Ce que le partenaire vient d'écrire, relu (§3.3). C'est l'exacte réciproque de
+    /// `member(from:)`, et les deux passent par `Field` : une faute de frappe est donc la
+    /// même des deux côtés, ou elle ne compile pas. Un test fait l'aller-retour complet,
+    /// parce qu'un champ ÉCRIT mais jamais RELU passerait autrement inaperçu.
+    ///
+    /// **Un enregistrement amputé n'est pas affiché du tout.** Remplacer un champ manquant
+    /// par 0 afficherait un chiffre faux sans le dire, alors que rendre `nil` laisse en
+    /// place le cache du `DuoIdentity` et sa ligne « mis à jour il y a… », qui dit la
+    /// vérité sur l'âge de ce qu'on montre. Le cas ne se produit qu'avec un enregistrement
+    /// à demi écrit : le contrat de câble n'autorise que des champs AJOUTÉS, jamais retirés.
+    ///
+    /// Deux exceptions, et elles sont volontaires : la quête, absente par décision quand il
+    /// n'y en a pas, et le fil, qu'un JSON illisible ramène à un tableau vide plutôt qu'à
+    /// rien du tout — les chiffres du jour valent mieux que rien.
+    static func snapshot(from record: CKRecord) -> DuoSnapshot? {
+        guard let memberID = record[Field.memberID] as? String, !memberID.isEmpty,
+              let name = record[Field.name] as? String,
+              let sexRaw = record[Field.sexRaw] as? String,
+              let level = record[Field.level] as? Int,
+              let totalXP = record[Field.totalXP] as? Int,
+              let xpIntoLevel = record[Field.xpIntoLevel] as? Int,
+              let xpForNextLevel = record[Field.xpForNextLevel] as? Int,
+              let dayKey = record[Field.dayKey] as? String,
+              let kcalEaten = record[Field.kcalEaten] as? Int,
+              let kcalTarget = record[Field.kcalTarget] as? Int,
+              let burned = record[Field.burned] as? Int,
+              let burnTarget = record[Field.burnTarget] as? Int,
+              let steps = record[Field.steps] as? Int,
+              let feedJSON = record[Field.feedJSON] as? String,
+              let generatedAt = record[Field.generatedAt] as? Date
+        else { return nil }
+
+        // Les TROIS champs, ou pas de quête. Une quête à demi écrite ne devient jamais
+        // « 0/0 » : ce serait annoncer au partenaire une quête qu'il n'a pas commencée,
+        // là où l'absence se lit simplement « pas de quête », ce que l'écriture prend déjà
+        // soin de dire en laissant les trois champs nil.
+        var quest: DuoQuestLine?
+        if let title = record[Field.questTitle] as? String,
+           let done = record[Field.questDone] as? Int,
+           let total = record[Field.questTotal] as? Int {
+            quest = DuoQuestLine(title: title, done: done, total: total)
+        }
+
+        return DuoSnapshot(
+            memberID: memberID, name: name, sexRaw: sexRaw,
+            level: level, totalXP: totalXP,
+            xpIntoLevel: xpIntoLevel, xpForNextLevel: xpForNextLevel,
+            dayKey: dayKey,
+            kcalEaten: kcalEaten, kcalTarget: kcalTarget,
+            burned: burned, burnTarget: burnTarget, steps: steps,
+            quest: quest, events: decodeFeed(feedJSON), generatedAt: generatedAt)
+    }
+
+    /// Ce qu'il faut d'un `DuoMember` pour désigner mon partenaire, sans décoder tout
+    /// l'instantané : la zone en porte deux au plus, mais un seul est le mien à afficher.
+    ///
+    /// `creationDate` vient du SERVEUR et vaut nil sur un enregistrement jamais écrit. Il
+    /// est alors ramené au futur le plus lointain, ce qui le fait PERDRE face à un membre
+    /// réellement daté — voir `DuoMemberRef.createdAt`.
+    static func memberRef(from record: CKRecord) -> DuoMemberRef? {
+        guard let memberID = record[Field.memberID] as? String, !memberID.isEmpty
+        else { return nil }
+        return DuoMemberRef(memberID: memberID, createdAt: record.creationDate ?? .distantFuture)
+    }
+
+    /// Un cœur, en entier cette fois : `likeRef` ne porte que de quoi juger un orphelin,
+    /// alors que l'affichage et la notification ont besoin du donneur et du titre.
+    ///
+    /// **Seuls les deux champs dont dépendent les décisions sont exigés**, exactement comme
+    /// `likeRef`, et pour la même raison mesurée au lot A1 : un cœur privé de son `giverID`
+    /// y était écarté du nettoyage par un `continue` silencieux, donc orphelin pour
+    /// toujours. Un donneur inconnu se lit ici en chaîne vide, qui ne peut être personne —
+    /// et surtout pas moi, ce qui garde le cœur visible du bon côté du filtre du §3.7.
+    static func like(from record: CKRecord) -> DuoLike? {
+        guard let eventID = record[Field.eventID] as? String,
+              let ownerID = record[Field.ownerID] as? String
+        else { return nil }
+
+        return DuoLike(
+            giverID: record[Field.giverID] as? String ?? "",
+            ownerID: ownerID,
+            eventID: eventID,
+            eventTitle: record[Field.eventTitle] as? String ?? "",
+            // Une date inconnue place le cœur en tête de liste plutôt qu'en dernière
+            // nouvelle : mieux vaut le montrer trop bas que le faire passer pour l'événement
+            // du moment.
+            createdAt: record[Field.createdAt] as? Date ?? record.creationDate ?? .distantPast)
+    }
+
     static func encodedFeed(_ events: [DuoEvent]) -> String? {
         guard let data = try? JSONEncoder().encode(events) else { return nil }
         return String(data: data, encoding: .utf8)

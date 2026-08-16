@@ -70,6 +70,7 @@
 		75616CCA8FCACCB5A94F5D99 /* MuscuPlanSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D009F36F650CE2DC1B51ADCD /* MuscuPlanSettingsTests.swift */; };
 		75ADB553C3E21774DAF18E6A /* XPBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02D37C5B43BABA7C97A669DA /* XPBar.swift */; };
 		77B49E3992CE52CA8BD6F01A /* SportAssetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */; };
+		79CCBD1665AE1BCF9AAFABBF /* DuoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0194780399BE21D4AB280F37 /* DuoService.swift */; };
 		7B7AB02CBD9C581DF46CF251 /* QuestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */; };
 		7C0FE31A8625D00828C0C868 /* PostureSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB2E2BB7C09EE5FBA96D57C /* PostureSection.swift */; };
 		83A569C9282E797637B0C790 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D09557663FBEA7185F1839 /* HomeView.swift */; };
@@ -128,6 +129,7 @@
 		ECD12143F52C2843122AC930 /* ActivityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66334CE4613A5D51663A84C /* ActivityRow.swift */; };
 		ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */; };
 		F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = E840C37923218C1DC6C0614D /* Formatting.swift */; };
+		FA7D46CC8FA1F8D3D0E4FC7E /* DuoServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726318FF4C63560ED6D99D48 /* DuoServiceTests.swift */; };
 		FB9F1654D2AFF306E24D59CF /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E4AF60C635E23219D03138E /* ThemePalette.swift */; };
 		FDCB8202104609DE46003A7A /* GameService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A1F6969B88BCA1A9BE77195 /* GameService.swift */; };
 		FE4A11B0B48A1B381C926EC7 /* TimerRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79570BB8A6B99B6D9314323 /* TimerRingView.swift */; };
@@ -174,6 +176,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0194780399BE21D4AB280F37 /* DuoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoService.swift; sourceTree = "<group>"; };
 		02D37C5B43BABA7C97A669DA /* XPBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XPBar.swift; sourceTree = "<group>"; };
 		079075DA2E6A1C77564F067B /* WeighInSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeighInSheet.swift; sourceTree = "<group>"; };
 		0A1C7019B6613E1DDDAB872E /* timer_done.caf */ = {isa = PBXFileReference; path = timer_done.caf; sourceTree = "<group>"; };
@@ -231,6 +234,7 @@
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
 		6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseTimerModelTests.swift; sourceTree = "<group>"; };
 		6B7D4D8A285248E85550E0DB /* MuscuPlanSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscuPlanSettings.swift; sourceTree = "<group>"; };
+		726318FF4C63560ED6D99D48 /* DuoServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoServiceTests.swift; sourceTree = "<group>"; };
 		7900354E6B00D231F84DEFD2 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		7C31C4F7D1AD90033A56B5C9 /* DailySessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySessionCard.swift; sourceTree = "<group>"; };
 		7FD0D49D1E0B2314767BA85A /* DayCloser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCloser.swift; sourceTree = "<group>"; };
@@ -432,6 +436,7 @@
 				E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */,
 				415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */,
 				568DF03A309F8A29F3025AD4 /* DuoRecord.swift */,
+				0194780399BE21D4AB280F37 /* DuoService.swift */,
 				6A1F6969B88BCA1A9BE77195 /* GameService.swift */,
 				A8BA727D821343C1F38EF2D9 /* GameService+DuoSnapshot.swift */,
 				FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */,
@@ -556,6 +561,7 @@
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
 				A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */,
 				B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */,
+				726318FF4C63560ED6D99D48 /* DuoServiceTests.swift */,
 				6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */,
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
 				C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */,
@@ -818,6 +824,7 @@
 				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
 				66BCDAEC3C06B9E5EEB146D0 /* DuoPublisher.swift in Sources */,
 				CF98AAF6E3E169E62DEAC6F7 /* DuoRecord.swift in Sources */,
+				79CCBD1665AE1BCF9AAFABBF /* DuoService.swift in Sources */,
 				B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */,
 				5D4D67FBBA062126EF9E6359 /* FoodCatalogView.swift in Sources */,
 				F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */,
@@ -917,6 +924,7 @@
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
 				92A5342A30BBFF472BC7BFFE /* DuoIdentityTests.swift in Sources */,
 				923CE98E8AC08B122EDA6DF2 /* DuoPublisherTests.swift in Sources */,
+				FA7D46CC8FA1F8D3D0E4FC7E /* DuoServiceTests.swift in Sources */,
 				3BFDE41276406C8417A234F4 /* ExerciseTimerModelTests.swift in Sources */,
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
 				43B794C252D4FF54C8BFAB8C /* HomeDashboardTests.swift in Sources */,
