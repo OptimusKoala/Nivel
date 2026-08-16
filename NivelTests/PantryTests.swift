@@ -117,7 +117,9 @@ final class PantryTests: XCTestCase {
     func testLeFrigoNeListeQueDesIngredients() throws {
         let catalog = try FoodCatalog.load()
         let ingredients = PantryContent.ingredients(in: catalog)
-        XCTAssertEqual(ingredients.count, 58)
+        // 58 + les 7 accompagnements de la 1.15 §6.3. Même expression que le compte
+        // d'onglet épinglé dans `FoodCatalogTests` : les deux doivent bouger ensemble.
+        XCTAssertEqual(ingredients.count, 65)
         XCTAssertTrue(ingredients.allSatisfy { $0.category == .side })
         // Les recettes de la 1.14 ne sont pas des ingrédients : elles ont leur bande.
         XCTAssertTrue(ingredients.allSatisfy { !$0.isRecipe })

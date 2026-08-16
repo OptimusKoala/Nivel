@@ -97,9 +97,9 @@ final class FoodCatalogTests: XCTestCase {
     /// les onglets ne montrant pas les recettes, la somme des cinq catégories doit
     /// faire le compte des aliments ORDINAIRES, pas la taille du fichier.
     func testLaTailleDuCatalogue() {
-        XCTAssertEqual(catalog.items.count, 183, "le catalogue ne compte plus 183 entrées")
-        XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 148,
-                       "les aliments ordinaires ne sont plus 148")
+        XCTAssertEqual(catalog.items.count, 188, "le catalogue ne compte plus 188 entrées")
+        XCTAssertEqual(catalog.items.filter { !$0.isRecipe }.count, 153,
+                       "les aliments ordinaires ne sont plus 153")
     }
 
     // MARK: Catalogue v1 (spec v1.10)
@@ -119,11 +119,11 @@ final class FoodCatalogTests: XCTestCase {
         // et ne gardait plus rien une fois passé à 58. C'est le dernier compte de
         // catégorie du fichier qui n'était pas exact.
         XCTAssertEqual(catalog.items(category: .side, slot: nil).count, 65)  // 58 + 7 brasserie
-        XCTAssertEqual(catalog.items(category: .dessert, slot: nil).count, 10)
+        XCTAssertEqual(catalog.items(category: .dessert, slot: nil).count, 15)  // 10 + 5 brasserie
         // Le lien avec `testLaTailleDuCatalogue` : ces cinq comptes couvrent tous les
         // aliments ordinaires, et rien d'autre. Un item qui disparaîtrait de son onglet
         // sans être une recette tomberait ici plutôt que nulle part.
-        XCTAssertEqual(15 + 9 + 49 + 65 + 10, catalog.items.filter { !$0.isRecipe }.count)
+        XCTAssertEqual(15 + 9 + 49 + 65 + 15, catalog.items.filter { !$0.isRecipe }.count)
     }
 
     /// Garde-fou de transcription : les kcal par unité des tables de la spec doivent
@@ -236,8 +236,13 @@ final class FoodCatalogTests: XCTestCase {
         XCTAssertEqual(alcohol, ["beer_half", "beer_pint", "wine", "spirit", "cocktail"])
 
         let richDessert = Set(catalog.items.filter { $0.tags.contains("richDessert") }.map(\.id))
+        // Quatre des cinq desserts de la 1.15 §6.4 s'y ajoutent. `ile_flottante` en est
+        // ABSENTE et doit le rester : à 130 kcal aux 100 g elle est plus légère que la
+        // compote, elle-même non taguée.
         XCTAssertEqual(richDessert, ["choco_bar", "ice_cream", "croissant",
-                                     "cake", "fruit_tart", "choco_mousse", "crepe_sugar"])
+                                     "cake", "fruit_tart", "choco_mousse", "crepe_sugar",
+                                     "creme_brulee", "tarte_tatin", "profiteroles",
+                                     "fondant_chocolat"])
     }
 
     // MARK: Seize ingrédients (spec v1.14 §3.2)
@@ -358,14 +363,19 @@ final class FoodCatalogTests: XCTestCase {
         XCTAssertEqual(catalog.byID["apero_platter"]?.slots, [])
     }
 
-    // MARK: Dix desserts (spec v1.14 §3.4)
+    // MARK: Quinze desserts (spec v1.14 §3.4, cinq de plus en 1.15 §6.4)
 
-    func testLesDixDessertsSontComplets() {
+    /// Renommé en 1.15 : il s'appelait `testLesDixDesserts…` et comptait dix. Le nom
+    /// d'un test qui compte doit suivre le compte, sinon l'échec parle d'un chiffre
+    /// qui n'est plus dans le fichier et on cherche longtemps.
+    func testLesQuinzeDessertsSontComplets() {
         let desserts = catalog.items.filter { $0.category == .dessert }
-        XCTAssertEqual(desserts.count, 10, "sept nouveaux + trois déménagés")
+        XCTAssertEqual(desserts.count, 15, "dix + les cinq de brasserie")
         for id in ["fruit_salad", "cake", "fruit_tart", "choco_mousse",
                    "crepe_sugar", "skyr", "greek_yogurt",
-                   "choco_square", "ice_cream", "compote"] {
+                   "choco_square", "ice_cream", "compote",
+                   "creme_brulee", "tarte_tatin", "profiteroles",
+                   "ile_flottante", "fondant_chocolat"] {
             let item = catalog.byID[id]
             XCTAssertNotNil(item, "dessert manquant : \(id)")
             XCTAssertEqual(item?.category, .dessert, "\(id)")
@@ -645,6 +655,72 @@ final class FoodCatalogTests: XCTestCase {
             XCTAssertEqual(item.slots, [], "\(spec.id) : créneaux, un accompagnement se sert partout")
             XCTAssertFalse(item.isRecipe, "\(spec.id) : ce n'est pas une recette")
         }
+    }
+
+    /// Une ligne de la table de la spec §6.4, ses sept colonnes. Ces desserts-ci portent
+    /// une UNITÉ (« une part », « un ramequin »), contrairement aux plats et aux
+    /// accompagnements du lot : deux colonnes de plus à tenir, et c'est là que se logent
+    /// les erreurs de recopie.
+    private struct DessertDeSpec {
+        let id: String
+        let name: String
+        let emoji: String
+        let kcal: Double
+        let unite: String
+        let poidsUnite: Int
+        let gourmand: Bool
+    }
+
+    /// La table de la spec §6.4, recopiée DEPUIS LA SPEC comme les deux précédentes.
+    private static let dessertsDeBrasserie: [DessertDeSpec] = [
+        .init(id: "creme_brulee", name: "Crème brûlée", emoji: "🍮",
+              kcal: 250, unite: "ramequin", poidsUnite: 120, gourmand: true),
+        .init(id: "tarte_tatin", name: "Tarte Tatin", emoji: "🥧",
+              kcal: 250, unite: "part", poidsUnite: 120, gourmand: true),
+        .init(id: "profiteroles", name: "Profiteroles", emoji: "🍫",
+              kcal: 300, unite: "part", poidsUnite: 130, gourmand: true),
+        .init(id: "ile_flottante", name: "Île flottante", emoji: "🍮",
+              kcal: 130, unite: "part", poidsUnite: 130, gourmand: false),
+        .init(id: "fondant_chocolat", name: "Fondant au chocolat", emoji: "🍫",
+              kcal: 400, unite: "part", poidsUnite: 100, gourmand: true),
+    ]
+
+    /// Même garde-fou que pour les plats et les accompagnements, sur toutes les colonnes
+    /// de la table §6.4, unité et poids d'unité compris. Le `defaultGrams` vaut le poids
+    /// d'une unité : on tape une part, pas 137 grammes de tarte.
+    func testLesCinqDessertsDeBrasserieRetombentSurLaSpec() {
+        XCTAssertEqual(Self.dessertsDeBrasserie.count, 5,
+                       "la table de référence n'a plus cinq lignes")
+        for spec in Self.dessertsDeBrasserie {
+            guard let item = catalog.items.first(where: { $0.id == spec.id }) else {
+                XCTFail("dessert manquant du catalogue : \(spec.id)")
+                continue
+            }
+            XCTAssertEqual(item.name, spec.name, "\(spec.id) : nom")
+            XCTAssertEqual(item.emoji, spec.emoji, "\(spec.id) : emoji")
+            XCTAssertEqual(item.kcalPer100g, spec.kcal, "\(spec.id) : kcal/100 g")
+            XCTAssertEqual(item.unitLabel, spec.unite, "\(spec.id) : unité")
+            XCTAssertEqual(item.unitGrams, spec.poidsUnite, "\(spec.id) : poids d'une unité")
+            XCTAssertEqual(item.defaultGrams, spec.poidsUnite, "\(spec.id) : portion")
+            // « ramequins » et « parts » prennent un s : le pluriel explicite ne sert
+            // qu'aux invariables, et l'écrire ici ferait lire « 2 parts » deux fois.
+            XCTAssertNil(item.unitLabelPlural, "\(spec.id) : pluriel régulier, donc nil")
+            XCTAssertEqual(item.category, .dessert, "\(spec.id) : catégorie")
+            XCTAssertEqual(item.slots, [], "\(spec.id) : créneaux")
+            XCTAssertFalse(item.isRecipe, "\(spec.id) : ce n'est pas une recette")
+            XCTAssertEqual(catalog.hasTag("richDessert", itemID: spec.id), spec.gourmand,
+                           "\(spec.id) : tag richDessert")
+        }
+    }
+
+    /// L'île flottante est la seule ligne de la table §6.4 qui dit « non » au tag, donc
+    /// la seule qu'une transcription distraite alignerait sur ses voisines. Le test
+    /// ci-dessus la couvre déjà par sa colonne ; celui-ci l'énonce en clair, avec sa
+    /// raison, pour que le « non » ne passe pas pour un oubli à la relecture.
+    func testLIleFlottanteNEstPasUnDessertGourmand() {
+        XCTAssertFalse(catalog.hasTag("richDessert", itemID: "ile_flottante"),
+                       "130 kcal/100 g : plus légère que la compote, qui n'est pas taguée")
+        XCTAssertFalse(catalog.hasTag("richDessert", itemID: "compote"))
     }
 
     /// Doublon VOULU (spec §6.3) : le même gratin existe en plat et en accompagnement,

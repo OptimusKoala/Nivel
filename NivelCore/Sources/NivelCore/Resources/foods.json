@@ -2672,5 +2672,78 @@
     "tags": [],
     "slots": [],
     "defaultGrams": 90
+  },
+  {
+    "id": "creme_brulee",
+    "name": "Crème brûlée",
+    "emoji": "🍮",
+    "kcalPer100g": 250,
+    "unitLabel": "ramequin",
+    "unitLabelPlural": null,
+    "unitGrams": 120,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 120
+  },
+  {
+    "id": "tarte_tatin",
+    "name": "Tarte Tatin",
+    "emoji": "🥧",
+    "kcalPer100g": 250,
+    "unitLabel": "part",
+    "unitLabelPlural": null,
+    "unitGrams": 120,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 120
+  },
+  {
+    "id": "profiteroles",
+    "name": "Profiteroles",
+    "emoji": "🍫",
+    "kcalPer100g": 300,
+    "unitLabel": "part",
+    "unitLabelPlural": null,
+    "unitGrams": 130,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 130
+  },
+  {
+    "id": "ile_flottante",
+    "name": "Île flottante",
+    "emoji": "🍮",
+    "kcalPer100g": 130,
+    "unitLabel": "part",
+    "unitLabelPlural": null,
+    "unitGrams": 130,
+    "category": "dessert",
+    "tags": [],
+    "slots": [],
+    "defaultGrams": 130
+  },
+  {
+    "id": "fondant_chocolat",
+    "name": "Fondant au chocolat",
+    "emoji": "🍫",
+    "kcalPer100g": 400,
+    "unitLabel": "part",
+    "unitLabelPlural": null,
+    "unitGrams": 100,
+    "category": "dessert",
+    "tags": [
+      "richDessert"
+    ],
+    "slots": [],
+    "defaultGrams": 100
   }
 ]
