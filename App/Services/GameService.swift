@@ -49,6 +49,8 @@ final class GameService {
     /// les tests passent `nil` et ne touchent jamais les vrais réglages. `nil` veut dire
     /// « cet appareil ne publie rien », ce qui est aussi l'état d'un utilisateur sans duo.
     let duoIdentity: DuoIdentity?
+    /// Une publication du duo est en vol. Interne à `publishDuo`, voir sa coalescence.
+    var duoPublishInFlight = false
 
     /// Catalogues embarqués (chargés une fois ; vides si le bundle est corrompu — jamais de crash).
     let questCatalog: [Quest]

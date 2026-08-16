@@ -2,6 +2,7 @@
 // L'identité publique d'une entrée (spec 1.15 §3.4) : `MealEntry` et `ActivityEntry`
 // gagnent un `publicID`, seule cible possible d'un cœur du duo.
 import XCTest
+import CloudKit
 import SwiftData
 import NivelCore
 @testable import Nivel
@@ -328,6 +329,39 @@ final class DuoPublishGuardTests: XCTestCase {
         XCTAssertFalse(identifiants.contains(""))
     }
 
+
+    /// La coalescence : un crochet qui arrive pendant qu'une publication est en vol ne
+    /// lance RIEN. Sans elle, `lastPublishedSnapshot` n'étant écrit qu'après
+    /// l'aller-retour réseau, les deux appels franchiraient la garde « rien n'a bougé »
+    /// et écriraient la même chose deux fois. Le scénario existe déjà : au retour au
+    /// premier plan, `RootView` publie, et `closeOpenDays()` déclenche `saveOrAssert()`
+    /// dans le même tour.
+    ///
+    /// La preuve porte sur le TRAVAIL NON FAIT, pas sur le drapeau : vérifier que le
+    /// drapeau vaut vrai ne distinguerait rien, il vaudrait vrai dans les deux cas.
+    /// Une publication qui démarre attribue les `publicID` manquants ; celui-ci reste
+    /// vide, donc rien n'a démarré.
+    func testUnCrochetPendantUnePublicationEnVolNeLancerien() async throws {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.createMemberID()
+        let service = GameService(modelContext: context,
+                                  stepsService: FakeStepsService(authorized: false),
+                                  widgetDefaults: nil, duoIdentity: identite)
+        // Le repas est créé AVANT l'appairage : `logMeal` passe par `saveOrAssert`, donc
+        // par `publishDuo`, et une identité déjà appairée ferait attribuer l'identifiant
+        // ici même — l'observable du test serait consommé avant d'avoir servi.
+        let repas = await service.logMeal(slot: .lunch, lines: [], manualKcal: 420)
+        XCTAssertEqual(repas.publicID, "")
+        identite.role = .owner
+        service.duoPublishInFlight = true   // une publication est déjà partie
+
+        service.publishDuo()
+        for _ in 0..<10 { await Task.yield() }
+
+        XCTAssertEqual(repas.publicID, "",
+                       "une seconde publication a démarré alors qu'une était en vol")
+    }
+
     /// Le désappairage oublie aussi ce qui a été publié. Sans ça, réappairer avec la même
     /// personne ne republierait rien tant qu'un chiffre n'aurait pas bougé, et le
     /// partenaire resterait sur un écran vide.
@@ -345,5 +379,117 @@ final class DuoPublishGuardTests: XCTestCase {
 
         XCTAssertNil(identite.lastPublishedSnapshot)
         XCTAssertNil(DuoIdentity(defaults: defaults).lastPublishedSnapshot)
+    }
+}
+
+/// Le CONTRAT DE CÂBLE : noms de champs, valeurs, et l'aller-retour du fil. Rien de tout
+/// cela n'exigeait le nuage — `CKRecord(recordType:recordID:)` se construit hors ligne —
+/// et rien de tout cela n'était épinglé tant que ces vingt littéraux vivaient au milieu
+/// d'une fonction async. Le lot A2 lira par les mêmes constantes.
+final class DuoRecordTests: XCTestCase {
+    private let zone = CKRecordZone.ID(zoneName: "duo", ownerName: CKCurrentUserDefaultName)
+
+    private func instantane(quest: DuoQuestLine? = DuoQuestLine(title: "Bouger 4 fois",
+                                                                done: 3, total: 4),
+                            events: [DuoEvent] = []) -> DuoSnapshot {
+        DuoSnapshot(
+            memberID: "M1", name: "Marion", sexRaw: "female",
+            level: 11, totalXP: 2_340, xpIntoLevel: 140, xpForNextLevel: 220,
+            dayKey: "2026-08-16",
+            kcalEaten: 1_180, kcalTarget: 1_550, burned: 310, burnTarget: 400, steps: 7_240,
+            quest: quest, events: events, generatedAt: Date(timeIntervalSince1970: 1_000))
+    }
+
+    /// Les dix-huit champs d'un membre, nom par nom et valeur par valeur. Une faute de
+    /// frappe est autrement PARFAITEMENT silencieuse : CloudKit crée le champ à la volée
+    /// et le partenaire lit nil.
+    func testLEnregistrementMembrePorteTousSesChamps() throws {
+        let record = DuoRecord.member(from: instantane(), in: zone)
+
+        XCTAssertEqual(record.recordType, "DuoMember")
+        XCTAssertEqual(record.recordID.recordName, "M1", "le recordName EST le memberID")
+        XCTAssertEqual(record.recordID.zoneID, zone)
+        XCTAssertEqual(record["memberID"] as? String, "M1")
+        XCTAssertEqual(record["name"] as? String, "Marion")
+        XCTAssertEqual(record["sexRaw"] as? String, "female")
+        XCTAssertEqual(record["level"] as? Int, 11)
+        XCTAssertEqual(record["totalXP"] as? Int, 2_340)
+        XCTAssertEqual(record["xpIntoLevel"] as? Int, 140)
+        XCTAssertEqual(record["xpForNextLevel"] as? Int, 220)
+        XCTAssertEqual(record["dayKey"] as? String, "2026-08-16")
+        XCTAssertEqual(record["kcalEaten"] as? Int, 1_180)
+        XCTAssertEqual(record["kcalTarget"] as? Int, 1_550)
+        XCTAssertEqual(record["burned"] as? Int, 310)
+        XCTAssertEqual(record["burnTarget"] as? Int, 400)
+        XCTAssertEqual(record["steps"] as? Int, 7_240)
+        XCTAssertEqual(record["questTitle"] as? String, "Bouger 4 fois")
+        XCTAssertEqual(record["questDone"] as? Int, 3)
+        XCTAssertEqual(record["questTotal"] as? Int, 4)
+        XCTAssertEqual(record["generatedAt"] as? Date, Date(timeIntervalSince1970: 1_000))
+        XCTAssertNotNil(record["feedJSON"] as? String)
+    }
+
+    /// La décision « pas de quête → trois champs NIL, jamais 0 ». Un 0 se lirait
+    /// « quête à 0/0 » chez le partenaire au lieu de « pas de quête ».
+    func testSansQueteLesTroisChampsSontNilEtNonZero() {
+        let record = DuoRecord.member(from: instantane(quest: nil), in: zone)
+
+        XCTAssertNil(record["questTitle"])
+        XCTAssertNil(record["questDone"])
+        XCTAssertNil(record["questTotal"])
+    }
+
+    /// Le fil fait l'aller-retour par la chaîne réellement écrite dans l'enregistrement.
+    func testLeFilFaitLAllerRetourParLeChampFeedJSON() throws {
+        let evenements = [
+            DuoEvent(id: "E1", kind: .meal, at: Date(timeIntervalSince1970: 5_000),
+                     title: "Salade de lentilles", subtitle: "déjeuner, ~ 420 kcal"),
+            DuoEvent(id: "E2", kind: .activity, at: Date(timeIntervalSince1970: 9_000),
+                     title: "Vélo tranquille", subtitle: "20 min, +30 XP"),
+        ]
+        let record = DuoRecord.member(from: instantane(events: evenements), in: zone)
+
+        let json = try XCTUnwrap(record["feedJSON"] as? String)
+        XCTAssertEqual(DuoRecord.decodeFeed(json), evenements)
+    }
+
+    /// Un fil vide s'écrit « [] » et se relit vide : jamais une chaîne absente, qui
+    /// ferait échouer le décodage chez l'autre.
+    func testUnFilVideSEcritEnTableauVide() throws {
+        let record = DuoRecord.member(from: instantane(events: []), in: zone)
+
+        XCTAssertEqual(record["feedJSON"] as? String, "[]")
+        XCTAssertEqual(DuoRecord.decodeFeed("[]"), [])
+    }
+
+    /// Un JSON illisible rend un fil vide plutôt que de lever : le partenaire voit ses
+    /// chiffres sans son fil, au lieu de ne rien voir du tout.
+    func testUnFilIllisibleNeCassePasLaLecture() {
+        XCTAssertEqual(DuoRecord.decodeFeed("pas du JSON"), [])
+    }
+
+    /// Le parsage d'un cœur n'exige QUE les deux champs dont dépend la décision.
+    /// `giverID` en était une condition alors qu'il n'était jamais lu, et un cœur qui en
+    /// manquait restait orphelin pour toujours.
+    func testUnCoeurSansGiverIDResteExploitable() throws {
+        let record = CKRecord(recordType: "DuoLike",
+                              recordID: CKRecord.ID(recordName: "like-G1-E1", zoneID: zone))
+        record["eventID"] = "E1" as CKRecordValue
+        record["ownerID"] = "MOI" as CKRecordValue
+        // giverID volontairement absent.
+
+        let coeur = try XCTUnwrap(DuoRecord.likeRef(from: record))
+
+        XCTAssertEqual(coeur.eventID, "E1")
+        XCTAssertEqual(coeur.ownerID, "MOI")
+    }
+
+    /// En revanche, un cœur privé de ce dont la décision dépend n'est pas exploitable.
+    func testUnCoeurSansEventIDNEstPasExploitable() {
+        let record = CKRecord(recordType: "DuoLike",
+                              recordID: CKRecord.ID(recordName: "like-G1-", zoneID: zone))
+        record["ownerID"] = "MOI" as CKRecordValue
+
+        XCTAssertNil(DuoRecord.likeRef(from: record))
     }
 }

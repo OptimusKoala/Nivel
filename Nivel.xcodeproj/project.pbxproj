@@ -108,6 +108,7 @@
 		C80069DA6A1D0A156DFFD8D8 /* RecipeDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A152798F78E550626860D80C /* RecipeDetailSheet.swift */; };
 		CA44B39964325597C05E92A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671D6B6E3581A479FFED40C2 /* RootView.swift */; };
 		CCA2B60504058665BBC05DF7 /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9245CF3C47048DB9D88C2E5 /* StatCard.swift */; };
+		CF98AAF6E3E169E62DEAC6F7 /* DuoRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 568DF03A309F8A29F3025AD4 /* DuoRecord.swift */; };
 		D1BD49D8E5F9A80EF5BA6E15 /* ProgressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC47BA19967A4B2085299D7 /* ProgressScreen.swift */; };
 		D3ECBB03492F7180F08F3040 /* timer_step.caf in Resources */ = {isa = PBXBuildFile; fileRef = 1B9B9196CD68143267D66D54 /* timer_step.caf */; };
 		D4DBCCCBE3F53C8F8882CC95 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E734571AD23AE4CDC74D01 /* NotificationService.swift */; };
@@ -214,6 +215,7 @@
 		50D53BF008B271B611966D7C /* SessionPlayerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerSheet.swift; sourceTree = "<group>"; };
 		544B9CEDBA3774256FB86048 /* SoundAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundAssetsTests.swift; sourceTree = "<group>"; };
 		55E620156F52BBF2F9AB3EF1 /* ExerciseTimerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseTimerModel.swift; sourceTree = "<group>"; };
+		568DF03A309F8A29F3025AD4 /* DuoRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoRecord.swift; sourceTree = "<group>"; };
 		57C19036F8CCE4109F70DE13 /* SoundSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettingsTests.swift; sourceTree = "<group>"; };
 		586A1B038D76EC763A7DED99 /* SportAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAssetsTests.swift; sourceTree = "<group>"; };
 		58745FD6BEB8B0440906A071 /* CalorieRingLegendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieRingLegendTests.swift; sourceTree = "<group>"; };
@@ -429,6 +431,7 @@
 				5A042BC332EE095BA342951D /* DuoDatabase.swift */,
 				E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */,
 				415AEE6FDFFEFB6FF0EAC4AC /* DuoPublisher.swift */,
+				568DF03A309F8A29F3025AD4 /* DuoRecord.swift */,
 				6A1F6969B88BCA1A9BE77195 /* GameService.swift */,
 				A8BA727D821343C1F38EF2D9 /* GameService+DuoSnapshot.swift */,
 				FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */,
@@ -814,6 +817,7 @@
 				1B20AAF9C5BD09A929E4ACF3 /* DuoDatabase.swift in Sources */,
 				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
 				66BCDAEC3C06B9E5EEB146D0 /* DuoPublisher.swift in Sources */,
+				CF98AAF6E3E169E62DEAC6F7 /* DuoRecord.swift in Sources */,
 				B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */,
 				5D4D67FBBA062126EF9E6359 /* FoodCatalogView.swift in Sources */,
 				F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */,

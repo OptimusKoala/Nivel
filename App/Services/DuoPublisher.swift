@@ -31,7 +31,26 @@ extension GameService {
         // promesse du §3.1 — sans duo, l'app se comporte exactement comme la 1.14 — se
         // tient ici, avant tout le reste.
         guard let identity = duoIdentity, identity.isPaired else { return }
-        Task { @MainActor in await publishDuoNow(identity: identity) }
+
+        // COALESCENCE. `syncWidget()` tolère les appels en rafale parce qu'il écrit un
+        // plist local ; ici chaque appel vaut une lecture HealthKit, une sauvegarde, une
+        // requête et un aller-retour réseau. Pire, `lastPublishedSnapshot` n'étant écrit
+        // qu'APRÈS l'aller-retour, deux appels qui se recouvrent franchissent tous les
+        // deux la garde « rien n'a bougé » et écrivent la même chose deux fois.
+        //
+        // Le scénario est atteignable aujourd'hui : au retour au premier plan, `RootView`
+        // publie, et si `closeOpenDays()` a quelque chose à clôturer, `saveOrAssert()`
+        // publie dans le même tour. Le lot A2 ajoutera ses propres déclencheurs.
+        //
+        // Un appel écarté n'est pas une publication perdue : l'appel en vol construira
+        // son instantané APRÈS la sauvegarde qui a déclenché le second, puisque tout ceci
+        // est sur le `MainActor` — et à défaut, le crochet suivant repassera.
+        guard !duoPublishInFlight else { return }
+        duoPublishInFlight = true
+        Task { @MainActor in
+            defer { duoPublishInFlight = false }
+            await publishDuoNow(identity: identity)
+        }
     }
 
     /// La publication elle-même. `@discardableResult` et jamais `throws` : l'appelant
@@ -48,26 +67,34 @@ extension GameService {
         guard identity.isPaired, let memberID = identity.memberID,
               let target = DuoDatabase.target(for: identity) else { return false }
 
-        // 1, 2 et 3. Attribuer, persister, PUIS construire — dans cet ordre, tenu par
+        // Attribuer, persister, PUIS construire — dans cet ordre, tenu par
         // `prepareDuoSnapshot` et éprouvé par un test qui rougit si on l'inverse.
         let steps = await todaySteps()
         guard let snapshot = prepareDuoSnapshot(memberID: memberID, steps: steps, now: now)
         else { return false }
 
-        // 4. Sortir si rien n'a bougé. L'égalité de `DuoSnapshot` ignore `generatedAt`
+        // Sortir si rien n'a bougé. L'égalité de `DuoSnapshot` ignore `generatedAt`
         // exprès : la comparer rendrait chaque instantané différent du précédent, et
         // l'app écrirait dans iCloud à chaque retour au premier plan, à chaque
         // validation, à chaque bascule de minuit, sans qu'un seul chiffre ait changé.
         guard snapshot != identity.lastPublishedSnapshot else { return false }
 
-        // 5 bis. Les cœurs devenus orphelins partent DANS LA MÊME OPÉRATION que
-        // l'instantané : jamais d'état intermédiaire où les chiffres seraient à jour et
-        // les cœurs encore accrochés à des entrées disparues.
+        // Les cœurs devenus orphelins partent DANS LA MÊME OPÉRATION que l'instantané :
+        // jamais d'état intermédiaire où les chiffres seraient à jour et les cœurs encore
+        // accrochés à des entrées disparues.
+        //
+        // À NOTER, conséquence assumée de sa place APRÈS la garde ci-dessus : supprimer
+        // une entrée d'une journée PASSÉE ne change pas l'instantané du jour, donc on
+        // sort avant d'arriver ici et le cœur orphelin survit jusqu'au prochain vrai
+        // changement. Remonter le nettoyage avant la garde coûterait une requête réseau
+        // à CHAQUE passage au premier plan, y compris quand rien n'a bougé — ce que
+        // toute cette fonction est faite d'éviter. Un cœur orphelin de quelques heures
+        // est le moindre mal.
         let orphelins = await orphanLikeRecordIDs(in: target, me: memberID)
 
         do {
             try await write(snapshot, deleting: orphelins, to: target)
-            // 6. Mémoriser SEULEMENT après une écriture réussie : mémoriser avant ferait
+            // Mémoriser SEULEMENT après une écriture réussie : mémoriser avant ferait
             // qu'un échec réseau serait pris pour un succès, et la journée ne repartirait
             // plus jamais tant qu'un chiffre n'aurait pas rebougé.
             identity.lastPublishedSnapshot = snapshot
@@ -104,53 +131,21 @@ extension GameService {
     /// n'écrit que le sien (§3.3).
     private func write(_ snapshot: DuoSnapshot, deleting orphelins: [CKRecord.ID],
                        to target: DuoDatabase.Target) async throws {
-        let recordID = CKRecord.ID(recordName: snapshot.memberID, zoneID: target.zoneID)
-        let record = CKRecord(recordType: "DuoMember", recordID: recordID)
-
-        record["memberID"] = snapshot.memberID as CKRecordValue
-        record["name"] = snapshot.name as CKRecordValue
-        record["sexRaw"] = snapshot.sexRaw as CKRecordValue
-        record["level"] = snapshot.level as CKRecordValue
-        record["totalXP"] = snapshot.totalXP as CKRecordValue
-        record["xpIntoLevel"] = snapshot.xpIntoLevel as CKRecordValue
-        record["xpForNextLevel"] = snapshot.xpForNextLevel as CKRecordValue
-        record["dayKey"] = snapshot.dayKey as CKRecordValue
-        record["kcalEaten"] = snapshot.kcalEaten as CKRecordValue
-        record["kcalTarget"] = snapshot.kcalTarget as CKRecordValue
-        record["burned"] = snapshot.burned as CKRecordValue
-        record["burnTarget"] = snapshot.burnTarget as CKRecordValue
-        record["steps"] = snapshot.steps as CKRecordValue
-        // Quête absente : les trois champs restent nil plutôt que de valoir 0, qui se
-        // lirait « quête à 0/0 » chez le partenaire au lieu de « pas de quête ».
-        record["questTitle"] = snapshot.quest?.title as CKRecordValue?
-        record["questDone"] = snapshot.quest?.done as CKRecordValue?
-        record["questTotal"] = snapshot.quest?.total as CKRecordValue?
-        // Le fil vit DANS l'enregistrement du membre, en JSON (§3.4) : une seule écriture
-        // par changement, aucun conflit possible, et quelques kilo-octets au pire.
-        record["feedJSON"] = (String(data: try JSONEncoder().encode(snapshot.events),
-                                     encoding: .utf8) ?? "[]") as CKRecordValue
-        record["generatedAt"] = snapshot.generatedAt as CKRecordValue
-
         _ = try await target.database.modifyRecords(
-            saving: [record], deleting: orphelins, savePolicy: .changedKeys)
+            saving: [DuoRecord.member(from: snapshot, in: target.zoneID)],
+            deleting: orphelins, savePolicy: .changedKeys)
     }
 
     /// Les cœurs qui ne désignent plus rien (spec §3.4). La DÉCISION vit dans
     /// `DuoLikeID.orphanEventIDs`, pure et testée ; ici il n'y a que la lecture de la
     /// zone et la traduction en identifiants d'enregistrement.
     ///
-    /// Deux points que le commentaire de `orphanEventIDs` développe et qu'il faut avoir
-    /// en tête ici :
-    ///
-    /// - la comparaison se fait contre `allLocalPublicIDs()`, TOUT le magasin, et surtout
-    ///   pas contre le fil du jour qu'on vient de construire et qui est sous la main.
-    ///   Le fil ne couvre que la journée courante : à minuit, tous les cœurs de la veille
-    ///   deviendraient orphelins et seraient effacés, y compris ceux qui s'affichent sur
-    ///   les entrées passées des journaux ;
-    /// - la requête ne demande que MES événements (`ownerID == me`), et le filtre est
-    ///   redit dans `orphanEventIDs` : les cœurs que j'ai donnés portent l'`ownerID` de
-    ///   l'autre, leurs entrées ne sont pas dans mon magasin, et je les jugerais tous
-    ///   orphelins.
+    /// Les deux règles qui gouvernent ce nettoyage — comparer au MAGASIN et non au fil,
+    /// et ne juger que ses PROPRES événements — sont écrites une seule fois, sur
+    /// `DuoLikeID.orphanEventIDs`, avec ce que chacune évite. Les recopier ici en ferait
+    /// un troisième exemplaire à faire diverger, ce que ce lot refuse partout ailleurs.
+    /// La requête filtre déjà sur `ownerID`, et `orphanEventIDs` le redit : ceinture et
+    /// bretelles, l'une côté réseau, l'autre côté décision.
     ///
     /// Un échec de lecture rend une liste vide plutôt que de propager : un nettoyage
     /// impossible ne doit JAMAIS empêcher la publication des chiffres du jour.
@@ -166,11 +161,9 @@ extension GameService {
         var enregistrementsParEvenement: [String: [CKRecord.ID]] = [:]
         for (recordID, resultat) in reponse.matchResults {
             guard let record = try? resultat.get(),
-                  let eventID = record["eventID"] as? String,
-                  let ownerID = record["ownerID"] as? String
-            else { continue }
-            coeurs.append(DuoLikeRef(eventID: eventID, ownerID: ownerID))
-            enregistrementsParEvenement[eventID, default: []].append(recordID)
+                  let coeur = DuoRecord.likeRef(from: record) else { continue }
+            coeurs.append(coeur)
+            enregistrementsParEvenement[coeur.eventID, default: []].append(recordID)
         }
 
         let orphelins = DuoLikeID.orphanEventIDs(

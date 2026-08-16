@@ -118,9 +118,10 @@ extension GameService {
     /// TOUS les `publicID` du magasin, toutes journées confondues. C'est l'ensemble
     /// contre lequel un cœur est jugé orphelin (spec §3.4).
     ///
-    /// « Toutes journées confondues » est la propriété, pas un détail d'implémentation :
-    /// le restreindre au jour courant ferait disparaître chaque nuit tous les cœurs reçus
-    /// la veille, y compris ceux qui s'affichent sur les entrées passées des journaux.
+    /// « Toutes journées confondues » est la PROPRIÉTÉ, pas un détail d'implémentation,
+    /// et un test la garde. Le pourquoi est écrit une seule fois, sur
+    /// `DuoLikeID.orphanEventIDs` : le restreindre au jour courant rejouerait exactement
+    /// le défaut que cette fonction existe pour fermer.
     ///
     /// Les identifiants vides sont écartés : une entrée d'avant la 1.15 pas encore
     /// identifiée n'est désignée par aucun cœur légitime.

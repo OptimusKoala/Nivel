@@ -79,7 +79,7 @@ public struct DuoEvent: Codable, Equatable, Identifiable, Sendable {
     /// `refID` à résoudre chez lui afficherait un trou à chaque entrée récente ;
     /// publier le texte déjà composé l'affiche correctement, toujours.
     public let title: String
-    /// « déjeuner, ~420 kcal », « 20 min, +30 XP ». Même règle que `title`.
+    /// « déjeuner, ~ 420 kcal », « 20 min, +30 XP ». Même règle que `title`.
     public let subtitle: String
 
     public init(id: String, kind: Kind, at: Date, title: String, subtitle: String) {
