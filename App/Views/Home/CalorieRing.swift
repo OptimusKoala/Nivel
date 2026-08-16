@@ -61,15 +61,26 @@ struct CalorieRingCard: View {
     static let centerTypeSizeCap: DynamicTypeSize = .large
 
     /// Largeur plafond de l'anneau. Déjà appliquée par le `.frame(maxWidth:maxHeight:)`
-    /// de `ring` ; nommée ici pour que le test de géométrie puisse la lire.
+    /// de `ring` ; nommée ici pour que le test de géométrie puisse la lire. ATTENTION :
+    /// c'est la largeur du CADRE, pas celle du `ZStack` — voir `ringOuterPadding`.
     static let ringMaxWidth: CGFloat = 130
+
+    /// Marge extérieure de l'anneau : le trait de 12 pt est centré sur le cercle, il
+    /// déborde donc de 6 pt du cercle géométrique, qui serait rogné par le cadre.
+    ///
+    /// Mais elle est posée AVANT le `.frame(maxWidth:)`, donc elle ne s'ajoute pas
+    /// autour des 130 pt : elle les RETRANCHE. Le `ZStack` ne reçoit que 118 pt, et
+    /// tout ce qui se calcule à l'intérieur (le cercle de dépense, le disque blanc,
+    /// la place du texte) part de 118 et non de 130. C'est le piège de ce bloc : la
+    /// 1.15 s'est trompée de 12 pt en le lisant, et la 1.14 avant elle.
+    static let ringOuterPadding: CGFloat = 6
 
     /// Taille du gros chiffre. 26 pt jusqu'à la 1.14 : « ~1 240 » y mordait le tracé.
     /// La borne assumée est QUATRE chiffres (spec 1.15 §4), pas davantage.
     static let centerFontSize: CGFloat = 22
 
     /// Rembourrage horizontal du bloc central. 14 pt jusqu'à la 1.14, ce qui laissait
-    /// 102 pt de large à un texte dont le disque blanc n'en offre que 87 à la hauteur
+    /// 90 pt de large à un texte dont le disque blanc n'en offre que 74 à la hauteur
     /// du gros chiffre. C'est LA cause du débordement, la taille de police ne faisait
     /// qu'en retarder l'apparition. Voir CalorieRingCenterTests pour la géométrie.
     static let centerHorizontalPadding: CGFloat = 24
@@ -108,7 +119,8 @@ struct CalorieRingCard: View {
                         style: StrokeStyle(lineWidth: 12, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             // Anneau de dépense (spec §5.5), rayon de tracé 45 contre 59 à l'extérieur
-            // (le padding de 14 sur une largeur plafonnée à 130). `Theme.orange`
+            // (le padding de 14 sur les 118 pt du ZStack — le plafond de 130 moins
+            // `ringOuterPadding` de chaque côté, et non 130). `Theme.orange`
             // et NON `Theme.accent` : l'anneau extérieur passe à `accent` en cas de
             // dépassement calorique, et les deux cercles deviendraient alors
             // indistinguables — précisément les jours où l'on regarde la carte de près.
@@ -148,7 +160,7 @@ struct CalorieRingCard: View {
         // (lecture HealthKit asynchrone), l'anneau intérieur se remplit au lieu de
         // sauter d'un coup.
         .animation(.snappy, value: burned)
-        .padding(6) // le trait (12 pt) déborde du cercle géométrique
+        .padding(Self.ringOuterPadding) // le trait (12 pt) déborde du cercle géométrique
         .frame(maxWidth: Self.ringMaxWidth, maxHeight: Self.ringMaxWidth)
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement(children: .ignore)
