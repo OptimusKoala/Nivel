@@ -17,6 +17,9 @@ struct MealsJournalView: View {
     @State private var selectedDay = GameService.calendar.startOfDay(for: .now)
     /// Repas du jour sélectionné — fetch BORNÉ au jour (pas de @Query sur tout
     /// l'historique), rechargé au changement de jour et après chaque mutation.
+    /// Les cœurs reçus s'affichent sur MES entrées (spec 1.15 §3.8). Sans duo, la liste est
+    /// vide et rien ne change à ce journal.
+    @Environment(DuoService.self) private var duo
     @State private var dayMeals: [MealEntry] = []
     @State private var editingEntry: MealEntry?
     @State private var showNewMeal = false
@@ -380,6 +383,12 @@ struct MealsJournalView: View {
                     .foregroundStyle(Theme.text)
             }
             Spacer()
+            // Le cœur reçu du duo (spec 1.15 §3.8), avant les kcal : il commente le repas,
+            // pas son chiffre. Absent sans duo, et absent tout court sur une entrée que
+            // personne n'a aimée — aucune place réservée, aucun gris à la ligne.
+            if DuoLikeMark.isLiked(publicID: entry.publicID, likedEventIDs: duo.likedEventIDs) {
+                DuoLikeMark()
+            }
             // Même règle du tilde que la barre basse de la feuille (spec §6) :
             // un repas aux kcal saisies à la main ne l'affiche pas non plus ici.
             Text(MealFormatting.frKcal(entry.estimatedKcal, isManual: entry.manualKcal != nil))
@@ -485,6 +494,10 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }
 
 #Preview("Journal vide") {
@@ -499,4 +512,8 @@ private func journalPreviewFixture() -> (container: ModelContainer, game: GameSe
         .modelContainer(container)
         .environment(GameService(modelContext: container.mainContext,
                                  stepsService: FakeStepsService(), widgetDefaults: nil))
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }

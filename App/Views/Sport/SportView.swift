@@ -11,6 +11,9 @@ struct SportView: View {
     @Environment(GameService.self) private var game
 
     @State private var sessionStatus: (session: ActivitySession, done: Bool)?
+    /// Les cœurs reçus s'affichent sur MES activités (spec 1.15 §3.8). Sans duo, la liste
+    /// est vide et rien ne change à cet écran.
+    @Environment(DuoService.self) private var duo
     @State private var todayEntries: [ActivityEntry] = []
     @State private var selectedActivity: Activity?
     @State private var showSessionPlayer = false
@@ -226,6 +229,10 @@ struct SportView: View {
                     .foregroundStyle(Theme.subtext)
             }
             Spacer()
+            // Le cœur reçu du duo (spec 1.15 §3.8), exactement comme dans le journal Repas.
+            if DuoLikeMark.isLiked(publicID: entry.publicID, likedEventIDs: duo.likedEventIDs) {
+                DuoLikeMark()
+            }
             Text("~\(entry.estimatedKcal.frFormatted) kcal")
                 .font(.footnote.weight(.bold))
                 .foregroundStyle(Theme.orange)
@@ -287,4 +294,8 @@ private func sportPreviewFixture() -> (container: ModelContainer, game: GameServ
         .fontDesign(.rounded)
         .modelContainer(container)
         .environment(game)
+        .environment(DuoService(
+            identity: DuoIdentity(defaults: UserDefaults(suiteName: "nivel.preview.duo")
+                ?? .standard),
+            resolveTarget: { _ in nil }))
 }

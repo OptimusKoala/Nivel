@@ -80,6 +80,7 @@
 		7C0FE31A8625D00828C0C868 /* PostureSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB2E2BB7C09EE5FBA96D57C /* PostureSection.swift */; };
 		83A569C9282E797637B0C790 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D09557663FBEA7185F1839 /* HomeView.swift */; };
 		846FB76C89B63E0E8EA18B9F /* SportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E79A5C4755FBC1F48C875DF /* SportServiceTests.swift */; };
+		853329F8C7BE9FE21C228B9E /* DuoLikeMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 689D9F6FA66E43E157C063D6 /* DuoLikeMark.swift */; };
 		86D30358C08AC363B7C6E993 /* PantryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F74DECE44DC558C1A6782EF /* PantryView.swift */; };
 		875094FC0976BEED370E46F3 /* DuoProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E648194BFD857516B4659609 /* DuoProfileView.swift */; };
 		87868313AF7C859EC284C4F4 /* PlanSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88FEA7C46036F1ADDA99FDAE /* PlanSessionCard.swift */; };
@@ -134,6 +135,7 @@
 		E5E94422F711C94B2A6FD99F /* ScreenshotSportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD295983A2E9FAD0CADE2529 /* ScreenshotSportTests.swift */; };
 		E798FE183A61FFB80A6842BC /* NivelCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9E90148A545B2C16C0326922 /* NivelCore */; };
 		E7D4FDE0DBF28A9F40684FD8 /* CozyIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DFE3142B4FCF840E98BE4C6 /* CozyIcon.swift */; };
+		E83EC4D706812407DF17F674 /* DuoLikeMarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4FF52661E173F1CA11905A /* DuoLikeMarkTests.swift */; };
 		E94CE38161C76626D65EFDF9 /* PantryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6BB33F277CCEA2C23BA8D36 /* PantryTests.swift */; };
 		E9A68E7BA32F2904CD7072B6 /* MealLineDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2CFCDDF307B46E6407F604 /* MealLineDetailView.swift */; };
 		E9E07644DA5B531E655EFC74 /* WeighInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079075DA2E6A1C77564F067B /* WeighInSheet.swift */; };
@@ -205,6 +207,7 @@
 		1B870793FACF92E8A3EC300C /* Nivel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nivel.entitlements; sourceTree = "<group>"; };
 		1B9B9196CD68143267D66D54 /* timer_step.caf */ = {isa = PBXFileReference; path = timer_step.caf; sourceTree = "<group>"; };
 		1CEF612545C16E3249D319E7 /* PosturePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PosturePlanTests.swift; sourceTree = "<group>"; };
+		1D4FF52661E173F1CA11905A /* DuoLikeMarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoLikeMarkTests.swift; sourceTree = "<group>"; };
 		213BA90A0D04CBB6102E11CA /* OnboardingIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingIdentityTests.swift; sourceTree = "<group>"; };
 		2333A9029C3BCBFBBF4FB976 /* CelebrationsHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationsHost.swift; sourceTree = "<group>"; };
 		252E585F67D7801561AA6A8A /* NivelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelApp.swift; sourceTree = "<group>"; };
@@ -249,6 +252,7 @@
 		660D96E22C32118424F93AC2 /* NivelitoShapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NivelitoShapes.swift; sourceTree = "<group>"; };
 		671D6B6E3581A479FFED40C2 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		67EB506351740B5EC992E309 /* AppSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSmokeTests.swift; sourceTree = "<group>"; };
+		689D9F6FA66E43E157C063D6 /* DuoLikeMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoLikeMark.swift; sourceTree = "<group>"; };
 		6909EF00448EC3D59E1F1401 /* GameService+Sport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GameService+Sport.swift"; sourceTree = "<group>"; };
 		695C895B4580426B4ADFB95F /* TintedWidgetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TintedWidgetTests.swift; sourceTree = "<group>"; };
 		6A1F6969B88BCA1A9BE77195 /* GameService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameService.swift; sourceTree = "<group>"; };
@@ -534,6 +538,7 @@
 			children = (
 				1ABBDFE2E71135CED49C8819 /* DuoAvatarButton.swift */,
 				B788BEC7F6C4179624DB69E9 /* DuoFeedRow.swift */,
+				689D9F6FA66E43E157C063D6 /* DuoLikeMark.swift */,
 				DA34DD31A2E8072BB2E3AEE3 /* DuoPairingView.swift */,
 				E648194BFD857516B4659609 /* DuoProfileView.swift */,
 				178F1A448834CBB44EAA6775 /* DuoQRCode.swift */,
@@ -606,6 +611,7 @@
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
 				3D0B1BA69E8293EBFD22BF1D /* DuoHomeTests.swift */,
 				A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */,
+				1D4FF52661E173F1CA11905A /* DuoLikeMarkTests.swift */,
 				3F5A1A9F80DAACD0ED4A950D /* DuoNotificationsTests.swift */,
 				D57EEA0C75E83F471DC06E63 /* DuoPairingTests.swift */,
 				7E544ECD03E5AE09A6198D87 /* DuoProfileTests.swift */,
@@ -874,6 +880,7 @@
 				1B20AAF9C5BD09A929E4ACF3 /* DuoDatabase.swift in Sources */,
 				D0AA74260EAAADF8031C4653 /* DuoFeedRow.swift in Sources */,
 				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
+				853329F8C7BE9FE21C228B9E /* DuoLikeMark.swift in Sources */,
 				4E36A75A73AD172DEE432D4B /* DuoNotifications.swift in Sources */,
 				E15E5B8B4E5A0118F5A7DEC8 /* DuoPairingView.swift in Sources */,
 				875094FC0976BEED370E46F3 /* DuoProfileView.swift in Sources */,
@@ -983,6 +990,7 @@
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
 				FD76C77A0233F3F9385F4B77 /* DuoHomeTests.swift in Sources */,
 				92A5342A30BBFF472BC7BFFE /* DuoIdentityTests.swift in Sources */,
+				E83EC4D706812407DF17F674 /* DuoLikeMarkTests.swift in Sources */,
 				292FD42BD69AF06F8B5823C5 /* DuoNotificationsTests.swift in Sources */,
 				DC552D7BA1E1A2FDC62BD56B /* DuoPairingTests.swift in Sources */,
 				B9A5B5B06733A504CD4FDEEF /* DuoProfileTests.swift in Sources */,
