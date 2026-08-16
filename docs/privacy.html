@@ -32,7 +32,7 @@
   <header>
     <img src="logo.png" alt="Nivelito, la mascotte de Nivel">
     <h1>Politique de confidentialité</h1>
-    <p class="sub">Nivel — dernière mise à jour : 3 août 2026</p>
+    <p class="sub">Nivel — dernière mise à jour : 16 août 2026</p>
   </header>
 
   <section>
@@ -40,6 +40,11 @@
     <p><strong>Nivel ne collecte aucune donnée.</strong> Il n'y a ni compte, ni serveur, ni
     publicité, ni outil de mesure d'audience. Tout ce que tu notes dans l'app reste sur ton
     iPhone, et nous n'y avons jamais accès.</p>
+    <p>Depuis la version 1.15, il existe une seule façon de faire sortir quelque chose de
+    ton iPhone, et c'est toi qui la déclenches : le <strong>duo</strong>, qui montre ta
+    journée à une personne que tu choisis. Tant que tu n'as pas formé de duo, rien ne
+    change et l'app n'envoie rien du tout. Si tu en formes un, tout ce qui est publié est
+    listé plus bas, dans <a href="#duo">Le duo</a>.</p>
   </section>
 
   <section>
@@ -60,10 +65,59 @@
       <li>ta progression de jeu : expérience, niveau, quêtes et badges ;</li>
       <li>tes préférences : thème, rappels, sons du minuteur.</li>
     </ul>
-    <p>Ces données ne sont ni envoyées, ni sauvegardées sur un serveur, ni partagées avec
-    un tiers. Elles ne quittent l'appareil que si <em>tu</em> actives la sauvegarde iCloud
-    ou le chiffrement de sauvegarde d'Apple, auquel cas elles sont traitées par Apple selon
-    ses propres conditions.</p>
+    <p>Ces données ne sont ni envoyées sur un serveur, ni partagées avec un tiers, ni
+    vendues à qui que ce soit. Elles ne quittent l'appareil que dans deux cas, et tous
+    les deux viennent de <em>toi</em> : si tu actives la sauvegarde iCloud ou le
+    chiffrement de sauvegarde d'Apple, auquel cas elles sont traitées par Apple selon ses
+    propres conditions ; et si tu formes un <a href="#duo">duo</a>, qui publie chaque jour
+    une partie de cette liste, et une partie seulement, à l'intention d'une seule
+    personne.</p>
+  </section>
+
+  <section id="duo">
+    <h2>Le duo</h2>
+    <p>Le duo relie <strong>deux</strong> iPhone, et deux seulement : le tien et celui de
+    la personne avec qui tu décides de partager tes journées. Il se met en place dans les
+    réglages de l'app, en scannant un QR code ensemble. <strong>Sans duo, l'app ne
+    communique avec rien ni personne</strong>, et c'est ainsi qu'elle démarre.</p>
+
+    <p><strong>Ce qui est publié</strong>, quand un duo existe, pour que l'autre personne
+    puisse le voir :</p>
+    <ul>
+      <li>ton prénom et ton avatar (le petit personnage de ton profil) ;</li>
+      <li>ton niveau et ton expérience ;</li>
+      <li>les quatre nombres de l'anneau du jour : ce que tu as mangé, ton objectif du
+      jour, ce que tu as dépensé, ta cible de dépense ;</li>
+      <li>ton nombre de pas du jour ;</li>
+      <li>l'intitulé de la quête que tu as le plus avancée, et où tu en es ;</li>
+      <li>la liste de tes repas et de tes activités du jour, avec leur heure et leurs
+      calories ;</li>
+      <li>les cœurs que tu envoies, qui désignent un repas ou une activité de l'autre.</li>
+    </ul>
+    <p>Rien d'autre. Il n'y a pas de message, pas de texte libre, pas de photo, et aucun
+    classement entre vous deux.</p>
+
+    <p><strong>Ce qui n'est jamais publié :</strong> ton <strong>poids</strong>, ta
+    <strong>courbe de poids</strong> et tes <strong>badges</strong>. Ces trois-là ne
+    quittent pas ton iPhone, duo ou pas.</p>
+
+    <p><strong>Où ça va.</strong> Dans une zone iCloud privée, partagée avec une seule
+    personne : celle de ton duo. Cette zone vit sur le stockage iCloud de celui ou celle
+    qui a lancé l'invitation, sous les conditions d'Apple, et elle n'est lisible que par
+    vous deux. <strong>Aucun serveur de l'auteur de l'app n'est impliqué</strong> : nous
+    ne voyons rien, nous ne conservons rien, et nous n'aurions aucun moyen de le faire.
+    Cette zone ne garde pas d'historique : elle contient le résumé de la journée en cours,
+    réécrit par-dessus le précédent à chaque changement, et les cœurs échangés.</p>
+
+    <p><strong>Comment on l'efface.</strong> Dans les réglages de l'app, section
+    <em>Duo</em>, le bouton <em>Défaire le duo</em>. Si c'est toi qui as invité, la zone
+    partagée est supprimée, avec tout ce qu'elle contient, des deux côtés. Si c'est toi
+    qui as rejoint, tu sors du partage : tu cesses de voir la journée de l'autre et de
+    publier la tienne, et le dernier résumé que tu y avais déposé s'efface le jour où
+    cette personne défait le duo de son côté, puisque la zone lui appartient. Dans les
+    deux cas, ton iPhone redevient exactement ce qu'il était avant, et les cœurs déjà
+    reçus restent affichés sur tes repas et tes activités : ils font partie de ton
+    histoire, pas de la connexion.</p>
   </section>
 
   <section>
@@ -81,6 +135,10 @@
     <p>Les rappels (déjeuner, dîner, pesée, marche) sont des <strong>notifications
     locales</strong>, programmées par ton iPhone lui-même. Aucun serveur d'envoi n'est
     impliqué, et leur contenu ne sort pas de l'appareil.</p>
+    <p>L'annonce d'un cœur reçu de ton duo est elle aussi écrite et affichée par ton
+    iPhone. iCloud se contente de réveiller l'app en silence pour lui dire d'aller
+    regarder : ce réveil ne transporte aucun texte et aucun chiffre. Tu peux couper ces
+    annonces dans les réglages de l'app, section <em>Duo</em>.</p>
   </section>
 
   <section>
@@ -91,14 +149,17 @@
 
   <section>
     <h2>Tes droits</h2>
-    <p>Comme rien n'est collecté, il n'existe aucun fichier te concernant chez nous : nous
+    <p>Comme rien n'est collecté, pas même quand tu formes un duo, il n'existe aucun
+    fichier te concernant chez nous : nous
     n'avons donc rien à te communiquer, rectifier ni supprimer. Tes données sont sous ton
     contrôle direct :</p>
     <ul>
       <li>les consulter et les modifier : dans l'app (les repas et activités du jour se
       suppriment d'un balayage, le profil se modifie dans les réglages) ;</li>
       <li>tout effacer d'un coup : en désinstallant Nivel, ce qui supprime définitivement
-      sa base locale et ses réglages.</li>
+      sa base locale et ses réglages. Si tu as un duo, <strong>défais-le avant de
+      désinstaller</strong> : la zone iCloud partagée ne part pas avec l'app, et c'est le
+      bouton <em>Défaire le duo</em> qui la supprime.</li>
     </ul>
     <p>Pour toute question relative à cette politique, écris-nous à
     <a href="mailto:contact@elitedangereuse.fr">contact@elitedangereuse.fr</a>.</p>
@@ -107,8 +168,9 @@
   <section>
     <h2>Enfants</h2>
     <p>Nivel ne collecte aucune donnée, quel que soit l'âge de la personne qui l'utilise.
-    L'app ne comporte ni achat, ni contenu généré par les utilisateurs, ni lien vers des
-    réseaux sociaux.</p>
+    L'app ne comporte ni achat, ni lien vers des réseaux sociaux, ni espace public : le
+    duo se limite à deux personnes qui se sont explicitement choisies, et n'échange aucun
+    texte écrit par elles.</p>
   </section>
 
   <section>
