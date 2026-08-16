@@ -105,7 +105,9 @@ final class DuoProfileToneTests: XCTestCase {
     func testUneJourneePerimeeLeDitSansReproche() {
         let texte = DuoProfileView.staleNotice(partner: "Marion")
 
-        XCTAssertFalse(texte.isEmpty)
+        // Même tournure que sa voisine du même écran, celle de l'instantané jamais reçu :
+        // deux phrases qui disent la même chose doivent la dire pareil.
+        XCTAssertEqual(texte, "La journée de Marion n'est pas encore arrivée")
         for interdit in ["erreur", "échec", "problème", "seulement", "déjà"] {
             XCTAssertFalse(texte.lowercased().contains(interdit), texte)
         }

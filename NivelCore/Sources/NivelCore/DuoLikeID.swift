@@ -52,6 +52,26 @@ public enum DuoLikeID {
         "like-\(giver)-\(event)"
     }
 
+    /// L'événement que désigne un nom d'enregistrement, **quand on sait qui l'a donné**.
+    ///
+    /// C'est la réciproque de `recordName`, et elle n'est sans ambiguïté que grâce à cette
+    /// condition : « like-A-B-C » se découpe aussi bien en (« A », « B-C ») qu'en
+    /// (« A-B », « C »), et c'est exactement le piège que le commentaire ci-dessus décrit.
+    /// En EXIGEANT le donneur, on ne découpe plus : on vérifie un préfixe connu et on prend
+    /// ce qui reste. Aucune supposition, aucune longueur fixe présumée.
+    ///
+    /// Sert à comprendre une SUPPRESSION reçue de la zone : le serveur ne rend qu'un nom
+    /// d'enregistrement, et il faut bien savoir quel cœur s'est éteint. Les deux donneurs
+    /// possibles sont connus — moi et le partenaire —, on essaie donc l'un puis l'autre.
+    ///
+    /// `nil` si le nom ne vient pas de ce donneur, ou s'il ne reste rien derrière le
+    /// préfixe : un événement vide n'est pas un événement (§3.4).
+    public static func eventID(fromRecordName name: String, giver: String) -> String? {
+        let prefixe = recordName(giver: giver, event: "")
+        guard name.hasPrefix(prefixe), name.count > prefixe.count else { return nil }
+        return String(name.dropFirst(prefixe.count))
+    }
+
     /// Les `eventID` des cœurs qui ne désignent plus rien, à supprimer à la publication
     /// suivante (spec §3.4).
     ///

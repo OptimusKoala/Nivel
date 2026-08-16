@@ -66,6 +66,42 @@ final class DuoSettingsStateTests: XCTestCase {
         XCTAssertEqual(etat, .unpaired)
     }
 
+    /// **Seul dans la zone, ou quelque chose n'est pas passé** : les deux se ressemblaient
+    /// trait pour trait, et l'écran disait « en attente de l'autre iPhone » dans les deux
+    /// cas — y compris pour toujours si l'appairage avait raté à mi-chemin. Le compte de
+    /// membres tranche, sans qu'aucun délai n'ait besoin d'être inventé : 1, l'autre n'a pas
+    /// encore rejoint ; 2 sans instantané lisible, quelqu'un est là et rien n'arrive.
+    func testUnePlacePriseSansJourneeSeDitAutrementQueLAttente() {
+        XCTAssertEqual(
+            DuoSettingsState.current(hasAccount: true, isPaired: true, zoneIsGone: false,
+                                     partnerName: nil, pairedAt: seizeAout, memberCount: 1),
+            .paired(name: nil, since: seizeAout))
+        XCTAssertEqual(
+            DuoSettingsState.current(hasAccount: true, isPaired: true, zoneIsGone: false,
+                                     partnerName: nil, pairedAt: seizeAout, memberCount: 2),
+            .partnerSilent(since: seizeAout))
+        // Compte inconnu (aucune lecture n'a encore abouti) : on ne conclut rien, et on
+        // reste sur l'attente ordinaire.
+        XCTAssertEqual(
+            DuoSettingsState.current(hasAccount: true, isPaired: true, zoneIsGone: false,
+                                     partnerName: nil, pairedAt: seizeAout, memberCount: nil),
+            .paired(name: nil, since: seizeAout))
+        // Et un partenaire NOMMÉ n'est jamais « silencieux », quel que soit le compte.
+        XCTAssertEqual(
+            DuoSettingsState.current(hasAccount: true, isPaired: true, zoneIsGone: false,
+                                     partnerName: "Marion", pairedAt: seizeAout, memberCount: 2),
+            .paired(name: "Marion", since: seizeAout))
+    }
+
+    func testLaPlacePriseSansJourneeSeDitSansReproche() {
+        let texte = DuoSettingsState.label(for: .partnerSilent(since: seizeAout))
+
+        XCTAssertEqual(texte, "Ton duo a rejoint depuis le 16 août 2026, sa journée n'est pas encore arrivée")
+        for interdit in ["erreur", "échec", "problème", "—"] {
+            XCTAssertFalse(texte.lowercased().contains(interdit), texte)
+        }
+    }
+
     /// Appairé, mais l'autre n'a encore rien écrit : c'est l'instant entre l'acceptation du
     /// partage et sa première publication. On l'annonce comme une attente, pas comme un
     /// duo cassé, et surtout pas en affichant un nom vide.

@@ -204,6 +204,10 @@ final class DuoService {
     struct ZoneDelta {
         var members: [(reference: DuoMemberRef, record: CKRecord)] = []
         var likes: [DuoLike] = []
+        /// Les noms d'enregistrement des cœurs SUPPRIMÉS depuis le jeton. Le serveur ne rend
+        /// qu'un nom : c'est `DuoLikeID.eventID(fromRecordName:giver:)` qui dit quel cœur
+        /// s'est éteint, en retirant un préfixe connu plutôt qu'en découpant à l'aveugle.
+        var deletedLikeRecordNames: [String] = []
         var token: CKServerChangeToken?
         /// La lecture n'a rien donné : réseau, service occupé, compte parti. On garde tout
         /// ce qu'on sait et on ne conclut rien.
@@ -313,6 +317,18 @@ final class DuoService {
         let miens = Self.incomingLikes(from: delta.likes, me: me)
         let nouveaux = DuoNotifications.unseen(miens, knownEventIDs: likedEventIDs)
 
+        // Les cœurs RETIRÉS par leur auteur pendant qu'on dormait. Sans cette prise en
+        // compte, un cœur repris resterait affiché sur une entrée jusqu'à la prochaine
+        // lecture complète — c'est-à-dire jusqu'au prochain passage au premier plan.
+        let eteints = Self.extinguishedEventIDs(delta.deletedLikeRecordNames, me: me,
+                                                partner: identity.partnerSnapshot?.memberID)
+        if !eteints.isEmpty {
+            receivedLikes.removeAll { eteints.contains($0.eventID) }
+            identity.givenLikeEventIDs = identity.givenLikeEventIDs.filter {
+                !eteints.contains($0)
+            }
+        }
+
         receivedLikes = Self.merge(receivedLikes, with: miens)
         identity.unreadLikeCount = Self.unreadCount(current: identity.unreadLikeCount,
                                                     known: likedEventIDs, incoming: miens)
@@ -352,6 +368,9 @@ final class DuoService {
                     continue
                 }
             }
+            for suppression in reponse.deletions where suppression.recordType == DuoRecord.likeType {
+                delta.deletedLikeRecordNames.append(suppression.recordID.recordName)
+            }
             delta.token = reponse.changeToken
             zoneIsGone = false
         } catch {
@@ -372,6 +391,20 @@ final class DuoService {
         var parIdentifiant: [String: DuoLike] = [:]
         for coeur in existants + arrivants { parIdentifiant[coeur.id] = coeur }
         return parIdentifiant.values.sorted { ($0.createdAt, $0.id) < ($1.createdAt, $1.id) }
+    }
+
+    /// Les événements dont le cœur vient d'être retiré, à partir des noms d'enregistrement
+    /// supprimés.
+    ///
+    /// Les deux donneurs possibles sont connus — moi et le partenaire — puisque la zone n'a
+    /// que deux membres : on essaie l'un puis l'autre, et on ne suppose jamais. Un nom qui ne
+    /// vient ni de l'un ni de l'autre est ignoré plutôt qu'interprété.
+    nonisolated static func extinguishedEventIDs(_ recordNames: [String], me: String,
+                                                 partner: String?) -> Set<String> {
+        let donneurs = [me, partner].compactMap { $0 }.filter { !$0.isEmpty }
+        return Set(recordNames.compactMap { nom in
+            donneurs.lazy.compactMap { DuoLikeID.eventID(fromRecordName: nom, giver: $0) }.first
+        })
     }
 
     /// Le compteur de cœurs non lus après avoir vu passer `incoming`, sachant `known`.

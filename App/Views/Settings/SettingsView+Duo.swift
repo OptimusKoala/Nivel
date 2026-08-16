@@ -25,6 +25,10 @@ enum DuoSettingsState: Equatable {
     /// Appairé. `name` reste optionnel : entre l'acceptation du partage et la première
     /// publication de l'autre, on est appairé sans savoir encore avec qui.
     case paired(name: String?, since: Date?)
+    /// La place est PRISE — la zone porte bien deux membres — mais rien de lisible n'est
+    /// arrivé de l'autre. Distinct de l'attente ordinaire, et sans délai inventé : c'est le
+    /// compte de membres qui tranche, et il est déjà lu à chaque rafraîchissement.
+    case partnerSilent(since: Date?)
     /// La zone n'existe plus en face. L'état local dit encore « appairé », et c'est
     /// justement le moment de proposer de recommencer.
     case zoneGone
@@ -34,7 +38,8 @@ enum DuoSettingsState: Equatable {
     /// local. Le tester à l'envers afficherait « appairé avec Marion » à quelqu'un qui n'a
     /// plus de compte iCloud, donc plus rien du tout.
     static func current(hasAccount: Bool, isPaired: Bool, zoneIsGone: Bool,
-                        partnerName: String?, pairedAt: Date?) -> DuoSettingsState {
+                        partnerName: String?, pairedAt: Date?,
+                        memberCount: Int? = nil) -> DuoSettingsState {
         guard hasAccount else { return .noAccount }
         // La zone perdue passe AVANT l'appairage local, dans les deux sens : quand il vaut
         // encore vrai (l'état d'appareil n'a pas encore été effacé) comme quand il vient de
@@ -43,6 +48,13 @@ enum DuoSettingsState: Equatable {
         // chose à expliquer.
         guard !zoneIsGone else { return .zoneGone }
         guard isPaired else { return .unpaired }
+        // Personne de nommé, mais la place est prise : quelqu'un a bien rejoint et quelque
+        // chose n'est pas passé. On le dit autrement que l'attente des premières secondes,
+        // sans inventer de délai — c'est le compte de membres qui fait la différence, et il
+        // vient de la dernière lecture réussie.
+        if partnerName == nil, let memberCount, !DuoService.shouldKeepShareOpen(memberCount: memberCount) {
+            return .partnerSilent(since: pairedAt)
+        }
         return .paired(name: partnerName, since: pairedAt)
     }
 
@@ -56,6 +68,9 @@ enum DuoSettingsState: Equatable {
             return "Aucun duo pour l'instant"
         case .zoneGone:
             return "Ce duo n'existe plus, tu peux en créer un nouveau"
+        case .partnerSilent(let since):
+            let depuis = since.map { " depuis le \(frDate($0))" } ?? ""
+            return "Ton duo a rejoint\(depuis), sa journée n'est pas encore arrivée"
         case .paired(let name, let since):
             let depuis = since.map { " depuis le \(frDate($0))" } ?? ""
             // Sans nom, on ne laisse surtout pas un blanc : on dit l'attente, qui est la
@@ -107,7 +122,7 @@ extension SettingsContent {
                 divider
                 boutonsDAppairage
 
-            case .paired:
+            case .paired, .partnerSilent:
                 divider
                 interrupteurDesCoeurs
                 divider
@@ -139,7 +154,8 @@ extension SettingsContent {
                                  isPaired: duo.isPaired,
                                  zoneIsGone: duo.zoneIsGone,
                                  partnerName: duo.partnerSnapshot?.name,
-                                 pairedAt: duo.pairedAt)
+                                 pairedAt: duo.pairedAt,
+                                 memberCount: duo.memberCount)
     }
 
     private var boutonsDAppairage: some View {

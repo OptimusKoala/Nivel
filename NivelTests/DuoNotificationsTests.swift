@@ -136,6 +136,44 @@ final class DuoLikeMergeTests: XCTestCase {
     }
 }
 
+// MARK: - Les cœurs retirés pendant qu'on dormait
+
+/// Un réveil rend aussi des SUPPRESSIONS, et elles étaient ignorées : un cœur repris par son
+/// auteur restait affiché sur l'entrée jusqu'à la prochaine lecture complète.
+final class DuoExtinguishedLikesTests: XCTestCase {
+
+    func testUnCoeurRetireParLePartenaireSeReconnait() {
+        let nom = DuoLikeID.recordName(giver: "TOI", event: "E1")
+
+        XCTAssertEqual(DuoService.extinguishedEventIDs([nom], me: "MOI", partner: "TOI"), ["E1"])
+    }
+
+    /// Et un cœur que J'AI retiré depuis l'autre appareil du même duo compte aussi : les
+    /// deux donneurs possibles sont connus, on essaie l'un puis l'autre.
+    func testUnCoeurQueJAiRetireCompteAussi() {
+        let nom = DuoLikeID.recordName(giver: "MOI", event: "E9")
+
+        XCTAssertEqual(DuoService.extinguishedEventIDs([nom], me: "MOI", partner: "TOI"), ["E9"])
+    }
+
+    /// Un nom qui ne vient d'aucun des deux est IGNORÉ, jamais interprété : mieux vaut
+    /// laisser un cœur de trop à l'écran que d'en éteindre un au hasard.
+    func testUnNomEtrangerEstIgnoreEtNonDevine() {
+        let nom = DuoLikeID.recordName(giver: "QUELQUUN", event: "E1")
+
+        XCTAssertTrue(DuoService.extinguishedEventIDs([nom], me: "MOI", partner: "TOI").isEmpty)
+    }
+
+    /// Partenaire encore inconnu : on sait au moins reconnaître les siens.
+    func testSansPartenaireConnuOnReconnaitAuMoinsLesSiens() {
+        let mien = DuoLikeID.recordName(giver: "MOI", event: "E1")
+        let autre = DuoLikeID.recordName(giver: "TOI", event: "E2")
+
+        XCTAssertEqual(DuoService.extinguishedEventIDs([mien, autre], me: "MOI", partner: nil),
+                       ["E1"])
+    }
+}
+
 // MARK: - La comptabilité des cœurs non lus
 
 /// Le compteur qui allume la bulle de l'accueil. Il a un défaut de conception derrière lui,

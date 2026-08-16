@@ -54,6 +54,13 @@ struct DuoProfileView: View {
             VStack(alignment: .leading, spacing: 16) {
                 identite(instantane)
 
+                // Sous le bloc d'identité, comme le §3.9 la place : c'est la première chose
+                // à savoir de tout ce qui suit, puisqu'elle en dit l'âge.
+                Text(Self.freshness(generatedAt: instantane.generatedAt, now: .now))
+                    .font(.caption2)
+                    .foregroundStyle(Theme.subtext)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
                 if Self.isStale(dayKey: instantane.dayKey,
                                 today: GameService.duoDayKey(for: .now)) {
                     // Journée périmée : on n'affiche NI l'anneau NI le fil. Les chiffres
@@ -67,11 +74,6 @@ struct DuoProfileView: View {
                     if let quete = instantane.quest { carteDeQuete(quete) }
                     journee(instantane)
                 }
-
-                Text(Self.freshness(generatedAt: instantane.generatedAt, now: .now))
-                    .font(.caption2)
-                    .foregroundStyle(Theme.subtext)
-                    .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding(.horizontal, 20)
             .padding(.top, 8)
@@ -235,7 +237,7 @@ struct DuoProfileView: View {
         guard let partner, !partner.isEmpty else {
             return "La journée d'aujourd'hui n'est pas encore arrivée"
         }
-        return "La journée d'aujourd'hui de \(partner) n'est pas encore arrivée"
+        return "La journée de \(partner) n'est pas encore arrivée"
     }
 
     /// L'illustration du partenaire, parmi les deux présentes depuis la v1.1. `sexRaw`

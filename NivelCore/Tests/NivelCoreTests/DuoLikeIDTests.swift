@@ -135,3 +135,32 @@ final class DuoLikeIDTests: XCTestCase {
         XCTAssertEqual(orphelins, ["E-mort"])
     }
 }
+
+/// La réciproque du nom d'enregistrement, qui sert à comprendre une suppression reçue de la
+/// zone : le serveur ne rend qu'un nom, et il faut savoir quel cœur s'est éteint.
+final class DuoLikeRecordNameParsingTests: XCTestCase {
+
+    func testLEvenementSeRelitQuandOnSaitQuiADonne() {
+        XCTAssertEqual(DuoLikeID.eventID(fromRecordName: "like-G1-E1", giver: "G1"), "E1")
+    }
+
+    /// **Le point de la signature** : on ne découpe pas, on retire un préfixe CONNU. Des
+    /// identifiants qui contiennent eux-mêmes des tirets — c'est le cas de tout UUID — se
+    /// relisent donc sans ambiguïté, là où une découpe naïve se tromperait.
+    func testUnIdentifiantAvecDesTiretsSeRelitSansAmbiguite() {
+        let donneur = "11111111-2222-3333-4444-555555555555"
+        let evenement = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"
+        let nom = DuoLikeID.recordName(giver: donneur, event: evenement)
+
+        XCTAssertEqual(DuoLikeID.eventID(fromRecordName: nom, giver: donneur), evenement)
+        // Et avec l'autre donneur possible, on n'invente rien : ce nom n'est pas de lui.
+        XCTAssertNil(DuoLikeID.eventID(fromRecordName: nom, giver: evenement))
+    }
+
+    func testUnNomEtrangerOuVideNeDonneRien() {
+        XCTAssertNil(DuoLikeID.eventID(fromRecordName: "like-G2-E1", giver: "G1"))
+        XCTAssertNil(DuoLikeID.eventID(fromRecordName: "autre chose", giver: "G1"))
+        // Un événement vide n'est pas un événement : c'est le cas dégénéré du §3.4.
+        XCTAssertNil(DuoLikeID.eventID(fromRecordName: "like-G1-", giver: "G1"))
+    }
+}

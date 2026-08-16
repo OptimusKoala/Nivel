@@ -277,7 +277,7 @@ struct DuoJoinView: View {
             .buttonStyle(PrimaryButtonStyle())
             .disabled(enCours)
 
-            Text("Le lien s'accepte ICI. Ouvert depuis Messages, il proposera d'ouvrir Nivel sans rien appairer.")
+            Text("Le lien s'accepte ici. Ouvert depuis Messages, il proposera d'ouvrir Nivel sans rien appairer.")
                 .font(.caption)
                 .foregroundStyle(Theme.subtext)
         }
