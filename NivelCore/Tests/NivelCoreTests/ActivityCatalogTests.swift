@@ -7,7 +7,8 @@ final class ActivityCatalogTests: XCTestCase {
 
     func testActivitiesLoadAndIdsAreUnique() throws {
         let activities = try Catalogs.activities()
-        XCTAssertEqual(activities.count, 30)
+        // 30 depuis la v1.14, 32 depuis la 1.15 §5.1 (piscine et ping-pong).
+        XCTAssertEqual(activities.count, 32)
         XCTAssertEqual(Set(activities.map(\.id)).count, activities.count)
         XCTAssertTrue(activities.contains { $0.id == "walk" && $0.location == .outdoor })
         XCTAssertTrue(activities.contains { $0.id == "wall_sit" && $0.location == .home })
@@ -129,6 +130,53 @@ final class ActivityCatalogTests: XCTestCase {
                    "squat_jumps", "dips_chair", "running"] {
             XCTAssertGreaterThanOrEqual(byID[id]?.instructions.count ?? 0, 4, id)
         }
+    }
+
+    /// Les deux activités de la 1.15 §5.1, transcrites depuis la table de la spec.
+    /// Garde-fou de transcription : ces nombres viennent d'un tableau, et un tableau
+    /// se recopie mal. Le pin est ici et non dans `testChiffresDesActivitesIntenses...`,
+    /// qui ne couvre que la section « Ça pousse » : les douces n'avaient jusqu'ici
+    /// leur `kcalPerMin` fixé que pour les cinq que `testEstimatedKcalRoundsToTens`
+    /// utilise, donc une piscine saisie à 0,7 au lieu de 7,0 passerait sans bruit.
+    func testLesDeuxActivitesDeLa115SontPresentes() throws {
+        let parID = Dictionary(uniqueKeysWithValues: try Catalogs.activities().map { ($0.id, $0) })
+
+        let piscine = try XCTUnwrap(parID["swimming"])
+        XCTAssertEqual(piscine.name, "Piscine")
+        XCTAssertEqual(piscine.kcalPerMin, 7.0)
+        XCTAssertEqual(piscine.durations, [15, 30, 45])
+
+        let pingPong = try XCTUnwrap(parID["table_tennis"])
+        XCTAssertEqual(pingPong.name, "Ping-pong")
+        XCTAssertEqual(pingPong.kcalPerMin, 4.5)
+        XCTAssertEqual(pingPong.durations, [15, 30, 45])
+    }
+
+    /// Ni chez soi, ni dehors : c'est le sens de `both`, et c'est ce qui motive le
+    /// changement de filtre de la 1.15 §5.2. Aucune des deux ne produit de pas comptés
+    /// par HealthKit, donc `stepsBased` reste faux : sans quoi l'anneau de dépense
+    /// les défalquerait comme il le fait pour la marche.
+    func testLesDeuxNouvellesActivitesSontMixtesEtSansPas() throws {
+        let activities = try Catalogs.activities()
+        for id in ["swimming", "table_tennis"] {
+            let activite = try XCTUnwrap(activities.first { $0.id == id }, id)
+            XCTAssertEqual(activite.location, .both, id)
+            XCTAssertEqual(activite.intensity, .gentle, id)
+            XCTAssertFalse(activite.stepsBased, id)
+            XCTAssertGreaterThanOrEqual(activite.instructions.count, 3, id)
+        }
+    }
+
+    /// Le ménage était dans la demande d'origine de la 1.15. Il existait déjà, depuis
+    /// la v1, et Michaël a tranché : on en reste là (spec 1.15 §5.1). Ce test empêche
+    /// qu'un doublon bien intentionné n'apparaisse un jour. La recherche est sur le
+    /// NOM et pas sur l'id : un second « Ménage express » sous l'id `cleaning` est
+    /// exactement le doublon qu'on veut attraper, et un pin d'ids ne le verrait pas.
+    func testLeMenageNExistePasEnDoubleExemplaire() throws {
+        let menages = try Catalogs.activities().filter { $0.name.lowercased().contains("ménage") }
+        XCTAssertEqual(menages.map(\.id), ["active_cleaning"])
+        XCTAssertEqual(menages.first?.location, .home)
+        XCTAssertEqual(menages.first?.kcalPerMin, 3.5)
     }
 
     /// Les sections de l'onglet Sport (spec §4.3) forment une partition STRICTE du

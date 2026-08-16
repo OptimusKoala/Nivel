@@ -23,7 +23,10 @@ final class PostureCatalogTests: XCTestCase {
         XCTAssertTrue(globalActivities.isDisjoint(with: postureActivities))
         XCTAssertTrue(globalSessions.isDisjoint(with: postureSessions))
         XCTAssertEqual(globalSessions.count, 11, "la rotation de la séance du jour a bougé")
-        XCTAssertEqual(globalActivities.count, 30)
+        // 30 jusqu'à la v1.14, 32 depuis la 1.15 §5.1 (piscine et ping-pong). Ce pin
+        // n'a pas d'enjeu de rotation comme celui des séances juste au-dessus : il
+        // n'est là que pour signaler qu'une entrée a bougé dans le catalogue commun.
+        XCTAssertEqual(globalActivities.count, 32)
     }
 
     func testTailleDesCatalogues() {

@@ -88,5 +88,11 @@
    "intensity": "strong", "stepsBased": false},
   {"id": "superman",        "name": "Superman (lombaires)", "location": "home",    "kcalPerMin": 4.0, "durations": [2, 3, 5],
    "instructions": ["À plat ventre, bras devant, jambes allongées", "Soulève doucement les bras et les jambes de quelques centimètres", "Regard vers le sol, souffle continu, le bas du dos ne doit pas pincer", "Lève seulement les bras, ou seulement les jambes, si c'est plus confortable"],
-   "intensity": "strong", "stepsBased": false}
+   "intensity": "strong", "stepsBased": false},
+  {"id": "swimming",        "name": "Piscine",              "location": "both",    "kcalPerMin": 7.0, "durations": [15, 30, 45],
+   "instructions": ["Commence par deux longueurs tranquilles, le temps que le corps se réchauffe", "Alterne les nages si tu en connais plusieurs, le dos travaille autrement que le crawl", "Souffle dans l'eau au lieu de retenir ta respiration, c'est la moitié du confort", "Accroche-toi au bord dès que le souffle manque, personne ne chronomètre"],
+   "intensity": "gentle", "stepsBased": false},
+  {"id": "table_tennis",    "name": "Ping-pong",            "location": "both",    "kcalPerMin": 4.5, "durations": [15, 30, 45],
+   "instructions": ["Genoux légèrement fléchis, le poids sur l'avant des pieds", "Garde la raquette devant toi entre deux échanges, le bras reste souple", "Déplace-toi de côté plutôt que de tendre le bras, l'épaule te remerciera", "Compte les points ou pas, l'échange qui dure suffit largement"],
+   "intensity": "gentle", "stepsBased": false}
 ]
