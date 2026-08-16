@@ -6,14 +6,14 @@
 
 **Perdre du poids en douceur, sans jamais culpabiliser.**
 
-Une app iOS gamifiée façon jeu vidéo cozy, en français, entièrement locale.
+Une app iOS gamifiée façon jeu vidéo cozy, en français, locale par défaut.
 
 <p>
   <img src="https://img.shields.io/badge/iOS-17%2B-f57c1f?style=flat-square" alt="iOS 17+"/>
   <img src="https://img.shields.io/badge/SwiftUI-SwiftData-f57c1f?style=flat-square" alt="SwiftUI + SwiftData"/>
   <img src="https://img.shields.io/badge/WidgetKit-4%20familles-f57c1f?style=flat-square" alt="WidgetKit"/>
-  <img src="https://img.shields.io/badge/tests-269%20core%20%2B%20199%20app-3a1220?style=flat-square" alt="269 tests NivelCore + 199 tests app"/>
-  <img src="https://img.shields.io/badge/version-1.14-3a1220?style=flat-square" alt="version 1.14"/>
+  <img src="https://img.shields.io/badge/tests-329%20core%20%2B%20357%20app-3a1220?style=flat-square" alt="329 tests NivelCore + 357 tests app"/>
+  <img src="https://img.shields.io/badge/version-1.15-3a1220?style=flat-square" alt="version 1.15"/>
   <img src="https://img.shields.io/badge/licence-MIT-3a1220?style=flat-square" alt="licence MIT"/>
 </p>
 
@@ -40,19 +40,20 @@ On logge ses repas en quelques secondes, on suit ses pas et son poids, on valide
 
 | | |
 |---|---|
-| 🍲 **Repas en 3 gestes** | Catalogue de 122 aliments (plats composés, ingrédients, boissons, encas, desserts) et 35 recettes de saison, estimation kcal immédiate, détail à l'ingrédient et au gramme si on le veut, kcal saisies à la main sinon. Objectif calculé (Mifflin-St Jeor moins 350). |
-| 🏃 **Sport tout doux** | 30 activités et 11 séances composées, chacune illustrée par Nivelito, avec consignes « comment faire » et rythme suggéré. |
+| 🍲 **Repas en 3 gestes** | Catalogue de 153 aliments (plats composés, ingrédients, boissons, encas, desserts) et 35 recettes de saison, estimation kcal immédiate, détail à l'ingrédient et au gramme si on le veut, kcal saisies à la main sinon. Objectif calculé (Mifflin-St Jeor moins 350). |
+| 🏃 **Sport tout doux** | 32 activités et 11 séances composées, chacune illustrée par Nivelito, avec consignes « comment faire » et rythme suggéré. |
 | ⏱️ **Séance du jour guidée** | Une étape par écran, un timer en anneau **optionnel** qu'on lance si on veut. Jamais d'avance automatique : un guide, pas un chef. |
 | 🏆 **XP, niveaux, quêtes, badges** | 25 quêtes hebdo tirées le lundi, 38 badges, progression visible sans jamais de score négatif. |
 | 🧺 **Idées de saison** | Trois idées de repas légers par jour, classées selon ce qu'on a coché dans le frigo. 35 recettes, préparation en trois ou quatre lignes, loggeables en un geste. |
 | 🔥 **Dépense du jour** | Un anneau concentrique sur l'accueil : pas et sport, à côté de ce qui a été mangé. Indicatif, jamais crédité au budget alimentaire. |
 | 📈 **Progrès honnêtes** | Pas quotidiens (HealthKit), tendance de poids lissée, historique. |
-| 🐼 **Nivelito** | 172 messages préécrits, une phrase adaptée au moment de la journée, micro-gestes d'idle, expression contextuelle. |
+| 🐼 **Nivelito** | 208 messages préécrits, une phrase adaptée au moment de la journée, micro-gestes d'idle, expression contextuelle. |
 | 📱 **Widgets** | Écran d'accueil et écran verrouillé, une nouvelle phrase **chaque heure**, raccourci « logger un repas » en un geste. |
 | 🎨 **4 thèmes** | Crème, Menthe, Océan, Nuit douce. Réglable par téléphone. |
-| 🔒 **100 % local** | Aucun compte, aucun serveur, aucun tracking. Les données ne quittent pas l'iPhone. |
+| 💞 **Duo** | Voir la journée de l'autre, et lui envoyer un cœur. Partagés : prénom, avatar, niveau et XP, l'anneau du jour, les pas, la quête en cours, les repas et activités du jour. **Jamais partagés : le poids, la courbe de poids, les badges.** Aucun classement, aucun texte libre : un cœur, et c'est tout. |
+| 🔒 **Local par défaut** | Aucun compte, aucun serveur, aucun tracking. **Sans duo appairé, rien ne sort de l'iPhone** : pas une requête n'est émise, et c'est l'état par défaut. Dès qu'un duo existe, la journée décrite ci-dessus part dans une zone iCloud privée partagée avec cette personne et personne d'autre. Toujours aucun serveur à nous. |
 
-Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglages sont derrière le ⚙️ en haut de l'accueil.
+Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglages sont derrière le ⚙️ en haut de l'accueil, et le duo, quand il y en a un, derrière l'avatar posé juste à côté.
 
 ## Captures
 
@@ -76,7 +77,7 @@ Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglag
 ┌─ NivelCore/ ────────────────┐   Package Swift PUR (zéro dépendance UI, zéro SwiftData)
 │  calories · XP · niveaux    │   Calculs, catalogues JSON, banque de messages,
 │  quêtes · badges · tendance │   rotation de la séance du jour, planner de timeline.
-│  messages · planner widget  │  269 tests, `swift test` en 0,15 s.
+│  messages · planner widget  │  329 tests, `swift test` en 0,2 s.
 └─────────────┬───────────────┘
               │
     ┌─────────┴─────────┐
@@ -91,7 +92,8 @@ Cinq onglets : **Accueil · Repas · Sport · Progrès · Quêtes**. Les réglag
         └─────────┘   Nivelito, pont App Group (`group.com.elitedangereuse.nivel.data`).
 ```
 
-- **Aucune synchronisation.** Deux installations indépendantes (un iPhone chacun), tout en local. La « séance du jour » est identique sur les deux téléphones parce qu'elle est calculée de façon déterministe à partir de la date, pas partagée par un serveur.
+- **Le magasin local n'est jamais synchronisé.** Deux installations indépendantes (un iPhone chacun), deux bases séparées, rien n'est miroité. La « séance du jour » est identique sur les deux téléphones parce qu'elle est calculée de façon déterministe à partir de la date, pas partagée par un serveur.
+- **Le duo (1.15) ne change pas ça, il publie à côté.** Quand un duo est appairé, l'app dépose un petit instantané de la journée dans une zone iCloud partagée entre les deux personnes (conteneur `iCloud.com.elitedangereuse.Nivel`), exactement comme `syncWidget()` dépose le sien dans l'App Group depuis la v1.6. La zone est décomptée sur le stockage iCloud de celui qui invite ; il n'y a de serveur à nous nulle part. Sans duo appairé, aucune requête n'est émise et l'app se comporte comme la 1.14.
 - **Le projet Xcode est généré** par [XcodeGen](https://github.com/yonaskolb/XcodeGen) depuis `project.yml`. Ne jamais éditer le `.xcodeproj` à la main : relancer `xcodegen generate`.
 
 ## Commandes
@@ -200,7 +202,7 @@ Pas besoin de compte développeur payant, mais l'app **expire au bout de 7 jours
 >
 > 📅 **Builder les deux téléphones depuis le même commit**, dans la même session, sans `git pull` entre les deux. La séance du jour est calculée à partir du catalogue embarqué : deux versions différentes peuvent afficher deux séances différentes le même jour.
 
-**Deux utilisateurs, deux téléphones :** chacun choisit son profil à l'onboarding, sur son propre téléphone. Les données restent locales à chaque appareil.
+**Deux utilisateurs, deux téléphones :** chacun choisit son profil à l'onboarding, sur son propre téléphone. Les données restent locales à chaque appareil, à l'exception de l'instantané du jour que publie le duo, si vous en appairez un (voir plus haut).
 
 **Widgets :** appui long sur l'écran d'accueil → **+** → chercher « Nivel » (petit et moyen), ou personnaliser l'écran verrouillé pour les accessoires. Quand la signature expire, le widget se fige avec l'app ; le re-build hebdomadaire réveille les deux.
 
