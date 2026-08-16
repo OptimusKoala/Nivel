@@ -11,6 +11,7 @@
 		026F42C380BFC389F547201D /* CalorieRingCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C0F56F1A62FCBEDEE362D5 /* CalorieRingCenterTests.swift */; };
 		0375D5C747818288487770AE /* ReminderSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37AB881695F3E7346D401D38 /* ReminderSettingsTests.swift */; };
 		03AAB3EA20253F25A45A4199 /* ScreenshotIdeasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C83E7CFF76D5CC970B5615 /* ScreenshotIdeasTests.swift */; };
+		0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */; };
 		059EE6DBE7DF77207ED03B69 /* OnboardingIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213BA90A0D04CBB6102E11CA /* OnboardingIdentityTests.swift */; };
 		085EF23B75C84D733EE86136 /* ActionCardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A386F7B198F3FB996AF79B /* ActionCardButton.swift */; };
 		095D03B9F4DFEDE000996FA1 /* RecipeStripTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF87114F87B380EA8346D082 /* RecipeStripTests.swift */; };
@@ -81,6 +82,7 @@
 		8F7261B03BB53E975D11918B /* SpeechBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEDC772C4F515AF32D0B650 /* SpeechBubble.swift */; };
 		8FF011930BD1D837FABD72BD /* WeightChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96415D84EF698197C100E80 /* WeightChart.swift */; };
 		923CE98E8AC08B122EDA6DF2 /* DuoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */; };
+		92A5342A30BBFF472BC7BFFE /* DuoIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */; };
 		93AED358242CE2BD999D1419 /* SportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4542B7EDA424C2DF0AF4CD23 /* SportView.swift */; };
 		97E44A016BF5111A29D588FC /* RecipeStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CD04362FFEB97265AB12AB /* RecipeStrip.swift */; };
 		98FFD55FB53DB28F24DFA336 /* PersistentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABBAD095DB88DF009C167B /* PersistentModels.swift */; };
@@ -238,6 +240,7 @@
 		9B7103DE4BB6248F4D667947 /* MuscuSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscuSection.swift; sourceTree = "<group>"; };
 		9D23EC46E843C0AB08C1D436 /* IconAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconAssetsTests.swift; sourceTree = "<group>"; };
 		9F74DECE44DC558C1A6782EF /* PantryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PantryView.swift; sourceTree = "<group>"; };
+		A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoIdentityTests.swift; sourceTree = "<group>"; };
 		A152798F78E550626860D80C /* RecipeDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeDetailSheet.swift; sourceTree = "<group>"; };
 		A694B98073276CD2FA798820 /* MealsJournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealsJournalView.swift; sourceTree = "<group>"; };
 		A6CD04362FFEB97265AB12AB /* RecipeStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeStrip.swift; sourceTree = "<group>"; };
@@ -279,6 +282,7 @@
 		DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesChart.swift; sourceTree = "<group>"; };
 		DEB8CD41FD23E7C73BB3986B /* QuestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestsView.swift; sourceTree = "<group>"; };
 		E09E879085373214B880F1CB /* NivelUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NivelUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoIdentity.swift; sourceTree = "<group>"; };
 		E59866C500AE8AE430E9AE18 /* StepsChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsChart.swift; sourceTree = "<group>"; };
 		E66334CE4613A5D51663A84C /* ActivityRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRow.swift; sourceTree = "<group>"; };
 		E7E30CFE8A8CCC934374688F /* SessionPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPlayerTests.swift; sourceTree = "<group>"; };
@@ -416,6 +420,7 @@
 			children = (
 				7FD0D49D1E0B2314767BA85A /* DayCloser.swift */,
 				4C4CF000EF99C1C649915C18 /* DeepLink.swift */,
+				E3FA1379DA0A73F5A5E11675 /* DuoIdentity.swift */,
 				6A1F6969B88BCA1A9BE77195 /* GameService.swift */,
 				FF9EDFDF9A218363CFAD87D5 /* GameService+LevelMigration.swift */,
 				6909EF00448EC3D59E1F1401 /* GameService+Sport.swift */,
@@ -537,6 +542,7 @@
 				CD88F18972D8921623E8DFFB /* CelebrationDismissTests.swift */,
 				C75615282503FC8044658A28 /* DayCloserTests.swift */,
 				DC82896D117DA2A2662EAF3A /* DeepLinkTests.swift */,
+				A0139D18CECD3332E9530399 /* DuoIdentityTests.swift */,
 				B878ED161F3AAA076E67AA05 /* DuoPublisherTests.swift */,
 				6ACE9E28CF90E65E163287C1 /* ExerciseTimerModelTests.swift */,
 				EA9815E4BFFB49808FA9B128 /* GameServiceTests.swift */,
@@ -796,6 +802,7 @@
 				ED5AFB7FD6AEF575784BC71B /* DailySessionCard.swift in Sources */,
 				13D330D2A60DD0F8D3900C60 /* DayCloser.swift in Sources */,
 				8CAC8E0E20A72CB51487666F /* DeepLink.swift in Sources */,
+				0492D57D2448759B0ED25081 /* DuoIdentity.swift in Sources */,
 				B130D8C2B4A0878C4D419DA2 /* ExerciseTimerModel.swift in Sources */,
 				5D4D67FBBA062126EF9E6359 /* FoodCatalogView.swift in Sources */,
 				F68D24A45D81DC3DAE52A757 /* Formatting.swift in Sources */,
@@ -892,6 +899,7 @@
 				71F256526E0F3D73A7E90F83 /* CelebrationDismissTests.swift in Sources */,
 				7188B6A5F0D1F64AA1F4A91F /* DayCloserTests.swift in Sources */,
 				AF6529F14A611955ACF3E30C /* DeepLinkTests.swift in Sources */,
+				92A5342A30BBFF472BC7BFFE /* DuoIdentityTests.swift in Sources */,
 				923CE98E8AC08B122EDA6DF2 /* DuoPublisherTests.swift in Sources */,
 				3BFDE41276406C8417A234F4 /* ExerciseTimerModelTests.swift in Sources */,
 				9AAC11CD2DCE67EF87514452 /* GameServiceTests.swift in Sources */,
