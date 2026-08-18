@@ -49,6 +49,8 @@ final class DuoIdentity {
         static let zoneChangeToken = "nivel.duo.zoneChangeToken"
         static let givenLikeEventIDs = "nivel.duo.givenLikeEventIDs"
         static let zoneSubscriptionInstalled = "nivel.duo.zoneSubscriptionInstalled"
+        static let likeNotificationSubscriptionVersion =
+            "nivel.duo.likeNotificationSubscriptionVersion"
     }
 
     /// L'identité de CET appareil dans le duo. `nil` tant qu'aucun duo n'a jamais été
@@ -121,7 +123,7 @@ final class DuoIdentity {
     /// d'en inventer une.
     var pairedAt: Date? { didSet { defaults.set(pairedAt, forKey: Key.pairedAt) } }
 
-    /// L'interrupteur « Cœurs reçus » (§3.7) : il coupe la NOTIFICATION locale, jamais
+    /// L'interrupteur « Cœurs reçus » (§3.7) : il coupe l'alerte CloudKit, jamais
     /// l'appairage ni la réception. On garde le duo et on cesse d'être prévenu.
     ///
     /// Allumé par défaut, et la lecture en `object` plutôt qu'en `bool` est ce qui le
@@ -154,11 +156,22 @@ final class DuoIdentity {
     /// gratuit et, surtout, permet de savoir quels cœurs sont NOUVEAUX.
     var zoneChangeToken: Data? { didSet { defaults.set(zoneChangeToken, forKey: Key.zoneChangeToken) } }
 
-    /// L'abonnement de zone est posé sur ce téléphone. Un booléen plutôt qu'une écriture à
-    /// chaque lancement : `modifySubscriptions` est une requête réseau, et la reposer à
-    /// chaque ouverture coûterait sans rien apporter.
+    /// L'abonnement d'alerte des cœurs est posé sur ce téléphone. Un booléen plutôt qu'une
+    /// écriture à chaque lancement : `modifySubscriptions` est une requête réseau, et la
+    /// reposer à chaque ouverture coûterait sans rien apporter.
     var zoneSubscriptionInstalled: Bool {
         didSet { defaults.set(zoneSubscriptionInstalled, forKey: Key.zoneSubscriptionInstalled) }
+    }
+
+    /// Version de l'abonnement réellement posé. La v2 remplace l'ancien abonnement de zone
+    /// silencieux par une alerte CloudKit, et emploie le type d'abonnement compatible avec
+    /// la base partagée de l'invité. Un booléen seul ne pourrait pas distinguer une v1
+    /// installée d'une v2 à poser.
+    var likeNotificationSubscriptionVersion: Int {
+        didSet {
+            defaults.set(likeNotificationSubscriptionVersion,
+                         forKey: Key.likeNotificationSubscriptionVersion)
+        }
     }
 
     /// Les cœurs reçus des duos PASSÉS, gelés au désappairage. Ne rétrécit jamais.
@@ -227,6 +240,8 @@ final class DuoIdentity {
         zoneChangeToken = defaults.data(forKey: Key.zoneChangeToken)
         givenLikeEventIDs = defaults.stringArray(forKey: Key.givenLikeEventIDs) ?? []
         zoneSubscriptionInstalled = defaults.bool(forKey: Key.zoneSubscriptionInstalled)
+        likeNotificationSubscriptionVersion =
+            defaults.integer(forKey: Key.likeNotificationSubscriptionVersion)
     }
 
     /// Crée l'identité de cet appareil et la persiste. **Un seul appelant légitime : le
@@ -280,6 +295,7 @@ final class DuoIdentity {
         // le moindre signe.
         zoneChangeToken = nil
         zoneSubscriptionInstalled = false
+        likeNotificationSubscriptionVersion = 0
         givenLikeEventIDs = []
         // Sans cette ligne, réappairer avec la même personne ne republierait RIEN tant
         // que la journée n'a pas changé : l'instantané construit serait égal à celui

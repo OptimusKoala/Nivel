@@ -1,96 +1,31 @@
 // NivelTests/DuoNotificationsTests.swift
-// Le réveil silencieux et la notification locale d'un cœur (spec 1.15 §3.7).
+// Les cœurs reçus et leur rattrapage local (spec 1.15 §3.7).
 //
-// L'abonnement de zone et le réveil lui-même ne se prouvent que sur deux vrais iPhones.
-// Ce qui suit éprouve tout le reste, c'est-à-dire toutes les décisions : le texte, le
-// filtrage, l'interrupteur, et le jeton de changement expiré.
+// L'alerte distante CloudKit elle-même se vérifie sur deux iPhone réels. Ici restent les
+// décisions pures : nom de repli, dédoublonnage et conservation de l'historique.
 
 import XCTest
 import CloudKit
 import NivelCore
 @testable import Nivel
 
-final class DuoNotificationTextTests: XCTestCase {
+final class DuoNotificationStateTests: XCTestCase {
 
     private func coeur(event: String, titre: String = "Poisson et purée maison") -> DuoLike {
         DuoLike(giverID: "TOI", ownerID: "MOI", eventID: event, eventTitle: titre,
                 createdAt: Date(timeIntervalSince1970: 500))
     }
 
-    /// Le titre est une phrase de la banque, contexte `duoLikeReceived`, avec le prénom du
-    /// PARTENAIRE en `{name}`. Les mêmes douze phrases serviront à la bulle de l'accueil :
-    /// un cœur reçu ne dit jamais deux fois la même chose.
-    func testLeTitreEstUnePhraseDeLaBanqueAuNomDuPartenaire() throws {
-        let bank = try MessageBank.load()
-
-        let titre = DuoNotifications.title(partner: "Marion", bank: bank)
-
-        XCTAssertTrue(titre.contains("Marion"), titre)
-        XCTAssertFalse(titre.contains("{name}"), "la substitution doit être faite")
-        XCTAssertFalse(titre.isEmpty)
+    /// Le nom de repli ne peut pas dévoiler le prénom du profil local, ni être vide.
+    func testLeNomDeRepliNePeutJamaisEtreVideOuLocal() {
+        XCTAssertEqual(DuoNotifications.partnerDisplayName(nil), "Ton duo")
+        XCTAssertEqual(DuoNotifications.partnerDisplayName(""), "Ton duo")
+        XCTAssertEqual(DuoNotifications.partnerDisplayName("   "), "Ton duo")
+        XCTAssertEqual(DuoNotifications.partnerDisplayName("Marion"), "Marion")
     }
 
-    /// Banque illisible : on dit quand même quelque chose. Un bundle corrompu ne doit pas
-    /// transformer un cœur reçu en notification vide.
-    func testSansBanqueLeTitreResteUnePhrase() {
-        let titre = DuoNotifications.title(partner: "Marion", bank: nil)
-
-        XCTAssertTrue(titre.contains("Marion"), titre)
-        XCTAssertFalse(titre.contains("{name}"))
-    }
-
-    /// Partenaire encore inconnu (il a aimé avant d'avoir publié) : pas de blanc, pas de
-    /// « nil », une tournure qui tient debout.
-    func testUnPartenaireSansNomNeLaissePasDeBlanc() {
-        let titre = DuoNotifications.title(partner: nil, bank: nil)
-
-        XCTAssertFalse(titre.isEmpty)
-        XCTAssertFalse(titre.hasPrefix(" "), "un nom vide laisserait la phrase commencer par un blanc")
-        for fuite in ["nil", "Optional", "{name}", "  "] {
-            XCTAssertFalse(titre.contains(fuite), titre)
-        }
-    }
-
-    /// Le corps est le libellé de l'événement, tel que publié. Il est recopié dans
-    /// l'enregistrement du cœur (§3.3) précisément pour que ce texte n'exige aucune
-    /// relecture du fil : au réveil, on n'a peut-être rien d'autre sous la main.
-    func testLeCorpsEstLeLibelleDeLEvenementAime() {
-        XCTAssertEqual(DuoNotifications.body(for: [coeur(event: "E1")]),
-                       "Poisson et purée maison")
-    }
-
-    /// Deux cœurs arrivés dans le même réveil : une seule notification, qui les compte.
-    /// En poster deux ferait vibrer deux fois pour un même geste.
-    func testDeuxCoeursArrivesEnsembleNeFontQuUneNotification() {
-        let texte = DuoNotifications.body(for: [coeur(event: "E1"),
-                                                coeur(event: "E2", titre: "Vélo tranquille")])
-
-        XCTAssertEqual(texte, "2 moments de ta journée")
-    }
-
-    /// Un cœur dont le titre n'a pas voyagé reste annonçable : le titre de la notification
-    /// porte déjà l'essentiel, et se taire serait pire.
-    func testUnCoeurSansLibelleResteAnnoncable() {
-        let texte = DuoNotifications.body(for: [coeur(event: "E1", titre: "")])
-
-        XCTAssertFalse(texte.isEmpty)
-        XCTAssertFalse(texte.contains("—"))
-    }
-
-    // MARK: - Notifier, ou se taire
-
-    /// L'interrupteur « Cœurs reçus » des réglages coupe la notification, et rien d'autre :
-    /// l'appairage et la publication continuent (§3.7).
-    func testAucuneNotificationSansNouveauteOuInterrupteurCoupe() {
-        XCTAssertTrue(DuoNotifications.shouldNotify(newLikes: 1, enabled: true))
-        XCTAssertFalse(DuoNotifications.shouldNotify(newLikes: 0, enabled: true))
-        XCTAssertFalse(DuoNotifications.shouldNotify(newLikes: 1, enabled: false))
-        XCTAssertFalse(DuoNotifications.shouldNotify(newLikes: 0, enabled: false))
-    }
-
-    /// Un cœur déjà connu ne se réannonce pas. Le réveil rend les enregistrements CHANGÉS,
-    /// et un cœur peut revenir dans un lot pour une raison qui ne nous regarde pas : sans
-    /// ce tri, le téléphone sonnerait deux fois pour le même geste.
+    /// Un cœur déjà connu ne se recompte pas. Un push peut être réémis ou contenir d'autres
+    /// changements ; sans ce tri, la bulle annoncerait plusieurs fois le même geste.
     func testUnCoeurDejaConnuNeSeReannoncePas() {
         let deja = coeur(event: "E1")
         let neuf = coeur(event: "E2")
@@ -103,6 +38,7 @@ final class DuoNotificationTextTests: XCTestCase {
     func testSansRienDeConnuToutEstNouveau() {
         XCTAssertEqual(DuoNotifications.unseen([coeur(event: "E1")], knownEventIDs: []).count, 1)
     }
+
 }
 
 // MARK: - Fusionner un delta avec ce qu'on a déjà

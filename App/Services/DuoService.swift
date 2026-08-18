@@ -7,7 +7,7 @@
 // lot A1 et qu'en v1 avec `HomeView.bubbleDecision` : **toute décision est extraite en
 // statique pure**, éprouvée par un test, et le reste est de la plomberie mince, écrite
 // sans astuce. Ce que ce fichier porte, dans l'ordre : l'état que les écrans lisent, les
-// deux chemins de lecture de la zone (la lecture complète et le réveil silencieux), l'envoi
+// deux chemins de lecture de la zone (la lecture complète et le push associé), l'envoi
 // et le retrait d'un cœur, les décisions pures, et l'appairage.
 //
 // L'appairage est en fin de fichier, et il y est plutôt que dans un `+Pairing.swift` pour
@@ -15,9 +15,9 @@
 // fichier. Aucun écran ne peut ainsi pousser lui-même un rôle ou une zone dans les
 // réglages, et l'état d'appairage n'a qu'un seul auteur.
 //
-// Ce qui ne vit PAS ici : le TEXTE de ce qu'on annonce, qui est dans `DuoNotifications` —
-// ce service rend les cœurs nouvellement arrivés, un autre décide de ce qu'on en dit — et
-// les noms de champs CloudKit, qui sont dans `DuoRecord`.
+// Ce qui ne vit PAS ici : l'état d'autorisation système et le nom de repli de la bulle,
+// qui sont dans `DuoNotifications`, ainsi que les noms de champs CloudKit, qui sont dans
+// `DuoRecord`.
 //
 // ⚠️ **À reprendre avant la 1.16, et c'est le seul chantier de fond que ce lot laisse.**
 // Trois chemins écrivent `identity.receivedLikeEventIDs` et trois écrivent
@@ -152,8 +152,17 @@ final class DuoService {
     private let createShare: @MainActor (CKContainer) async throws
         -> (zoneID: CKRecordZone.ID, url: URL)
     private let acceptShare: @MainActor (CKContainer, URL) async throws -> CKRecordZone.ID
-    private let saveSubscription: @MainActor (DuoDatabase.Target, CKRecordZoneSubscription)
+    private let saveSubscription: @MainActor (DuoDatabase.Target, CKSubscription)
         async -> Bool
+    private let deleteSubscription: @MainActor (DuoDatabase.Target, CKSubscription.ID)
+        async -> Bool
+    private let deleteZone: @MainActor (DuoDatabase.Target) async -> Void
+
+    /// Les changements rapides de l'interrupteur « Cœurs reçus » ne doivent pas laisser le
+    /// nuage dans l'état du premier tap. Cette file est distincte de `zoneWork` : la lecture
+    /// de zone appelle elle-même cette synchronisation à sa fin, et les faire attendre l'une
+    /// l'autre dans la même file formerait un cycle.
+    private var notificationSubscriptionWork: Task<Void, Never>?
 
     init(identity: DuoIdentity,
          resolveTarget: @escaping (DuoIdentity) -> DuoDatabase.Target? = {
@@ -167,14 +176,21 @@ final class DuoService {
          acceptShare: @escaping @MainActor (CKContainer, URL) async throws -> CKRecordZone.ID = {
              try await DuoService.acceptShare($1, in: $0)
          },
-         saveSubscription: @escaping @MainActor (DuoDatabase.Target, CKRecordZoneSubscription)
-             async -> Bool = { await DuoService.saveSubscription($1, in: $0) }) {
+         saveSubscription: @escaping @MainActor (DuoDatabase.Target, CKSubscription)
+             async -> Bool = { await DuoService.saveSubscription($1, in: $0) },
+         deleteSubscription: @escaping @MainActor (DuoDatabase.Target, CKSubscription.ID)
+             async -> Bool = { await DuoService.deleteSubscription($1, in: $0) },
+         deleteZone: @escaping @MainActor (DuoDatabase.Target) async -> Void = {
+             await DuoService.deleteZone(in: $0)
+         }) {
         self.identity = identity
         self.resolveTarget = resolveTarget
         self.makeContainer = makeContainer
         self.createShare = createShare
         self.acceptShare = acceptShare
         self.saveSubscription = saveSubscription
+        self.deleteSubscription = deleteSubscription
+        self.deleteZone = deleteZone
     }
 
     // MARK: - Ce que les écrans lisent
@@ -197,12 +213,18 @@ final class DuoService {
     /// Depuis quand ce duo existe, pour la ligne d'état des réglages (§3.9).
     var pairedAt: Date? { identity.pairedAt }
 
-    /// L'interrupteur « Cœurs reçus » des réglages (§3.7). En écriture aussi : c'est le seul
-    /// réglage du duo que l'utilisateur touche directement, et le faire passer par le service
-    /// évite qu'un écran aille écrire dans `DuoIdentity` de sa propre main.
-    var likeNotificationsEnabled: Bool {
-        get { identity.likeNotificationsEnabled }
-        set { identity.likeNotificationsEnabled = newValue }
+    /// L'interrupteur « Cœurs reçus » des réglages (§3.7). Son changement passe par
+    /// `setLikeNotificationsEnabled(_:)` : avec une alerte CloudKit visible, couper le
+    /// réglage doit aussi retirer l'abonnement distant, pas seulement ignorer une alerte
+    /// locale après son arrivée.
+    var likeNotificationsEnabled: Bool { identity.likeNotificationsEnabled }
+
+    /// Persiste la préférence puis aligne l'abonnement CloudKit. La réception et les petits
+    /// cœurs restent inchangés : on coupe seulement l'alerte système.
+    func setLikeNotificationsEnabled(_ enabled: Bool) async {
+        guard identity.likeNotificationsEnabled != enabled else { return }
+        identity.likeNotificationsEnabled = enabled
+        await synchronizeLikeNotificationSubscription()
     }
 
     /// Les cœurs que j'ai ENVOYÉS, par événement du partenaire. Persistés, plus les attentes
@@ -331,10 +353,9 @@ final class DuoService {
         // La place vient peut-être d'être prise. C'est ici, et nulle part ailleurs, qu'on le
         // sait sans payer une requête de plus. Sans effet dans tous les autres cas.
         forgetInvitationLinkIfSeatTaken(memberCount: memberCount)
-        // Le FILET de l'abonnement : il est posé à la fin de l'appairage, des deux côtés,
-        // mais un appairage dont l'abonnement aurait raté doit pouvoir se rattraper. La
-        // garde d'idempotence rend cet appel sans coût le reste du temps.
-        await installSubscriptionIfNeeded()
+        // Le filet de l'abonnement : il est posé à la fin de l'appairage, des deux côtés,
+        // mais une pose ou une suppression ratée doit pouvoir se rattraper au tour suivant.
+        await synchronizeLikeNotificationSubscription()
         await retryPendingLikes(in: target, me: me)
     }
 
@@ -614,52 +635,138 @@ final class DuoService {
                                                        from: data)
     }
 
-    /// Pose l'abonnement de zone SILENCIEUX (§3.7), une fois par appareil et par duo.
+    /// Aligne l'abonnement CloudKit sur la préférence courante, un travail à la fois. Les
+    /// deux entrées légitimes sont la fin de l'appairage et le rafraîchissement ; l'écran des
+    /// réglages s'y ajoute lorsqu'on touche l'interrupteur. Exécuter ces trois chemins en
+    /// parallèle pouvait laisser une suppression achevée APRÈS une repose, et donc couper
+    /// définitivement les alertes malgré un interrupteur rallumé.
+    private func synchronizeLikeNotificationSubscription() async {
+        let precedent = notificationSubscriptionWork
+        let mien = Task { @MainActor in
+            await precedent?.value
+            if self.identity.likeNotificationsEnabled {
+                await self.installSubscriptionIfNeeded()
+            } else {
+                await self.removeSubscriptionIfNeeded()
+            }
+        }
+        notificationSubscriptionWork = mien
+        await mien.value
+    }
+
+    /// Pose l'abonnement d'alerte des cœurs, une fois par appareil et par duo. L'invité lit
+    /// une base `shared`, où CloudKit REFUSE les `CKRecordZoneSubscription` : il reçoit donc
+    /// un `CKDatabaseSubscription` limité au type `DuoLikeAlertSignal`. Le propriétaire,
+    /// dans sa base privée, garde l'abonnement de zone plus précis.
     ///
-    /// `shouldSendContentAvailable = true` et AUCUN `alertBody` : le système réveille l'app
-    /// sans rien montrer, et c'est l'app qui décide s'il y a lieu de dire quelque chose. Un
-    /// abonnement bavard alerterait à chaque mise à jour d'anneau, plusieurs fois par jour,
-    /// pour des chiffres que personne n'a demandé à voir.
-    ///
-    /// `CKQuerySubscription`, qui filtrerait sur les seuls `DuoLike`, n'existe pas dans la
-    /// base partagée : l'invité n'a droit qu'à un abonnement de zone. On prend donc le même
-    /// des deux côtés, pour n'avoir qu'un seul comportement à comprendre.
-    ///
-    /// **Deux appelants, et il faut les deux.** La FIN DE L'APPAIRAGE, des deux côtés, parce
-    /// que quelqu'un qui appaire puis rentre à l'accueil n'a aucune raison de rouvrir les
-    /// Réglages — et n'avait donc, jusqu'ici, aucun abonnement et aucune notification. Et
-    /// `refresh()`, qui reste le FILET : un appairage dont l'abonnement a raté doit pouvoir
-    /// se rattraper, et la garde d'idempotence ci-dessous rend l'appel sans coût.
-    ///
-    /// La zone est résolue ici plutôt que passée en argument : les deux appelants n'ont pas
-    /// les mêmes informations sous la main, et c'est la résolution qui sait quoi faire de la
-    /// dissymétrie propriétaire / invité.
+    /// Le signal ne change que lorsqu'un cœur est posé, jamais lorsqu'il est retiré. Une
+    /// alerte CloudKit visible ne dit donc jamais « ton duo a aimé » sur un unlike. Elle est
+    /// aussi indépendante du lancement de l'app, ce que la notification locale ne pouvait
+    /// pas être après un force-quit.
     func installSubscriptionIfNeeded() async {
-        guard !identity.zoneSubscriptionInstalled, let target = resolveTarget(identity)
+        guard identity.likeNotificationsEnabled,
+              (!identity.zoneSubscriptionInstalled
+                || identity.likeNotificationSubscriptionVersion != Self.subscriptionVersion),
+              let target = resolveTarget(identity),
+              let abonnement = Self.makeLikeSubscription(for: target)
         else { return }
 
-        let abonnement = CKRecordZoneSubscription(zoneID: target.zoneID,
-                                                  subscriptionID: Self.subscriptionID)
-        let info = CKSubscription.NotificationInfo()
-        info.shouldSendContentAvailable = true
-        abonnement.notificationInfo = info
-
-        // Marqué posé SEULEMENT après un succès : le marquer d'avance ferait d'un échec
-        // réseau un appareil qui ne retentera plus jamais, en silence et pour toujours.
+        // Marqué posé SEULEMENT après un succès réel du résultat individuel : les opérations
+        // CloudKit peuvent rendre un tuple sans lever alors que CET abonnement a été refusé.
         guard await saveSubscription(target, abonnement) else { return }
         identity.zoneSubscriptionInstalled = true
+        identity.likeNotificationSubscriptionVersion = Self.subscriptionVersion
     }
 
-    /// La pose réelle, celle de la production. Voir les trois coutures en tête de fichier.
-    private static func saveSubscription(_ subscription: CKRecordZoneSubscription,
+    /// Retire l'abonnement visible quand la personne coupe « Cœurs reçus ». Si le réseau est
+    /// absent, le booléen reste vrai et `refresh()` retentera : mentir localement en disant
+    /// « supprimé » empêcherait cette seconde chance.
+    private func removeSubscriptionIfNeeded() async {
+        guard identity.zoneSubscriptionInstalled, let target = resolveTarget(identity) else { return }
+        guard await deleteSubscription(target, Self.subscriptionID) else { return }
+        identity.zoneSubscriptionInstalled = false
+        identity.likeNotificationSubscriptionVersion = 0
+    }
+
+    /// Fabrique l'abonnement compatible avec la base choisie par `DuoDatabase`, et rien
+    /// d'autre. `CKQuerySubscription` serait idéal pour distinguer création et suppression,
+    /// mais CloudKit ne l'autorise pas dans la base partagée de l'invité ; le signal dédié
+    /// écrit par `toggleLike` apporte cette distinction avant l'abonnement.
+    nonisolated static func makeLikeSubscription(for target: DuoDatabase.Target) -> CKSubscription? {
+        let abonnement: CKSubscription
+        switch target.scope {
+        case .private:
+            let zone = CKRecordZoneSubscription(zoneID: target.zoneID,
+                                                subscriptionID: subscriptionID)
+            zone.recordType = DuoRecord.likeAlertType
+            abonnement = zone
+
+        case .shared:
+            let base = CKDatabaseSubscription(subscriptionID: subscriptionID)
+            base.recordType = DuoRecord.likeAlertType
+            abonnement = base
+
+        case .public:
+            return nil
+
+        @unknown default:
+            return nil
+        }
+
+        let info = CKSubscription.NotificationInfo()
+        info.title = likeAlertTitle
+        info.alertBody = likeAlertBody
+        info.soundName = "default"
+        // L'alerte est visible, mais l'app reçoit aussi du temps pour ranger le cœur et
+        // tenir la bulle de l'accueil à jour avant la prochaine ouverture.
+        info.shouldSendContentAvailable = true
+        abonnement.notificationInfo = info
+        return abonnement
+    }
+
+    /// La pose réelle, celle de la production. Le résultat par abonnement est vérifié : une
+    /// réponse de lot n'est pas une réussite du seul élément qui nous intéresse.
+    private static func saveSubscription(_ subscription: CKSubscription,
                                          in target: DuoDatabase.Target) async -> Bool {
-        (try? await target.database.modifySubscriptions(saving: [subscription],
-                                                        deleting: [])) != nil
+        guard let resultat = try? await target.database.modifySubscriptions(
+            saving: [subscription], deleting: [])
+        else { return false }
+        return subscriptionSaveSucceeded(resultat.saveResults, id: subscription.subscriptionID)
     }
 
-    /// Identifiant fixe : reposer le même abonnement le remplace au lieu d'en empiler un
-    /// second, donc un appareil ne peut pas se retrouver réveillé deux fois par changement.
-    static let subscriptionID = "nivel.duo.zone"
+    private static func deleteSubscription(_ id: CKSubscription.ID,
+                                           in target: DuoDatabase.Target) async -> Bool {
+        guard let resultat = try? await target.database.modifySubscriptions(
+            saving: [], deleting: [id])
+        else { return false }
+        return subscriptionDeleteSucceeded(resultat.deleteResults, id: id)
+    }
+
+    private static func deleteZone(in target: DuoDatabase.Target) async {
+        _ = try? await target.database.modifyRecordZones(saving: [], deleting: [target.zoneID])
+    }
+
+    nonisolated static func subscriptionSaveSucceeded(
+        _ results: [CKSubscription.ID: Result<CKSubscription, any Error>], id: CKSubscription.ID
+    ) -> Bool {
+        guard let result = results[id], case .success = result else { return false }
+        return true
+    }
+
+    nonisolated static func subscriptionDeleteSucceeded(
+        _ results: [CKSubscription.ID: Result<Void, any Error>], id: CKSubscription.ID
+    ) -> Bool {
+        guard let result = results[id], case .success = result else { return false }
+        return true
+    }
+
+    /// Identifiant fixe : reposer l'abonnement le remplace au lieu d'en empiler un second.
+    nonisolated static let subscriptionID = "nivel.duo.zone"
+    /// Bump de migration : une v1 déjà mémorisée est reposée avec le bon type et l'alerte
+    /// visible, au premier retour au premier plan après la mise à jour.
+    nonisolated static let subscriptionVersion = 2
+    nonisolated static let likeAlertTitle = "Nivel"
+    nonisolated static let likeAlertBody = "Ton duo a aimé un moment de ta journée 💛"
 
     // MARK: - Les cœurs
 
@@ -700,15 +807,20 @@ final class DuoService {
             } else {
                 let record = DuoRecord.like(giver: me, owner: proprietaire, event: event,
                                             in: target.zoneID)
+                // Le signal d'alerte est mis à jour dans le MÊME lot que le cœur. Il ne
+                // bouge jamais sur un unlike, donc l'abonnement visuel ne peut pas annoncer
+                // une action inverse. Atomique : une alerte pour un cœur qui n'a pas été
+                // enregistré serait pire qu'une alerte retardée.
+                let signal = DuoRecord.likeAlert(giver: me, owner: proprietaire, event: event,
+                                                 in: target.zoneID)
                 let ecritures = try await target.database.modifyRecords(
-                    saving: [record], deleting: [], savePolicy: .changedKeys,
-                    atomically: false)
+                    saving: [record, signal], deleting: [], savePolicy: .changedKeys,
+                    atomically: true)
                 abouti = DuoRecord.allSucceeded(ecritures.saveResults)
             }
-            // ⚠️ En mode non atomique, l'appel ne lève PAS sur un échec par enregistrement.
-            // Sortir de la file de rejeu sans regarder les résultats court-circuitait la
-            // seconde chance que le §3.10 promet : le cœur restait allumé sous le doigt,
-            // n'était jamais parti, et s'éteignait tout seul à la lecture suivante.
+            // Même dans le cas non atomique de l'unlike, l'appel ne lève PAS forcément sur
+            // un échec par enregistrement. Vérifier les résultats conserve la seconde chance
+            // promise au prochain rafraîchissement.
             guard abouti else { pendingLikes[event.id] = !etaitAime; return }
             pendingLikes.removeValue(forKey: event.id)
         } catch {
@@ -746,8 +858,11 @@ final class DuoService {
                                                 title: "", subtitle: "")
                 let record = DuoRecord.like(giver: me, owner: proprietaire,
                                             event: evenementMinimal, in: target.zoneID)
+                let signal = DuoRecord.likeAlert(giver: me, owner: proprietaire,
+                                                 event: evenementMinimal, in: target.zoneID)
                 let ecritures = try? await target.database.modifyRecords(
-                    saving: [record], deleting: [], savePolicy: .changedKeys, atomically: false)
+                    saving: [record, signal], deleting: [], savePolicy: .changedKeys,
+                    atomically: true)
                 reussi = ecritures.map { DuoRecord.allSucceeded($0.saveResults) } ?? false
             } else {
                 let ecritures = try? await target.database.modifyRecords(
@@ -960,11 +1075,10 @@ extension DuoService {
             // d'idempotence étant sortie bien avant.
             identity.pairedAt = .now
             zoneIsGone = false
-            // L'abonnement de zone, ICI et pas au premier `refresh()` : celui qui invite
+            // L'alerte CloudKit, ICI et pas au premier `refresh()` : celui qui invite
             // referme la feuille et rentre à l'accueil, où rien ne rafraîchit. Sans cette
-            // ligne, il n'avait aucun réveil silencieux tant qu'il n'avait pas rouvert les
-            // Réglages par hasard, donc aucune notification de cœur.
-            await installSubscriptionIfNeeded()
+            // ligne, il ne serait prévenu d'aucun cœur avant de rouvrir les Réglages.
+            await synchronizeLikeNotificationSubscription()
             return .ready(url)
         } catch {
             return .failed(Self.message(for: error))
@@ -1053,11 +1167,11 @@ extension DuoService {
             identity.shareURL = nil
             identity.pairedAt = .now
             zoneIsGone = false
-            // L'abonnement de zone, ICI et pas au premier `refresh()`, et c'est le côté qui
+            // L'alerte CloudKit, ICI et pas au premier `refresh()`, et c'est le côté qui
             // comptait le plus : l'invité vient de scanner, il referme et rentre à
-            // l'accueil. Il n'a aucune raison d'ouvrir les Réglages, donc il n'avait aucun
-            // réveil, donc aucune notification de cœur, sans le moindre signe.
-            await installSubscriptionIfNeeded()
+            // l'accueil. Il n'a aucune raison d'ouvrir les Réglages, donc il doit déjà être
+            // joignable quand le premier cœur arrive.
+            await synchronizeLikeNotificationSubscription()
             return .joined
         } catch {
             return .failed(Self.message(for: error))
@@ -1145,7 +1259,11 @@ extension DuoService {
     /// les cœurs déjà reçus.
     func unpair() async {
         if let target = resolveTarget(identity) {
-            _ = try? await target.database.modifyRecordZones(saving: [], deleting: [target.zoneID])
+            // Chez l'invité, supprimer une zone partagée ne suffit pas toujours à retirer
+            // son abonnement de base. On le retire donc explicitement avant de quitter :
+            // sans cela, un cœur du duo quitté pourrait encore afficher une alerte système.
+            _ = await deleteSubscription(target, Self.subscriptionID)
+            await deleteZone(target)
         }
         wipeLocalPairing()
     }

@@ -17,9 +17,14 @@ import Foundation
 import NivelCore
 
 enum DuoRecord {
-    /// Les deux types d'enregistrements de la zone.
+    /// Les enregistrements persistants de la zone.
     static let memberType = "DuoMember"
     static let likeType = "DuoLike"
+    /// Signal borné, mis à jour UNIQUEMENT lorsqu'un cœur est posé. Les abonnements CloudKit
+    /// de l'invité ne savent pas filtrer une création d'une suppression de `DuoLike` ; les
+    /// abonner directement à ce dernier annoncerait aussi les retraits. Ce signal ne change
+    /// jamais lors d'un retrait, donc une alerte distante signifie toujours un nouveau cœur.
+    static let likeAlertType = "DuoLikeAlertSignal"
 
     /// Les noms de champs, nommés UNE fois. Le lot A2 lira par ces mêmes constantes, si
     /// bien qu'une faute de frappe cessera d'être silencieuse : elle sera la même des
@@ -198,6 +203,26 @@ enum DuoRecord {
         record[Field.createdAt] = now as CKRecordValue
         return record
     }
+
+    /// Écriture compagnon du cœur, mais pas un deuxième cœur : il n'y a qu'UN signal par
+    /// donneur et par zone, réécrit à chaque nouveau like. Il garde ainsi le nombre
+    /// d'enregistrements borné tout en ne s'allumant jamais sur un unlike.
+    static func likeAlert(giver: String, owner: String, event: DuoEvent,
+                          in zoneID: CKRecordZone.ID, now: Date = .now) -> CKRecord {
+        let record = CKRecord(
+            recordType: likeAlertType,
+            recordID: CKRecord.ID(recordName: likeAlertRecordName(giver: giver), zoneID: zoneID))
+        record[Field.giverID] = giver as CKRecordValue
+        record[Field.ownerID] = owner as CKRecordValue
+        record[Field.eventID] = event.id as CKRecordValue
+        record[Field.eventTitle] = event.title as CKRecordValue
+        record[Field.createdAt] = now as CKRecordValue
+        return record
+    }
+
+    /// Le signal est par DONNEUR, pas par événement : un même duo ne peut porter que deux
+    /// donneurs, donc ces enregistrements ne gonflent jamais la zone au fil des jours.
+    static func likeAlertRecordName(giver: String) -> String { "like-alert-\(giver)" }
 
     static func encodedFeed(_ events: [DuoEvent]) -> String? {
         guard let data = try? JSONEncoder().encode(events) else { return nil }

@@ -142,9 +142,9 @@ final class DuoSettingsStateTests: XCTestCase {
     /// notifications n'est demandée qu'une fois, à l'onboarding, et il n'existe aucun autre
     /// chemin pour l'accorder. Qui avait refusé ce jour-là ne recevait donc plus jamais rien,
     /// pendant que la section Duo affichait un interrupteur « Cœurs reçus » allumé et que
-    /// `DuoNotifications.post` sortait en silence sur cette même autorisation.
+    /// une alerte CloudKit ne peut pas être affichée avec cette autorisation.
     ///
-    /// La PROMESSE éprouvée ici : **l'écran dit vrai exactement quand la notification
+    /// La PROMESSE éprouvée ici : **l'écran dit vrai exactement quand l'alerte
     /// passerait**. Les deux consultent la même règle, et ce test la suit des deux côtés
     /// pour chaque état possible de l'autorisation. Chacun avait son test avant ; aucun ne
     /// comparait les deux, et c'est par là que le mensonge est passé.
@@ -154,28 +154,19 @@ final class DuoSettingsStateTests: XCTestCase {
 
         for statut in passent {
             XCTAssertEqual(DuoLikeNoticeRow.current(status: statut), .toggle, "\(statut)")
-            XCTAssertTrue(DuoNotifications.willNotify(newLikes: 1, enabled: true, status: statut),
-                          "\(statut)")
+            XCTAssertTrue(DuoNotifications.systemAllows(statut), "\(statut)")
         }
         for statut in bloquent {
             XCTAssertEqual(DuoLikeNoticeRow.current(status: statut), .systemOff, "\(statut)")
-            XCTAssertFalse(DuoNotifications.willNotify(newLikes: 1, enabled: true, status: statut),
-                           "\(statut)")
+            XCTAssertFalse(DuoNotifications.systemAllows(statut), "\(statut)")
         }
     }
 
-    /// L'interrupteur de l'app garde son mot à dire quand le système, lui, laisse passer :
-    /// éteint, on ne notifie pas, mais l'écran a bien le droit d'afficher son interrupteur.
-    /// Les deux réglages sont distincts et le restent.
-    func testLInterrupteurDeLAppEtLAutorisationSystemeRestentDeuxChosesDifferentes() {
+    /// L'interrupteur de l'app reste proposé quand le système autorise les alertes. Son
+    /// effet CloudKit est couvert avec les coutures du service d'appairage.
+    func testLInterrupteurDeLAppResteDisponibleQuandLeSystemeAutorise() {
         XCTAssertEqual(DuoLikeNoticeRow.current(status: .authorized), .toggle,
                        "l'écran ne dépend que du système")
-        XCTAssertFalse(DuoNotifications.willNotify(newLikes: 1, enabled: false,
-                                                   status: .authorized),
-                       "et l'interrupteur coupe quand même l'annonce")
-        XCTAssertFalse(DuoNotifications.willNotify(newLikes: 0, enabled: true,
-                                                   status: .authorized),
-                       "aucun cœur, aucun bruit")
     }
 
     /// Le ton, et c'est ce qui compte le plus ici : ce n'est pas une erreur de l'utilisateur,

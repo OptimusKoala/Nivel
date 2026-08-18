@@ -24,6 +24,10 @@ enum DuoDatabase {
     struct Target {
         let database: CKDatabase
         let zoneID: CKRecordZone.ID
+        /// Le type d'abonnement autorisé dépend de la base. CloudKit n'accepte les
+        /// abonnements de zone que dans `.private` ; l'invité, dans `.shared`, doit poser
+        /// un abonnement de base (voir `DuoService.makeLikeSubscription`).
+        let scope: CKDatabase.Scope
     }
 
     /// `nil` quand aucun duo n'est appairé — il n'y a alors rien à résoudre, et
@@ -40,12 +44,14 @@ enum DuoDatabase {
         case .owner:
             return Target(
                 database: container.privateCloudDatabase,
-                zoneID: CKRecordZone.ID(zoneName: zoneName, ownerName: CKCurrentUserDefaultName))
+                zoneID: CKRecordZone.ID(zoneName: zoneName, ownerName: CKCurrentUserDefaultName),
+                scope: .private)
         case .guest:
             guard let ownerName = identity.zoneOwnerName else { return nil }
             return Target(
                 database: container.sharedCloudDatabase,
-                zoneID: CKRecordZone.ID(zoneName: zoneName, ownerName: ownerName))
+                zoneID: CKRecordZone.ID(zoneName: zoneName, ownerName: ownerName),
+                scope: .shared)
         }
     }
 }

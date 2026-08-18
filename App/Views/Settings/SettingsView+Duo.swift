@@ -96,7 +96,7 @@ enum DuoSettingsState: Equatable {
 /// L'interrupteur seul MENTAIT. L'autorisation système des notifications n'est demandée
 /// qu'une fois, à l'onboarding, et il n'existe aucun autre chemin pour l'accorder : qui a
 /// refusé ce jour-là ne recevait plus jamais rien, avec un interrupteur allumé sous les yeux
-/// et `DuoNotifications.post` qui sortait en silence.
+/// et une alerte CloudKit que le système retiendrait.
 ///
 /// Deux cas et pas trois : quand le système dit non, ce que vaut le réglage de l'app n'a
 /// aucune importance, et prétendre le contraire est exactement l'erreur qu'on répare.
@@ -106,7 +106,7 @@ enum DuoLikeNoticeRow: Equatable {
     /// Le système ne laisse rien passer. On explique, et on ouvre la porte.
     case systemOff
 
-    /// **La même règle que `DuoNotifications.post`**, consultée à la source plutôt que
+    /// La règle de `DuoNotifications`, consultée à la source plutôt que
     /// recopiée : c'est leur divergence qui a fait le défaut, pas l'une ou l'autre.
     static func current(status: UNAuthorizationStatus) -> DuoLikeNoticeRow {
         DuoNotifications.systemAllows(status) ? .toggle : .systemOff
@@ -253,10 +253,14 @@ extension SettingsContent {
         }
     }
 
-    /// Binding fait à la main : la valeur vit dans `DuoIdentity`, que seul le service touche.
+    /// Binding fait à la main : le service persiste la valeur ET pose ou retire l'abonnement
+    /// CloudKit correspondant. Un booléen local seul ne pourrait pas retenir une alerte
+    /// distante déjà configurée chez Apple.
     private var coeursBinding: Binding<Bool> {
         Binding(get: { duo.likeNotificationsEnabled },
-                set: { duo.likeNotificationsEnabled = $0 })
+                set: { enabled in
+                    Task { await duo.setLikeNotificationsEnabled(enabled) }
+                })
     }
 
     private var boutonDeDesappairage: some View {

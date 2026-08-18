@@ -13,7 +13,7 @@ Une app iOS gamifiée façon jeu vidéo cozy, en français, locale par défaut.
   <img src="https://img.shields.io/badge/SwiftUI-SwiftData-f57c1f?style=flat-square" alt="SwiftUI + SwiftData"/>
   <img src="https://img.shields.io/badge/WidgetKit-4%20familles-f57c1f?style=flat-square" alt="WidgetKit"/>
   <img src="https://img.shields.io/badge/tests-329%20core%20%2B%20357%20app-3a1220?style=flat-square" alt="329 tests NivelCore + 357 tests app"/>
-  <img src="https://img.shields.io/badge/version-1.15-3a1220?style=flat-square" alt="version 1.15"/>
+  <img src="https://img.shields.io/badge/version-1.15.1-3a1220?style=flat-square" alt="version 1.15.1"/>
   <img src="https://img.shields.io/badge/licence-MIT-3a1220?style=flat-square" alt="licence MIT"/>
 </p>
 
@@ -188,7 +188,7 @@ captures sont dans [`docs/appstore/fiche-app-store.md`](docs/appstore/fiche-app-
 Les pages publiques (accueil, confidentialité, assistance) sont servies par GitHub Pages
 depuis le dossier `docs/`.
 
-### Ce que la 1.15 demande à la main, avant de soumettre
+### Ce que la 1.15.1 demande à la main, avant de soumettre
 
 Le duo est la première fonction de Nivel qui parle au réseau. Quatre choses en découlent,
 qu'aucun script du dépôt ne fait ni ne vérifie. Tant qu'elles ne sont pas faites, la
@@ -205,7 +205,8 @@ version ne part pas.
    `release.sh`, à lire jusqu'au bout.
 
 2. **Créer le conteneur iCloud et pousser le schéma en production.** Dans le tableau de bord
-   CloudKit : conteneur `iCloud.com.elitedangereuse.Nivel`, types `DuoMember` et `DuoLike`,
+   CloudKit : conteneur `iCloud.com.elitedangereuse.Nivel`, types `DuoMember`, `DuoLike` et
+   `DuoLikeAlertSignal`,
    **index interrogeable sur `DuoLike.ownerID`** (le nettoyage des cœurs orphelins l'exige,
    et sans lui il échoue en silence, par conception), puis **Deploy Schema Changes** vers la
    production. Le schéma de développement ne migre pas tout seul : une version soumise sans
@@ -230,7 +231,7 @@ version ne part pas.
    côté invité** (une zone au `ownerName` faux accepte l'écriture, dans le vide, sans la
    moindre erreur).
 
-Reste le geste habituel de fin de version, qui lui a son outil : écrire les notes de la 1.15
+Reste le geste habituel de fin de version, qui lui a son outil : écrire les notes de la 1.15.1
 dans `docs/appstore/fiche-app-store.md`, puis lancer `python3 scripts/asc-fiche.py`.
 
 Les captures, elles, ne sont pas à refaire : sans duo appairé, l'accueil est rigoureusement

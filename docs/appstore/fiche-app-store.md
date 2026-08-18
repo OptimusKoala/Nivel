@@ -72,25 +72,14 @@ Nivel est en français, conçu et développé en France, et son code est ouvert 
 Nivel n'est pas un dispositif médical et ne remplace pas l'avis d'un professionnel de santé.
 ```
 
-**Nouveautés de cette version** (4 000 max — celles de la 1.15)
+**Nouveautés de cette version** (4 000 max — celles de la 1.15.1)
 
 ```
-Nivel se fait à deux, si tu veux.
+Une petite mise à jour pour le duo.
 
-• Relie ton iPhone à celui de la personne qui compte, d'un QR code scanné côte à côte. Tu vois sa journée, elle voit la tienne.
-• Sa page à elle : son anneau du jour, son niveau, sa quête en cours, et ce qu'elle a noté depuis ce matin.
-• Un cœur, envoyé d'un tap sur un repas ou une activité. Pas de commentaire, pas de note, pas de classement : juste « bien joué ».
-• Une notification quand un cœur arrive, et Nivelito qui te le dit à l'ouverture si tu l'as manquée.
-• Ni ton poids, ni ta courbe, ni tes badges ne sont partagés. Ta journée passe par ta zone iCloud privée, lisible par cette seule personne.
-• Un seul duo à la fois, défait d'un tap. Les cœurs déjà reçus restent sur tes repas : ils sont à toi.
-
-Sans duo, rien ne change : l'app reste exactement celle que tu connais, et rien ne sort de ton iPhone.
-
-Et trois retouches qui n'ont rien à voir :
-
-• 31 entrées de brasserie au catalogue, des moules-frites à la tarte Tatin, avec leurs accompagnements et leurs desserts.
-• La piscine et le ping-pong rejoignent les activités douces, et le filtre « Dehors » cesse d'oublier celles qui se pratiquent des deux côtés.
-• Le compteur de l'anneau tient enfin les quatre chiffres sans mordre le tracé.
+• Les cœurs reçus déclenchent désormais une vraie alerte, même quand Nivel n'est pas ouvert.
+• Les alertes sont plus fiables pour les deux membres du duo, et ne s'affichent jamais lors du retrait d'un cœur.
+• Désactiver les cœurs reçus ou défaire le duo coupe aussi les alertes associées.
 ```
 
 **Mots-clés** (100 max — 94 utilisés, séparés par des virgules sans espace)

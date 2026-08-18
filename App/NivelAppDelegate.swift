@@ -1,15 +1,12 @@
 // App/NivelAppDelegate.swift
-// Le strict minimum d'UIKit qu'exige le réveil silencieux du duo (spec 1.15 §3.7).
+// Le petit pont UIKit nécessaire aux notifications distantes CloudKit du duo.
 //
-// **Pourquoi ce fichier existe alors que Nivel est une app SwiftUI pure.** Un réveil
-// silencieux est livré par `application(_:didReceiveRemoteNotification:)`, une méthode de
-// `UIApplicationDelegate`. SwiftUI n'expose aucun équivalent : ni modificateur de scène, ni
-// environnement, ni `onReceive` système. `BackgroundTasks` ne remplace pas non plus le
-// besoin, n'étant pas déclenché par un changement distant mais par le bon vouloir du
-// système. Il n'existe donc pas d'autre voie que `@UIApplicationDelegateAdaptor`.
+// **Pourquoi ce fichier existe alors que Nivel est une app SwiftUI pure.** Les alertes
+// CloudKit et leur mise à jour en arrière-plan passent par `UIApplicationDelegate` et
+// `UNUserNotificationCenterDelegate`. SwiftUI n'expose aucun équivalent pour ces callbacks.
 //
 // Il est volontairement MINUSCULE : s'enregistrer aux notifications distantes, et router un
-// réveil vers `DuoService`. Rien d'autre n'a le droit d'y entrer.
+// push vers `DuoService`. Rien d'autre n'a le droit d'y entrer.
 //
 // En particulier, **pas de `windowScene(_:userDidAcceptCloudKitShareWith:)`** : notre
 // appairage passe par notre propre scanner et notre propre champ (§3.6), et ouvrir un second
@@ -17,19 +14,37 @@
 
 import CloudKit
 import UIKit
+import UserNotifications
 
-final class NivelAppDelegate: NSObject, UIApplicationDelegate {
+final class NivelAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        // Nécessaire pour que le serveur puisse réveiller l'app. Ne demande AUCUNE
-        // autorisation à l'utilisateur et n'affiche rien : les réveils silencieux ne sont pas
-        // des notifications visibles. Celle qu'on postera ensuite, elle, passe par
-        // l'autorisation déjà demandée pour les rappels.
+        // Une alerte distante ne se présente pas d'elle-même au premier plan. Le délégué
+        // doit être installé avant la fin du lancement pour autoriser la bannière du cœur.
+        UNUserNotificationCenter.current().delegate = self
+
+        // Nécessaire à la livraison de l'alerte CloudKit et au rafraîchissement associé.
+        // L'autorisation de l'utilisateur reste, elle, gérée par le flux existant.
         application.registerForRemoteNotifications()
         return true
+    }
+
+    /// L'alerte CloudKit est déjà visible en arrière-plan et même après un force-quit : ici,
+    /// on autorise la même bannière quand Nivel est au premier plan. Les rappels existants
+    /// restent discrets, et une notification inconnue n'obtient aucun privilège par défaut.
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        guard let cloud = CKNotification(
+            fromRemoteNotificationDictionary: notification.request.content.userInfo),
+              cloud.subscriptionID == DuoService.subscriptionID,
+              DuoService.shared.likeNotificationsEnabled
+        else { return [] }
+        return [.banner, .sound]
     }
 
     /// Le réveil. Rendre le bon `UIBackgroundFetchResult` n'est pas cosmétique : iOS observe
@@ -55,11 +70,9 @@ final class NivelAppDelegate: NSObject, UIApplicationDelegate {
     private func handleDuoWake() async -> UIBackgroundFetchResult {
         let service = DuoService.shared
         let nouveaux = await service.handleRemoteWake()
-        guard !nouveaux.isEmpty else { return .noData }
-
-        await DuoNotifications.post(for: nouveaux,
-                                    partner: service.partnerSnapshot?.name,
-                                    enabled: service.likeNotificationsEnabled)
-        return .newData
+        // L'alerte visible a déjà été composée par CloudKit. Le réveil silencieux associé
+        // sert uniquement à ranger le cœur et mettre à jour la bulle d'accueil ; poster une
+        // seconde notification locale ici ferait vibrer deux fois le même geste.
+        return nouveaux.isEmpty ? .noData : .newData
     }
 }

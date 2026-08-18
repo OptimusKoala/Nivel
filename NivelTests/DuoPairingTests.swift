@@ -243,7 +243,7 @@ final class DuoPairingSubscriptionTests: XCTestCase {
     /// Celui qui INVITE : le partage créé, l'abonnement est posé dans la foulée, sans
     /// qu'aucun `refresh()` n'ait à passer par là.
     func testInviterPoseLAbonnementSansAttendreUnRafraichissement() async {
-        var poses: [CKRecordZoneSubscription] = []
+        var poses: [CKSubscription] = []
         let identite = DuoIdentity(defaults: defaults)
         let service = DuoService(
             identity: identite,
@@ -258,16 +258,18 @@ final class DuoPairingSubscriptionTests: XCTestCase {
         XCTAssertEqual(resultat, .ready(lien))
         XCTAssertEqual(poses.count, 1, "sans abonnement, plus jamais un seul réveil")
         XCTAssertTrue(identite.zoneSubscriptionInstalled)
-        XCTAssertEqual(poses.first?.zoneID.zoneName, DuoDatabase.defaultZoneName)
+        XCTAssertEqual((poses.first as? CKRecordZoneSubscription)?.zoneID.zoneName,
+                       DuoDatabase.defaultZoneName)
     }
 
     /// Celui qui REJOINT, et c'est le côté qui comptait le plus : l'invité n'a aucune raison
     /// de rouvrir les Réglages après avoir scanné, il rentre à l'accueil.
     ///
-    /// L'abonnement porte le `ownerName` du PROPRIÉTAIRE : posé sur une zone à soi, il
-    /// existerait, ne réveillerait jamais rien, et rien ne le dirait.
-    func testRejoindrePoseLAbonnementSurLaZoneDuProprietaire() async {
-        var poses: [CKRecordZoneSubscription] = []
+    /// Une zone partagée REFUSE `CKRecordZoneSubscription`. L'invité doit poser le seul
+    /// abonnement que CloudKit y accepte : un abonnement de base filtré sur le signal de
+    /// like. Cette différence est ce qui rend les alertes bidirectionnelles.
+    func testRejoindrePoseUnAbonnementDeBasePartageePourLesCoeurs() async {
+        var poses: [CKSubscription] = []
         let identite = DuoIdentity(defaults: defaults)
         let service = DuoService(
             identity: identite,
@@ -281,14 +283,15 @@ final class DuoPairingSubscriptionTests: XCTestCase {
         XCTAssertEqual(resultat, .joined)
         XCTAssertEqual(poses.count, 1, "sans abonnement, plus jamais un seul réveil")
         XCTAssertTrue(identite.zoneSubscriptionInstalled)
-        XCTAssertEqual(poses.first?.zoneID.ownerName, "PROPRIO")
+        let abonnement = poses.first as? CKDatabaseSubscription
+        XCTAssertNotNil(abonnement)
+        XCTAssertEqual(abonnement?.recordType, DuoRecord.likeAlertType)
     }
 
-    /// L'abonnement posé est SILENCIEUX (§3.7) : le système réveille l'app sans rien
-    /// montrer, et c'est elle qui décide s'il y a lieu de dire quelque chose. Un
-    /// `alertBody` alerterait à chaque mise à jour d'anneau, plusieurs fois par jour.
-    func testLAbonnementPoseEstSilencieux() async {
-        var poses: [CKRecordZoneSubscription] = []
+    /// L'alerte est distante et limitée au signal de like : elle reste visible si l'app a
+    /// été tuée, sans annoncer les snapshots ni les retraits de cœurs.
+    func testLAbonnementPoseUneAlerteVisiblePourLeSignalDeCoeur() async {
+        var poses: [CKSubscription] = []
         let service = DuoService(
             identity: DuoIdentity(defaults: defaults),
             acceptShare: { _, _ in
@@ -300,7 +303,11 @@ final class DuoPairingSubscriptionTests: XCTestCase {
 
         let info = poses.first?.notificationInfo
         XCTAssertEqual(info?.shouldSendContentAvailable, true)
-        XCTAssertNil(info?.alertBody, "sinon une alerte à chaque chiffre qui bouge")
+        XCTAssertEqual(info?.title, DuoService.likeAlertTitle)
+        XCTAssertEqual(info?.alertBody, DuoService.likeAlertBody)
+        XCTAssertEqual(info?.soundName, "default")
+        XCTAssertEqual((poses.first as? CKDatabaseSubscription)?.recordType,
+                       DuoRecord.likeAlertType)
         XCTAssertEqual(poses.first?.subscriptionID, DuoService.subscriptionID)
     }
 
@@ -330,6 +337,7 @@ final class DuoPairingSubscriptionTests: XCTestCase {
         var poses = 0
         let identite = DuoIdentity(defaults: defaults)
         identite.zoneSubscriptionInstalled = true
+        identite.likeNotificationSubscriptionVersion = DuoService.subscriptionVersion
         let service = DuoService(
             identity: identite,
             acceptShare: { _, _ in
@@ -340,6 +348,28 @@ final class DuoPairingSubscriptionTests: XCTestCase {
         _ = await service.join(shareURL: lien.absoluteString)
 
         XCTAssertEqual(poses, 0)
+    }
+
+    /// Une v1 était mémorisée comme « posée », mais elle était silencieuse et, côté invité,
+    /// du mauvais type. La version force une remise à niveau lors du prochain appairage ou
+    /// rafraîchissement, sans demander une nouvelle action à la personne.
+    func testUneAncienneVersionDAbonnementEstRemplacee() async {
+        var poses = 0
+        let identite = DuoIdentity(defaults: defaults)
+        identite.zoneSubscriptionInstalled = true
+        identite.likeNotificationSubscriptionVersion = 1
+        let service = DuoService(
+            identity: identite,
+            acceptShare: { _, _ in
+                CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName, ownerName: "PROPRIO")
+            },
+            saveSubscription: { _, _ in poses += 1; return true })
+
+        _ = await service.join(shareURL: lien.absoluteString)
+
+        XCTAssertEqual(poses, 1)
+        XCTAssertEqual(identite.likeNotificationSubscriptionVersion,
+                       DuoService.subscriptionVersion)
     }
 
     /// Le nuage a refusé : on ne marque SURTOUT pas l'abonnement comme posé, sinon plus
@@ -357,6 +387,96 @@ final class DuoPairingSubscriptionTests: XCTestCase {
 
         XCTAssertTrue(service.isPaired, "l'appairage, lui, a bien eu lieu")
         XCTAssertFalse(identite.zoneSubscriptionInstalled)
+    }
+
+    /// Couper « Cœurs reçus » retire réellement l'abonnement distant. Sans cette étape,
+    /// l'interrupteur ne ferait qu'ignorer localement une bannière qu'Apple a déjà affichée.
+    func testCouperLesCoeursRetireLAbonnementCloudKit() async {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.role = .owner
+        identite.zoneName = DuoDatabase.defaultZoneName
+        identite.zoneSubscriptionInstalled = true
+        identite.likeNotificationSubscriptionVersion = DuoService.subscriptionVersion
+        let target = DuoDatabase.Target(
+            database: CKContainer(identifier: DuoDatabase.containerID).privateCloudDatabase,
+            zoneID: CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName,
+                                    ownerName: CKCurrentUserDefaultName),
+            scope: .private)
+        var suppressions: [CKSubscription.ID] = []
+        let service = DuoService(
+            identity: identite,
+            resolveTarget: { _ in target },
+            deleteSubscription: { _, id in suppressions.append(id); return true })
+
+        await service.setLikeNotificationsEnabled(false)
+
+        XCTAssertFalse(service.likeNotificationsEnabled)
+        XCTAssertEqual(suppressions, [DuoService.subscriptionID])
+        XCTAssertFalse(identite.zoneSubscriptionInstalled)
+        XCTAssertEqual(identite.likeNotificationSubscriptionVersion, 0)
+    }
+
+    /// Le désappairage fait la même suppression explicite. C'est indispensable côté invité,
+    /// où l'abonnement vit dans sa base partagée, distincte de la zone du propriétaire.
+    func testLeDesappairageRetireAussiLAbonnementCloudKit() async {
+        let identite = DuoIdentity(defaults: defaults)
+        identite.role = .guest
+        identite.zoneName = DuoDatabase.defaultZoneName
+        identite.zoneOwnerName = "PROPRIO"
+        let target = DuoDatabase.Target(
+            database: CKContainer(identifier: DuoDatabase.containerID).sharedCloudDatabase,
+            zoneID: CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName, ownerName: "PROPRIO"),
+            scope: .shared)
+        var suppressions: [CKSubscription.ID] = []
+        let service = DuoService(
+            identity: identite,
+            resolveTarget: { _ in target },
+            deleteSubscription: { _, id in suppressions.append(id); return true },
+            deleteZone: { _ in })
+
+        await service.unpair()
+
+        XCTAssertEqual(suppressions, [DuoService.subscriptionID])
+        XCTAssertFalse(service.isPaired)
+    }
+}
+
+// MARK: - Le signal qui porte l'alerte
+
+final class DuoLikeAlertRecordTests: XCTestCase {
+
+    func testLeSignalEstBorneParDonneurEtPorteLeDernierCoeur() {
+        let zone = CKRecordZone.ID(zoneName: DuoDatabase.defaultZoneName, ownerName: "PROPRIO")
+        let premier = DuoEvent(id: "E1", kind: .meal, at: .now, title: "Déjeuner", subtitle: "")
+        let suivant = DuoEvent(id: "E2", kind: .activity, at: .now, title: "Marche", subtitle: "")
+
+        let signal1 = DuoRecord.likeAlert(giver: "MOI", owner: "TOI", event: premier, in: zone)
+        let signal2 = DuoRecord.likeAlert(giver: "MOI", owner: "TOI", event: suivant, in: zone)
+
+        XCTAssertEqual(signal1.recordType, DuoRecord.likeAlertType)
+        XCTAssertEqual(signal1.recordID.recordName, "like-alert-MOI")
+        XCTAssertEqual(signal2.recordID, signal1.recordID,
+                       "un même donneur réécrit son signal au lieu d'en créer un par like")
+        XCTAssertEqual(signal2[DuoRecord.Field.eventID] as? String, "E2")
+        XCTAssertEqual(signal2[DuoRecord.Field.eventTitle] as? String, "Marche")
+    }
+}
+
+final class DuoSubscriptionResultTests: XCTestCase {
+
+    func testUnEchecIndividuelNeMarqueJamaisLAbonnementCommePose() {
+        let id: CKSubscription.ID = DuoService.subscriptionID
+        let abonnement = CKDatabaseSubscription(subscriptionID: id)
+        let reussite: [CKSubscription.ID: Result<CKSubscription, any Error>] = [
+            id: .success(abonnement)
+        ]
+        let echec: [CKSubscription.ID: Result<CKSubscription, any Error>] = [
+            id: .failure(CKError(.permissionFailure))
+        ]
+
+        XCTAssertTrue(DuoService.subscriptionSaveSucceeded(reussite, id: id))
+        XCTAssertFalse(DuoService.subscriptionSaveSucceeded(echec, id: id))
+        XCTAssertFalse(DuoService.subscriptionSaveSucceeded([:], id: id))
     }
 }
 
