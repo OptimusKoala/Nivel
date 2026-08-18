@@ -70,18 +70,27 @@ final class NivelAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificatio
     /// Le réveil. Rendre le bon `UIBackgroundFetchResult` n'est pas cosmétique : iOS observe
     /// ce qu'on rapporte pour décider s'il continue à nous réveiller. Annoncer `.newData` à
     /// chaque fois pour un lot vide finirait par nous faire réveiller moins souvent.
-    func application(
+    //
+    // On prend la variante SYNCHRONE à complétion plutôt que la version `async`. Le protocole
+    // `UIApplicationDelegate` est isolé au `MainActor`, mais `[AnyHashable: Any]` n'est pas
+    // `Sendable` : une méthode `async` ferait traverser le dictionnaire vers un autre exécuteur.
+    // Une méthode synchrone `nonisolated` s'exécute, elle, sur l'exécuteur de l'appelant — rien
+    // ne franchit de frontière d'isolation. Seul `handleDuoWake()`, sans argument, saute ensuite
+    // sur le `MainActor`.
+    nonisolated func application(
         _ application: UIApplication,
-        didReceiveRemoteNotification userInfo: [AnyHashable: Any]
-    ) async -> UIBackgroundFetchResult {
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping @Sendable (UIBackgroundFetchResult) -> Void
+    ) {
         // Un réveil qui ne vient pas de CloudKit ne nous regarde pas. Nivel n'a aucun autre
         // émetteur de push, mais le vérifier coûte une ligne et évite d'aller lire une zone
         // pour une notification étrangère.
         guard CKNotification(fromRemoteNotificationDictionary: userInfo) != nil else {
-            return .noData
+            completionHandler(.noData)
+            return
         }
 
-        return await handleDuoWake()
+        Task { completionHandler(await handleDuoWake()) }
     }
 
     /// Tout le travail du réveil, en UN saut sur le `MainActor` : `DuoService` y est isolé,
