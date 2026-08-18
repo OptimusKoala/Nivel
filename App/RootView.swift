@@ -149,7 +149,18 @@ private struct MainTabView: View {
             selectedTab = .home
             gameService.pendingMealLogDeepLink = true
         }
+        // Le délégué UIKit reçoit le toucher d'une notification locale. La route est aussi
+        // stockée dans UserDefaults pour le lancement à froid ; cet abonnement couvre le
+        // tap quand l'interface est déjà affichée.
+        .onReceive(NotificationCenter.default.publisher(for: NotificationNavigation.didReceiveRoute)) { note in
+            guard let route = note.object as? SportSessionRoute else { return }
+            // Dans ce chemin l'événement vient d'être livré immédiatement : on efface la
+            // copie de lancement à froid pour qu'un futur onAppear ne rouvre pas la séance.
+            _ = NotificationNavigation.consumePendingRoute()
+            openSportSession(route)
+        }
         .onAppear {
+            consumePendingNotificationRoute()
             // Lancement à froid directement en .active : onChange ne se déclenche
             // pas — on exécute aussi le rattrapage ici.
             onForeground()
@@ -190,6 +201,20 @@ private struct MainTabView: View {
     private func rescheduleReminders() {
         if let profile = profiles.first {
             NotificationService.reschedule(for: profile)
+        }
+    }
+
+    /// Route le rappel AVANT que SportView soit créé : sa valeur en attente survit au
+    /// changement d'onglet, puis la vue consomme et présente la séance ciblée.
+    private func openSportSession(_ route: SportSessionRoute) {
+        dayKey = Self.currentDayKey()
+        selectedTab = .sport
+        gameService.pendingSportSessionRoute = route
+    }
+
+    private func consumePendingNotificationRoute() {
+        if let route = NotificationNavigation.consumePendingRoute() {
+            openSportSession(route)
         }
     }
 

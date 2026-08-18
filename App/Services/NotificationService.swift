@@ -67,6 +67,12 @@ enum NotificationService {
                 name: name,
                 value: nil
             ).text ?? "Petit coucou de Nivelito 🧡"
+            // Le contenu porte sa destination de façon explicite. Le repli sur
+            // l'identifiant reste dans `NotificationNavigation` pour les demandes
+            // créées avant la 1.15.2 et encore en attente sur l'iPhone.
+            if let route = NotificationNavigation.route(forReminderID: reminder.id) {
+                content.userInfo[NotificationNavigation.routeUserInfoKey] = route.rawValue
+            }
             // Son SYSTÈME, volontairement : les chimes embarqués de la v1.9 sont ceux
             // du timer d'exercice. Un son propre aux notifications est hors périmètre
             // (spec v1.9 §7), ce n'est pas un oubli de câblage.

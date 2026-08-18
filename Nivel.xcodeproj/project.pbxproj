@@ -128,6 +128,7 @@
 		DAAD239CC8C1DACA809A05DF /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A07EB6FBC6FCF23B97D21B /* OnboardingFlow.swift */; };
 		DBA75C60C34D6D51CBD43CF2 /* CalorieRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBB38120226BC151CACEE2B /* CalorieRing.swift */; };
 		DC552D7BA1E1A2FDC62BD56B /* DuoPairingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57EEA0C75E83F471DC06E63 /* DuoPairingTests.swift */; };
+		DE04B50FC925EA7D6167E654 /* NotificationNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5FAB4CE9BFA2A5AF12FA8A0 /* NotificationNavigation.swift */; };
 		E15E5B8B4E5A0118F5A7DEC8 /* DuoPairingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA34DD31A2E8072BB2E3AEE3 /* DuoPairingView.swift */; };
 		E16F69EA211C733A1361FF9B /* CaloriesChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA9C805AF5775DBC7B1116A /* CaloriesChart.swift */; };
 		E25C6AEB1505C0C69F8CB630 /* NivelitoShapes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660D96E22C32118424F93AC2 /* NivelitoShapes.swift */; };
@@ -304,6 +305,7 @@
 		C2F1F7C3748561A5F2562708 /* NivelWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NivelWidgets.entitlements; sourceTree = "<group>"; };
 		C469C8E725B6F5111FEA5290 /* SoundPlayerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayerTests.swift; sourceTree = "<group>"; };
 		C5D7F6B85908405A6B6F609C /* HomeDashboardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDashboardTests.swift; sourceTree = "<group>"; };
+		C5FAB4CE9BFA2A5AF12FA8A0 /* NotificationNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNavigation.swift; sourceTree = "<group>"; };
 		C658D5A942C3A751271B8BBD /* NivelWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = NivelWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C6B269DD24BE6B62E7DD967A /* LevelUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelUpView.swift; sourceTree = "<group>"; };
 		C7115C94A90C02E4FB6B9B24 /* TimerChime+App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimerChime+App.swift"; sourceTree = "<group>"; };
@@ -479,6 +481,7 @@
 				46EDFAE59B39F4B1069C0EA0 /* GameService+WidgetSync.swift */,
 				2749E47DBFD2A5D89042A89E /* HealthKitService.swift */,
 				6B7D4D8A285248E85550E0DB /* MuscuPlanSettings.swift */,
+				C5FAB4CE9BFA2A5AF12FA8A0 /* NotificationNavigation.swift */,
 				B1E734571AD23AE4CDC74D01 /* NotificationService.swift */,
 				86CFA32802959F33180BCCFD /* PosturePlanSettings.swift */,
 				32DDA69A9E12CB1E08764404 /* ReminderPlan+Device.swift */,
@@ -910,6 +913,7 @@
 				08E7E367068E84C7597BFB3D /* NivelAppDelegate.swift in Sources */,
 				1D1E36C74A9B09A9D1678F59 /* NivelitoShapes.swift in Sources */,
 				5A40096E1BB5A7713251D5C1 /* NivelitoView.swift in Sources */,
+				DE04B50FC925EA7D6167E654 /* NotificationNavigation.swift in Sources */,
 				D4DBCCCBE3F53C8F8882CC95 /* NotificationService.swift in Sources */,
 				DAAD239CC8C1DACA809A05DF /* OnboardingFlow.swift in Sources */,
 				86D30358C08AC363B7C6E993 /* PantryView.swift in Sources */,

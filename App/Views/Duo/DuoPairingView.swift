@@ -35,7 +35,7 @@ struct DuoPairingView: View {
                     carteDExplication
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
+                .padding(.top, 30)
                 .padding(.bottom, 24)
             }
         }
@@ -226,7 +226,7 @@ struct DuoJoinView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
+                .padding(.top, 30)
                 .padding(.bottom, 24)
             }
             .scrollDismissesKeyboard(.interactively)

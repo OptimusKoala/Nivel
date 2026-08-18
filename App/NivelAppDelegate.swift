@@ -47,6 +47,26 @@ final class NivelAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificatio
         return [.banner, .sound]
     }
 
+    /// Toucher un rappel local de programme ouvre sa séance, y compris si l'app doit être
+    /// lancée pour répondre. Les réponses CloudKit ne correspondent à aucune route locale
+    /// et sont donc simplement ignorées ici.
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
+        guard response.actionIdentifier == UNNotificationDefaultActionIdentifier else { return }
+
+        let request = response.notification.request
+        guard let route = NotificationNavigation.route(
+            userInfo: request.content.userInfo,
+            reminderID: request.identifier
+        ) else { return }
+
+        await MainActor.run {
+            NotificationNavigation.receive(route)
+        }
+    }
+
     /// Le réveil. Rendre le bon `UIBackgroundFetchResult` n'est pas cosmétique : iOS observe
     /// ce qu'on rapporte pour décider s'il continue à nous réveiller. Annoncer `.newData` à
     /// chaque fois pour un lot vide finirait par nous faire réveiller moins souvent.

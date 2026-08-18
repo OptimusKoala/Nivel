@@ -33,6 +33,7 @@ struct SportView: View {
         // reload() est synchrone : onAppear suffit (couvre 1ᵉʳ affichage ET retours d'onglet).
         .onAppear {
             reload()
+            consumePendingSessionRoute()
             #if DEBUG
             // Capture « séance guidée » (scripts/screenshots.sh) : absent en release.
             if ScreenshotMode.autoOpensDailySession { showSessionPlayer = true }
@@ -56,6 +57,9 @@ struct SportView: View {
         }
         .sheet(item: $selectedActivity, onDismiss: reload) { activity in
             ActivityLogSheet(activity: activity)
+        }
+        .onChange(of: game.pendingSportSessionRoute) { _, route in
+            if route != nil { consumePendingSessionRoute() }
         }
     }
 
@@ -187,6 +191,28 @@ struct SportView: View {
         postureSessionStatus = game.postureSessionStatus()
         muscuSessionStatus = game.muscuSessionStatus()
         todayEntries = game.todayActivities()
+    }
+
+    /// Le routeur pose cette valeur avant que cet onglet soit nécessairement monté. On la
+    /// retire immédiatement, puis on relit la séance depuis GameService pour ne jamais
+    /// ouvrir une carte périmée après un retour au premier plan ou un changement de jour.
+    private func consumePendingSessionRoute() {
+        guard let route = game.pendingSportSessionRoute else { return }
+        game.pendingSportSessionRoute = nil
+
+        switch route {
+        case .posture:
+            guard PosturePlanSettings.shared.isEnabled,
+                  let status = game.postureSessionStatus() else { return }
+            postureSessionStatus = status
+            showPostureSessionPlayer = true
+
+        case .muscu:
+            guard MuscuPlanSettings.shared.isEnabled,
+                  let status = game.muscuSessionStatus() else { return }
+            muscuSessionStatus = status
+            showMuscuSessionPlayer = true
+        }
     }
 
     private var header: some View {

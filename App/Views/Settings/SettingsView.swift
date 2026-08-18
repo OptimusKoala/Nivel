@@ -90,7 +90,7 @@ struct SettingsContent: View {
                     aboutSection
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
+                .padding(.top, 30)
                 .padding(.bottom, 24)
             }
             .scrollDismissesKeyboard(.interactively)

@@ -102,6 +102,10 @@ final class GameService {
     /// (onOpenURL), consommé par HomeView qui ouvre la sheet de log.
     var pendingMealLogDeepLink = false
 
+    /// Rappel local de programme en attente : posé par MainTabView après le toucher sur la
+    /// notification, puis consommé par SportView une fois son onglet réellement affiché.
+    var pendingSportSessionRoute: SportSessionRoute?
+
     /// Compteur MONOTONE de célébrations levées (jamais décrémenté) — à utiliser comme
     /// `celebrationTrigger` de NivelitoView : le dépilage de la file (Task 19) ne doit
     /// pas re-déclencher de rebond.

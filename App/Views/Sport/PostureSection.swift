@@ -20,8 +20,11 @@ struct PostureSection: View {
 
     var body: some View {
         if PosturePlanSettings.shared.isEnabled {
-            Section {
-                if let status = sessionStatus {
+            if let status = sessionStatus {
+                // Le programme est une carte à part, comme la séance Sport et la Muscu :
+                // les exercices unitaires ne doivent pas donner l'impression d'en faire
+                // partie ni prolonger visuellement la même carte.
+                Section {
                     Button(action: onOpenSession) {
                         PostureEveningCardContent(session: status.session, done: status.done,
                                                   monthCount: monthCount)
@@ -29,8 +32,12 @@ struct PostureSection: View {
                     }
                     .buttonStyle(.plain)
                     .listRowBackground(Theme.card)
+                } header: {
+                    Overline("Programme posture")
                 }
+            }
 
+            Section {
                 ForEach(activities) { activity in
                     Button { onSelectActivity(activity) } label: {
                         HStack(spacing: 12) {
@@ -57,7 +64,7 @@ struct PostureSection: View {
                     .listRowBackground(Theme.card)
                 }
             } header: {
-                Overline("Posture")
+                Overline("Exercices posture")
             }
         }
     }
