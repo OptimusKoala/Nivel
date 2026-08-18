@@ -144,18 +144,23 @@ def main():
     version = editable[0]
     version_id = version["id"]
 
-    build = next(iter(session.paged(f"/v1/builds?filter[app]={APP_ID}&limit=1")), None)
+    # La build doit correspondre exactement à la version marketing déclarée dans
+    # l'app. L'API ne garantit pas l'ordre par défaut : sans ce filtre, une
+    # ancienne build VALID pourrait être rattachée à la fiche lors d'un hotfix.
+    plist = (Path(__file__).resolve().parent.parent / "App/Info.plist").read_text()
+    short_version = re.search(
+        r"<key>CFBundleShortVersionString</key>\s*<string>([^<]+)</string>", plist).group(1)
+    build = next(iter(session.paged(
+        f"/v1/builds?filter[app]={APP_ID}&filter[preReleaseVersion.version]={short_version}"
+        "&sort=-uploadedDate&limit=10")), None)
     if not build:
-        die("aucune build envoyée")
+        die(f"aucune build envoyée pour la version {short_version}")
     build_version = build["attributes"]["version"]
     if build["attributes"]["processingState"] != "VALID":
         die(f"la build {build_version} est en {build['attributes']['processingState']}, pas VALID")
 
     # Le numéro de version de la fiche doit être celui du binaire, sinon la build
     # n'est pas rattachable.
-    plist = (Path(__file__).resolve().parent.parent / "App/Info.plist").read_text()
-    short_version = re.search(
-        r"<key>CFBundleShortVersionString</key>\s*<string>([^<]+)</string>", plist).group(1)
     print(f"▸ Version : fiche {version['attributes']['versionString']} → {short_version} "
           f"(build {build_version})")
     session.call("PATCH", f"/v1/appStoreVersions/{version_id}", {
